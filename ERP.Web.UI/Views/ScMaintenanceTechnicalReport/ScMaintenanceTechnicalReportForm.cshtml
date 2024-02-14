@@ -1,0 +1,117 @@
+﻿@using ERP.Web.UI.Models.ViewModels.Accounts
+@using ERP.Web.UI.Models.ViewModels.AidModule
+@model ScMaintenanceTechnicalReportVM
+@{
+    string formTrigger = ViewBag.trigger;
+    string lang = Request.Cookies["Lang"] == null ? "ar-EG" : Request.Cookies["Lang"].Value.ToString();
+    bool isFormDetail = Model != null && formTrigger == ERP.Front.Helpers.Enums.Common.FormTriggers.Show.ToString();
+    var lastDateTime = ViewData["Version"] == null ? null : ViewData["Version"] as Nullable<DateTime>;
+}
+<div class="card">
+    <div class="header">
+        <h2><strong>@ERP.ResourcePack.Accounts.GlJeHeaders.MasterData</strong></h2>
+    </div>
+    <div class="body">
+        @using (Ajax.BeginForm(nameof(ERP.Web.UI.Controllers.AidModule.ScMaintenanceTechnicalReportController.CreateScMaintenanceTechnicalReport), "ScMaintenanceTechnicalReport",
+            new AjaxOptions { HttpMethod = "POST", OnBegin = "OnBegin", OnSuccess = "OnSuccess", OnComplete = "OnComplete", OnFailure = "OnFailure" }, new { @id = "mainForm" }))
+        {
+            @Html.HiddenFor(z => z.Id)
+            @Html.HiddenFor(z => z.ScMaintenanceTechnicalReportDetailListStr)
+            @Html.HiddenFor(z => z.AttachmentsListStr)
+            @Html.HiddenFor(z => z.ScCommitteeDetailId)
+            <input type="hidden" id="LastModificationTime" name="LastModificationTime" value="@lastDateTime" />
+
+            <div class="row clearfix">
+                <div class="col-md-4">
+                    <div class="form-group form-float">
+                        <div class="form-line">
+                            @Html.TextBoxFor(z => z.TechnicalReportNumber, new { @class = "form-control", @readonly = "readonly", @tabindex = "-1", @style = "pointer-events: none;" })
+                            @Html.LabelFor(z => z.TechnicalReportNumber, new { @class = "form-label", @style = "pointer-events: none;" })
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="form-group form-float">
+                        <div class="form-line text-center">
+                            @Html.TextBoxFor(z => z.TechnicalReportDate, getHtmlAttributes(isFormDetail, "form-control", "datepicker"))
+                            @Html.LabelFor(z => z.TechnicalReportDate, new { @class = "form-label" })
+                        </div>
+                        @Html.ValidationMessageFor(z => z.TechnicalReportDate)
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="form-group form-float">
+                        <div class="form-line text-center">
+                            @if (Model == null || Model.FndStatusLkp == null)
+                            {
+                                @Html.TextBoxFor(z => z.Status, getHtmlAttributes(true, "form-control", string.Empty))
+                            }
+                            else if (lang == "ar-EG")
+                            {
+                                @Html.TextBoxFor(z => z.FndStatusLkp.NameAr, getHtmlAttributes(true, "form-control", string.Empty))
+                            }
+                            else
+                            {
+                                @Html.TextBoxFor(z => z.FndStatusLkp.NameEn, getHtmlAttributes(true, "form-control", string.Empty))
+                            }
+                            @Html.LabelFor(z => z.StatusLkpId, new { @class = "form-label" })
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    @Html.LabelFor(z => z.PortalRequestId, new { @class = "form-label" })
+                    <div class="form-group form-float">
+                        <div class="form-line">
+                            @if (Model != null && Model.PortalRequest != null)
+                            {
+                                var list = new List<ScPortalRequestsVM> { new ScPortalRequestsVM { Id = (long)Model.PortalRequestId, PortalRequestNumber = Model.PortalRequest.PortalRequestNumber, Name = Model.PortalRequest.Name } };
+                                var selectList = new SelectList(list, "Id", nameof(ScPortalRequestsVM.PortalRequestNumber), Model.PortalRequestId);
+
+                                @Html.DropDownListFor(z => z.PortalRequestId, selectList, getHtmlAttributes(isFormDetail, "form-control", string.Empty))
+                            }
+                            else
+                            {
+                                @Html.DropDownListFor(z => z.PortalRequestId, Enumerable.Empty<SelectListItem>(), getHtmlAttributes(isFormDetail, "form-control", string.Empty))
+                            }
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    @Html.LabelFor(z => z.Details_PortalUser_Name, new { @class = "form-label" })
+                    <div class="form-group form-float">
+                        <div class="form-line">
+                            @if (Model != null && Model.PortalRequest != null)
+                            {
+                                var list = new List<ScPortalRequestsVM> { new ScPortalRequestsVM { Id = (long)Model.PortalRequestId, Name = Model.PortalRequest.Name } };
+                                var selectList = new SelectList(list, "Id", nameof(ScPortalRequestsVM.Name), Model.PortalRequestId);
+
+                                @Html.DropDownListFor(z => z.Details_PortalUser_Name, selectList, getHtmlAttributes(isFormDetail, "form-control", string.Empty))
+                            }
+                            else
+                            {
+                                @Html.DropDownListFor(z => z.Details_PortalUser_Name, Enumerable.Empty<SelectListItem>(), getHtmlAttributes(isFormDetail, "form-control", string.Empty))
+                            }
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-12">
+                    <div class="form-group form-float">
+                        <div class="form-line">
+                            @Html.LabelFor(z => z.Notes, new { @class = "form-label" })
+                            @Html.TextAreaFor(z => z.Notes, getHtmlAttributes(isFormDetail, "form-control", string.Empty))
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+
+    </div>
+</div>
+
+@functions {
+    object getHtmlAttributes(bool Disabled, string CssClass, string CssClass2)
+    {
+        if (Disabled) { return new { @class = CssClass, Disabled = Disabled }; }
+        return new { @class = $"{CssClass} {CssClass2}" };
+    }
+}

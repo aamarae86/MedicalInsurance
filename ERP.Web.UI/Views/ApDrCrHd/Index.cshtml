@@ -1,0 +1,12 @@
+﻿@{
+    ViewBag.Title = ERP.ResourcePack.Accounts.ArCustomers.ArDrCrHd;
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@Html.Action(nameof(ERP.Web.UI.Controllers.Accounts.ApDrCrHdController.ApDrCrHdSearch))
+@Html.Action(nameof(ERP.Web.UI.Controllers.Accounts.ApDrCrHdController.ApDrCrHdData))
+
+@section scripts{
+    <script>let formView = false;</script>
+    @Html.Partial("~/ViewsScripts/ApDrCrHd/ApDrCrHdScripts.cshtml")
+}

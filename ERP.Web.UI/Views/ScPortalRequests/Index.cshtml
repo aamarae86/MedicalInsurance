@@ -1,0 +1,14 @@
+﻿@{
+    ViewBag.Title = ERP.ResourcePack.AidModule.ScPortalRequests.Title;
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@Html.Action(nameof(ERP.Web.UI.Controllers.AidModule.ScPortalRequestsController.ScPortalRequestsSearch))
+@Html.Action(nameof(ERP.Web.UI.Controllers.AidModule.ScPortalRequestsController.ScPortalRequestsData))
+
+@section scripts{
+    <script>
+           let formView = false;
+    </script>
+    @Html.Partial("~/ViewsScripts/_AidModule/ScPortalRequests/ScPortalRequestsScripts.cshtml")
+}

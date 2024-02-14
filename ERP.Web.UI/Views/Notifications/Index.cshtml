@@ -1,0 +1,14 @@
+﻿@{
+    ViewBag.Title = ERP.ResourcePack.Notifications.Notifications.Title;
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@Html.Action(nameof(ERP.Web.UI.Controllers.NotificationsController.NotificationsSearch))
+@Html.Action(nameof(ERP.Web.UI.Controllers.NotificationsController.NotificationsData))
+
+@section scripts{
+    <script>
+        let formView = false;
+    </script>
+    @Html.Partial("~/ViewsScripts/Notifications/NotificationsScripts.cshtml")
+}

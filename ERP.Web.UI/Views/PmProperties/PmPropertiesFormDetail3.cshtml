@@ -1,0 +1,36 @@
+﻿@using ERP.Web.UI.Models.ViewModels.PmPropertiesModule
+@model PmPropertiesAttachmentsVM
+@{ string formTrigger = ViewBag.trigger; }
+
+<div class="card" style="display:@(formTrigger == ERP.Front.Helpers.Enums.Common.FormTriggers.Show.ToString() ? "none":"block" ) ">
+    <div class="body">
+        <div class="row clearfix">
+            <div class="col-sm-5">
+                <div class="form-group form-float">
+                    <div class="form-line">
+                        @Html.TextBoxFor(z => z.AttachmentName, new { @class = "form-control" })
+                        @Html.LabelFor(z => z.AttachmentName, new { @class = "form-label" })
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-5">
+                <div class="file-field d-inline-block m-0 input-field" style="margin:0px">
+                    <div class="btn" style="margin-top: 1rem;">
+                        <span>@ERP.ResourcePack.Common.Settings.UploadFile</span>
+                        <input type="file" id="attachmentUploader">
+                    </div>
+                    @*<div class="file-path-wrapper">
+                        <input class="file-path validate" type="text" placeholder="">
+                    </div>*@
+                </div>
+            </div>
+            <div class="col-sm-2">
+                <div class="form-group m-2" style="margin-top:15px !important">
+                    <button id="btnAddAttachmentRow" onclick="return AddAttachmentRow()" class="btn btn-success">@ERP.ResourcePack.Common.Settings.BtnAddNew</button>
+                    <button style="display:none;" id="btnUpdateAttachmentRow" onclick="return UpdateAttachmentRow()" class="btn btn-info">@ERP.ResourcePack.Common.Settings.BtnUpdate</button>
+                    <button style="display:none;" id="btnCancelAttachmentRow" onclick="clearFormAttachment(); $('#btnCancelAttachmentRow').hide();$('#btnUpdateAttachmentRow').hide();$('#btnAddAttachmentRow').show();" class="btn btn-danger">@ERP.ResourcePack.Common.Settings.BtnCancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,115 @@
+﻿@using ERP.ResourcePack.HR
+@using ERP.Web.UI.Models.ViewModels.HR
+@model PyPayrollOperationsVM
+<div class="card">
+    <div class="header d-flex justify-content-start align-items-center">
+        <i class="fas fa-2x fa-chevron-down down-arr mr-2" data-toggle="collapse" data-target="#payroll-persons-details"></i>
+        <h2><strong>@ERP.ResourcePack.HR.PyPayrollOperations.PayRollDetails</strong></h2>
+    </div>
+    <div class="body collapse show" id="payroll-persons-details">
+        <div class="row clearfix">
+            <div class="col-md-4">
+                <div class="form-group form-float">
+                    <div class="form-line">
+                        @Html.TextBoxFor(z => z.HrPersonNumber, new { @disabled = true, @class = "from-control" })
+                        @Html.LabelFor(z => z.HrPersonNumber, new { @class = "form-label" })
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="form-group form-float">
+                    <div class="form-line">
+                        @Html.TextBoxFor(z => z.HrPersonName, new { @disabled = true, @class = "form-control" })
+                        @Html.LabelFor(z => z.HrPersonName, new { @class = "form-label" })
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="form-group form-float">
+                    <div class="form-line">
+                        @Html.TextBoxFor(z => z.PyPayrollTypes.PyPayrollTypeName, new {@id= "PyPayrollTypeName", @disabled = true, @class = "form-control" })
+                        @Html.LabelFor(z => z.PyPayrollTypeId, new { @class = "form-label" })
+                    </div>
+                </div>
+            </div>
+
+        </div>
+        <div class="row clearfix">
+            <div class="col-md-4">
+                <div class="form-group form-float">
+                    <div class="form-line">
+                        @Html.TextBoxFor(z => z.PeriodId, new { @id = "Period", @disabled = true, @class = "form-control" })
+                        @Html.LabelFor(z => z.PeriodId, new { @class = "form-label" })
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="form-group form-float">
+                    <div class="form-line">
+                        @Html.TextBoxFor(z => z.StartDate, new { @class = "form-control", @disabled = true, Value = Model?.Periods?.StartDate?.Split('T')[0] ?? string.Empty })
+                        @Html.LabelFor(z => z.StartDate, new { @class = "form-label" })
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="form-group form-float">
+                    <div class="form-line">
+                        @Html.TextBoxFor(z => z.EndDate, new { @class = "form-control", @disabled = true, Value = Model?.Periods?.EndDate?.Split('T')[0] ?? string.Empty })
+                        @Html.LabelFor(z => z.EndDate, new { @class = "form-label" })
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row clearfix">
+            <div class="col-md-4">
+                <div class="form-group form-float">
+                    <div class="form-line">
+                        @Html.TextBoxFor(z => z.PayrollNetValue, new { @disabled = true, @class = "from-control" })
+                        @Html.LabelFor(z => z.PayrollNetValue, new { @class = "form-label" })
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="form-group form-float">
+                    <div class="form-line">
+                        @Html.TextBoxFor(z => z.BankLkpId, new { @disabled = true, @class = "form-control" })
+                        @Html.LabelFor(z => z.BankLkpId, new { @class = "form-label" })
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="form-group form-float">
+                    <div class="form-line">
+                        @Html.TextBoxFor(z => z.AccountNumber, new { @disabled = true, @class = "from-control" })
+                        @Html.LabelFor(z => z.AccountNumber, new { @class = "form-label" })
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="row clearfix">
+    <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+        <div class="table-responsive">
+            <table class="table table-bordered table-striped table-hover" id="tblPayrollPersonsDetails" style="width:100%">
+                <thead>
+                    <tr>
+                        <th><i class="fas fa-hashtag"></i></th>
+                        <th>@PyPayrollOperations.SourceId</th>
+                        <th>@PyPayrollOperations.EarningAmount</th>
+                        <th>@PyPayrollOperations.DeductionAmount</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+                <tfoot>
+                    <tr>
+                        <th><i class="fas fa-hashtag"></i></th>
+                        <th>@PyPayrollOperations.Total</th>
+                        <th><strong id="TotalEarning"></strong></th>
+                        <th><strong id="TotalDeduction"></strong></th>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+    </div>
+</div>

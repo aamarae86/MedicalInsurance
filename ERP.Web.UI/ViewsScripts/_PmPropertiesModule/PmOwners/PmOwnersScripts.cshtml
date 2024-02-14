@@ -1,0 +1,667 @@
+﻿@using ERP.ResourcePack.PmPropertiesModule
+@using ERP.Web.UI.Controllers.PmPropertiesModule
+@using ERP.Authorization;
+@{
+    string encUpdateTrigger = ERP.Front.Helpers.Enums.Common.EncUpdate;
+    string encShowTrigger = ERP.Front.Helpers.Enums.Common.EncShow;
+    string permissionsStr = TempData["Permissions"].ToString();
+}
+
+<script>
+    const _mainController = "PmOwners"
+
+    $(function () {
+        LoadDataGrid();
+        $('#tblPmOwnersPrint thead').html($('#tblPmOwners thead').html());
+        $('#tblPmOwnersPrint thead tr :last-child').remove();
+        $('#PmOwners').addClass('active');
+    });
+
+    const _loadDataUrl = `${$PrefixHostName}/${_mainController}/@nameof(PmOwnersController.LoadDataGrid)`;
+    const _tblSelector = $('#tblPmOwners');
+    const _tblLoader = $('#tblLoader');
+    const _mainForm = $('#mainForm');
+
+    const _permissions = '@permissionsStr';
+    const _updatePermission = '@PermissionNames.Pages_PmOwners_Update';
+    const _deletePermission = '@PermissionNames.Pages_PmOwners_Delete';
+
+
+
+    $('#btnSubmition').on('click', function () {
+
+        const resultCodeComUtility1 = GetCodeComUtilites(__arrGlSelect2, 'AccId');
+        const resultCodeComUtility2 = GetCodeComUtilites(acc2__arrGlSelect2, 'acc2AccId');
+
+        if (resultCodeComUtility1) {
+            $('#Account_codeComUtilityIds').val(resultCodeComUtility1.ids);
+        } else {
+            toastr.warning('@PmOwners.AccountId' + ' : ' + '@ERP.ResourcePack.Common.Settings.Required');
+            return;
+        }
+        if (resultCodeComUtility2) {
+            $('#CurrentAccount_codeComUtilityIds').val(resultCodeComUtility2.ids);
+        } else {
+            toastr.warning('@PmOwners.CurrentAccountId' + ' : ' + '@ERP.ResourcePack.Common.Settings.Required');
+            return;
+        }
+
+
+        _mainForm.submit();
+
+        if (_mainForm.valid()) {
+
+            $(this).hide();
+            $('#submitLoader').show();
+
+        } else {
+
+            $(this).show();
+            $('#submitLoader').hide();
+        }
+
+    });
+
+    var OnBegin = function (response) {
+        fireBtnLoader();
+    };
+
+    var OnSuccess = function (response) {
+
+        if (response.success) {
+
+            if (response.customRestResult.trigger === '@ERP.Front.Helpers.Enums.Common.FormTriggers.Insert') {
+
+                toastr.success(response.customRestResult.message);
+
+                setTimeout(function () {
+                    window.location.href = $PrefixHostName + '/PmOwners';
+                }, 200);
+
+            } else if (response.customRestResult.trigger === '@ERP.Front.Helpers.Enums.Common.FormTriggers.Update') {
+
+                toastr.success(response.customRestResult.message);
+
+                setTimeout(function () {
+                    window.location.href = $PrefixHostName + '/PmOwners';
+                }, 200);
+            }
+
+        } else {
+            toastr.error(response.customRestResult.message);
+        }
+
+    };
+
+    var OnComplete = function (response) {
+        downBtnLoader();
+    };
+
+    var OnFailure = function (response) {
+        toastr.error(response);
+        console.log(response);
+        downBtnLoader();
+    };
+
+    const LoadDataGrid = function () {
+
+        $('#tblLoader').show();
+
+        const parms = {
+            Id: $('#searchBox #OwnerName').find(':selected').val(),
+            HomePhoneNumber:$('#searchBox #HomePhoneNumber').val(),
+            StatusLkpId: $('#searchBox #StatusLkpId').find(':selected').val(),
+            IdNumber:$('#searchBox #IdNumber').val(),
+            CityLkpId: $('#searchBox #CityLkpId').find(':selected').val(),
+            NationalityLkpId: $('#searchBox #NationalityLkpId').find(':selected').val(),
+        };
+
+        const columns = [
+            {
+                "data": "result.data.id",
+                'render': function (data, type, row, meta) {
+                    return meta.row + meta.settings._iDisplayStart + 1;
+                }
+            },
+            {
+                "data": "OwnerNumber",
+                "name": "OwnerNumber",
+                "autoWidth": true
+            },
+            {
+                "data": null,
+                "autoWidth": true,
+                "render": function (d, t, row) {
+
+                    if (lang === 'ar-EG') {
+                        return row.OwnerNameAr;
+
+                    }
+                    return row.OwnerNameEn;
+                }
+            },
+            {
+                "data": "HomePhoneNumber",
+                "name": "HomePhoneNumber",
+                "autoWidth": true
+            },
+            {
+                "data": null,
+                "autoWidth": true,
+                "render": function (d, t, row) {
+
+                    if (row.FndStatusLkp == null)
+                        return '';
+                    
+                    if (lang === 'ar-EG')
+                        return row.FndStatusLkp.NameAr;
+
+                    return row.FndStatusLkp.NameEn;
+                }
+            },
+            {
+                "data": null,
+                "autoWidth": true,
+                "render": function (d, t, row) {
+
+                    if (row.FndCityLkp == null)
+                        return '';
+
+                    if (lang === 'ar-EG')
+                        return row.FndCityLkp.NameAr;
+
+                    return row.FndCityLkp.NameEn;
+                }
+            },
+            {
+                "data": "IdNumber",
+                "name": "IdNumber",
+                "autoWidth": true
+            },
+            {
+                "data": null,
+                "autoWidth": true,
+                "render": function (d, t, row) {
+
+                    if (row.FndNationalityLkp == null)
+                        return '';
+
+                    if (lang === 'ar-EG')
+                        return row.FndNationalityLkp.NameAr;
+
+                    return row.FndNationalityLkp.NameEn;
+                }
+            },
+            {
+                "data": null,
+                "sortable": false,
+                "render": function (data, type, row) {
+
+                    let formAction = `${$PrefixHostName}/${_mainController}/@nameof(PmOwnersController.PmOwnersForm)`;
+                    let DeleteAction = `${$PrefixHostName}/${_mainController}/@nameof(PmOwnersController.Delete)`;
+
+                    let btns = '';
+
+                    if (_permissions.includes(_updatePermission)) {
+                        btns += `<a href="${$PrefixHostName}/PmOwners/FormView?id=${row.EncId}&t=@encUpdateTrigger" title="@ERP.ResourcePack.Common.Settings.Edit"><i class="mx-2 fas fa-edit text-info"></i></a>`;
+                    }
+
+                    btns += `<a href="${$PrefixHostName}/PmOwners/FormView?id=${row.EncId}&t=@encShowTrigger" title="@ERP.ResourcePack.Common.Settings.Show"><i class="mx-2 fas fa-eye text-info"></i></a>`;
+
+                    if (_permissions.includes(_deletePermission)) {
+                        btns += `<a href="javascript:void(0)" onclick="AjaxController.DeleteMainTableRow(${row.Id},'${DeleteAction}');" title="@ERP.ResourcePack.Common.Settings.Delete"><i class="mx-2 fas fa-trash-alt text-danger"></i></a>`;
+                    }
+
+                    const _auditedPermission = '@PermissionNames.Pages_PmOwners_Audit';
+
+                    if (_permissions.includes(_auditedPermission)) {
+
+                        row.permission = _auditedPermission;
+
+                        btns += GetAuditedButton(row);
+                    }
+
+                    return btns;
+                }
+            }
+        ];
+
+        const dtObj = {
+            "processing": true,
+            "serverSide": true,
+            "filter": false,
+            "orderMulti": false,
+            "language": dataTableLang,
+            "ajax": {
+                "url": _loadDataUrl,
+                "type": "POST",
+                "datatype": "json",
+                "data": parms,
+                "complete": function () {
+                    _tblLoader.hide();
+                }
+            },
+            "columns": columns,
+            "initComplete": function () {
+                $('[data-toggle="tooltip"]').tooltip();
+            }
+
+        };
+
+        _tblSelector.dataTable().fnDestroy();
+        _tblSelector.DataTable(dtObj).on('draw', function () { $('[data-toggle="tooltip"]').tooltip(); });
+
+        setTimeout(function () {
+            $(".sorting_1").removeAttr('colspan');
+        }, 500);
+    };
+
+    $('#StatusLkpId').select2(ReturnSelect2ObjectForLkpsTypes('@ERP.Front.Helpers.Enums.Common.FndLkpsTypes.PmOwnersStatues.ToString()'))
+    $('#NationalityLkpId').select2(ReturnSelect2ObjectForLkpsTypes('@ERP.Front.Helpers.Enums.Common.FndLkpsTypes.Nationality.ToString()'))
+    $('#CountryLkpId').select2(ReturnSelect2ObjectForLkpsTypes('@ERP.Front.Helpers.Enums.Common.FndLkpsTypes.Country.ToString()'))
+    $('#searchBox #CityLkpId').select2(ReturnSelect2ObjectForLkpsTypes('@ERP.Front.Helpers.Enums.Common.FndLkpsTypes.City.ToString()'))
+    $('#OwnerName').select2(ReturnSelect2ObjectDefault(`${baseUrl}/PmOwners/GetPmOwnersSelect2`));
+    $('#BankAccountId').select2(
+            ReturnSelect2ObjectCustomParams(`${baseUrl}/ApBankAccounts/GetUserAccessedApBankAccountsSelect2`, {bankLkpId: @Convert.ToInt64(ERP.Front.Helpers.Enums.Common.BankType.Bank)}));
+    $('#CashAccountId').select2(
+            ReturnSelect2ObjectCustomParams(`${baseUrl}/ApBankAccounts/GetUserAccessedApBankAccountsSelect2`, { bankLkpId: @Convert.ToInt64(ERP.Front.Helpers.Enums.Common.BankType.Box)}));
+
+    $('#CityLkpId').select2({
+        ajax: {
+            url: `${baseUrl}/FndLookupValues/GetFndLookupValuesWithParentIdSelect2`,
+            dataType: 'json',
+            headers: {
+                'Authorization': `Bearer ${$_token}`
+            },
+            data: function (params) {
+                params.page = params.page || 1;
+                return {
+                    parentId: $('#CountryLkpId').find(':selected').val() ? $('#CountryLkpId').find(':selected').val() : 0,
+                    type: '@ERP.Front.Helpers.Enums.Common.FndLkpsTypes.City.ToString()',
+                    pageSize: pageSize,
+                    pageNumber: params.page,
+                    searchTerm: params.term,
+                    lang: lang
+                };
+            },
+            processResults: function (data, params) {
+
+                params.page = params.page || 1;
+
+                return {
+                    results: data.result.results,
+                    pagination: {
+                        more: (params.page * pageSize) < data.result.total
+                    }
+                };
+            }
+        },
+        placeholder: select2Placeholder,
+        minimumInputLength: 0,
+        allowClear: true,
+        language: select2Lang
+    });
+
+</script>
+
+<script>
+
+    const _tblPmOwnersDetailSelector = $('#tblPmOwnersDetail');
+    const _tblPmOwnersDetailSelectorBody = $('#tblPmOwnersDetail tbody');
+    const _listPmOwnersDetail = $('#PmOwnersTaxDetailsStr');
+
+    let _PmOwnersDetailArr = [], tblLinesCounterIndex = 0 , updatedRow;
+
+    $('#PmActivityTypeLkpId').select2(ReturnSelect2ObjectForLkpsTypes('@ERP.Front.Helpers.Enums.Common.FndLkpsTypes.PmOwnersTaxDetailsType.ToString()'))
+
+    const fillPmOwnersDetail = function () {
+
+        const current = {
+            index: ++tblLinesCounterIndex,
+            pmActivityTypeLkpId: $('#PmActivityTypeLkpId').find(':selected').val(),
+            pmActivityTypeLkp: $('#PmActivityTypeLkpId').find(':selected').text(),
+            taxPercentage: $('#TaxPercentage').val(),
+            rowStatus: NewStatus,
+            pmOwnerId: primaryEntityKeyId,
+            id:0
+        };
+
+        return current;
+    };
+
+    const AddPmOwnersDetail = function () {
+
+        let detail = fillPmOwnersDetail();
+
+        if (detail === undefined) return;
+
+        const detailArr = _PmOwnersDetailArr.filter(z => z.rowStatus !== DeletedStatus);
+
+        if (validateLinesWithParam(detailArr)) {
+
+            _PmOwnersDetailArr.push(detail);
+
+            _listPmOwnersDetail.val(JSON.stringify(_PmOwnersDetailArr));
+
+            bindPmOwnersDetailTable();
+
+            clearFormAdding();
+        }
+    };
+
+    const UpdatePmOwnersDetailRow = function () {
+
+        let current = _PmOwnersDetailArr.find(z => z.index === updatedRow.index);
+
+        let indexOfCurrent = _PmOwnersDetailArr.indexOf(current);
+
+        const newRow = fillPmOwnersDetail();
+
+        if (newRow === undefined) return;
+
+        newRow.id = updatedRow.id;
+        newRow.PmOwnersDetailtatusLkpId = updatedRow.PmOwnersDetailtatusLkpId;
+        newRow.pmOwnerId = updatedRow.pmOwnerId;
+        newRow.rowStatus = !updatedRow.id ? NewStatus : UpdatedStatus;
+
+        _PmOwnersDetailArr.splice(indexOfCurrent, 1,newRow);
+
+        $('#btnAddPmOwnersDetailRow').show();
+        $('#btnUpdatePmOwnersDetailRow').hide();
+        $('#btnCancelPmOwnersDetailRow').hide();
+
+        clearFormAdding();
+
+        _listPmOwnersDetail.val(JSON.stringify(_PmOwnersDetailArr));
+
+        bindPmOwnersDetailTable();
+
+    };
+
+    const CancelEditPmOwnersDetailRow = function () {
+
+        clearFormAdding();
+
+        $('#btnCancelPmOwnersDetailRow').hide();
+        $('#btnUpdatePmOwnersDetailRow').hide();
+        $('#btnAddPmOwnersDetailRow').show();
+    };
+
+    const bindPmOwnersDetailTable = function () {
+
+        const detailArr = _PmOwnersDetailArr.filter(z => z.rowStatus !== DeletedStatus);
+
+        const columns = [
+            { 'data': 'index' },
+            { 'data': 'pmActivityTypeLkp' },
+            { 'data': 'taxPercentage' },
+            {
+                'data': null,
+                'searchable': false,
+                'ordering': false,
+                'sorting': false,
+                'render': function (d, t, row) {
+
+                    let rows = '';
+                    if (primaryEntityKeyId === 0 || trigger !== '@ERP.Front.Helpers.Enums.Common.FormTriggers.Show.ToString()') {
+                        rows += `<td><a href="javascript:void(0)" onclick="return DeleteRowLine(${row.index})"><i class="mx-2 fas fa-trash-alt text-danger"></i></a>`;
+                        rows += `<a href="javascript:void(0)" onclick="return GetRow(${row.index})"><i class="mx-2 fas fa-edit text-success"></i></a></td>`;
+                    } else {
+                        rows += '<td></td>';
+                    }
+
+                    return rows;
+                }
+            }
+        ];
+
+        const dtObj = {
+            data: detailArr,
+            retrieve: true,
+            language: dataTableLang,
+            columns: columns,
+            drawCallback: function (c, v, b) {
+
+                setTimeout(function () {
+
+                }, 50);
+
+            }
+        };
+
+        setTimeout(function () {
+
+            _tblPmOwnersDetailSelector.dataTable().fnDestroy();
+            _tblPmOwnersDetailSelector.DataTable(dtObj).on('draw', function () { $('[data-toggle="tooltip"]').tooltip(); });
+
+        }, 100);
+
+    };
+
+    const DeleteRowLine = function (index) {
+
+        const current = _PmOwnersDetailArr.find(z => z.index === index);
+
+        const indexOfCurrent = _PmOwnersDetailArr.indexOf(current);
+
+        if (current.id === undefined || current.id == null || current.id == 0) {
+
+           _PmOwnersDetailArr.splice(indexOfCurrent, 1);
+
+        } else {
+
+            current.rowStatus = DeletedStatus;
+
+           _PmOwnersDetailArr.splice(indexOfCurrent, 1,current);
+        }
+
+        bindPmOwnersDetailTable();
+
+        _listPmOwnersDetail.val(_PmOwnersDetailArr.length === 0 ? '' : JSON.stringify(_PmOwnersDetailArr));
+    };
+
+    const LoadPmOwnersDetailData = function () {
+
+        $('#tblLoaderLine').show();
+
+        $.ajax({
+            url: `${baseUrl}/PmOwners/GetDetailAsync`,
+            method: 'GET',
+            headers: {  'Authorization': `Bearer ${$_token}`  },
+            data: { id: primaryEntityKeyId }
+        }).done(function (data) {
+
+            _PmOwnersDetailArr = [...data.result.pmOwnersTaxesDetails];
+
+            tblLinesCounterIndex = 0;
+
+            $.each(_PmOwnersDetailArr, function (i, item) {
+                item.index = ++tblLinesCounterIndex;
+                item.id = item.id;
+                item.taxPercentage = item.taxPercentage;
+                item.pmActivityTypeLkpId = item.pmActivityTypeLkpId;
+                item.pmActivityTypeLkp = lang === 'ar-EG'?   item.fndPmActivityTypeLkp.nameAr :  item.fndPmActivityTypeLkp.nameEn  ;
+                item.rowStatus = NoActionStatus;
+                item.fndPmActivityTypeLkp = null;
+            });
+
+            bindPmOwnersDetailTable();
+
+            _listPmOwnersDetail.val(JSON.stringify(_PmOwnersDetailArr));
+
+            $('#tblLoaderLine').hide();
+        });
+
+    };
+
+    const GetRow = function (tblIndex) {
+
+        clearFormAdding();
+
+        $('#btnAddPmOwnersDetailRow').hide();
+        $('#btnUpdatePmOwnersDetailRow').show();
+        $('#btnCancelPmOwnersDetailRow').show();
+
+        const current = _PmOwnersDetailArr.find(z => z.index === tblIndex);
+
+        let option = new Option(current.pmActivityTypeLkp, current.pmActivityTypeLkpId, true, true);
+
+        $(`#PmActivityTypeLkpId`).append(option).trigger('change');
+
+        $('#TaxPercentage').val(current.taxPercentage);
+
+        $('#TaxPercentage').parent('.form-line').addClass('focused');
+
+        updatedRow = current;
+    };
+
+    const clearFormAdding = function () {
+
+        $('#first select:not(.slct2gl)').val('').trigger('change');
+        $('#first .card input').val('');
+        $('#first .card textarea').val('');
+
+        $('#details .card input').val('');
+
+    };
+
+    const validateLinesWithParam = function (arr) {
+
+        const pmActivityTypeLkpId = $('#PmActivityTypeLkpId').find(':selected').val();
+
+        const current = arr.find(z => z.pmActivityTypeLkpId == pmActivityTypeLkpId);
+
+        if (current) {
+            toastr.warning('@PmOwners.PmActivityTypeLkpId' + ' : ' + '@ERP.ResourcePack.Common.Settings.NameExistBefore')
+            return false;
+        }
+
+        return true;
+    };
+
+    function printExc() {
+        $('.page-loader-wrapper').show();
+        $('#tblPmOwnersPrint_wrapper').parent().addClass('d-none');
+        const parmss = {
+            Id: $('#searchBox #OwnerName').find(':selected').val(),
+            HomePhoneNumber: $('#searchBox #HomePhoneNumber').val(),
+            StatusLkpId: $('#searchBox #StatusLkpId').find(':selected').val(),
+            IdNumber: $('#searchBox #IdNumber').val(),
+            CityLkpId: $('#searchBox #CityLkpId').find(':selected').val(),
+            NationalityLkpId: $('#searchBox #NationalityLkpId').find(':selected').val(),
+            length: 1000000
+        };
+
+        const columns = [
+            {
+                "data": "result.data.id",
+                'render': function (data, type, row, meta) {
+                    return meta.row + meta.settings._iDisplayStart + 1;
+                }
+            },
+            {
+                "data": "OwnerNumber",
+                "name": "OwnerNumber",
+                "autoWidth": true
+            },
+            {
+                "data": null,
+                "autoWidth": true,
+                "render": function (d, t, row) {
+
+                    if (lang === 'ar-EG') {
+                        return row.OwnerNameAr;
+
+                    }
+                    return row.OwnerNameEn;
+                }
+            },
+            {
+                "data": "HomePhoneNumber",
+                "name": "HomePhoneNumber",
+                "autoWidth": true
+            },
+            {
+                "data": null,
+                "autoWidth": true,
+                "render": function (d, t, row) {
+
+                    if (row.FndStatusLkp == null)
+                        return '';
+
+                    if (lang === 'ar-EG')
+                        return row.FndStatusLkp.NameAr;
+
+                    return row.FndStatusLkp.NameEn;
+                }
+            },
+            {
+                "data": null,
+                "autoWidth": true,
+                "render": function (d, t, row) {
+
+                    if (row.FndCityLkp == null)
+                        return '';
+
+                    if (lang === 'ar-EG')
+                        return row.FndCityLkp.NameAr;
+
+                    return row.FndCityLkp.NameEn;
+                }
+            },
+            {
+                "data": "IdNumber",
+                "name": "IdNumber",
+                "autoWidth": true
+            },
+            {
+                "data": null,
+                "autoWidth": true,
+                "render": function (d, t, row) {
+
+                    if (row.FndNationalityLkp == null)
+                        return '';
+
+                    if (lang === 'ar-EG')
+                        return row.FndNationalityLkp.NameAr;
+
+                    return row.FndNationalityLkp.NameEn;
+                }
+            }
+        ];
+
+        const dtObj = {
+            "language": dataTableLang,
+            "dom": 'Bfrtip',
+            "buttons": [
+                {
+                    extend: 'excel',
+                    messageTop: `${$('[for="OwnerName"]').text()}: ${(parmss.Id) ? parmss.Id : '--'}, ${$('#HomePhoneNumber').siblings().text()}: ${(parmss.HomePhoneNumber) ? parmss.HomePhoneNumber : '--'}, ${$('[for="StatusLkpId"]').text()}: ${(parmss.StatusLkpId) ? parmss.StatusLkpId : '--'}, ${$('#IdNumber').siblings().text()}: ${(parmss.IdNumber) ? parmss.IdNumber : '--'}, ${$('[for="CityLkpId"]').text()}: ${(parmss.CityLkpId) ? parmss.CityLkpId : '--'}, ${$('[for="NationalityLkpId"]').text()}: ${(parmss.NationalityLkpId) ? parmss.NationalityLkpId : '--'}`
+                },
+
+            ],
+            "ajax": {
+                "url": _loadDataUrl,
+                "type": "POST",
+                "datatype": "json",
+                "data": parmss,
+                "complete": function (d) {
+                    _tblLoader.hide();
+                }
+            },
+            "columns": columns,
+
+            "initComplete": function () {
+                $('#tblPmOwnersPrint_wrapper button.dt-button').click();
+                $('#tblPmOwnersPrint_wrapper').parent().addClass('d-none');
+
+            }
+        };
+
+        $('#tblPmOwnersPrint').dataTable().fnDestroy();
+        $('#tblPmOwnersPrint').DataTable(dtObj).on('buttons-processing', function (e, indicator) { if (!indicator) { $('.page-loader-wrapper').hide() } });
+
+
+    }
+
+</script>

@@ -1,0 +1,171 @@
+﻿@using ERP.ResourcePack.Sales
+@using ERP.ResourcePack.Sales
+
+<style>
+    .card .header {
+        background-color: #114d7d;
+        margin: 10px 10px 10px 10px;
+        border-radius: 30px;
+        padding: 0px 15px;
+        color: #fff;
+    }
+
+    .table-responsive{
+        overflow-x:hidden !important;
+    }
+</style>
+
+<div class="row clearfix">
+    <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+        <div class="header d-flex justify-content-start align-items-center" style="border-radius:6px; margin:10px 0px 10px 0px">
+            <i class="fas fa-2x fa-chevron-down down-arr mr-2" data-toggle="collapse" data-target=""></i>
+            <h2><strong>@IvSaleHd.SaleHdDetails</strong></h2>
+
+        </div>
+        <div class="">
+            <div class="" style="min-height: 255px;">
+                <div class="table-responsive" style="padding:7px">
+                    <table class="table table-bordered table-striped table-hover" id="tblSalesDetails" style="width:100%">
+                        <thead>
+                            <tr>
+                                <th><i class="fas fa-hashtag"></i></th>
+                                @*<th>@IvSaleHd.Itemcode</th>*@
+                                <th>@IvSaleHd.Itemname</th>
+                                <th>@IvSaleHd.Qtys</th>
+                                <th>@IvSaleHd.Avilablequantity</th>
+                                <th>@IvSaleHd.Unit</th>
+                                <th>@IvSaleHd.Unitprice</th>
+                                <th>@IvSaleHd.totbeforetax</th>
+                                <th>@IvSaleHd.Taxamount</th>
+                                <th>@IvSaleHd.Discount</th>
+                                @*<th>@IvSaleHd.totbeforetax</th>*@
+                                <th>@IvSaleHd.Totalamount</th>
+
+                                @*<th>@IvSaleHd.profit</th>*@
+                                <th><i class="fas fa-cog"></i></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        </tbody>
+                        <tfoot>
+
+                            @*<tr>
+                    <th colspan="8" style="text-align:right">@IvSaleHd.Invoicetotal</th>
+                    <th></th>
+                </tr>*@
+                        </tfoot>
+
+                    </table>
+                    <div class="row" style="padding-top: 80px;">
+                        <div class="col-md-3 p-r-3 p-l-1">
+
+                            <div class="wedgit" style="padding:1px 15px">
+                                <p>  @Html.Label("Total before Tax", new { @class = "form-label" })</p>
+
+                                <h5 id="TotalBeforeTax" style="color: black">0</h5>
+                            </div>
+
+                        </div>
+
+                        <div class="col-md-3 p-r-3 p-l-1">
+
+                            <div class="wedgit" style="padding:1px 15px">
+                                <p>  @Html.Label("Total Tax", new { @class = "form-label" })</p>
+
+                                <h5 id="TotalTax" style="color: #D75D4F">0</h5>
+                            </div>
+
+                        </div>
+
+                        <div class="col-md-3 p-r-3 p-l-1">
+
+                            <div class="wedgit" style="padding:1px 15px">
+                                <p>  @Html.Label("Total Discount", new { @class = "form-label" })</p>
+                                @*<h5 id="_Discount" style="color: #D75D4F">0</h5>*@
+                                <input type="number" id="_Discount" class="form-control" value="@ViewData["TotalDiscount"]"/>
+                                @*<h5 style="color: #2CC5E4 ">0</h5>*@
+                            </div>
+
+                        </div>
+
+                        <div class="col-md-3 p-r-3 p-l-1">
+
+                            <div class="wedgit" style="padding:1px 15px">
+                                <p>  @Html.Label("Delivery Charges", new { @class = "form-label" })</p>
+
+                                <input type="number" id="_DeliveryCharges" class="form-control" />
+                            </div>
+
+                        </div>
+
+                        <div class="col-md-3 p-r-3 p-l-1">
+
+                            <div class="wedgit" style="padding:1px 15px">
+                                <p>  @Html.Label("Total After Discount", new { @class = "form-label" })</p>
+
+                                <h5 id="finalTotal" style="color: #73B971">0</h5>
+                            </div>
+
+                        </div>
+
+
+                        <div class="col-md-3 p-r-3 p-l-1">
+
+                            <div class="wedgit" style="padding:1px 15px">
+                                <p>   @Html.Label("Paid Value", new { @class = "form-label" })</p>
+
+                                <input type="number" id="paidVal" class="form-control" />
+                                @*<h5 style="color: #2CC5E4 ">0</h5>*@
+                            </div>
+
+                        </div>
+
+                        <div class="col-md-3 p-r-3 p-l-1">
+
+                            <div class="wedgit" style="padding:1px 15px">
+                                <p> @Html.Label("Returned Value", new { @class = "form-label" })</p>
+                                <h5 id="returnValue" style="color: black" class="form-control">0</h5>
+                                
+                                @*<h5 style="color: #2CC5E4 ">0</h5>*@
+                            </div>
+
+                        </div>
+
+
+                    </div>
+
+
+                    <div class="row">
+                     
+
+
+                    </div>
+
+                    <div class="row">
+                        @*<div class="col-sm-4">
+                            <div class="form-group form-float">
+                                <div class="form-line">
+                                    <input type="number" id="_Discount" class="form-control" />
+                                    @Html.Label("Discount", new { @class = "form-label" })
+                                </div>
+                            </div>
+                        </div>*@
+
+                        @*<div class="col-sm-4">
+                            <div class="form-group form-float">
+                                <div class="form-line">
+                                    <input type="number" id="_DeliveryCharges" class="form-control" />
+                                    @Html.Label("Delivery Charges", new { @class = "form-label" })
+                                </div>
+                            </div>
+                        </div>*@
+
+                    </div>
+
+
+                </div>
+        </div>
+    </div>
+</div>
+
+

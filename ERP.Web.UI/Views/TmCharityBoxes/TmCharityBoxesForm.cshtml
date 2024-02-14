@@ -1,0 +1,120 @@
+﻿@using ERP.Web.UI.Models.ViewModels.CharityBoxes
+@model TmCharityBoxesVM
+@{
+    string formTrigger = ViewBag.trigger;
+    string lang = Request.Cookies["Lang"] == null ? "ar-EG" : Request.Cookies["Lang"].Value.ToString();
+    string lkpKeyDdl = "CharityBoxTypeName";
+
+}
+<div class="card">
+    <div class="body">
+        @using (Ajax.BeginForm( nameof(ERP.Web.UI.Controllers.CharityBoxes.TmCharityBoxesController.CreateOrUpdateTmCharityBoxes), "TmCharityBoxes",
+            new AjaxOptions { HttpMethod = "POST", OnBegin = "OnBegin", OnSuccess = "OnSuccess", OnComplete = "OnComplete", OnFailure = "OnFailure" }, new { @id = "mainForm" }))
+        {
+            @Html.HiddenFor(z => z.Id)
+            <div class="row clearfix">
+                <div class="col-sm-4">
+                    <div class="form-group form-float">
+                        <div class="form-line">
+                            @Html.TextBoxFor(z => z.CharityBoxNumber, new { @class = "form-control", @disabled = true })
+                            @Html.LabelFor(z => z.CharityBoxNumber, new { @class = "form-label" })
+                        </div>
+                    </div>
+                </div>
+                <div class="col-sm-4">
+                    <div class="form-group form-float">
+                        <div class="form-line">
+                            @Html.TextBoxFor(z => z.CharityBoxName, new { @class = "form-control", @disabled = true })
+                            @Html.LabelFor(z => z.CharityBoxName, new { @class = "form-label" })
+                        </div>
+                    </div>
+                </div>
+                <div class="col-sm-4">
+                    <div class="form-group form-float">
+                        <div class="form-line">
+                            @Html.TextBoxFor(z => z.CharityBoxBarcode, new { @class = "form-control", @disabled = true })
+                            @Html.LabelFor(z => z.CharityBoxBarcode, new { @class = "form-label" })
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row clearfix">
+                <div class="col-sm-4">
+                    <div class="form-group form-float">
+                        <div class="form-line">
+                            @Html.TextBoxFor(z => z.StatusLkpId, new { @class = "form-control", @disabled = true, @Value = (lang == "ar-EG" ? Model?.FndLookupValues?.NameAr : Model?.FndLookupValues?.NameEn) })
+                            @Html.LabelFor(z => z.StatusLkpId, new { @class = "form-label" })
+                        </div>
+                    </div>
+                </div>
+                <div class="col-sm-4">
+                    <div class="form-group form-float">
+                        <div class="form-line">
+                            @Html.TextBoxFor(z => z.CharityTypeId, new { @class = "form-control", @disabled = true, @Value = Model?.CharityBoxesType?.CharityBoxTypeName })
+                            @Html.LabelFor(z => z.CharityTypeId, new { @class = "form-label" })
+                        </div>
+                    </div>
+                </div>
+                <div class="col-sm-4">
+                    <div class="form-group form-float">
+                        <div class="form-line">
+                            @Html.TextBoxFor(z => z.TmSupervisor.SupervisorName, new { @class = "form-control", @disabled = true, @Value = Model?.TmSupervisor?.SupervisorName })
+                            @Html.LabelFor(z => z.TmSupervisor.SupervisorName, new { @class = "form-label" })
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row clearfix">
+                <div class="col-sm-4">
+                    <div class="form-group form-float">
+                        <div class="form-line">
+                            @Html.TextBoxFor(z => z.TmSupervisor.SupervisorNumber, new { @class = "form-control", @disabled = true, @Value = Model?.TmSupervisor?.SupervisorNumber })
+                            @Html.LabelFor(z => z.TmSupervisor.SupervisorNumber, new { @class = "form-label" })
+                        </div>
+                    </div>
+                </div>
+                <div class="col-sm-4">
+                    <div class="form-group form-float">
+                        <div class="form-line">
+                            @Html.TextBoxFor(z => z.CityName, new { @class = "form-control", @disabled = true })
+                            @Html.LabelFor(z => z.CityName, new { @class = "form-label" })
+                        </div>
+                    </div>
+                </div>
+                <div class="col-sm-4">
+                    <div class="form-group form-float">
+                        <div class="form-line">
+                            @Html.TextBoxFor(z => z.RegionName, new { @class = "form-control", @disabled = true })
+                            @Html.LabelFor(z => z.RegionName, new { @class = "form-label" })
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row clearfix">
+                <div class="col-sm-4">
+                    <div class="form-group form-float">
+                        <div class="form-line">
+                            @Html.TextBoxFor(z => z.LocationName, new { @class = "form-control", @disabled = true })
+                            @Html.LabelFor(z => z.LocationName, new { @class = "form-label" })
+                        </div>
+                    </div>
+                </div>
+                <div class="col-sm-4">
+                    <div class="form-group form-float">
+                        <div class="form-line">
+                            @Html.TextBoxFor(z => z.SubLocationName, new { @class = "form-control", @disabled = true })
+                            @Html.LabelFor(z => z.SubLocationName, new { @class = "form-label" })
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row clearfix">
+                <div class="form-group text-center form-float">
+                    <div id="submitLoader" style="display:none">
+                        <div class="lds-roller"><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div></div>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>

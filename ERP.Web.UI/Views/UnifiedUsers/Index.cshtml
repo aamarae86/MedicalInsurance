@@ -1,0 +1,14 @@
+﻿@{
+    ViewBag.Title = ERP.ResourcePack.AidModule.FndUsers.Title;
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@Html.Action(nameof(ERP.Web.UI.Controllers.AidModule.UnifiedUsersController.UnifiedUsersSearch))
+@Html.Action(nameof(ERP.Web.UI.Controllers.AidModule.UnifiedUsersController.UnifiedUsersData))
+
+@section scripts{
+    <script>
+        $('#creatorBox').remove();
+    </script>
+    @Html.Partial("~/ViewsScripts/_AidModule/FndUsers/FndUsersScripts.cshtml")
+}

@@ -1,0 +1,272 @@
+﻿@using ERP.Authorization;
+@using ERP.Web.UI.Controllers.CharityBoxes
+@using ERP.ResourcePack.CharityBoxes
+@{
+    string permissionsStr = TempData["Permissions"].ToString();
+    string encShowTrigger = ERP.Front.Helpers.Enums.Common.EncShow;
+}
+
+    <script>
+    const _mainController = "TmCharityBoxes"
+
+    $(function () {
+        LoadDataGrid();
+    });
+
+    const _loadDataUrl = `${$PrefixHostName}/${_mainController}/@nameof(TmCharityBoxesController.LoadDataGrid)`;
+    const _tblSelector = $('#tblTmCharityBoxes');
+    const _tblLoader = $('#tblLoader');
+    const _txtStatusLkpId = $('#searchBox #StatusLkpIdSearch');
+    const _txtCharityTypeId = $('#searchBox #CharityTypeIdSearch');
+    const _txtCharityBoxName = $('#searchBox #CharityBoxName');
+    const _txtCharityBarcode = $('#searchBox #CharityBoxBarcode');
+
+    @*const _PostStatus = @Convert.ToInt64(ERP.Front.Helpers.Enums.Common.TmCharityBoxes.Posted);*@
+
+    const _permissions = '@permissionsStr';
+    const _updatePermission = '@PermissionNames.Pages_TmCharityBoxes_Update';
+    const _deletePermission = '@PermissionNames.Pages_TmCharityBoxes_Delete';
+
+    var OnBegin = function (response) {
+        fireBtnLoader();
+    };
+
+    var OnSuccess = function (response) {
+
+        if (response.success) {
+
+            if (response.customRestResult.trigger === '@ERP.Front.Helpers.Enums.Common.FormTriggers.Insert') {
+
+                toastr.success(response.customRestResult.message);
+
+                LoadDataGrid();
+
+                _mainModal.modal('hide');
+
+            } else if (response.customRestResult.trigger === '@ERP.Front.Helpers.Enums.Common.FormTriggers.Update') {
+
+                LoadDataGrid();
+
+                _mainModal.modal('hide');
+
+                toastr.success(response.customRestResult.message);
+            }
+
+        } else {
+            toastr.error(response.customRestResult.message);
+        }
+
+    };
+
+    var OnComplete = function (response) {
+
+        downBtnLoader();
+    };
+
+    var OnFailure = function (response) {
+        toastr.error(response);
+        console.log(response);
+        downBtnLoader();
+    };
+
+    const LoadDataGrid = function () {
+
+        $('#tblLoader').show();
+
+        const parms = {
+            CharityBoxName: _txtCharityBoxName.val(),
+            CharityBoxBarcode: _txtCharityBarcode.val(),
+            StatusLkpIdSearch: _txtStatusLkpId.val(),
+            CharityTypeId: _txtCharityTypeId.val()
+        };
+
+        const columns = [
+            {
+                "data": "result.data.id",
+                'render': function (data, type, row, meta) {
+                    return meta.row + meta.settings._iDisplayStart + 1;
+                }
+            },
+            {
+                "data": "@nameof(TmCharityBoxes.CharityBoxNumber)",
+                "name": "Id",
+                "autoWidth": true
+            },
+            {
+                "data": "@nameof(TmCharityBoxes.CharityBoxName)",
+                "name": "@nameof(TmCharityBoxes.CharityBoxName)",
+                "autoWidth": true
+            },
+            {
+                "data": "@nameof(TmCharityBoxes.CharityBoxBarcode)",
+                "name": "@nameof(TmCharityBoxes.CharityBoxBarcode)",
+                "autoWidth": true
+            },
+            {
+                "data": null,
+                "name": "@nameof(TmCharityBoxes.StatusLkpId)",
+                "autoWidth": true,
+                "render": function (data, type, row) {
+                    if (!row.FndLookupValues) {
+                        return "";
+                    }
+                    if (lang === 'ar-EG')
+                        return row.FndLookupValues.NameAr;
+                    return row.FndLookupValues.NameEn;
+                }
+            },
+            {
+                "data": null,
+                "name": "@nameof(TmCharityBoxes.CharityTypeId)",
+                "autoWidth": true,
+                "render": function (data, type, row) {
+                    if (!row.CharityBoxesType) {
+                        return "";
+                    }
+                    return row.CharityBoxesType.CharityBoxTypeName;
+                }
+            },
+            {
+                "data": null,
+                "name": "@nameof(TmCharityBoxes.TmSubLocationId)",
+                "autoWidth": true,
+                "render": function (data, type, row) {
+                    if (!row.SubLocationName) {
+                        return "";
+                    }
+                    var loc = `${row.CityName} - ${row.RegionName} - ${row.LocationName} - ${row.SubLocationName}`;
+                    return loc;
+                }
+            },
+            {
+                "data": null,
+                "sortable": false,
+                "render": function (data, type, row) {
+
+                    let formAction = `${$PrefixHostName}/${_mainController}/@nameof(TmCharityBoxesController.TmCharityBoxesForm)`;
+                    let DeleteAction = `${$PrefixHostName}/${_mainController}/@nameof(TmCharityBoxesController.Delete)`;
+
+                    let formTitle = '@TmCharityBoxes.Title',btns = '';
+
+                    btns += `<a href="${$PrefixHostName}/TmCharityBoxes/FormView?id=${row.EncId}&t=@encShowTrigger" title="@ERP.ResourcePack.Common.Settings.Show"><i class="mx-2 fas fa-eye text-info"></i></a>`;
+
+                    const _auditedPermission = '@PermissionNames.Pages_TmCharityBoxes_Audit';
+
+                    if (_permissions.includes(_auditedPermission)) {
+
+                        row.permission = _auditedPermission;
+
+                        btns += GetAuditedButton(row);
+                    }
+
+                    return btns;
+                }
+            }
+        ];
+
+        const dtObj = {
+            "processing": true,
+            "serverSide": true,
+            "filter": false,
+            "orderMulti": false,
+            "language": dataTableLang,
+            "ajax": {
+                "url": _loadDataUrl,
+                "type": "POST",
+                "datatype": "json",
+                "data": parms,
+                "complete": function () {
+                    _tblLoader.hide();
+                }
+            },
+            "columns": columns,
+            "initComplete": function () {
+                $('[data-toggle="tooltip"]').tooltip();
+            }
+        };
+
+        _tblSelector.dataTable().fnDestroy();
+        _tblSelector.DataTable(dtObj).on('draw', function () { $('[data-toggle="tooltip"]').tooltip(); });
+
+    };
+
+    $(document).ready(function () {
+        $('#TmCharityBoxes').addClass('active');
+    });
+    $('#searchBox #CharityTypeIdSearch').select2(ReturnSelect2ObjectDefault(`${baseUrl}/TmCharityBoxesType/GetSelect2`));
+    $('#searchBox #StatusLkpIdSearch').select2(ReturnSelect2ObjectForLkpsTypes('@ERP.Front.Helpers.Enums.Common.FndLkpsTypes.TmCharityBoxesStatus.ToString()'));
+    </script>
+
+<script>
+
+    const _tblTmCharityBoxesDetailSelector = $('#tblTmCharityBoxesDetail');
+    const _tblTmCharityBoxesDetailSelectorBody = $('#tblTmCharityBoxesDetail tbody');
+    const _listTmCharityBoxesDetail = $('#ListTmCharityBoxesDetail');
+
+    let _TmCharityBoxesDetailArr = [], tblLinesCounterIndex = 0 , updatedRow;
+
+    const bindTmCharityBoxesDetailTable = function () {
+
+        const detailArr = _TmCharityBoxesDetailArr;
+
+        const columns = [
+            { 'data': 'index' },
+            {
+                "data": "TransType",
+                "name": "TransType",
+                "autoWidth": true
+            },
+            {
+                "data": "TransDate",
+                "name": "TransDate",
+                "autoWidth": true
+            },
+            { 'data': 'LocationName' }
+        ];
+
+        const dtObj = {
+            data: detailArr,
+            retrieve: true,
+            language: dataTableLang,
+            columns: columns,
+            drawCallback: function (c, v, b) { }
+        };
+
+        setTimeout(function () {
+            _tblTmCharityBoxesDetailSelector.DataTable().clear().destroy();
+            _tblTmCharityBoxesDetailSelector.DataTable(dtObj).on('draw', function () { $('[data-toggle="tooltip"]').tooltip(); });
+
+        }, 100);
+    };
+
+    const LoadTmCharityBoxesDetailData = function () {
+
+        $('#tblLoaderLine').show();
+
+        $.ajax({
+            url: `${baseUrl}/TmCharityBoxes/GetTmCharityBoxesTrans`,
+            method: 'GET',
+            headers: { 'Authorization': `Bearer ${$_token}` },
+            data: { id: primaryEntityKeyId, lang: lang }
+        }).done(function (data) {
+
+            _TmCharityBoxesDetailArr = [...data.result];
+
+            tblLinesCounterIndex = 0;
+
+            $.each(_TmCharityBoxesDetailArr, function (i, item) {
+                item.index = ++tblLinesCounterIndex;
+                item.TransType = item.transType;
+                item.TransDate = item.transDateStr;
+                item.LocationName = item.locationName;
+            });
+
+            bindTmCharityBoxesDetailTable();
+
+            _listTmCharityBoxesDetail.val(JSON.stringify(_TmCharityBoxesDetailArr));
+
+            $('#tblLoaderLine').hide();
+        });
+
+    };
+</script>

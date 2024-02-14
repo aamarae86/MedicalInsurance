@@ -1,0 +1,27 @@
+﻿
+@{
+    ViewBag.Title = "Test";
+}
+
+
+<h2>Test</h2>
+<button type="submit" onclick="alert('')" id="search" style="width:40%" form="popupForm">طباعه</button>
+
+<a href="javascript:void(0)" class="btn btn-danger btn-border-radius" onclick="return print()" role="button" aria-haspopup="true" aria-expanded="false">
+    @ERP.ResourcePack.Common.Settings.BtnClear
+</a>
+
+
+@Html.Partial("_ReportModal")
+
+<script>
+      var reportUri = '@Url.Action("Testrpt", "Reports")';
+    function print() {
+      var data = {
+                    Id: 2
+        };
+
+        openModal(data, reportUri);
+
+      }
+</script>

@@ -1,0 +1,131 @@
+﻿@using ERP.Web.UI.Models.ViewModels.Sales
+
+@using ERP.ResourcePack.Sales
+
+@model IvSaleHdVM
+@{
+    string formTrigger = ViewBag.trigger;
+    string lang = Request.Cookies["Lang"] == null ? "ar-EG" : Request.Cookies["Lang"].Value.ToString();
+    bool isFormDetail = Model != null && formTrigger == ERP.Front.Helpers.Enums.Common.FormTriggers.Show.ToString();
+
+}
+
+
+<style>
+    .ArCustomerId {     
+        top: auto !important;
+    }
+
+
+</style>
+
+<div class="card">
+    <div class="body" style="padding-bottom:30px">
+
+        <div>
+            <div class="header d-flex justify-content-start align-items-center" style="border-radius:6px; margin:10px -11px 10px -10px">
+                <i class="fas fa-2x fa-chevron-down down-arr mr-2" data-toggle="collapse" data-target=""></i>
+                <h2><strong>@IvSaleHd.Orders</strong> -  @IvSaleHd.Data</h2>
+
+            </div>
+            <div class="col-sm-12">
+                <div class="form-group form-float">
+                    <div class="form-line">
+                        @Html.TextBoxFor(z => z.ItemBarcode, getHtmlAttributes(isFormDetail, "form-control", string.Empty))
+                        @Html.LabelFor(z => z.ItemBarcode, new { @class = "form-label" })
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-12" hidden>
+                <div class="form-group form-float">
+                    <div class="form-line">
+                        @Html.TextBoxFor(z => z.IvItemName, getHtmlAttributes(isFormDetail, "form-control", string.Empty))
+                        @Html.LabelFor(z => z.IvItemName, new { @class = "form-label" })
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-sm-12">
+                <div class="form-group form-float">
+                    <div class="form-line">
+                        @Html.DropDownListFor(z => z.IvItemId, Enumerable.Empty<SelectListItem>(), new { @class = "form-control ArCustomerId" })
+                        @Html.LabelFor(z => z.IvItemName, new { @class = "form-label ArCustomerId" })
+                    </div>
+                </div>
+            </div>
+            <div class="row clearfix" style="margin:15px">
+
+                @if (formTrigger == ERP.Front.Helpers.Enums.Common.FormTriggers.Show.ToString())
+                {
+
+                    <a href="~/IvPosHd" class="btn btn-danger btn-lg m-l-15 waves-effect">CANCEL</a>
+
+                    <button type="button" onclick="Print()" class="btn btn-info btn-lg m-l-15 waves-effect">
+                        PRINT
+                    </button>
+
+
+
+
+
+                }
+                else if (Model != null && Model.Id != null && Model.Id > 0)
+                {
+
+
+                    <button type="button" id="save1" onclick="Save()" class="btn btn-info btn-lg m-l-15 waves-effect">
+                        POST
+                    </button>
+                    <a href="~/IvPosHd" class="btn btn-danger btn-lg m-l-15 waves-effect">New</a>
+
+
+                }
+                else
+                {
+                    <button type="button" id="save2" onclick="Save()" style="margin-top:16px; width:90%" class="btn btn-success btn-lg m-l-15 waves-effect">
+                        POST
+                    </button>
+
+
+
+
+                    <button type="button" onclick="Print()" style="width:90%; margin-top:10px" class="btn btn-info btn-lg m-l-15 waves-effect">
+                        PRINT
+                    </button>
+
+                }
+            </div>
+
+            <div class="col-sm-12" id="CreditCardRefDiv" style="padding-top: 7px;">
+                <div class="form-group form-float">
+                    <div class="form-line">
+                        @Html.TextBoxFor(z => z.CreditCardRef, getHtmlAttributes(isFormDetail, "form-control", string.Empty))
+                        <button type="button"  onclick="updateCreditCardRef()" class="btn btn-info center" style="margin:10px;">
+                            UPDATE
+                        </button>
+                        <label for="CreditCardRef" class="form-label">Credit Card Referance</label>
+                    </div>
+                </div>
+                
+            </div>
+
+
+
+
+
+        </div>
+
+
+
+    </div>
+</div>
+@functions {
+    object getHtmlAttributes(bool Disabled, string CssClass, string CssClass2)
+    {
+        if (Disabled)
+        {
+            return new { @class = CssClass, Disabled = Disabled };
+        }
+        return new { @class = $"{CssClass} {CssClass2}" };
+    }
+}

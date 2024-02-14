@@ -1,0 +1,309 @@
+﻿@using ERP.Web.UI.Controllers.Warehouses
+@using ERP.Authorization;
+@{
+    //string permissionsStr = TempData["Permissions"].ToString();
+}
+<script>
+    const _mainController = "Reports"
+
+    $(function () {
+        $('#ItemSalesAnalysisReport').addClass('active');
+    });
+
+    $('#IvItemsTypesConfigureId').select2(ReturnSelect2ObjectDefault(`${baseUrl}/IvItemsTypesConfigure/GetIvItemsTypesConfigureWithParentSelect2`));
+    $('#IvItemId').select2(ReturnSelect2ObjectDefault(`${baseUrl}/IvItems/GetSelect2`));
+    
+
+
+    const _loadDataUrl = `${$PrefixHostName}/${_mainController}/@nameof(ERP.Web.UI.Controllers.Reports.ReportsController.ItemSalesAnalysisReportSearch)`;
+    const _tblSelector = $('#tblDetails');
+
+
+   
+
+    var OnBegin = function (response) {
+        fireBtnLoader();
+    };
+
+    var OnSuccess = function (response) {
+
+        if (response.success) {
+
+            if (response.customRestResult.trigger === '@ERP.Front.Helpers.Enums.Common.FormTriggers.Insert') {
+
+                toastr.success(response.customRestResult.message);
+
+                LoadDataGrid();
+
+                _mainModal.modal('hide');
+
+            } else if (response.customRestResult.trigger === '@ERP.Front.Helpers.Enums.Common.FormTriggers.Update') {
+
+                LoadDataGrid();
+
+                _mainModal.modal('hide');
+
+                toastr.success(response.customRestResult.message);
+            }
+
+        } else {
+               toastr.error(response.customRestResult.message);
+        }
+    };
+
+    var OnComplete = function (response) {
+        downBtnLoader();
+    };
+
+    var OnFailure = function (response) {
+        toastr.error(response);
+        downBtnLoader();
+    };
+
+    const LoadDataGrid = function () {
+
+        const parms = {
+
+            TrItemId: $('#IvItemId').val(),
+            IvItemsTypesConfigureId: $('#IvItemsTypesConfigureId').val(),
+            FromDate: $('#fromDate').val(),
+            ToDate: $('#toDate').val()
+        };
+
+        const columns = [
+            //{
+            //    "data": "Serial",
+            //    "name": "Serial",
+            //    "autoWidth": true
+            //},
+            {
+                "data": "result.data.id",
+                'render': function (data, type, row, meta) {
+                    return meta.row + meta.settings._iDisplayStart + 1;
+                }
+            },
+            {
+                "data": "ItemNumber",
+                "name": "ItemNumber",
+                "autoWidth": true
+            },
+            {
+                "data": "ItemName",
+                "name": "ItemName",
+                "autoWidth": true
+            },
+            {
+                "data": "TotalQtySold",
+                "name": "TotalQtySold",
+                "autoWidth": true
+            },
+           
+            {
+                'data': 'TotalValue',
+                "render": $.fn.dataTable.render.number(',', '.', 2),
+            },
+
+            
+            {
+                'data': 'TotalCost',
+                "render": $.fn.dataTable.render.number(',', '.', 2),
+            },
+            
+            {
+                'data': 'NetProfit',
+                "render": $.fn.dataTable.render.number(',', '.', 2),
+            } 
+
+
+        ];
+
+        const dtObj = {
+
+            "footerCallback": function (row, data, start, end, display) {
+                var api = this.api(), data;
+
+                // converting to interger to find total
+                var intVal = function (i) {
+                    return typeof i === 'string' ?
+                        i.replace(/[\$,]/g, '') * 1 :
+                        typeof i === 'number' ?
+                            i : 0;
+                };
+
+                // computing column Total of the complete result
+                var GTotal = data[0]?.GTotalValue;
+                var GCost = data[0]?.GTotalCost;
+                var GProfit = data[0]?.TotalProfit;
+                    //api
+                    //.column(7)
+                    //.data()
+                    //.reduce(function (a, b) {
+                    //    return intVal(a) + intVal(b);
+                    //}, 0);
+
+               
+
+                // Update footer by showing the total with the reference of the column index
+                $(api.column().footer()).html('Total :');
+                $(api.column(4).footer()).html(GTotal?.toFixed(2));
+                $(api.column(5).footer()).html(GCost?.toFixed(2));
+                $(api.column(6).footer()).html(GProfit?.toFixed(2));
+              
+            },
+
+            //'columnDefs': [
+            //    { className: 'text-center', targets: [0,2,4,6,8,10,12,14,16,18,20,22,24] },
+            //    { className: 'text-right', targets:  [3,5,7,9,11,13,15,17,19,21,23,25] },
+            //    //{
+            //    //    "targets": 0, // your case first column
+            //    //    "className": "text-center",
+            //    //    "width": "4%"
+            //    //},
+            //    //{
+            //    //    "targets": 2,
+            //    //    "className": "text-right",
+            //    //}
+            //],
+
+            "processing": true,
+            "serverSide": true,
+            "filter": false,
+            "orderMulti": false,
+            "language": dataTableLang,
+            "ajax": {
+                "url": _loadDataUrl,
+                "type": "POST",
+                "datatype": "json",
+                "data": parms,
+                "complete": function () { }
+            },
+            "columns": columns,
+            "initComplete": function () {
+                $('[data-toggle="tooltip"]').tooltip();
+            }
+
+        };
+
+        _tblSelector.dataTable().fnDestroy();
+        _tblSelector.DataTable(dtObj).on('draw', function () { $('[data-toggle="tooltip"]').tooltip(); });
+
+
+    };
+
+    function printExc() {
+        $('.page-loader-wrapper').show();
+        //$('#tblDetails').parent().addClass('d-none');
+
+        const parmss = {
+            TrItemId: $('#IvItemId').val(),
+            IvItemsTypesConfigureId: $('#IvItemsTypesConfigureId').val(),
+            FromDate: $('#fromDate').val(),
+            ToDate: $('#toDate').val(),
+            length: 1000000
+        };
+        const columns = [
+            {
+                "data": "result.data.id",
+                'render': function (data, type, row, meta) {
+                    return meta.row + meta.settings._iDisplayStart + 1;
+                }
+            },
+            {
+                "data": "ItemNumber",
+                "name": "ItemNumber",
+                "autoWidth": true
+            },
+            {
+                "data": "ItemName",
+                "name": "ItemName",
+                "autoWidth": true
+            },
+            {
+                "data": "TotalQtySold",
+                "name": "TotalQtySold",
+                "autoWidth": true
+            },
+
+            {
+                'data': 'TotalValue',
+                "render": $.fn.dataTable.render.number(',', '.', 2),
+            },
+
+
+            {
+                'data': 'TotalCost',
+                "render": $.fn.dataTable.render.number(',', '.', 2),
+            },
+
+            {
+                'data': 'NetProfit',
+                "render": $.fn.dataTable.render.number(',', '.', 2),
+            }
+
+
+        ];
+
+        const dtObj1 = {
+            "footerCallback": function (row, data, start, end, display) {
+                var api = this.api(), data;
+                // converting to interger to find total
+                var intVal = function (i) {
+                    return typeof i === 'string' ?
+                        i.replace(/[\$,]/g, '') * 1 :
+                        typeof i === 'number' ?
+                            i : 0;
+                };
+                // computing column Total of the complete result
+                var GTotal = data[0]?.GTotalValue;
+                var GCost = data[0]?.GTotalCost;
+                var GProfit = data[0]?.TotalProfit;
+                //api
+                //.column(7)
+                //.data()
+                //.reduce(function (a, b) {
+                //    return intVal(a) + intVal(b);
+                //}, 0);
+                // Update footer by showing the total with the reference of the column index
+                $(api.column().footer()).html('Total :');
+                $(api.column(4).footer()).html(GTotal?.toFixed(2));
+                $(api.column(5).footer()).html(GCost?.toFixed(2));
+                $(api.column(6).footer()).html(GProfit?.toFixed(2));
+
+            },
+            "language": dataTableLang,
+            "dom": 'Bfrtip',
+            "buttons": [
+                {
+                    extend: 'excel',
+                    footer: true,
+
+                },
+
+            ],
+            "ajax": {
+                "url": _loadDataUrl,
+                "type": "POST",
+                "datatype": "json",
+                "data": parmss,
+                "complete": function (d) {
+                    $('.page-loader-wrapper').hide()
+                }
+            },
+            "columns": columns,
+
+            "initComplete": function () {
+                $('button.buttons-excel').hide();
+                $('button.buttons-excel').click();
+                $('#tblDetailsPrint').parent().addClass('d-none');
+
+            }
+        };
+
+        $('#tblDetailsPrint').dataTable().fnDestroy();
+        $('#tblDetailsPrint').DataTable(dtObj1).on('buttons-processing', function (e, indicator) { if (!indicator) { $('.page-loader-wrapper').hide() } });
+
+    }
+
+</script>
+
+

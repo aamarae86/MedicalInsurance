@@ -1,0 +1,225 @@
+﻿@model ERP.Web.UI.Models.ViewModels.Sales.IvSaleHdVM
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Moone_Invoice</title>
+    <style>
+        body {
+            page-break-after: always;
+            font-size: small;
+        }
+        img {
+            width: 150px;
+        }
+
+        .Contact-Num {
+            text-align: center;
+            font-size: medium;
+            font-weight: bold;
+        }
+
+        .DateTime {
+            text-align: center;
+            margin-right: 9%;
+            margin-top: 1%;
+        }
+
+        .Invoice {
+            font-weight: bold;
+            text-align: center;
+            margin-left: 24%;
+            margin-top: 3%;
+        }
+
+        .table {
+            direction: rtl;
+            width: 100%;
+            border-collapse: collapse;
+            border: 1px solid;
+
+        }
+
+        /*table {
+            width: 50%;
+        }*/
+
+        th,
+        td {
+            padding: 2px;
+            text-align: left;
+            border: 1px solid gray;
+        }
+
+
+        @@media print {
+           .PrintBtn {
+               display: none;
+            }           
+        }
+    </style>
+</head>
+
+<body onload="(function () { window.print() }).call(this)">
+    <div class="PrintBtn">
+        <button onclick="(function(){window.print(); return false;})();return false;" id="print">PRINT</button>
+    </div>
+    <div style="text-align: center; font-size:medium;">
+        <h3>
+            بيت المونة الجديد
+        </h3>
+        <h2 style="margin-bottom: 0px; font-size: medium;">
+            BAIT AL MOONE AL JADEED
+        </h2>
+    </div>
+
+    <div style="text-align: center;">
+        @*<img src="https://www.moonehouse.com/assets/global/new_img/Logo.png" alt="logo">*@
+        <img src="https://www.moonehouse.com/MooneHouseApi/ImagesFolders/whatsapp_min.jpg" alt="logo">
+
+    </div>
+
+    <div class="Contact-Num">
+        067454548-0508006423
+    </div>
+
+    <div>
+        @Model.CreationTimeStr
+    </div>
+
+    <div>
+        INV #  @Model.IvSaleNumber
+    </div>
+
+    <div>
+        Customer # @(Model.ArCustomers!=null?Model.ArCustomers.CustomerNameEn:"")
+    </div>
+
+    @*<div class="DateTime">
+            p 26:09:2023/02/10
+        </div>*@
+
+    @*<div>
+            <h3 class="Invoice">
+                فاتورة بيع
+            </h3>
+        </div>*@
+
+
+    <div style="text-align: center;">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th style="text-align: center;">
+                        إجمالي
+                    </th>
+                    <th style="text-align: center;">
+                        أسم المادة
+                    </th>
+                    <th style="text-align: center;">
+                        كمية
+                    </th>
+                    <th style="text-align: center;">
+                        إفرادي
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model.IvSaleTrList)
+                {
+                    <tr>
+                        <td style="text-align: center;">
+                            @(item.UnitPrice * @item.Qty)
+                        </td>
+                        <td style="text-align: right;">
+                            @item.ItemName
+                        </td>
+                        <td style="text-align: center;">
+                            @item.Qty
+                        </td>
+                        <td style="text-align: center;">
+                            @item.UnitPrice
+                        </td>
+
+                    </tr>
+                }
+
+
+
+
+
+
+                <tr>
+                    <td colspan="1" style="font-size: small">
+                        @Model.IvSaleTrList.Count
+                    </td>
+                    <td colspan="3" style="font-size: small">
+                        Items
+                    </td>
+                </tr>
+
+                <tr>
+                    <td colspan="1" style="font-size: small">
+                        @(Model.Discount)
+                    </td>
+                    <td colspan="3" style="font-size: small">
+                        Discount
+                    </td>
+
+                </tr>
+                <tr>
+                    <td colspan="1" style="font-size: small">
+                        @(Model.DeliveryCharges)
+                    </td>
+                    <td colspan="3" style="font-size: small">
+                        Delivery Charges
+                    </td>
+
+                </tr>
+                <tr>
+                    <td colspan="1" style="font-size: small" id="totalVal">
+                        @Model.Comments
+                    </td>
+                    <td colspan="3" style="font-size: small">
+                        FINAL TOTAL
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+        @*<div>
+                <h3 style="word-spacing: 50px; font-size: xx-small;">
+                    PAID 0
+                    REMAIN 1,260
+
+                </h3>
+            </div>*@
+    </div>
+
+    <div style="text-align: center;">
+        <span style="text-align: center; font-size: small; ">
+            SERVE BY
+        </span>
+
+        <span style="margin-left: 25%; font-size: small;">@Model.FndSalesMen.SalesManNameEn</span>
+
+    </div>
+
+    <div style="text-align: center;height:75px">
+        <span style="text-align: center; font-size: x-small; font-weight: bold; ">
+            KEEP INVOICE FOR CHECK
+        </span>
+    </div>
+
+    @*<div style="text-align: center;">
+            <span style="margin-left:35%; font-weight: bold; font-size: small;">NOTE</span>
+        </div>*@
+
+
+</body>
+
+</html>
+

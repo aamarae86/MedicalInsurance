@@ -1,0 +1,130 @@
+﻿@using ERP.Web.UI.Models.ViewModels.General
+@using ERP.Web.UI.Models.ViewModels.Warehouses
+@model PoPurchaseOrderVM
+@{
+    ViewBag.Title = ERP.ResourcePack.Warehouses.PoPurchaseOrder.Title;
+    string formTrigger = ViewBag.trigger;
+    string lang = Request.Cookies["Lang"] == null ? "ar-EG" : Request.Cookies["Lang"].Value.ToString();
+    string lkpKeyDdl = lang == "ar-EG" ? nameof(ERP.Web.UI.Models.ViewModels.Accounts.ApVendorsVM.VendorNameAr) : nameof(ERP.Web.UI.Models.ViewModels.Accounts.ApVendorsVM.VendorNameEn);
+    bool isFormDetail = (Model != null) && formTrigger == ERP.Front.Helpers.Enums.Common.FormTriggers.Show.ToString();
+}
+
+@using (Ajax.BeginForm(nameof(ERP.Web.UI.Controllers.Warehouses.PoPurchaseOrderController.CreateOrUpdatePoPurchaseOrder), "PoPurchaseOrder", new AjaxOptions { HttpMethod = "POST", OnBegin = "OnBegin", OnSuccess = "OnSuccess", OnComplete = "OnComplete", OnFailure = "OnFailure" }, new { @id = "mainForm" }))
+{
+    <ul class="mt-2 nav nav-tabs tab-nav-right" role="tablist">
+        <li role="presentation">
+            <a href="#first" data-toggle="tab" class="show active">@ERP.ResourcePack.Warehouses.PoPurchaseOrder.Title</a>
+        </li>
+        <li role="presentation">
+            <a href="#second" data-toggle="tab" class="show">@ERP.ResourcePack.Warehouses.PoPurchaseOrder.ConditionsForOrdering</a>
+        </li>
+    </ul>
+    <div class="tab-content">
+        <div role="tabpanel" class="tab-pane fade in active show" id="first">
+            @Html.HiddenFor(z => z.Id)
+            @Html.HiddenFor(z => z.StatusLkpId, new { @Value = 739 })
+            @Html.HiddenFor(z => z.ListPoPurchaseOrderDetails)
+            <div class="row clearfix">
+                <div class="col-sm-4">
+                    <div class="form-group form-float">
+                        <div class="form-line">
+                            @Html.TextBoxFor(z => z.PurchaseOrderNumber, getHtmlAttributes(true, "form-control", string.Empty))
+                            @Html.LabelFor(z => z.PurchaseOrderNumber, new { @class = "form-label" })
+                        </div>
+                    </div>
+                </div>
+                <div class="col-sm-4">
+                    <div class="form-group form-float">
+                        <div class="form-line">
+                            @Html.TextBoxFor(z => z.PurchaseOrderDate, getHtmlAttributes(isFormDetail, "form-control", "datepicker"))
+                            @Html.LabelFor(z => z.PurchaseOrderDate, new { @class = "form-label label-required" })
+                        </div>
+                        @Html.ValidationMessageFor(z => z.PurchaseOrderDate)
+                    </div>
+                </div>
+                <div class="col-sm-4">
+                    <div class="form-group form-float">
+                        <div class="form-line">
+                            @if (Model == null || (Model.StatusAr == null || Model.StatusAr == null))
+                            {
+                                @Html.TextBoxFor(z => z.Status, new { @class = "form-control", Disabled = true, @Value = @ERP.ResourcePack.Warehouses.PoPurchaseOrder.NewStatus })
+                                @Html.LabelFor(z => z.StatusLkpId, new { @class = "form-label" })
+                            }
+                            else if (lang == "ar-EG")
+                            {
+                                @Html.TextBoxFor(z => z.StatusAr, getHtmlAttributes(true, "form-control", string.Empty))
+                                @Html.LabelFor(z => z.StatusLkpId, new { @class = "form-label" })
+                            }
+                            else
+                            {
+                                @Html.TextBoxFor(z => z.StatusEn, getHtmlAttributes(true, "form-control", string.Empty))
+                                @Html.LabelFor(z => z.StatusLkpId, new { @class = "form-label" })
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row clearfix">
+                <div class="col-sm-4">
+                    @Html.LabelFor(z => z.IvWarehouseId, new { @class = "form-label label-required" })
+                    <div class="form-group form-float">
+                        @if (Model != null && Model.IvWarehouseName != null)
+                        {
+                            var list = new List<IvWarehousesVM> { new IvWarehousesVM { Id = (long)Model.IvWarehouseId, WarehouseName = Model.IvWarehouseName } };
+                            var selectList = new SelectList(list, "Id", nameof(IvWarehousesVM.WarehouseName), Model.IvWarehouseId);
+
+                            @Html.DropDownListFor(z => z.IvWarehouseId, selectList, getHtmlAttributes(isFormDetail, "form-control", string.Empty))
+                        }
+                        else
+                        {
+                            @Html.DropDownListFor(z => z.IvWarehouseId, Enumerable.Empty<SelectListItem>(), getHtmlAttributes(isFormDetail, "form-control", string.Empty))
+                        }
+                    </div>
+                    @Html.ValidationMessageFor(z => z.IvWarehouseId)
+                </div>
+                <div class="col-sm-4">
+                    @Html.LabelFor(z => z.VendorId, new { @class = "form-label label-required" })
+                    <div class="form-group form-float">
+                        @if (Model != null && (Model.VendorNameAr != null | Model.VendorNameEn != null))
+                        {
+                            var list = new List<ERP.Web.UI.Models.ViewModels.Accounts.ApVendorsVM> { new ERP.Web.UI.Models.ViewModels.Accounts.ApVendorsVM { Id = (long)Model.VendorId, VendorNameAr = Model.VendorNameAr,VendorNameEn=Model.VendorNameEn } };
+                            var selectList = new SelectList(list, "Id", lkpKeyDdl, Model.VendorId);
+
+                            @Html.DropDownListFor(z => z.VendorId, selectList, getHtmlAttributes(isFormDetail, "form-control", string.Empty))
+                        }
+                        else
+                        {
+                            @Html.DropDownListFor(z => z.VendorId, Enumerable.Empty<SelectListItem>(), getHtmlAttributes(isFormDetail, "form-control", string.Empty))
+                        }
+                    </div>
+                    @Html.ValidationMessageFor(z => z.VendorId)
+                </div>
+            </div>
+
+        </div>
+        <div role="tabpanel" class="tab-pane fade in" id="second">
+            <div class="row clearfix">
+                <div class="col-sm-12">
+                    <div class="form-group form-float">
+                        <div class="form-line">
+                            @Html.TextAreaFor(z => z.ConditionsForOrdering, getHtmlAttributes(isFormDetail, "form-control", string.Empty))
+                            @Html.LabelFor(z => z.ConditionsForOrdering, new { @class = "form-label" })
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@functions {
+    object getHtmlAttributes(bool Disabled, string CssClass, string CssClass2)
+    {
+        if (Disabled)
+        {
+            return new { @class = CssClass, Disabled = Disabled };
+        }
+        return new { @class = $"{CssClass} {CssClass2}" };
+    }
+}
+

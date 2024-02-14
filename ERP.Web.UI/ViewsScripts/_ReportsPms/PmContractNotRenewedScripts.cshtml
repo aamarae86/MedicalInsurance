@@ -1,0 +1,54 @@
+﻿<script>
+    $(function () {
+        $('#PmContractNotRenewed').addClass('active');
+    });
+
+    $('#PmUnitTypeLkpId').select2(ReturnSelect2ObjectForLkpsTypes('PmPropertiesUnitsUnitType'));
+    $('#PropertyId').select2(ReturnSelect2ObjectDefault(`${baseUrl}/PmProperties/GetPmPropertiesSelect2`));
+    $('#PMTenantId').select2(ReturnSelect2ObjectDefault(`${baseUrl}/PmTenants/GetPmTenantsSelect2`));
+
+    const PrintTmCharityBoxListReport = function () {
+
+        $('.page-loader-wrapper').css('display', 'block');
+
+        $.ajax({
+            url: `${$PrefixHostName}/ReportsPms/PrintPmContractNotRenewed`,
+            method: 'POST',
+            header: {
+                'Authorization':`bearer ${$_token}`
+            },
+            data: {
+                Lang: lang,
+                TenantId:@Session["TenantId"],
+                PMTenantId: $('#PMTenantId').val(),
+                PMTenantIdtxt: $('#PMTenantId').text(),
+                PmUnitTypeLkpId:$('#PmUnitTypeLkpId').val(),
+                PmUnitTypeLkpIdtxt:$('#PmUnitTypeLkpId').text(),
+                PropertyId: $('#PropertyId').val(),
+                PropertyIdtxt: $('#PropertyId').text()
+            }
+        }).done(function (data) {
+
+            if (data.length > 0) {
+                           
+              $('.page-loader-wrapper').css('display', 'none');
+                var src = formAction;
+
+              $('#bodyss').html('')
+              $('#bodyss').append('<iframe id="ifram1" style="width:100%;height:550px" src="' + src + '"></iframe>')
+              $('#model').modal('show');
+
+            }
+            else {
+                  $('.page-loader-wrapper').css('display', 'none');
+                  toastr.warning(NoData);
+            }
+
+        }).fail(function (response,x,r) {
+            toastr.error(response.responseText);
+        });
+
+    };
+
+
+</script>

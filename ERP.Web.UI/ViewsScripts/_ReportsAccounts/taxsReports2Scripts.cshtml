@@ -1,0 +1,51 @@
+﻿<script>
+
+
+    $('#ArCustomerId').select2(ReturnSelect2ObjectDefault(`${baseUrl}/ArCustomers/GetArCustomersSelect2`));
+
+    $(function () {
+        $('#taxsReports2').addClass('active');
+    });
+
+    const PrintTaxReports = function () {
+
+        $('.page-loader-wrapper').css('display', 'block');
+
+        $.ajax({
+            url: `${$PrefixHostName}/ReportsAccounts/PrintTax2Reports`,
+            method: 'POST',
+            header: {
+                'Authorization': `bearer ${$_token}`
+            },
+            data: {
+                fromDate: $('#fromDate').val(),
+                toDate: $('#toDate').val(),
+                Lang: lang,
+                ArCustomerId: $('#ArCustomerId').find(':selected').val(),
+                CustomerName: $('#ArCustomerId').find(':selected').text(),
+
+            }
+        }).done(function (data) {
+
+            if (data.length > 0) {
+
+                $('.page-loader-wrapper').css('display', 'none');
+                var src = formAction;
+
+                $('#bodyss').html('')
+                $('#bodyss').append('<iframe id="ifram1" style="width:100%;height:550px" src="' + src + '"></iframe>')
+                $('#model').modal('show');
+
+            }
+            else {
+                $('.page-loader-wrapper').css('display', 'none');
+                toastr.warning(NoData);
+            }
+
+        }).fail(function (response, x, r) {
+                $('.page-loader-wrapper').css('display', 'none');
+            toastr.error(response.responseText);
+        });
+    };
+
+</script>

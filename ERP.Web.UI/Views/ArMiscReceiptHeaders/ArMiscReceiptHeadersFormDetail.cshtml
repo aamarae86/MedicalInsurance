@@ -1,0 +1,122 @@
+﻿@using ERP.Web.UI.Models.ViewModels.Accounts
+@model ArMiscReceiptLinesVM
+@{
+    string formTrigger = ViewBag.trigger;
+    string lang = Request.Cookies["Lang"] == null ? "ar-EG" : Request.Cookies["Lang"].Value.ToString();
+    bool isFormDetail = Model != null && formTrigger == ERP.Front.Helpers.Enums.Common.FormTriggers.Show.ToString();
+}
+
+<div class="card" style="display:@(formTrigger ==ERP.Front.Helpers.Enums.Common.FormTriggers.Show.ToString() ? "none":"block" ) ">
+    <div class="body">
+        <div class="border-apply" style="padding:0rem 1rem;margin:1rem">
+            <div class="header d-flex justify-content-start align-items-center p-0">
+                <i class="fas fa-2x fa-chevron-down down-arr mr-2" data-toggle="collapse" data-target="#name"></i>
+                @ERP.ResourcePack.Accounts.ArMiscReceiptHeaders.Amount
+            </div>
+            <div class="collapse show" id="name">
+                <div class="row clearfix">
+
+                    <div class="col-md-4 ">
+                        <div class="form-group form-float">
+                            <div class="form-line">
+                                @Html.TextBoxFor(z => z.ManualReceiptNumberLines, getHtmlAttributes(isFormDetail, "form-control", string.Empty))
+                                @Html.LabelFor(z => z.ManualReceiptNumberLines, new { @class = "form-label" })
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-4">
+                        <div class="form-group form-float">
+                            <div class="form-line">
+                                @Html.TextBoxFor(z => z.MiscReceiptAmount, getHtmlAttributes(isFormDetail, "form-control currency", string.Empty))
+                                @Html.LabelFor(z => z.MiscReceiptAmount, new { @class = "form-label" })
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-4 ">
+                        <div class="form-group form-float">
+                            <div class="form-line">
+                                @Html.TextBoxFor(z => z.AdministrativePercent, getHtmlAttributes(isFormDetail, "form-control", string.Empty))
+                                @Html.LabelFor(z => z.AdministrativePercent, new { @class = "form-label" })
+                            </div>
+                        </div>
+                    </div>
+
+                    @*<div class="col-md-4">
+                        <div class="form-group form-float">
+                            <div class="form-line">
+                                @Html.TextBoxFor(z => z.CaseNumber, getHtmlAttributes(true, "form-control", string.Empty))
+                                @Html.LabelFor(z => z.CaseNumber, new { @class = "form-label" })
+                            </div>
+                        </div>
+                    </div>*@
+
+
+                </div>
+                <div class="row clearfix">
+                    <div class="col-md-12">
+                        <div class="form-group form-float">
+                            <div class="form-line">
+                                @Html.TextAreaFor(z => z.Notes, new { @class = "form-control" })
+                                @Html.LabelFor(z => z.Notes, new { @class = "form-label" })
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-3 d-none">
+                        @Html.LabelFor(z => z.SpContractDetailsId, new { @class = "form-label" })
+                        <div class="form-group form-float">
+                            <div>
+                                @Html.DropDownListFor(z => z.SpContractDetailsId, Enumerable.Empty<SelectListItem>(), new { @class = "form-control" })
+                            </div>
+                        </div>
+                    </div>
+
+                   
+                </div>
+            </div>
+        </div>
+        <div class="border-apply" style="padding:0rem 1rem;margin:1rem">
+            <div class="header d-flex justify-content-start align-items-center p-0">
+                <i class="fas fa-2x fa-chevron-down down-arr mr-2" data-toggle="collapse" data-target="#account1"></i>
+                @ERP.ResourcePack.Accounts.ArMiscReceiptHeaders.Account
+            </div>
+            <div class="collapse show" id="account1">
+                <div class="row">
+                    @Html.Action(nameof(ERP.Web.UI.Controllers.Accounts.GlAccDetailsController.DrawGlAccController), "GlAccDetails",
+                             new { glAccHeadersVMs = ViewData["ListGlAccHeadersVM"] == null ? new List<GlAccHeadersVM>() : ViewData["ListGlAccHeadersVM"] as List<GlAccHeadersVM>, repeatTrigger = "" })
+                </div>
+            </div>
+        </div>
+        <div class="border-apply" style="padding:0rem 1rem;margin:1rem">
+            <div class="header d-flex justify-content-start align-items-center p-0">
+                <i class="fas fa-2x fa-chevron-down down-arr mr-2" data-toggle="collapse" data-target="#account2"></i>
+                @ERP.ResourcePack.Accounts.ArMiscReceiptHeaders.AdminAccount
+            </div>
+            <div class="collapse show" id="account2">
+                <div class="row">
+                    @Html.Action(nameof(ERP.Web.UI.Controllers.Accounts.GlAccDetailsController.DrawGlAccController), "GlAccDetails",
+                             new { glAccHeadersVMs = ViewData["ListGlAccHeadersVM"] == null ? new List<GlAccHeadersVM>() : ViewData["ListGlAccHeadersVM"] as List<GlAccHeadersVM>, repeatTrigger = "admin" })
+                </div>
+            </div>
+        </div>
+        <div class="row clearfix">
+            <div class="col-sm-12 text-center">
+                <div class="form-group">
+                    <button id="btnAddLineRow" onclick="return AddMiscLines()" class="btn btn-success">@ERP.ResourcePack.Common.Settings.BtnAddNew</button>
+                    <button style="display:none;" id="btnUpdateLineRow" onclick="return UpdateMiscLineRow()" class="btn btn-info">@ERP.ResourcePack.Common.Settings.BtnUpdate</button>
+                    <button style="display:none;" id="btnCancelLineRow" onclick="clearFormAdding(); $('#btnCancelLineRow').hide();$('#btnUpdateLineRow').hide();$('#btnAddLineRow').show();" class="btn btn-danger">@ERP.ResourcePack.Common.Settings.BtnCancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@functions {
+    object getHtmlAttributes(bool Disabled, string CssClass, string CssClass2)
+    {
+        if (Disabled) return new { @class = CssClass, Disabled = Disabled };
+        return new { @class = $"{CssClass} {CssClass2}" };
+    }
+}

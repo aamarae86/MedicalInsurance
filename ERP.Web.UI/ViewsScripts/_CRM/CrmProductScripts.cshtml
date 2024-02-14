@@ -1,0 +1,257 @@
+﻿@using ERP.Authorization;
+@using ERP.Web.UI.Controllers.CRM
+@using ERP.ResourcePack.CRM.projects
+@{
+    string permissionsStr = TempData["Permissions"].ToString();
+}
+<script>
+    const _mainController = "CrmProducts"
+    const _apiAppService = "CrmProducts";
+    $(function () {
+
+        LoadDataGrid();
+        $('#tblCrmProductsPrint thead').html($('#tblCrmProducts thead').html());
+        $('#tblCrmProductsPrint thead tr :last-child').remove();
+       $('#CrmProducts').addClass('active');
+    });
+
+    const _loadDataUrl = `${$PrefixHostName}/${_mainController}/@nameof(CrmProductsController.LoadDataGrid)`;
+    const _tblSelector = $('#tblCrmProducts');
+
+    const _permissions = '@permissionsStr';
+    const _updatePermission = '@PermissionNames.Pages_CrmProducts_Update';
+    const _deletePermission = '@PermissionNames.Pages_CrmProducts_Delete';
+
+    var OnBegin = function (response) {
+      fireBtnLoader();
+    };
+
+    var OnSuccess = function (response) {
+
+        if (response.success) {
+
+            if (response.customRestResult.trigger === '@ERP.Front.Helpers.Enums.Common.FormTriggers.Insert') {
+
+                toastr.success(response.customRestResult.message);
+
+                LoadDataGrid();
+
+                _mainModal.modal('hide');
+
+            } else if (response.customRestResult.trigger === '@ERP.Front.Helpers.Enums.Common.FormTriggers.Update') {
+
+                LoadDataGrid();
+
+                _mainModal.modal('hide');
+
+                toastr.success(response.customRestResult.message);
+            }
+
+        } else {
+            toastr.error(response.customRestResult.message);
+        }
+
+    };
+
+    var OnComplete = function (response) {
+        downBtnLoader();
+    };
+
+    var OnFailure = function (response) {
+        downBtnLoader();
+    };
+
+    const LoadDataGrid = function () {
+
+        const parms = {
+
+            ProductName: $('#searchBox #ProductName').val(),
+
+        };
+
+        const columns = [
+            {
+                "data": "result.data.id",
+                'render': function (data, type, row, meta) {
+                    return meta.row + meta.settings._iDisplayStart + 1;
+                }
+            },
+            {
+                "data": "ProductNameAr",
+                "name": "ProductNameAr",
+                "autoWidth": true
+            },
+            {
+                "data": "ProductNameEn",
+                "name": "ProductNameEn",
+                "autoWidth": true
+            },
+            //{
+            //    "data": "IsActive",
+            //    "name": "IsActive",
+            //    "autoWidth": true
+            //},
+            {
+                "data": null,
+                "autoWidth": true,
+                "render": function (d, t, row) {
+                    if (row.IsActive && lang === 'ar-EG') {
+                        return 'نشط';
+                    } else if (!row.IsActive && lang === 'ar-EG') {
+                        return 'غير نشط';
+                    } else if (row.IsActive && lang === 'en-US') {
+                        return 'Active';
+                    } else {
+                        return 'In Active';
+                    }
+
+
+                }
+            },
+
+
+
+            {
+                "data": null,
+                "sortable": false,
+                "render": function (data, type, row) {
+
+                    let formAction = `${$PrefixHostName}/${_mainController}/@nameof(CrmProductsController.CrmProductsForm)`;
+                    let DeleteAction = `${$PrefixHostName}/${_mainController}/@nameof(CrmProductsController.Delete)`;
+
+                    let formTitle = '@projects.Title', btns = '';
+
+                    if (_permissions.includes(_updatePermission)) {
+                        btns += `<a href="javascript:void(0)" onclick="AjaxController.GetFormModal(${row.Id},'@ERP.Front.Helpers.Enums.Common.FormTriggers.Update','${formAction}','${formTitle}');" title="@ERP.ResourcePack.Common.Settings.Edit"><i class="mx-2 fas fa-edit text-info"></i></a>`;
+                    }
+
+                    btns += `<a href="javascript:void(0)" onclick="AjaxController.GetFormModal(${row.Id},'@ERP.Front.Helpers.Enums.Common.FormTriggers.Show','${formAction}','${formTitle}');" title="@ERP.ResourcePack.Common.Settings.Show"><i class="mx-2 fas fa-eye text-info"></i></a>`;
+
+                    if (_permissions.includes(_deletePermission)) {
+                        btns += `<a href="javascript:void(0)" onclick="AjaxController.DeleteMainTableRow(${row.Id},'${DeleteAction}');" title="@ERP.ResourcePack.Common.Settings.Delete"><i class="mx-2 fas fa-trash-alt text-danger"></i></a>`;
+                    }
+
+                    const _auditedPermission = '@PermissionNames.Pages_CrmProducts_Audit';
+
+                    if (_permissions.includes(_auditedPermission)) {
+
+                        row.permission = _auditedPermission;
+
+                        btns += GetAuditedButton(row);
+                    }
+
+                    return btns;
+                }
+            }
+        ];
+
+        const dtObj = {
+            "processing": true,
+            "serverSide": true,
+            "filter": false,
+            "orderMulti": false,
+            "language": dataTableLang,
+            "ajax": {
+                "url": _loadDataUrl,
+                "type": "POST",
+                "datatype": "json",
+                "data": parms,
+                "complete": function () { }
+            },
+            "columns": columns,
+            "initComplete": function () {
+                $('[data-toggle="tooltip"]').tooltip();
+            }
+        };
+
+        _tblSelector.dataTable().fnDestroy();
+        _tblSelector.DataTable(dtObj).on('draw', function () { $('[data-toggle="tooltip"]').tooltip(); });
+
+    };
+
+
+    function printExc() {
+        $('.page-loader-wrapper').show();
+        $('#tblCrmProductsPrint_wrapper').parent().addClass('d-none');
+        const parmss = {
+            ProductName: $('#searchBox #ProductName').val(),
+            length: 1000000
+        };
+
+        const columns = [
+            {
+                "data": "result.data.id",
+                'render': function (data, type, row, meta) {
+                    return meta.row + meta.settings._iDisplayStart + 1;
+                }
+            },
+            {
+                "data": "ProductNameAr",
+                "name": "ProductNameAr",
+                "autoWidth": true
+            },
+            {
+                "data": "ProductNameEn",
+                "name": "ProductNameEn",
+                "autoWidth": true
+            },
+            //{
+            //    "data": "IsActive",
+            //    "name": "IsActive",
+            //    "autoWidth": true
+            //},
+            {
+                "data": null,
+                "autoWidth": true,
+                "render": function (d, t, row) {
+                    if (row.IsActive && lang === 'ar-EG') {
+                        return 'نشط';
+                    } else if (!row.IsActive && lang === 'ar-EG') {
+                        return 'غير نشط';
+                    } else if (row.IsActive && lang === 'en-US') {
+                        return 'Active';
+                    } else {
+                        return 'In Active';
+                    }
+
+
+                }
+            }
+        ];
+
+        const dtObj = {
+            "language": dataTableLang,
+            "dom": 'Bfrtip',
+            "buttons": [
+                {
+                    extend: 'excel',
+                    messageTop: `${$('#ProductName').siblings().text()}: ${(parmss.ProductName) ? parmss.ProductName : '--'}`
+                },
+
+            ],
+            "ajax": {
+                "url": _loadDataUrl,
+                "type": "POST",
+                "datatype": "json",
+                "data": parmss,
+                "complete": function (d) {
+                    _tblLoader.hide();
+                }
+            },
+            "columns": columns,
+
+            "initComplete": function () {
+                $('#tblCrmProductsPrint_wrapper button.dt-button').click();
+                $('#tblCrmProductsPrint_wrapper').parent().addClass('d-none');
+
+            }
+        };
+
+        $('#tblCrmProductsPrint').dataTable().fnDestroy();
+        $('#tblCrmProductsPrint').DataTable(dtObj).on('buttons-processing', function (e, indicator) { if (!indicator) { $('.page-loader-wrapper').hide() } });
+
+
+    }
+
+
+</script>

@@ -1,0 +1,283 @@
+﻿@using ERP.Web.UI.Controllers.Warehouses
+@using ERP.Authorization;
+@{
+    string permissionsStr = TempData["Permissions"].ToString();
+}
+<script>
+    const _mainController = "IvItemsTypesConfigure"
+
+    $(function () {
+        LoadDataGrid();
+        $('#tblIvItemsTypesConfigurePrint thead').html($('#tblIvItemsTypesConfigure thead').html());
+        $('#tblIvItemsTypesConfigurePrint thead tr :last-child').remove();
+        $('#IvItemsTypesConfigure').addClass('active');
+    });
+
+    const _loadDataUrl = `${$PrefixHostName}/${_mainController}/@nameof(IvItemsTypesConfigureController.LoadDataGrid)`;
+    const _tblSelector = $('#tblIvItemsTypesConfigure');
+
+    const _permissions = '@permissionsStr';
+    const _updatePermission = '@PermissionNames.Pages_IvItemsTypesConfigure_Update';
+    const _deletePermission = '@PermissionNames.Pages_IvItemsTypesConfigure_Delete';
+
+    var OnBegin = function (response) {
+        fireBtnLoader();
+    };
+
+    var OnSuccess = function (response) {
+
+        if (response.success) {
+
+            if (response.customRestResult.trigger === '@ERP.Front.Helpers.Enums.Common.FormTriggers.Insert') {
+
+                toastr.success(response.customRestResult.message);
+
+                LoadDataGrid();
+
+                _mainModal.modal('hide');
+
+            } else if (response.customRestResult.trigger === '@ERP.Front.Helpers.Enums.Common.FormTriggers.Update') {
+
+                LoadDataGrid();
+
+                _mainModal.modal('hide');
+
+                toastr.success(response.customRestResult.message);
+            }
+
+        } else {
+               toastr.error(response.customRestResult.message);
+        }
+    };
+
+    var OnComplete = function (response) {
+        downBtnLoader();
+    };
+
+    var OnFailure = function (response) {
+        toastr.error(response);
+        downBtnLoader();
+    };
+
+    const LoadDataGrid = function () {
+
+        const parms = {
+            ConfigureCode: $('#SearchConfigureCode').val(),
+            NameAr: $('#SearchNameAr').val(),
+            NameEn: $('#SearchNameEn').val()
+        };
+
+        const columns = [
+            {
+                "data": "result.data.id",
+                'render': function (data, type, row, meta) {
+                    return meta.row + meta.settings._iDisplayStart + 1;
+                }
+            },
+            {
+                "data": "ConfigureCode",
+                "name": "ConfigureCode",
+                "autoWidth": true
+            },
+            {
+                "data": "NameAr",
+                "name": "NameAr",
+                "autoWidth": true
+            },
+            {
+                "data": "NameEn",
+                "name": "NameEn",
+                "autoWidth": true
+            },
+            {
+                "data": null,
+                "name": "ParentId",
+                "autoWidth": true,
+                "render": function (d, t, row) {
+                    return row.Parent ? (lang === 'ar-EG' ? row.Parent.NameAr : row.Parent.NameEn) : '';
+                }
+            },
+            {
+                "data": null,
+                "sortable": false,
+                "render": function (data, type, row) {
+
+                    let formAction = `${$PrefixHostName}/${_mainController}/@nameof(IvItemsTypesConfigureController.IvItemsTypesConfigureForm)`;
+                    let DeleteAction = `${$PrefixHostName}/${_mainController}/@nameof(IvItemsTypesConfigureController.Delete)`;
+
+                    let formTitle = '@ERP.ResourcePack.Warehouses.IvItemsTypesConfigure.Title', btns = '';
+
+                    if (_permissions.includes(_updatePermission)) {
+                        btns += `<a href="javascript:void(0)" onclick="AjaxController.GetFormModal(${row.Id},'@ERP.Front.Helpers.Enums.Common.FormTriggers.Update','${formAction}','${formTitle}');GetItemsTree(${row.Id})" title="@ERP.ResourcePack.Common.Settings.Edit"><i class="mx-2 fas fa-edit text-info"></i></a>`;
+                    }
+
+                    btns += `<a href="javascript:void(0)" onclick="AjaxController.GetFormModal(${row.Id},'@ERP.Front.Helpers.Enums.Common.FormTriggers.Show','${formAction}','${formTitle}');GetItemsTree(${row.Id})" title="@ERP.ResourcePack.Common.Settings.Show"><i class="mx-2 fas fa-eye text-info"></i></a>`;
+
+                    if (_permissions.includes(_deletePermission)) {
+                        btns += `<a href="javascript:void(0)" onclick="AjaxController.DeleteMainTableRow(${row.Id},'${DeleteAction}');" title="@ERP.ResourcePack.Common.Settings.Delete"><i class="mx-2 fas fa-trash-alt text-danger"></i></a>`;
+                    }
+
+                    const _auditedPermission = '@PermissionNames.Pages_IvItemsTypesConfigure_Audit';
+
+                    if (_permissions.includes(_auditedPermission)) {
+
+                        row.permission = _auditedPermission;
+
+                        btns += GetAuditedButton(row);
+                    }
+
+                    return btns;
+                }
+            }
+        ];
+
+        const dtObj = {
+            "processing": true,
+            "serverSide": true,
+            "filter": false,
+            "orderMulti": false,
+            "language": dataTableLang,
+            "ajax": {
+                "url": _loadDataUrl,
+                "type": "POST",
+                "datatype": "json",
+                "data": parms,
+                "complete": function () { }
+            },
+            "columns": columns,
+            "initComplete": function () {
+                $('[data-toggle="tooltip"]').tooltip();
+            }
+
+        };
+
+        _tblSelector.dataTable().fnDestroy();
+        _tblSelector.DataTable(dtObj).on('draw', function () { $('[data-toggle="tooltip"]').tooltip(); });
+
+        setTimeout(function () {
+            $(".sorting_1").removeAttr('colspan');
+        }, 500);
+    };
+
+
+    const GetItemsTree = function (id) {
+
+        $.ajax({
+            url: `${baseUrl}/IvItemsTypesConfigure/GetItemsTree`,
+            dataType: 'json',
+            headers: {
+                'Authorization': `Bearer ${$_token}`
+            },
+            data: {
+                id: id,
+                lang: lang
+            },
+            cache: false,
+        }).done(function (data) {
+
+            if (data.result)  drawTree(data.result);
+
+        }).fail(function (response) {
+            toastr.error(response.statusText);
+        });
+
+    };
+
+    const drawTree = function (data) {
+
+        setTimeout(function () {
+
+            $('#jstreeForm').jstree({
+                "core": {
+                    "check_callback": true,
+                    'data': data,
+                },
+                "plugins": ["search"],
+                "search": {
+                    "case_sensitive": false,
+                    "show_only_matches": true
+                }
+            });
+
+        },100);
+
+    };
+
+
+    function printExc() {
+        $('.page-loader-wrapper').show();
+        $('#tblIvItemsTypesConfigurePrint_wrapper').parent().addClass('d-none');
+        const parmss = {
+            ConfigureCode: $('#SearchConfigureCode').val(),
+            NameAr: $('#SearchNameAr').val(),
+            NameEn: $('#SearchNameEn').val(),
+            length: 1000000
+        };
+
+        const columns = [
+            {
+                "data": "result.data.id",
+                'render': function (data, type, row, meta) {
+                    return meta.row + meta.settings._iDisplayStart + 1;
+                }
+            },
+            {
+                "data": "ConfigureCode",
+                "name": "ConfigureCode",
+                "autoWidth": true
+            },
+            {
+                "data": "NameAr",
+                "name": "NameAr",
+                "autoWidth": true
+            },
+            {
+                "data": "NameEn",
+                "name": "NameEn",
+                "autoWidth": true
+            },
+            {
+                "data": null,
+                "name": "ParentId",
+                "autoWidth": true,
+                "render": function (d, t, row) {
+                    return row.Parent ? (lang === 'ar-EG' ? row.Parent.NameAr : row.Parent.NameEn) : '';
+                }
+            }
+        ];
+
+        const dtObj = {
+            "language": dataTableLang,
+            "dom": 'Bfrtip',
+            "buttons": [
+                {
+                    extend: 'excel',
+                    messageTop: `${$('#SearchConfigureCode').siblings().text()}: ${(parmss.ConfigureCode) ? parmss.ConfigureCode : '--'}, ${$('#SearchNameAr').siblings().text()}: ${(parmss.NameAr) ? parmss.NameAr : '--'}, ${$('#SearchNameEn').siblings().text()}: ${(parmss.NameEn) ? parmss.NameEn : '--'}`
+                },
+
+            ],
+            "ajax": {
+                "url": _loadDataUrl,
+                "type": "POST",
+                "datatype": "json",
+                "data": parmss,
+                "complete": function (d) {
+                    _tblLoader.hide();
+                }
+            },
+            "columns": columns,
+
+            "initComplete": function () {
+                $('#tblIvItemsTypesConfigurePrint_wrapper button.dt-button').click();
+                $('#tblIvItemsTypesConfigurePrint_wrapper').parent().addClass('d-none');
+
+            }
+        };
+
+        $('#tblIvItemsTypesConfigurePrint').dataTable().fnDestroy();
+        $('#tblIvItemsTypesConfigurePrint').DataTable(dtObj).on('buttons-processing', function (e, indicator) { if (!indicator) { $('.page-loader-wrapper').hide() } });
+
+
+    }
+
+</script>

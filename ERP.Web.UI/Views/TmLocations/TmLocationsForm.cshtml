@@ -1,0 +1,74 @@
+﻿@using ERP.Web.UI.Models.ViewModels.CharityBoxes
+@using ERP.Web.UI.Models.ViewModels.General
+@model TmLocationsVM
+@{
+    string formTrigger = ViewBag.trigger;
+    string lang = Request.Cookies["Lang"] == null ? "ar-EG" : Request.Cookies["Lang"].Value.ToString();
+    bool isFormDetail = Model != null && formTrigger == ERP.Front.Helpers.Enums.Common.FormTriggers.Show.ToString();
+    string regionKeyDdl = nameof(TmRegionsVM.RegionName);
+}
+<div class="card">
+    <div class="header d-flex justify-content-start align-items-center">
+        <i class="fas fa-2x fa-chevron-down down-arr mr-2" data-toggle="collapse" data-target="#masterData"></i>
+        <h2><strong>@ERP.ResourcePack.CharityBoxes.TmLocations.Title</strong></h2>
+    </div>
+    <div class="body collapse show" id="masterData">
+        @using (Ajax.BeginForm(nameof(ERP.Web.UI.Controllers.CharityBoxes.TmLocationsController.CreateOrUpdateTmLocations), "TmLocations",
+            new AjaxOptions { HttpMethod = "POST", OnBegin = "OnBegin", OnSuccess = "OnSuccess", OnComplete = "OnComplete", OnFailure = "OnFailure" }, new { @id = "mainForm" }))
+        {
+            @Html.HiddenFor(z => z.Id)
+            @Html.HiddenFor(z => z.ListOfSubLocationsStr)
+            <div class="row clearfix">
+                <div class="col-md-4">
+                    <div class="form-group form-float">
+                        <div class="form-line">
+                            @Html.TextBoxFor(z => z.LocationNumber, getHtmlAttributes(true, "form-control", ""))
+                            @Html.LabelFor(z => z.LocationNumber, new { @class = "form-label" })
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="form-group form-float">
+                        <div class="form-line">
+                            @Html.TextBoxFor(z => z.LocationName, getHtmlAttributes(isFormDetail, "form-control", string.Empty))
+                            @Html.LabelFor(z => z.LocationName, new { @class = "form-label" })
+                        </div>
+                        @Html.ValidationMessageFor(z => z.LocationName)
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    @Html.LabelFor(z => z.RegionId, new { @class = "form-label" })
+                    <div class="form-group form-float">
+                        <div class="">
+                            @if (Model != null && Model.Region != null)
+                            {
+                                var list = new List<TmRegionsVM> { new TmRegionsVM { Id = (long)Model.RegionId, RegionName = $"{Model.Region.RegionName} - {(lang == "ar-EG" ? Model.Region.FndLookupValues?.NameAr : Model.Region.FndLookupValues?.NameEn)}" } };
+                                var selectList = new SelectList(list, "Id", regionKeyDdl, Model.RegionId);
+
+                                @Html.DropDownListFor(z => z.RegionId, selectList, getHtmlAttributes(isFormDetail, "form-control", string.Empty))
+                            }
+                            else
+                            {
+                                @Html.DropDownListFor(z => z.RegionId, Enumerable.Empty<SelectListItem>(), getHtmlAttributes(isFormDetail, "form-control", string.Empty))
+                            }
+                        </div>
+                        @Html.ValidationMessageFor(z => z.RegionId)
+
+                    </div>
+                </div>
+            </div>
+        }
+
+    </div>
+</div>
+
+@functions {
+    object getHtmlAttributes(bool Disabled, string CssClass, string CssClass2)
+    {
+        if (Disabled)
+        {
+            return new { @class = CssClass, Disabled = Disabled };
+        }
+        return new { @class = $"{CssClass} {CssClass2}" };
+    }
+}

@@ -1,0 +1,733 @@
+﻿@using ERP.ResourcePack.AccountsExtend
+@using ERP.Web.UI.Controllers.Accounts
+@using ERP.Authorization;
+@{
+    string permissionsStr = TempData["Permissions"].ToString();
+    string encUpdateTrigger = ERP.Front.Helpers.Enums.Common.EncUpdate;
+    string encInsertTrigger = ERP.Front.Helpers.Enums.Common.EncInsert;
+    string encShowTrigger = ERP.Front.Helpers.Enums.Common.EncShow;
+}
+
+@if (permissionsStr.Contains(PermissionNames.Pages_ApInvoiceHd_Post))
+{
+    <script>
+
+        const PostInvoice = function (id) {
+
+            bootbox.confirm({
+                message: _booBoxMessagePosting,
+                buttons: bootBoxDefaultBtns,
+                callback: function (result) {
+
+                    if (result) {
+
+                        const data = {
+                            id: id,
+                            lang: lang
+                        };
+
+                        $.ajax({
+                            url: `${baseUrl}/ApInvoiceHd/PostApInvoiceHd`,
+                            type: 'POST',
+                            data: JSON.stringify(data),
+                            headers:
+                            {
+                                'Content-Type': 'application/json',
+                                'Authorization': `Bearer ${$_token}`
+                            },
+                        }).done(function (response) {
+
+                            if (response.result.finalStatues == 'F') {
+                                toastr.warning(response.result.reason);
+                            }
+                            else {
+                                toastr.success(response.result.reason);
+                                setTimeout(function () {
+
+                                    if (formView) {
+                                        window.location.href = $PrefixHostName + '/ApInvoiceHd';
+                                    } else {
+                                        LoadDataGrid();
+                                    }
+
+                                }, 100);
+                            }
+                        }).fail(function (response) {
+                            toastr.error(response);
+                        });
+
+                    }
+                }
+            });
+        };
+
+    </script>
+}
+else
+{
+    <script>
+        const PostInvoice = function (id) { };
+    </script>
+}
+
+<script>
+    const _mainController = "ApInvoiceHd"
+
+    $(function () {
+        LoadDataGrid();
+        $('#tblApInvoiceHdPrint thead').html($('#tblApInvoiceHd thead').html());
+        $('#tblApInvoiceHdPrint thead tr :last-child').remove();
+
+        $('#FndHdTypeLkp_NameAr').parent('.form-line').addClass('focused');
+        $('#FndHdTypeLkp_NameEn').parent('.form-line').addClass('focused');
+        $('#HdInvNo').parent('.form-line').addClass('focused');
+        $('#CurrencyRate').parent('.form-line').addClass('focused');
+        $('#Total').parent('.form-line').addClass('focused');
+
+        $('#ApInvoiceHd').addClass('active');
+
+        $('#PrepaidPeriod').prop('type', 'number').prop('min', 0);
+       /* $('#PrepaidAmount').prop('type', 'number').prop('min', 0);*/
+
+        if (formView && primaryEntityKeyId) {
+            BindCodeComUtilitesDropDowns(from__arrGlSelect2, 'fromAccId', $('#codeComUtilityIds').val(), $('#codeComUtilityTexts').val());
+            BindCodeComUtilitesDropDowns(to__arrGlSelect2, 'toAccId', $('#codeComUtilityIds_alt1').val(), $('#codeComUtilityTexts_alt1').val());
+        }
+
+    });
+
+    const _loadDataUrl = `${$PrefixHostName}/${_mainController}/@nameof(ApInvoiceHdController.LoadDataGrid)`;
+    const _tblSelector = $('#tblApInvoiceHd');
+    const _permissions = '@permissionsStr';
+    const _updatePermission = '@PermissionNames.Pages_ApInvoiceHd_Update';
+    const _deletePermission = '@PermissionNames.Pages_ApInvoiceHd_Delete';
+    const _postPermission = '@PermissionNames.Pages_ApInvoiceHd_Post';
+    const _postStatus = @Convert.ToInt64(ERP.Front.Helpers.Enums.Common.ApInvoiceHd.Posted);
+    const _newStatus = @Convert.ToInt64(ERP.Front.Helpers.Enums.Common.ApInvoiceHd.New);
+
+    var OnBegin = function (response) {
+        fireBtnLoader();
+    };
+
+    var OnSuccess = function (response) {
+
+        $('#btnSubmition').prop('disabled', false);
+
+        if (response.success) {
+
+            if (response.customRestResult.trigger === '@ERP.Front.Helpers.Enums.Common.FormTriggers.Insert') {
+
+                toastr.success(response.customRestResult.message);
+
+                setTimeout(function () {
+                    window.location.href = $PrefixHostName + '/ApInvoiceHd';
+                }, 200);
+
+            }
+            else if (response.customRestResult.trigger === '@ERP.Front.Helpers.Enums.Common.FormTriggers.Update') {
+
+                toastr.success(response.customRestResult.message);
+
+                setTimeout(function () {
+                    window.location.href = $PrefixHostName + '/ApInvoiceHd';
+                }, 200);
+
+            }
+            else {
+                toastr.error(response.customRestResult.message);
+            }
+
+        } else {
+            toastr.error(response.error.message);
+        }
+
+    };
+
+    var OnComplete = function (response) {
+        downBtnLoader();
+    };
+
+    var OnFailure = function (response) {
+        toastr.error(response);
+        downBtnLoader();
+    };
+
+    const LoadDataGrid = function () {
+
+        $('#tblLoader').show();
+
+        const params = {
+            HdInvNo: $('#searchBox #HdInvNo').val(),
+            HdDate: $('#searchBox #HdDate').val(),
+            VendorNo: $('#searchBox #VendorNo').val(),
+            StatusLkpId: $('#searchBox #StatusLkpId').find(':selected').val(),
+            VendorId: $('#searchBox #VendorId').find(':selected').val(),
+            HdTypeLkpId: $('#searchBox #HdTypeLkpId').find(':selected').val()
+        };
+
+        const columns = [
+            {
+                "data": "result.data.id",
+                'render': function (data, type, row, meta) {
+                    return meta.row + meta.settings._iDisplayStart + 1;
+                }
+            },
+            {
+                "data": "HdInvNo",
+                "name": "HdInvNo",
+                "autoWidth": true
+            },
+            {
+                "data": "HdDate",
+                "name": "HdDate",
+                "autoWidth": true
+            },
+            {
+                "data": null,
+                "autoWidth": true,
+                "render": function (d, t, row) {
+                    if (row.ApVendors == null) return '';
+
+                    return row.ApVendors.VendorNumber;
+                }
+            },
+            {
+                "data": null,
+                "autoWidth": true,
+                "render": function (d, t, row) {
+                    if (row.ApVendors == null) return '';
+
+                    return lang === 'ar-EG' ? row.ApVendors.VendorNameAr : row.ApVendors.VendorNameEn;
+                }
+            },
+            {
+                "data": null,
+                "autoWidth": true,
+                "render": function (d, t, row) {
+                    if (row.FndStatusLkp == null) return '';
+
+                    return lang === 'ar-EG' ? row.FndStatusLkp.NameAr : row.FndStatusLkp.NameEn;
+                }
+            },
+            {
+                "data": "Comments",
+                "name": "Comments",
+                "autoWidth": true
+            },
+            {
+                "data": null,
+                "sortable": false,
+                "render": function (data, type, row) {
+
+                    let formAction = `${$PrefixHostName}/${_mainController}/@nameof(ApInvoiceHdController.ApInvoiceHdForm)`;
+                    let DeleteAction = `${$PrefixHostName}/${_mainController}/@nameof(ApInvoiceHdController.Delete)`;
+
+                    let formTitle = '@ApInvoiceHd.Title';
+                    let btns = '';
+
+                    if (_permissions.includes(_updatePermission) && row.StatusLkpId == _newStatus) {
+                        btns += `<a href="${$PrefixHostName}/ApInvoiceHd/FormView?id=${row.EncId}&t=@encUpdateTrigger" title="@ERP.ResourcePack.Common.Settings.Edit"><i class="mx-2 fas fa-edit text-info"></i></a>`;
+                    }
+
+                    btns += `<a href="${$PrefixHostName}/ApInvoiceHd/FormView?id=${row.EncId}&t=@encShowTrigger" title="@ERP.ResourcePack.Common.Settings.Show"><i class="mx-2 fas fa-eye text-info"></i></a>`;
+
+                    if (_permissions.includes(_deletePermission) && row.StatusLkpId == _newStatus) {
+                        btns += `<a href="javascript:void(0)" onclick="AjaxController.DeleteMainTableRow(${row.Id},'${DeleteAction}');" title="@ERP.ResourcePack.Common.Settings.Delete"><i class="mx-2 fas fa-trash-alt text-danger"></i></a>`;
+                    }
+
+                    if (_permissions.includes(_postPermission) & row.StatusLkpId == _newStatus) {
+                        btns += `<a href="javascript:void(0)" onclick="PostInvoice(${row.Id})"  title="@ERP.ResourcePack.Common.Settings.Post"><i class="mx-2 fas fa-check-circle text-info"></i></a>`;
+                    }
+
+                    btns += `<a href="javascript:void(0);" onclick="return print('${$PrefixHostName}/ApInvoiceHd/PrintApInvoiceHdScreen','${row.EncId}','${lang}')" title="@ERP.ResourcePack.Common.Settings.Print"><i class="mx-2 fas fa-print text-success"></i></a>`;
+
+                    const _auditedPermission = '@PermissionNames.Pages_ApInvoiceHd_Audit';
+
+                    if (_permissions.includes(_auditedPermission)) {
+
+                        row.permission = _auditedPermission;
+
+                        btns += GetAuditedButton(row);
+                    }
+
+                    return btns;
+                }
+            }
+        ];
+
+        const dtObj = {
+            "processing": true,
+            "serverSide": true,
+            "filter": false,
+            "orderMulti": false,
+            "language": dataTableLang,
+            "ajax": {
+                "url": _loadDataUrl,
+                "type": "POST",
+                "datatype": "json",
+                "data": params,
+                "complete": function () { }
+            },
+            "columns": columns,
+            "initComplete": function () {
+                $('[data-toggle="tooltip"]').tooltip();
+            }
+
+        };
+
+        _tblSelector.dataTable().fnDestroy();
+        _tblSelector.DataTable(dtObj).on('draw', function () { $('[data-toggle="tooltip"]').tooltip(); });
+
+        setTimeout(function () {
+            $(".sorting_1").removeAttr('colspan');
+        }, 500);
+    };
+
+    $('#btnSubmition').on('click', function () {
+
+        if ($('#mainForm').valid()) {
+
+            const resultCodeComUtilityFrom = GetCodeComUtilites(from__arrGlSelect2, 'fromAccId');
+            const resultCodeComUtilityTo = GetCodeComUtilites(to__arrGlSelect2, 'toAccId');
+
+            if (resultCodeComUtilityFrom) {
+                $('#mainForm #codeComUtilityIds').val(resultCodeComUtilityFrom.idsStr);
+            }
+
+            if (resultCodeComUtilityTo) {
+                $('#mainForm #codeComUtilityIds_alt1').val(resultCodeComUtilityTo.idsStr);
+            }
+
+            $(this).prop('disabled', true);
+
+            $('#mainForm').submit();
+
+        } else {
+            $(this).prop('disabled', false);
+        }
+
+    });
+
+    $('#searchBox #StatusLkpId').select2(ReturnSelect2ObjectForLkpsTypes('@ERP.Front.Helpers.Enums.Common.FndLkpsTypes.ApInvoiceHdStatues.ToString()'));
+    $('#searchBox #VendorId').select2(ReturnSelect2ObjectDefault(`${baseUrl}/ApVendors/GetVendorsSelect2`));
+    $('#HdTypeLkpId').select2(ReturnSelect2ObjectForLkpsTypes('@ERP.Front.Helpers.Enums.Common.FndLkpsTypes.ApInvoiceHdHdType.ToString()'));
+    $('#VendorId').select2(ReturnSelect2ObjectDefault(`${baseUrl}/ApVendors/GetVendorsSelect2`));
+    $('#CurrencyId').select2(ReturnSelect2ObjectDefault(`${baseUrl}/Currency/GetCurrenciesSelect2`));
+    $('#TaxPercentageLkpId').select2(ReturnSelect2ObjectForLkpsTypes('@ERP.Front.Helpers.Enums.Common.FndLkpsTypes.TaxVal.ToString()'));
+    $('#CurrencyId').on('change', function (e) {
+
+        const currency = $(this);
+        const rateTxt = $('#CurrencyRate');
+
+        if (!currency) {
+            $('#CurrencyRate').val('');
+        } else {
+            $.ajax({
+                url: `${baseUrl}/Currency/GetRate`,
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${$_token}`
+                },
+                data: {
+                    Id: currency.find(':selected').val(),
+                    date: ''
+                }
+            }).done(function (rate) {
+
+                let _inputSelector = $('#CurrencyRate');
+
+                _inputSelector.parent('.form-line').addClass('focused');
+
+                rateTxt.val(rate.result);
+
+            }).fail(function (response) {
+                toastr.error(response);
+            });
+        }
+    });
+
+    $('#VendorId').on('select2:select', function (data) {
+
+        const taxNo = data.params.data.altText.split('-')[1];
+
+        $('#TaxNo').val(taxNo);
+
+        $('#TaxNo').parent('.form-line').addClass('focused');
+    });
+
+</script>
+
+<script name="details_s_s_o_o_s">
+
+    const _tblDetailSelector = $('#tblApInvoiceHdDetail');
+    const _listDetailsStr = $('#InvoiceDetailsListStr');
+
+    let _detailsArr = [], updatedRow, tblCounterIndex = 0;
+
+    $('#Amount').on('change keyup', function () {
+        $('#Total').val(CalcTotal($('#TaxPercentageLkpId').find(':selected').val(),$('#Amount').val()));
+    });
+
+    $('#TaxPercentageLkpId').on('change keyup', function () {
+        $('#Total').val(CalcTotal($('#TaxPercentageLkpId').find(':selected').val(),$('#Amount').val()));
+    });
+
+    const CalcTotal = function (taxPercentageLkpId,amount) {
+        return CalcTaxAmount(taxPercentageLkpId,amount) + +amount;
+    }
+
+    const CalcTaxAmount = function (taxPercentageLkpId,amount) {
+        let taxtPerc = 0;
+
+        switch (taxPercentageLkpId) {
+            case '10995': taxtPerc = 0; break;
+            case '10996': taxtPerc = 5; break;
+            case '10997': taxtPerc = 0; break;
+            default: taxtPerc = 0; break;
+        }
+
+        return taxtPerc === 0 ? 0 : ((+taxtPerc / 100) * +amount);
+    }
+
+    const fillDetails = function () {
+
+        const resultCodeComUtility = GetCodeComUtilites(__arrGlSelect2, 'AccId');
+
+        if (resultCodeComUtility === null) {
+            toastr.warning('@ApInvoiceHd.AccountId : @ERP.ResourcePack.Common.Settings.Required ');
+            return;
+        }
+
+        if (!validator()) return;
+
+        const current = {
+            index: ++tblCounterIndex,
+            codeComUtilityIds: resultCodeComUtility.idsStr,
+            codeComUtilityTexts: resultCodeComUtility.textsStr,
+            desc: $('#Desc').val(),
+            amount: $('#Amount').val(),
+            taxPercentageLkpId:$('#TaxPercentageLkpId').find(':selected').val(),
+            taxPercentageNameAr:$('#TaxPercentageLkpId').find(':selected').text(),
+            taxPercentageNameEn:$('#TaxPercentageLkpId').find(':selected').text(),
+            taxAmount : CalcTaxAmount($('#TaxPercentageLkpId').find(':selected').val(),$('#Amount').val()),
+            total: CalcTotal($('#TaxPercentageLkpId').find(':selected').val(),$('#Amount').val()),
+            rowStatus: NewStatus
+        };
+
+        return current;
+    };
+
+    const AddDetails = function () {
+
+        const current = fillDetails();
+
+        if (!current) return;
+
+        _detailsArr.push(current);
+
+        _listDetailsStr.val(JSON.stringify(_detailsArr));
+
+        bindDetailsTable();
+
+        clearFormAdding();
+    };
+
+    const bindDetailsTable = function () {
+
+        const detailArr = _detailsArr.filter(z => z.rowStatus !== DeletedStatus);
+
+        const columns = [
+            { 'data': 'index' },
+            { 'data': 'codeComUtilityTexts' },
+            {
+                'data': 'amount',
+                "render": $.fn.dataTable.render.number(',', '.', 2)
+            },
+            { 'data': lang === 'ar-EG' ? 'taxPercentageNameAr':'taxPercentageNameEn' },
+            {
+                'data': 'taxAmount',
+                "render": $.fn.dataTable.render.number(',', '.', 2)
+            },
+            {
+                'data': 'total',
+                "render": $.fn.dataTable.render.number(',', '.', 2)
+            },
+            { 'data': 'desc' },
+            {
+                'data': null,
+                'searchable': false,
+                'ordering': false,
+                'sorting': false,
+                'render': function (d, t, row) {
+
+                    let rows = '';
+
+                    if (primaryEntityKeyId === 0 || trigger !== '@ERP.Front.Helpers.Enums.Common.FormTriggers.Show.ToString()') {
+
+                        rows += `<td><a href="javascript:void(0)" onclick="return DeleteDetails(${row.index})"><i class="mx-2 fas fa-trash-alt text-danger"></i></a>`;
+                        rows += `<a href="javascript:void(0)" onclick="return GetDetailRow(${row.index})"><i class="mx-2 fas fa-edit text-success"></i></a></td>`;
+                    }
+                    else {
+                        rows += '<td></td>';
+                    }
+
+                    return rows;
+                }
+            }
+        ];
+
+        const dtObj = {
+            data: detailArr,
+            retrieve: true,
+            language: dataTableLang,
+            columns: columns,
+            drawCallback: function (c, v, b) {}
+        };
+
+        setTimeout(function () {
+
+            _tblDetailSelector.dataTable().fnDestroy();
+            _tblDetailSelector.DataTable(dtObj).on('draw', function () { $('[data-toggle="tooltip"]').tooltip(); });
+
+        }, 100);
+    };
+
+    const DeleteDetails = function (index) {
+
+        const current = _detailsArr.find(z => z.index === index);
+
+        const indexOfCurrent = _detailsArr.indexOf(current);
+
+        if (!current.id) {
+
+            _detailsArr.splice(indexOfCurrent, 1);
+
+        } else {
+
+            current.rowStatus = DeletedStatus;
+
+            _detailsArr.splice(indexOfCurrent, 1, current);
+        }
+
+
+        bindDetailsTable();
+
+        _listDetailsStr.val(_detailsArr.length === 0 ? '' : JSON.stringify(_detailsArr));
+    };
+
+    const LoadDetailsData = function () {
+
+        $.ajax({
+            url: `${baseUrl}/ApInvoiceHd/GetAllDetails`,
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${$_token}`
+            },
+            data: {
+                id: primaryEntityKeyId
+            }
+        }).done(function (data) {
+
+            _detailsArr = [...data.result];
+
+            tblCounterIndex = 0;
+
+            _detailsArr.forEach(function (item, index) {
+                item.index = ++tblCounterIndex;
+            }, _detailsArr);
+
+            bindDetailsTable();
+
+            _listDetailsStr.val(JSON.stringify(_detailsArr));
+
+        });
+    };
+
+    const clearFormAdding = function () {
+
+        $('#first input').val('');
+
+        $('#first select[data-header-gl-id]').val('').trigger('change');
+        $('#first #AccId').val('').trigger('change');
+    };
+
+    const GetDetailRow = function (tblIndex) {
+
+        clearFormAdding();
+
+        $('#btnAddDetailRow').hide();
+        $('#btnUpdateDetailRow').show();
+        $('#btnCancelDetailRow').show();
+
+        const current = _detailsArr.find(z => z.index === tblIndex);
+
+        BindCodeComUtilitesDropDowns(__arrGlSelect2, 'AccId', current.codeComUtilityIds, current.codeComUtilityTexts);
+
+        $('#Desc').val(current.desc);
+        $('#Amount').val(current.amount);
+        $('#TaxAmount').val(current.taxAmount);
+        $('#Total').val(+current.taxAmount + +current.amount);
+
+
+        $(`#first #TaxPercentageLkpId`)
+            .append($("<option selected='selected'></option>")
+            .val(current.taxPercentageLkpId)
+            .text(lang === 'ar-EG' ? current.taxPercentageNameAr : current.taxPercentageNameEn))
+            .trigger('change');
+
+        $('#Desc').parent('.form-line').addClass('focused');
+        $('#Amount').parent('.form-line').addClass('focused');
+        $('#TaxAmount').parent('.form-line').addClass('focused');
+        $('#Total').parent('.form-line').addClass('focused');
+
+        updatedRow = current;
+    };
+
+    const UpdateDetails = function () {
+
+        let current = _detailsArr.find(z => z.index === updatedRow.index);
+
+        let indexOfCurrent = _detailsArr.indexOf(_detailsArr.find(z => z.index === updatedRow.index));
+
+         const newRow = fillDetails();
+
+        if (!newRow) return;
+
+        newRow.id = updatedRow.id;
+        newRow.index = current.index;
+        newRow.rowStatus = !updatedRow.id ? NewStatus : UpdatedStatus;
+
+        _detailsArr.splice(indexOfCurrent, 1,newRow);
+
+        $('#btnAddDetailRow').show();
+        $('#btnUpdateDetailRow').hide();
+        $('#btnCancelDetailRow').hide();
+
+        clearFormAdding();
+
+        _listDetailsStr.val(JSON.stringify(_detailsArr));
+
+        bindDetailsTable();
+    };
+
+    const validator = function () {
+
+        if (!$('#first #Amount').val()) {
+            toastr.warning('@ApInvoiceHd.Amount' + ' : ' + '@ERP.ResourcePack.Common.Settings.Required');
+            return false;
+        }
+
+        if (!$('#first #TaxPercentageLkpId').find(':selected').val()) {
+            toastr.warning('@ERP.ResourcePack.Accounts.ApMiscPaymentHeaders.TaxPercent' + ' : ' + '@ERP.ResourcePack.Common.Settings.Required');
+            return false;
+        }
+
+        return true;
+    };
+
+    const print = function (url,id,lang) {
+
+        const data = { id: id, lang : lang };
+
+        openModal(data, url);
+    };
+
+    function printExc() {
+        $('.page-loader-wrapper').show();
+        $('#tblApInvoiceHdPrint_wrapper').parent().addClass('d-none');
+        const parmss = {
+            HdInvNo: $('#searchBox #HdInvNo').val(),
+            HdDate: $('#searchBox #HdDate').val(),
+            VendorNo: $('#searchBox #VendorNo').val(),
+            StatusLkpId: $('#searchBox #StatusLkpId').find(':selected').val(),
+            VendorId: $('#searchBox #VendorId').find(':selected').val(),
+            HdTypeLkpId: $('#searchBox #HdTypeLkpId').find(':selected').val(),
+            length: 1000000
+        };
+
+        const columns = [
+            {
+                "data": "result.data.id",
+                'render': function (data, type, row, meta) {
+                    return meta.row + meta.settings._iDisplayStart + 1;
+                }
+            },
+            {
+                "data": "HdInvNo",
+                "name": "HdInvNo",
+                "autoWidth": true
+            },
+            {
+                "data": "HdDate",
+                "name": "HdDate",
+                "autoWidth": true
+            },
+            {
+                "data": null,
+                "autoWidth": true,
+                "render": function (d, t, row) {
+                    if (row.ApVendors == null) return '';
+
+                    return row.ApVendors.VendorNumber;
+                }
+            },
+            {
+                "data": null,
+                "autoWidth": true,
+                "render": function (d, t, row) {
+                    if (row.ApVendors == null) return '';
+
+                    return lang === 'ar-EG' ? row.ApVendors.VendorNameAr : row.ApVendors.VendorNameEn;
+                }
+            },
+            {
+                "data": null,
+                "autoWidth": true,
+                "render": function (d, t, row) {
+                    if (row.FndStatusLkp == null) return '';
+
+                    return lang === 'ar-EG' ? row.FndStatusLkp.NameAr : row.FndStatusLkp.NameEn;
+                }
+            },
+            {
+                "data": "Comments",
+                "name": "Comments",
+                "autoWidth": true
+            }
+        ];
+
+        const dtObj = {
+            "language": dataTableLang,
+            "dom": 'Bfrtip',
+            "buttons": [
+                {
+                    extend: 'excel',
+                    messageTop: `${$('#HdInvNo').siblings().text()}: ${(parmss.HdInvNo) ? parmss.HdInvNo : '--'}, ${$('#HdDate').siblings().text()}: ${(parmss.HdDate) ? parmss.HdDate : '--'}, ${$('#VendorNo').siblings().text()}: ${(parmss.VendorNo) ? parmss.VendorNo : '--'}, ${$('[for="StatusLkpId"]').text()}: ${(parmss.StatusLkpId) ? parmss.StatusLkpId : '--'}, ${$('[for="VendorId"]').text()}: ${(parmss.VendorId) ? parmss.VendorId : '--'}, ${$('[for="HdTypeLkpId"]').text()}: ${(parmss.HdTypeLkpId) ? parmss.HdTypeLkpId : '--'}`
+                },
+
+            ],
+            "ajax": {
+                "url": _loadDataUrl,
+                "type": "POST",
+                "datatype": "json",
+                "data": parmss,
+                "complete": function (d) {
+                    _tblLoader.hide();
+                }
+            },
+            "columns": columns,
+
+            "initComplete": function () {
+                $('#tblApInvoiceHdPrint_wrapper button.dt-button').click();
+                $('#tblApInvoiceHdPrint_wrapper').parent().addClass('d-none');
+
+            }
+        };
+
+        $('#tblApInvoiceHdPrint').dataTable().fnDestroy();
+        $('#tblApInvoiceHdPrint').DataTable(dtObj).on('buttons-processing', function (e, indicator) { if (!indicator) { $('.page-loader-wrapper').hide() } });
+
+
+    }
+
+</script>

@@ -1,0 +1,645 @@
+﻿@using ERP.ResourcePack.CharityBoxes
+@using ERP.Web.UI.Controllers.CharityBoxes
+@using ERP.Authorization;
+@{
+    string permissionsStr = TempData["Permissions"].ToString();
+    string encUpdateTrigger = ERP.Front.Helpers.Enums.Common.EncUpdate;
+    string encInsertTrigger = ERP.Front.Helpers.Enums.Common.EncInsert;
+    string encShowTrigger = ERP.Front.Helpers.Enums.Common.EncShow;
+}
+
+@if (permissionsStr.Contains(PermissionNames.Pages_TmCharityBoxActions_Post))
+{
+    <script>
+        const PostAjax = function (id) {
+
+            bootbox.confirm({
+                message: _booBoxMessagePosting,
+                buttons: bootBoxDefaultBtns,
+                callback: function (result) {
+
+                    if (result) {
+
+                        const data = {
+                            id: id,
+                            lang: lang,
+                            userId: 0
+                        };
+
+                        $.ajax({
+                            url: `${baseUrl}/TmCharityBoxActions/PostTmCharityBoxActions`,
+                            type: 'POST',
+                            data: JSON.stringify(data),
+                            headers:
+                            {
+                                'Content-Type': 'application/json',
+                                'Authorization': `Bearer ${$_token}`
+                            },
+                        }).done(function (response) {
+
+                            if (response.result.finalStatues == 'F') {
+                                toastr.warning(response.result.reason);
+                            }
+                            else {
+                                toastr.success(response.result.reason);
+
+                                if (formView) {
+
+                                    setTimeout(function () {
+                                        window.location.href = $PrefixHostName + '/TmCharityBoxActions';
+                                    }, 100);
+
+                                } else {
+                                    LoadDataGrid();
+                                }
+                            }
+
+                        }).fail(function (response) {
+                            toastr.error(response.responseText);
+                        });
+
+                    }
+
+                }
+            });
+
+
+        };
+    </script>
+}
+else
+{
+    <script>
+        const PostAjax = function (id) { };
+    </script>
+}
+
+<script>
+    const _mainController = "TmCharityBoxActions"
+    const newBox = @Convert.ToInt64(ERP.Front.Helpers.Enums.Common.TmCharityBoxActionDetailsAction.New);
+    const replaceBox = @Convert.ToInt64(ERP.Front.Helpers.Enums.Common.TmCharityBoxActionDetailsAction.Replace);
+    const missedBox = @Convert.ToInt64(ERP.Front.Helpers.Enums.Common.TmCharityBoxActionDetailsAction.Missed);
+    const brokenBox = @Convert.ToInt64(ERP.Front.Helpers.Enums.Common.TmCharityBoxActionDetailsAction.Broken);
+    const gainBox = @Convert.ToInt64(ERP.Front.Helpers.Enums.Common.TmCharityBoxActionDetailsAction.Gain);
+    const activeBoxId = @Convert.ToInt64(ERP.Front.Helpers.Enums.Common.TmCharityBoxesStatus.Active);
+    const notActiveBoxId = @Convert.ToInt64(ERP.Front.Helpers.Enums.Common.TmCharityBoxesStatus.NotActive);
+    const _newStatus = @Convert.ToInt64(ERP.Front.Helpers.Enums.Common.TmCharityBoxActions.New);
+    const _postedStatus = @Convert.ToInt64(ERP.Front.Helpers.Enums.Common.TmCharityBoxActions.Posted);
+
+    $(function () {
+
+        LoadDataGrid();
+
+        $('#TmCharityBoxActions').addClass('active');
+
+        $('#OldCharityBoxid').prop('disabled', true);
+
+    });
+
+    const _loadDataUrl = `${$PrefixHostName}/${_mainController}/@nameof(TmCharityBoxActionsController.LoadDataGrid)`;
+    const _tblSelector = $('#tblTmCharityBoxActions');
+    const _tblLoader = $('#tblLoader');
+
+    const _permissions = '@permissionsStr';
+    const _updatePermission = '@PermissionNames.Pages_TmCharityBoxActions_Update';
+    const _deletePermission = '@PermissionNames.Pages_TmCharityBoxActions_Delete';
+    const _postPermission = '@PermissionNames.Pages_TmCharityBoxActions_Post';
+
+    var OnBegin = function (response) {
+        fireBtnLoader();
+    };
+
+    var OnSuccess = function (response) {
+
+        $('#btnSubmition').prop('disabled', false);
+
+        if (response.success) {
+
+            if (response.customRestResult.trigger === '@ERP.Front.Helpers.Enums.Common.FormTriggers.Insert') {
+
+                toastr.success(response.customRestResult.message);
+
+                setTimeout(function () {
+                    window.location.href = $PrefixHostName + '/TmCharityBoxActions';
+                }, 200);
+
+            }
+            else if (response.customRestResult.trigger === '@ERP.Front.Helpers.Enums.Common.FormTriggers.Update') {
+
+                toastr.success(response.customRestResult.message);
+
+                setTimeout(function () {
+                    window.location.href = $PrefixHostName + '/TmCharityBoxActions';
+                }, 200);
+
+            }
+            else {
+                toastr.error(response.customRestResult.message);
+            }
+
+        } else {
+            toastr.error(response.error.message);
+        }
+
+    };
+
+    var OnComplete = function (response) {
+        downBtnLoader();
+    };
+
+    var OnFailure = function (response) {
+        toastr.error(response);
+        downBtnLoader();
+    };
+
+    const LoadDataGrid = function () {
+
+        $('#tblLoader').show();
+
+        const params = {
+            TmSupervisorId: $('#searchBox #TmSupervisorId').find(':selected').val(),
+            StatusLkpId: $('#searchBox #StatusLkpId').find(':selected').val(),
+            ActionsNumber:$('#searchBox #ActionsNumber').val(),
+            FromDate:$('#searchBox #FromDate').val(),
+            ToDate:$('#searchBox #ToDate').val()
+        };
+
+        const columns = [
+            {
+                "data": "result.data.id",
+                'render': function (data, type, row, meta) {
+                    return meta.row + meta.settings._iDisplayStart + 1;
+                }
+            },
+            {
+                "data": "ActionsNumber",
+                "name": "ActionsNumber",
+                "autoWidth": true
+            },
+            {
+                "data": "ActionsDate",
+                "name": "ActionsDate",
+                "autoWidth": true
+            },
+            {
+                "data": null,
+                "autoWidth": true,
+                "render": function (d, t, row) {
+                    if (row.FndStatusLkp == null) return '';
+
+                    return lang === 'ar-EG' ? row.FndStatusLkp.NameAr : row.FndStatusLkp.NameEn;
+                }
+            },
+            {
+                "data": null,
+                "autoWidth": true,
+                "render": function (d, t, row) {
+                    if (row.TmSupervisors == null) return '';
+
+                    return  row.TmSupervisors.SupervisorName;
+                }
+            },
+            {
+                "data": "Notes",
+                "name": "Notes",
+                "autoWidth": true
+            },
+            {
+                "data": null,
+                "sortable": false,
+                "render": function (data, type, row) {
+
+                    let formAction = `${$PrefixHostName}/${_mainController}/@nameof(TmCharityBoxActionsController.TmCharityBoxActionsForm)`;
+                    let DeleteAction = `${$PrefixHostName}/${_mainController}/@nameof(TmCharityBoxActionsController.Delete)`;
+
+                    let formTitle = '@ERP.ResourcePack.CharityBoxes.TmCharityBoxActions.Title';
+                    let btns = '';
+
+                    if (_permissions.includes(_postPermission) && row.StatusLkpId == _newStatus) {
+                         btns += `<a href="javascript:void(0)" onclick="PostAjax(${row.Id})" title="@ERP.ResourcePack.Common.Settings.Post"><i class="mx-2 fas fa-check-circle text-info"></i></a>`;
+                    }
+
+                    if (_permissions.includes(_updatePermission) && row.StatusLkpId == _newStatus ) {
+                        btns += `<a href="${$PrefixHostName}/TmCharityBoxActions/FormView?id=${row.EncId}&t=@encUpdateTrigger" title="@ERP.ResourcePack.Common.Settings.Edit"><i class="mx-2 fas fa-edit text-info"></i></a>`;
+                    }
+
+                    btns += `<a href="${$PrefixHostName}/TmCharityBoxActions/FormView?id=${row.EncId}&t=@encShowTrigger" title="@ERP.ResourcePack.Common.Settings.Show"><i class="mx-2 fas fa-eye text-info"></i></a>`;
+
+                    if (_permissions.includes(_deletePermission) && row.StatusLkpId == _newStatus) {
+                        btns += `<a href="javascript:void(0)" onclick="AjaxController.DeleteMainTableRow(${row.Id},'${DeleteAction}');" title="@ERP.ResourcePack.Common.Settings.Delete"><i class="mx-2 fas fa-trash-alt text-danger"></i></a>`;
+                    }
+
+                    const _auditedPermission = '@PermissionNames.Pages_TmCharityBoxActions_Audit';
+
+                    if (_permissions.includes(_auditedPermission)) {
+
+                        row.permission = _auditedPermission;
+
+                        btns += GetAuditedButton(row);
+                    }
+
+                    return btns;
+                }
+            }
+        ];
+
+        const dtObj = {
+            "processing": true,
+            "serverSide": true,
+            "filter": false,
+            "orderMulti": false,
+            "language": dataTableLang,
+            "ajax": {
+                "url": _loadDataUrl,
+                "type": "POST",
+                "datatype": "json",
+                "data": params,
+                "complete": function () {
+                      _tblLoader.hide();
+                }
+            },
+            "columns": columns,
+            "initComplete": function () {
+                $('[data-toggle="tooltip"]').tooltip();
+            }
+
+        };
+
+        _tblSelector.dataTable().fnDestroy();
+        _tblSelector.DataTable(dtObj).on('draw', function () { $('[data-toggle="tooltip"]').tooltip(); });
+
+        setTimeout(function () {
+            $(".sorting_1").removeAttr('colspan');
+        }, 500);
+    };
+
+    $('#btnSubmition').on('click', function () {
+
+        if ($('#mainForm').valid()) {
+
+            $(this).prop('disabled', true);
+
+            $('#submitLoader').show();
+
+            $('#mainForm').submit();
+
+        } else {
+            $(this).prop('disabled', false);
+
+            $('#submitLoader').hide();
+        }
+
+    });
+
+    $('#TmSupervisorId').select2(ReturnSelect2ObjectDefault(`${baseUrl}/TmSupervisors/GetTmSupervisorsBoxesSelect2`));
+    $('#OldCharityBoxid').select2();
+    $('#NewCharityBoxId').select2(ReturnSelect2ObjectCustomParams(`${baseUrl}/TmCharityBoxes/GetSelect2`, { statuslkpId: notActiveBoxId }));
+    $('#ActionLkpId').select2(ReturnSelect2ObjectForLkpsTypes('@ERP.Front.Helpers.Enums.Common.FndLkpsTypes.TmCharityBoxActionDetailsAction.ToString()'))
+    $('#searchBox #StatusLkpId').select2(ReturnSelect2ObjectForLkpsTypes('@ERP.Front.Helpers.Enums.Common.FndLkpsTypes.TmCharityBoxActionsStatues.ToString()'))
+
+    $('#TmLocationSubId').select2({
+        ajax: {
+            url: `${baseUrl}/TmLocations/GetSubLoactionForBoxesSelect2`,
+            dataType: 'json',
+            headers: {
+                'Authorization': `Bearer ${$_token}`
+            },
+            data: function (params) {
+                params.page = params.page || 1;
+                return {
+                    actionLkpId: $(`#ActionLkpId`).find(':selected').val(),
+                    pageSize: pageSize,
+                    pageNumber: params.page,
+                    searchTerm: params.term,
+                    lang: lang
+                };
+            },
+            processResults: function (data, params) {
+
+                params.page = params.page || 1;
+
+                return {
+                    results: data.result.results,
+                    pagination: {
+                        more: (params.page * pageSize) < data.result.total
+                    }
+                };
+            }
+        },
+        placeholder: select2Placeholder,
+        minimumInputLength: 0,
+        allowClear: true,
+        language: select2Lang
+    });
+
+</script>
+
+<script>
+
+    $('#ActionLkpId').on('change', function (e) {
+
+        const currentVal = $(this).find(':selected').val();
+
+        if (currentVal && currentVal != newBox && currentVal != replaceBox) {
+            $('#NewCharityBoxId').prop('disabled', true);
+            $('#NewCharityBoxId').val('').trigger('change');
+        } else {
+            $('#NewCharityBoxId').prop('disabled', false);
+        }
+
+        $('#TmLocationSubId').val('').trigger('change');
+
+    });
+
+    $('#TmLocationSubId').on('change', function (e) {
+
+        const currentVal = $(this).find(':selected').val();
+
+        if (currentVal) {
+
+            $.ajax({
+                url: `${baseUrl}/TmCharityBoxes/GetCharityBoxByLocation`,
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${$_token}`
+                },
+                data: {
+                    locationsubId: currentVal
+                }
+            }).done(function (data) {
+
+                if (data.result.item1) {
+                    $(`#OldCharityBoxid`).append($("<option selected='selected'></option>")
+                        .val(data.result.item1).text(data.result.item2)).trigger('change');
+                }
+
+            }).fail(function (e) {
+                toastr.error(e.responseText);
+            });
+        }
+
+    });
+
+
+</script>
+
+<script>
+
+    const _tblTmCharityBoxActionsDetailSelector = $('#tblTmCharityBoxActionsDetail');
+    const _tblTmCharityBoxActionsDetailSelectorBody = $('#tblTmCharityBoxActionsDetail tbody');
+    const _listTmCharityBoxActionsDetail = $('#BoxActionsDetailsListStr');
+
+    let _TmCharityBoxActionsDetail = [], updatedRow, tblCounterIndex = 0 ;
+
+    const fillDetail = function () {
+
+        if (validator() === false) return;
+
+        const current = {
+            index: ++tblCounterIndex,
+            actionLkpId: $('#ActionLkpId').find(':selected').val(),
+            actionLkp: $('#ActionLkpId').find(':selected').text(),
+            tmLocationSubId: $('#TmLocationSubId').find(':selected').val(),
+            tmLocationSubTxt: $('#TmLocationSubId').find(':selected').text(),
+            oldCharityBoxid: $('#OldCharityBoxid').find(':selected').val(),
+            oldCharityBox: $('#OldCharityBoxid').find(':selected').text(),
+            newCharityBoxId: $('#NewCharityBoxId').find(':selected').val(),
+            newCharityBox: $('#NewCharityBoxId').find(':selected').text(),
+            notes:$('#notesDetails').val(),
+            rowStatus: NewStatus,
+            id: 0
+        };
+
+        return current;
+    };
+
+    const AddTmCharityBoxActionsDetail = function () {
+
+        if (_TmCharityBoxActionsDetail.find(z => z.tmLocationSubId == $('#TmLocationSubId').find(':selected').val())) {
+            toastr.warning('@TmCharityBoxActions.LocationExistsBefore');
+            return false;
+        }
+
+        if (_TmCharityBoxActionsDetail.find(z => z.newCharityBoxId == $('#NewCharityBoxId').find(':selected').val())) {
+            toastr.warning('@TmCharityBoxActions.NewCharityBoxRepeated');
+            return false;
+        }
+
+        const current = fillDetail();
+
+        if (current === undefined) return;
+
+        _TmCharityBoxActionsDetail.push(current);
+
+        _listTmCharityBoxActionsDetail.val(JSON.stringify(_TmCharityBoxActionsDetail));
+
+        bindTmCharityBoxActionsDetailTable();
+
+        clearFormAdding();
+    };
+
+    const bindTmCharityBoxActionsDetailTable = function () {
+
+        const detailArr = _TmCharityBoxActionsDetail.filter(z => z.rowStatus !== DeletedStatus);
+
+        const columns = [
+            { 'data': 'index' },
+            { 'data': 'actionLkp' },
+            { 'data': 'tmLocationSubTxt' },
+            { 'data': 'oldCharityBox' },
+            { 'data': 'newCharityBox' },
+            { 'data': 'notes' },
+            {
+                'data': null,
+                'searchable': false,
+                'ordering': false,
+                'sorting': false,
+                'render': function (d, t, row) {
+
+                    let rows = '';
+
+                    if (primaryEntityKeyId === 0 || trigger !== '@ERP.Front.Helpers.Enums.Common.FormTriggers.Show.ToString()') {
+
+                        rows += `<td><a href="javascript:void(0)" onclick="return DeleteTmCharityBoxActionsDetail(${row.index})"><i class="mx-2 fas fa-trash-alt text-danger"></i></a>`;
+                        rows += `<a href="javascript:void(0)" onclick="return GetTmCharityBoxActionsDetailRow(${row.index})"><i class="mx-2 fas fa-edit text-success"></i></a></td>`;
+                    }
+                    else {
+                        rows += '<td></td>';
+                    }
+
+                    return rows;
+                }
+            }
+        ];
+
+        const dtObj = {
+            data: detailArr,
+            retrieve: true,
+            language: dataTableLang,
+            columns: columns,
+            drawCallback: function (c, v, b) {}
+        };
+
+        setTimeout(function () {
+
+            _tblTmCharityBoxActionsDetailSelector.dataTable().fnDestroy();
+            _tblTmCharityBoxActionsDetailSelector.DataTable(dtObj).on('draw', function () { $('[data-toggle="tooltip"]').tooltip(); });
+
+        }, 100);
+
+    };
+
+    const DeleteTmCharityBoxActionsDetail = function (index)  {
+
+        const current = _TmCharityBoxActionsDetail.find(z => z.index === index);
+
+        const indexOfCurrent = _TmCharityBoxActionsDetail.indexOf(current);
+
+        if (current.id === undefined || current.id == null || current.id == 0) {
+
+           _TmCharityBoxActionsDetail.splice(indexOfCurrent, 1);
+
+        } else {
+
+            current.rowStatus = DeletedStatus;
+
+           _TmCharityBoxActionsDetail.splice(indexOfCurrent, 1,current);
+        }
+
+        bindTmCharityBoxActionsDetailTable();
+
+        _listTmCharityBoxActionsDetail.val(_TmCharityBoxActionsDetail.length === 0 ? '' : JSON.stringify(_TmCharityBoxActionsDetail));
+
+    };
+
+    const LoadTmCharityBoxActionsDetailData = function () {
+
+        $.ajax({
+            url: `${baseUrl}/TmCharityBoxActions/GetAllDetails`,
+            method: 'GET',
+            headers: {
+                        'Authorization': `Bearer ${$_token}`
+            },
+            data: {
+                id: primaryEntityKeyId
+            }
+        }).done(function (data) {
+
+            _TmCharityBoxActionsDetail = [...data.result];
+
+            tblCounterIndex = 0;
+
+            $.each(_TmCharityBoxActionsDetail, function (i, item) {
+                item.index = ++tblCounterIndex;
+            });
+
+            bindTmCharityBoxActionsDetailTable();
+
+            _listTmCharityBoxActionsDetail.val(JSON.stringify(_TmCharityBoxActionsDetail));
+
+        });
+
+    };
+
+    const GetTmCharityBoxActionsDetailRow = function (tblIndex) {
+
+        clearFormAdding();
+
+        $('#btnAddDetailRow').hide();
+        $('#btnUpdateDetailRow').show();
+        $('#btnCancelDetailRow').show();
+
+        const current = _TmCharityBoxActionsDetail.find(z => z.index === tblIndex);
+
+        $(`#ActionLkpId`).append($("<option selected='selected'></option>")
+            .val(current.actionLkpId).text(current.actionLkp)).trigger('change');
+
+        $(`#OldCharityBoxid`).append($("<option selected='selected'></option>")
+            .val(current.oldCharityBoxid).text(current.oldCharityBox)).trigger('change');
+
+        $(`#NewCharityBoxId`).append($("<option selected='selected'></option>")
+            .val(current.newCharityBoxId).text(current.newCharityBox)).trigger('change');
+
+        $(`#TmLocationSubId`).append($("<option selected='selected'></option>")
+            .val(current.tmLocationSubId).text(current.tmLocationSubTxt)).trigger('change');
+
+        updatedRow = current;
+    };
+
+    const UpdateTmCharityBoxActionsDetailRow = function () {
+
+        if (_TmCharityBoxActionsDetail.find(z => z.index != updatedRow.index && z.tmLocationSubId == $('#TmLocationSubId').find(':selected').val())) {
+            toastr.warning('@TmCharityBoxActions.LocationExistsBefore');
+            return false;
+        }
+
+        if (_TmCharityBoxActionsDetail.find(z => z.index != updatedRow.index && z.newCharityBoxId == $('#NewCharityBoxId').find(':selected').val())) {
+            toastr.warning('@TmCharityBoxActions.NewCharityBoxRepeated');
+            return false;
+        }
+
+        let current = _TmCharityBoxActionsDetail.find(z => z.index === updatedRow.index);
+
+        let indexOfCurrent = _TmCharityBoxActionsDetail.indexOf(_TmCharityBoxActionsDetail.find(z => z.index === updatedRow.index));
+
+        const newRow = fillDetail();
+
+        if (newRow === undefined) return;
+
+        newRow.index = current.index;
+        newRow.id = updatedRow.id;
+        newRow.statusLkpId = updatedRow.statusLkpId;
+        newRow.rowStatus =  !updatedRow.id ? NewStatus : UpdatedStatus;
+
+        _TmCharityBoxActionsDetail.splice(indexOfCurrent, 1,newRow);
+
+        $('#btnAddDetailRow').show();
+        $('#btnUpdateDetailRow').hide();
+        $('#btnCancelDetailRow').hide();
+
+        clearFormAdding();
+
+        _listTmCharityBoxActionsDetail.val(JSON.stringify(_TmCharityBoxActionsDetail));
+
+        setTimeout(function () {
+            bindTmCharityBoxActionsDetailTable();
+        }, 100);
+    };
+
+    const clearFormAdding = function () {
+        $('#first .card:first input,textarea').val('');
+        $('#first .card:first select').val('').trigger('change');
+    };
+
+    const validator = function () {
+
+        if (!$('#ActionLkpId').find(':selected').val()) {
+            toastr.warning('@TmCharityBoxActions.ActionLkpId' + ' : ' + '@ERP.ResourcePack.Common.Settings.Required');
+            return false;
+        }
+
+        if (!$('#TmLocationSubId').find(':selected').val()) {
+            toastr.warning('@TmCharityBoxActions.TmLocationSubId' + ' : ' + '@ERP.ResourcePack.Common.Settings.Required');
+            return false;
+        }
+
+        if ($('#ActionLkpId').find(':selected').val() == newBox && !$('#NewCharityBoxId').find(':selected').val()) {
+            toastr.warning('@TmCharityBoxActions.NewCharityBoxId' + ' : ' + '@ERP.ResourcePack.Common.Settings.Required');
+            return false;
+        }
+
+        if ($('#ActionLkpId').find(':selected').val() == replaceBox &&  !$('#OldCharityBoxid').find(':selected').val() && !$('#NewCharityBoxId').find(':selected').val()) {
+            toastr.warning('@TmCharityBoxActions.NewCharityBoxId' + ' : ' + '@ERP.ResourcePack.Common.Settings.Required');
+            toastr.warning('@TmCharityBoxActions.OldCharityBoxid' + ' : ' + '@ERP.ResourcePack.Common.Settings.Required');
+            return false;
+        }
+
+        if (($('#ActionLkpId').find(':selected').val() == missedBox || $('#ActionLkpId').find(':selected').val() == gainBox || $('#ActionLkpId').find(':selected').val() == brokenBox)
+            && !$('#OldCharityBoxid').find(':selected').val()) {
+            toastr.warning('@TmCharityBoxActions.OldCharityBoxid' + ' : ' + '@ERP.ResourcePack.Common.Settings.Required');
+            return false;
+        }
+
+    };
+
+</script>

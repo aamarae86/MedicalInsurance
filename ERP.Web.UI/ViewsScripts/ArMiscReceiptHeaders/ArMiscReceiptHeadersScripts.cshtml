@@ -1,0 +1,1085 @@
+﻿@using ERP.ResourcePack.Accounts
+@using ERP.Web.UI.Controllers.Accounts
+@using ERP.Authorization;
+@{
+    string encUpdateTrigger = ERP.Front.Helpers.Enums.Common.EncUpdate;
+    string encShowTrigger = ERP.Front.Helpers.Enums.Common.EncShow;
+    string permissionsStr = TempData["Permissions"].ToString();
+}
+
+@if (permissionsStr.Contains(PermissionNames.Pages_ArMiscReceiptHeaders_Post))
+{
+    <script>
+        const PostAjax = function (id) {
+
+            bootbox.confirm({
+                message: _booBoxMessagePosting,
+                buttons: bootBoxDefaultBtns,
+                callback: function (result) {
+
+                    if (result) {
+
+                        const data = {
+                            id: id,
+                            lang: lang,
+                            userId: 0
+                        };
+
+                        $.ajax({
+                            url: `${baseUrl}/ArMiscReceiptHeaders/PostArMiscReceiptHeader`,
+                            type: 'POST',
+                            data: JSON.stringify(data),
+                            headers:
+                            {
+                                'Content-Type': 'application/json',
+                                'Authorization': `Bearer ${$_token}`
+                            },
+                        }).done(function (response) {
+
+                            if (response.result.finalStatues == 'F') {
+
+                                toastr.warning(response.result.reason);
+                            }
+                            else {
+                                toastr.success(response.result.reason);
+
+                                if (formView) {
+
+                                    setTimeout(function () {
+                                        window.location.href = $PrefixHostName + '/ArMiscReceiptHeaders';
+                                    }, 100);
+
+                                } else {
+                                    LoadDataGrid();
+                                }
+                            }
+                        }).fail(function (response) {
+                            toastr.error(response);
+                        });
+                    }
+
+                }
+            });
+
+
+
+        };
+    </script>
+}
+else
+{
+    <script>
+        const PostAjax = function (id) { };
+    </script>
+}
+
+<script>
+    const _mainController = "ArMiscReceiptHeaders"
+
+    function getMaskValNum(val) {
+            if (typeof val == "string") {
+                return Number(val.replace(/,/g, ''));
+            } else {
+                return val;
+            }
+    }
+
+
+    $(function () {
+
+        var initPostedLkpId = (lang === 'ar-EG') ? "جديد" : "New";
+        $('#searchBox #PostedLkpId').append($("<option selected='selected'></option>")
+            .val(52).text(initPostedLkpId)).trigger('change');
+
+        LoadDataGrid();
+        $('#tblArMiscReceiptHeadersPrint thead').html($('#tblArMiscReceiptHeaders thead').html());
+        $('#tblArMiscReceiptHeadersPrint thead tr :last-child').remove();
+        $('#ArMiscReceiptHeaders').addClass('active');
+
+        $('#ReceiptNumber').parent('.form-line').addClass('focused');
+        $('#CaseNumber').parent('.form-line').addClass('focused');
+
+        $('#CheckNumber').prop('type', 'number');
+        $('#CheckNumber').prop('min', '0');
+
+    });
+
+    const _loadDataUrl = `${$PrefixHostName}/${_mainController}/@nameof(ArMiscReceiptHeadersController.LoadDataGrid)`;
+    const _tblSelector = $('#tblArMiscReceiptHeaders');
+    const _tblLoader = $('#tblLoader');
+    const _mainForm = $('#mainForm');
+    const _txtReceiptNumberSearch = $('#searchBox #ReceiptNumber');
+    const _txtCheckNumberSearch = $('#searchBox #CheckNumber');
+    const _txtAmountSearch = $('#searchBox #Amount');
+    const _PostStatus = @Convert.ToInt64(ERP.Front.Helpers.Enums.Common.ArMiscReceiptHeadersPost.Posted);
+
+    const _permissions = '@permissionsStr';
+    const _updatePermission = '@PermissionNames.Pages_ArMiscReceiptHeaders_Update';
+    const _deletePermission = '@PermissionNames.Pages_ArMiscReceiptHeaders_Delete';
+    const _postPermission = '@PermissionNames.Pages_ArMiscReceiptHeaders_Post';
+
+    $('#btnSubmition').on('click', function () {
+
+        if (_miscLinesArr.length === 0) {
+            toastr.warning('@ArMiscReceiptHeaders.FillDetailTable');
+            return;
+        }
+
+        if (ValidateDetailsData() === false) return;
+
+        _mainForm.submit();
+
+        if (_mainForm.valid()) {
+
+            $(this).hide();
+            $('#submitLoader').show();
+
+        } else {
+
+            $(this).show();
+            $('#submitLoader').hide();
+        }
+
+    });
+
+    var OnBegin = function (response) {
+        fireBtnLoader();
+    };
+
+    var OnSuccess = function (response) {
+
+        if (response.success) {
+
+            if (response.customRestResult.trigger === '@ERP.Front.Helpers.Enums.Common.FormTriggers.Insert') {
+
+                toastr.success(response.customRestResult.message);
+
+                setTimeout(function () {
+                    window.location.href =  $PrefixHostName + '/ArMiscReceiptHeaders';
+                },200);
+
+            } else if (response.customRestResult.trigger === '@ERP.Front.Helpers.Enums.Common.FormTriggers.Update') {
+
+                toastr.success(response.customRestResult.message);
+
+                 setTimeout(function () {
+                    window.location.href =  $PrefixHostName + '/ArMiscReceiptHeaders';
+                },200);
+            }
+
+        } else {
+               toastr.error(response.customRestResult.message);
+        }
+
+    };
+
+    var OnComplete = function (response) {
+        downBtnLoader();
+    };
+
+    var OnFailure = function (response) {
+        toastr.error(response);
+        downBtnLoader();
+    };
+
+    const LoadDataGrid = function () {
+
+        const parms = {
+            Amount: _txtAmountSearch.val(),
+            ReceiptNumber: _txtReceiptNumberSearch.val(),
+            CheckNumber: _txtCheckNumberSearch.val(),
+            PostedLkpId: $('#searchBox #PostedLkpId').find(':selected').val(),
+            SourceCodeLkpId: $('#searchBox #SourceCodeLkpId').find(':selected').val(),
+            BeneficentId: $('#searchBox #BeneficentId').find(':selected').val(),
+            SpContractDetailsId: $('#searchBox #SpContractDetailsId').find(':selected').val()
+        };
+
+        const columns = [
+            {
+                "data": "result.data.id",
+                'render': function (data, type, row, meta) {
+                    return meta.row + meta.settings._iDisplayStart + 1;
+                }
+            },
+            {
+                "data": "ReceiptNumber",
+                "name": "ReceiptNumber",
+                "autoWidth": true
+            },
+            {
+                "data": "MiscReceiptDate",
+                "name": "MiscReceiptDate",
+                "autoWidth": true
+            },
+            {
+                "data": null,
+                "autoWidth": true,
+                "render": function (d, t, row) {
+                    return row.SpBeneficent ? row.SpBeneficent.BeneficentName : '';
+                }
+            },
+            {
+                "data": "Amount",
+                "name": "Amount",
+                "render": $.fn.dataTable.render.number(',', '.', 2),
+                "autoWidth": true
+            },
+            {
+                "data": null,
+                "autoWidth": true,
+                "render": function (d, t, row) {
+                    return row.FndLookupValuesPostedLkp ? (lang === 'ar-EG' ? row.FndLookupValuesPostedLkp.NameAr : row.FndLookupValuesPostedLkp.NameEn) :'';
+                }
+            },
+            {
+                "data": null,
+                "sortable": false,
+                "render": function (data, type, row) {
+
+                    let formAction = `${$PrefixHostName}/${_mainController}/@nameof(ArMiscReceiptHeadersController.ArMiscReceiptHeadersForm)`;
+                    let DeleteAction = `${$PrefixHostName}/${_mainController}/@nameof(ArMiscReceiptHeadersController.Delete)`;
+
+                    let btns = '';
+
+                    if (_permissions.includes(_postPermission) & row.PostedLkpId != _PostStatus) {
+                        btns += `<a href="javascript:void(0)" onclick="PostAjax(${row.Id})"  title="@ERP.ResourcePack.Common.Settings.Post"><i class="mx-2 fas fa-check-circle text-info"></i></a>`;
+                    }
+
+                    if (_permissions.includes(_updatePermission) && row.PostedLkpId != _PostStatus) {
+                        btns += `<a href="${$PrefixHostName}/ArMiscReceiptHeaders/FormView?id=${row.EncId}&t=@encUpdateTrigger"  title="@ERP.ResourcePack.Common.Settings.Edit"><i class="mx-2 fas fa-edit text-info"></i></a>`;
+                    }
+
+                    btns += `<a href="${$PrefixHostName}/ArMiscReceiptHeaders/FormView?id=${row.EncId}&t=@encShowTrigger"  title="@ERP.ResourcePack.Common.Settings.Show"><i class="mx-2 fas fa-eye text-info"></i></a>`;
+
+                    if (_permissions.includes(_deletePermission) && row.PostedLkpId != _PostStatus) {
+                        btns += `<a href="javascript:void(0)" onclick="AjaxController.DeleteMainTableRow(${row.Id},'${DeleteAction}');"  title="@ERP.ResourcePack.Common.Settings.Delete"><i class="mx-2 fas fa-trash-alt text-danger"></i></a>`;
+                    }
+
+                    if (row.PostedLkpId == _PostStatus) {
+                        btns += `<a href="javascript:void(0);" onclick="return print('${$PrefixHostName}/ArMiscReceiptHeaders/PrintMiscreceiptScreen','${row.EncId}','${lang}')"><i class="mx-2 fas fa-print text-success"></i></a>`;
+                    }
+
+                    const _auditedPermission = '@PermissionNames.Pages_ArMiscReceiptHeaders_Audit';
+
+                    if (_permissions.includes(_auditedPermission)) {
+
+                        row.permission = _auditedPermission;
+
+                        btns += GetAuditedButton(row);
+                    }
+
+                    return btns;
+                }
+            }
+        ];
+
+        const dtObj = {
+            "processing": true,
+            "serverSide": true,
+            "filter": false,
+            "orderMulti": false,
+            "language": dataTableLang,
+            "ajax": {
+                "url": _loadDataUrl,
+                "type": "POST",
+                "datatype": "json",
+                "data": parms,
+                "complete": function () {
+                    _tblLoader.hide();
+                }
+            },
+            "columns": columns,
+            "initComplete": function () {
+                $('[data-toggle="tooltip"]').tooltip();
+            }
+
+        };
+
+        _tblSelector.dataTable().fnDestroy();
+        _tblSelector.DataTable(dtObj).on('draw', function () { $('[data-toggle="tooltip"]').tooltip(); });
+
+        setTimeout(function () {
+            $(".sorting_1").removeAttr('colspan');
+        }, 500);
+    };
+
+    $('#searchBox #SpContractDetailsId').select2(ReturnSelect2ObjectDefault(`${baseUrl}/ArMiscReceiptHeaders/GetSpCasesWithSpContractDetailsSearchSelect2`));
+
+    $('#searchBox #BeneficentId').select2(ReturnSelect2ObjectDefault(`${baseUrl}/SpBeneficent/GetSpBeneficentSelect2`));
+
+    $('#BeneficentId').select2(ReturnSelect2ObjectDefault(`${baseUrl}/SpBeneficent/GetSpBeneficentSelect2`));
+
+    $('#CollectorId').select2(ReturnSelect2ObjectDefault(`${baseUrl}/FndCollectors/GetFndCollectorsSelect2`));
+
+    $('#searchBox #PostedLkpId').select2(ReturnSelect2ObjectForLkpsTypes('@ERP.Front.Helpers.Enums.Common.FndLkpsTypes.ArMiscReceiptHeadersPost.ToString()'));
+
+    $('#SourceCodeLkpId').select2(ReturnSelect2ObjectForLkpsTypes('@ERP.Front.Helpers.Enums.Common.FndLkpsTypes.ArMiscReceiptHeadersSourceCode.ToString()'));
+
+    $('#BankLkpId').select2(ReturnSelect2ObjectForLkpsTypes('@ERP.Front.Helpers.Enums.Common.FndLkpsTypes.Banks.ToString()'));
+
+    $('#TransactionTypeLkpId').select2(ReturnSelect2ObjectForLkpsTypes('@ERP.Front.Helpers.Enums.Common.FndLkpsTypes.ArMiscReceiptHeadersTransType.ToString()'));
+
+    $('#ReceiptTypeLkpId').select2(ReturnSelect2ObjectForLkpsTypes('@ERP.Front.Helpers.Enums.Common.FndLkpsTypes.ArMiscReceiptLinesReceiptType.ToString()'));
+
+    $('#BankAccountdetailsId').select2(
+        ReturnSelect2ObjectCustomParams(`${baseUrl}/ApBankAccounts/GetUserAccessedApBankAccountsSelect2`,
+            { bankLkpId:@Convert.ToInt64(ERP.Front.Helpers.Enums.Common.FndBankLkpsTypes.Bank)}));
+
+    $('#mainForm #BankAccountId').select2({
+        ajax: {
+            url: `${baseUrl}/ApBankAccounts/GetUserAccessedApBankAccountsSelect2`,
+            dataType: 'json',
+            headers: {
+                'Authorization': `Bearer ${$_token}`
+            },
+            data: function (params) {
+                params.page = params.page || 1;
+                return {
+                    bankLkpId: $('#ReceiptTypeLkpId').find(':selected').val() ?
+                        ($('#ReceiptTypeLkpId').find(':selected').val() == @Convert.ToInt64(ERP.Front.Helpers.Enums.Common.ArMiscReceiptLinesReceiptType.Cash) ||
+                            $('#ReceiptTypeLkpId').find(':selected').val() == @Convert.ToInt64(ERP.Front.Helpers.Enums.Common.ArMiscReceiptLinesReceiptType.CheQ)?
+                                        @Convert.ToInt64(ERP.Front.Helpers.Enums.Common.BankType.Box) :
+                            ($('#ReceiptTypeLkpId').find(':selected').val() == @Convert.ToInt64(ERP.Front.Helpers.Enums.Common.ArMiscReceiptLinesReceiptType.BankTransfare) ?
+                                            @Convert.ToInt64(ERP.Front.Helpers.Enums.Common.BankType.Bank) : '')) : '',
+                    pageSize: pageSize,
+                    pageNumber: params.page,
+                    searchTerm: params.term,
+                    lang: lang
+                };
+            },
+            processResults: function (data, params) {
+
+                params.page = params.page || 1;
+
+                return {
+                    results: data.result.results,
+                    pagination: {
+                        more: (params.page * pageSize) < data.Total
+                    }
+                };
+            }
+        },
+        placeholder: select2Placeholder,
+        minimumInputLength: 0,
+        allowClear: true,
+        language: select2Lang
+    });
+
+    $('#MiscReceiptTaps #SpContractDetailsId').select2({
+        ajax: {
+            url: `${baseUrl}/ArMiscReceiptHeaders/GetSpCasesWithSpContractDetailsSelect2`,
+            dataType: 'json',
+            headers: {
+                'Authorization': `Bearer ${$_token}`
+            },
+            data: function (params) {
+                params.page = params.page || 1;
+                return {
+                    beneficentId: $('#BeneficentId').find(':selected').val(),
+                    pageSize: pageSize,
+                    pageNumber: params.page,
+                    searchTerm: params.term,
+                    lang: lang
+                };
+            },
+            processResults: function (data, params) {
+
+                params.page = params.page || 1;
+
+                return {
+                    results: data.result.results,
+                    pagination: {
+                        more: (params.page * pageSize) < data.result.total
+                    }
+                };
+            }
+        },
+        placeholder: select2Placeholder,
+        minimumInputLength: 0,
+        allowClear: true,
+        language: select2Lang,
+        templateSelection: function (data, container) {
+
+            if (data.altText)  $(`#CaseNumber`).val(data.altText);
+
+            return data.text;
+        }
+    });
+
+    $('#ReceiptTypeLkpId').on('change', function (e) {
+        $('#mainForm #BankAccountId').val('').trigger('change');
+    });
+
+    const ValidateDetailsData = function () {
+        let valid = true;
+
+        if ($('#ReceiptTypeLkpId').find(':selected').val() == @Convert.ToInt64(ERP.Front.Helpers.Enums.Common.ArMiscReceiptLinesReceiptType.CheQ)) {
+
+            if (_miscDetailsArr.filter(z => z.rowStatus !== DeletedStatus).length === 0) {
+                toastr.warning('@ArMiscReceiptHeaders.MiscReceiptDetailsRequired');
+                valid = false;
+            }
+            else if (_miscDetailsArr.filter(z => z.rowStatus != DeletedStatus).length > 1 && _miscLinesArr.filter(z => z.rowStatus != DeletedStatus).length > 1) {
+                toastr.warning('@ArMiscReceiptHeaders.DetailsMoreThanTwo');
+                valid = false;
+            }
+        }
+
+        return valid;
+    };
+
+</script>
+
+<script>
+
+    const GetBeneficentModal = function () {
+
+        $('.page-loader-wrapper').css("display", "block");
+
+        $.ajax({
+            url: `${$PrefixHostName}/SpBeneficent/SpBeneficentFormShortCut`,
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${$_token}`
+            }
+        }).done(function (data) {
+
+            $('.page-loader-wrapper').css("display", "none");
+
+            _mainModalBody.html(data);
+            _mainModal.modal(_mainModalOprions);
+
+        });
+
+    };
+
+    var OnBeginBeneficent = function (response) {
+        fireBtnLoader();
+    };
+
+    var OnSuccessBeneficent = function (response) {
+
+        if (response.success) {
+            toastr.success(response.customRestResult.message);
+
+            $(`#mainForm #BeneficentId`).append($("<option selected='selected'></option>")
+                .val(response.result.id)
+                .text(response.result.beneficentName)).trigger('change');
+
+            _mainModal.modal('hide');
+
+        } else {
+            toastr.error(response.customRestResult.message);
+        }
+
+    };
+
+    var OnCompleteBeneficent = function (response) {
+        downBtnLoader();
+    };
+
+    var OnFailureBeneficent = function (response) {
+        downBtnLoader();
+    };
+
+</script>
+
+<script id="MiscLines">
+
+    const _tblArMiscReceiptLinesSelector = $('#tblArMiscReceiptLines');
+    const _tblArMiscReceiptLinesSelectorBody = $('#tblArMiscReceiptLines tbody');
+    const _listArMiscReceiptLines = $('#ListArMiscReceiptLines');
+
+    let totalOfTotal = 0, totalOfTotalCheck = 0, totalCheck = 0 ,_miscLinesArr = [], tblLinesCounterIndex = 0 , updatedRow
+
+    const fillLinesArr = function () {
+
+        if (validateLines() === false)  return;
+
+        const resultCodeComUtility = GetCodeComUtilites(__arrGlSelect2, 'AccId');
+        const resultAdminCodeComUtility = GetCodeComUtilites(admin__arrGlSelect2, 'adminAccId');
+
+        if (resultCodeComUtility === null) {
+            toastr.warning('@ArMiscReceiptHeaders.Account' + ' : '  + '@ERP.ResourcePack.Common.Settings.Required');
+            return;
+        }
+
+        if ($('#lines #AdministrativePercent').val() != "0" && $('#lines #AdministrativePercent').val()  &&  resultAdminCodeComUtility === null ) {
+            toastr.warning('@ArMiscReceiptHeaders.AdminAccount' + ' : '  + '@ERP.ResourcePack.Common.Settings.Required');
+            return;
+        }
+
+        if (!$('#lines #AdministrativePercent').val() && resultAdminCodeComUtility) {
+            toastr.warning('@ArMiscReceiptHeaders.AdminitrativePercent' + ' : ' + '@ERP.ResourcePack.Common.Settings.Required')
+            return;
+        }
+
+        const current = {
+            index: ++tblLinesCounterIndex,
+            codeComUtilityIds: resultCodeComUtility.idsStr,
+            codeComUtilityTexts: resultCodeComUtility.textsStr,
+            codeComUtilityIds_alt1:!resultAdminCodeComUtility ? '' : resultAdminCodeComUtility.idsStr,
+            codeComUtilityTexts_alt1:!resultAdminCodeComUtility ? '' : resultAdminCodeComUtility.textsStr,
+            manualReceiptNumber: $('#lines #ManualReceiptNumberLines').val(),
+            administrativePercent: $('#lines #AdministrativePercent').val(),
+            miscReceiptAmount: $('#lines #MiscReceiptAmount').val(),
+            sourceCodeLkpId: $('#lines #SourceCodeLkpId').find(':selected').val(),
+            sourceCodeLkp: $('#lines #SourceCodeLkpId').find(':selected').text(),
+            notes: $('#lines #Notes').val(),
+            spContractDetailsId: $('#MiscReceiptTaps #SpContractDetailsId').find(':selected').val(),
+            caseName: $('#MiscReceiptTaps #SpContractDetailsId').find(':selected').text(),
+            caseNumber:$('#CaseNumber').val(),
+            rowStatus: NewStatus
+        };
+
+        return current;
+    };
+
+    const AddMiscLines = function () {
+
+        const current = fillLinesArr();
+
+        if (current === undefined) return;
+
+        _miscLinesArr.push(current);
+
+        _listArMiscReceiptLines.val(JSON.stringify(_miscLinesArr));
+
+        bindLinesTable();
+
+        clearFormAdding();
+    };
+
+    const UpdateMiscLineRow = function () {
+
+        let current = _miscLinesArr.find(z => z.index === updatedRow.index);
+
+        let indexOfCurrent = _miscLinesArr.indexOf(current);
+
+        const newRow = fillLinesArr();
+
+        if (newRow === undefined) return;
+
+        newRow.arMiscReceiptLinesId = updatedRow.arMiscReceiptLinesId;
+        newRow.rowStatus = !updatedRow.arMiscReceiptLinesId ? NewStatus : UpdatedStatus;
+
+        _miscLinesArr.splice(indexOfCurrent, 1,newRow);
+
+        $('#btnAddLineRow').show();
+        $('#btnUpdateLineRow').hide();
+        $('#btnCancelLineRow').hide();
+
+        clearFormAdding();
+
+        _listArMiscReceiptLines.val(JSON.stringify(_miscLinesArr));
+
+        bindLinesTable();
+    };
+
+    const bindLinesTable = function () {
+
+        totalOfTotal = 0,totalOfTotalCheck = 0;
+
+        let rows = '';
+
+        const detailArr = _miscLinesArr.filter(z => z.rowStatus !== DeletedStatus);
+
+        $.each(detailArr, function (i, item) {
+            const administrativeAmmount = item.administrativePercent ? parseFloat((parseFloat(item.miscReceiptAmount) * parseFloat(item.administrativePercent)) / 100) : '';
+            const total = (parseFloat(item.miscReceiptAmount));
+
+            totalOfTotal = parseFloat(totalOfTotal)  + total;
+
+            if ($('#ReceiptTypeLkpId').find(':selected').val() == 59)
+                totalOfTotalCheck = parseFloat(totalOfTotalCheck) +  total;
+
+            rows += '<tr>';
+            rows += `<td>${item.index}</td>`;
+
+            rows += '<td> <ul class="list-group">';
+            rows += '<li class="list-group-item text-center text-info">';
+            rows +=`<strong style="font-weight:800;color:#343434">@ERP.ResourcePack.Accounts.ArMiscReceiptHeaders.Account</strong> :: ${item.codeComUtilityTexts}`
+            rows += '</li>';
+
+            rows += '<li class="list-group-item text-center text-info">';
+            rows +=`<strong style="font-weight:800;color:#343434">@ERP.ResourcePack.Accounts.ArMiscReceiptHeaders.AdminAccount</strong> :: ${item.codeComUtilityTexts_alt1}`
+            rows += '</li>';
+            rows += '</td> </ul>';
+
+            rows += `<td>${item.receiptTypeLkp ? item.receiptTypeLkp : $('#ReceiptTypeLkpId').find(':selected').text() }</td>`;
+               //rows += `<td>${item.caseName}</td>`;
+              // rows += `<td>${item.caseNumber}</td>`;
+             //  rows += `<td>${item.manualReceiptNumber}</td>`;
+            rows += `<td>${Number(item.miscReceiptAmount).toLocaleString(undefined, optionsNumFormat)}</td>`;
+            rows += `<td>${item.administrativePercent ? item.administrativePercent : ''} <small> %</small></td>`;
+            rows += `<td>${administrativeAmmount}</td>`;
+            rows += `<td>${item.notes}</td>`;
+
+            if (primaryEntityKeyId === 0 || trigger !== '@ERP.Front.Helpers.Enums.Common.FormTriggers.Show.ToString()') {
+                rows += `<td><a href="javascript:void(0)" onclick="return DeleteRowLine(${item.index})"><i class="mx-2 fas fa-trash-alt text-danger"></i></a>`;
+                rows += `<a href="javascript:void(0)" onclick="return GetRow(${item.index})"><i class="mx-2 fas fa-edit text-success"></i></a></td>`;
+            } else {
+                rows += '<td></td>';
+            }
+
+            rows += '</tr>';
+        });
+
+        setTimeout(function () {
+            _tblArMiscReceiptLinesSelector.DataTable().clear().destroy();
+            _tblArMiscReceiptLinesSelectorBody.html(rows);
+            _tblArMiscReceiptLinesSelector.DataTable();
+        }, 100);
+
+    };
+
+    const DeleteRowLine= function (index) {
+
+        const current = _miscLinesArr.find(z => z.index === index);
+
+        const indexOfCurrent = _miscLinesArr.indexOf(current);
+
+        if (current.arMiscReceiptLinesId === undefined || current.arMiscReceiptLinesId == null || current.arMiscReceiptLinesId == 0) {
+
+           _miscLinesArr.splice(indexOfCurrent, 1);
+
+        } else {
+
+            current.rowStatus = DeletedStatus;
+
+           _miscLinesArr.splice(indexOfCurrent, 1,current);
+        }
+
+        bindLinesTable();
+
+        _listArMiscReceiptLines.val(_miscLinesArr.length === 0 ? '' : JSON.stringify(_miscLinesArr));
+    };
+
+    const LoadArMiscReceiptLinesData = function () {
+
+        $('#tblLoaderLine').show();
+
+        $.ajax({
+            url: `${baseUrl}/ArMiscReceiptHeaders/GetAllArMiscReceiptLines`,
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${$_token}`
+            },
+            data: {
+                miscReceiptId: primaryEntityKeyId
+            }
+        }).done(function (data) {
+
+            _miscLinesArr = [...data.result];
+
+            bindLinesTable();
+
+            _listArMiscReceiptLines.val(JSON.stringify(_miscLinesArr));
+
+            const newarr = data.result.reverse();
+
+            tblLinesCounterIndex = newarr[0].index;
+
+            $('#tblLoaderLine').hide();
+        });
+
+    };
+
+    const GetRow = function (tblIndex) {
+
+        clearFormAdding();
+
+        $('#btnAddLineRow').hide();
+        $('#btnUpdateLineRow').show();
+        $('#btnCancelLineRow').show();
+
+        const current = _miscLinesArr.find(z => z.index === tblIndex);
+
+        BindCodeComUtilitesDropDowns(__arrGlSelect2, 'AccId', current.codeComUtilityIds, current.codeComUtilityTexts);
+        BindCodeComUtilitesDropDowns(admin__arrGlSelect2, 'adminAccId', current.codeComUtilityIds_alt1, current.codeComUtilityTexts_alt1);
+
+        $('#lines #ManualReceiptNumberLines').val(current.manualReceiptNumber);
+        $('#lines #AdministrativePercent').val(current.administrativePercent);
+        $('#lines #MiscReceiptAmount').val(current.miscReceiptAmount);
+        $('#lines #Notes').val(current.notes);
+        $('#lines #CaseNumber').val(current.caseNumber);
+
+        $('#lines #ManualReceiptNumberLines').parent('.form-line').addClass('focused');
+        $('#lines #AdministrativePercent').parent('.form-line').addClass('focused');
+        $('#lines #MiscReceiptAmount').parent('.form-line').addClass('focused');
+        $('#lines #Notes').parent('.form-line').addClass('focused');
+
+        $(`#lines #SpContractDetailsId`)
+            .append($("<option selected='selected'></option>")
+                .val(current.spContractDetailsId)
+                .text(current.caseName))
+            .trigger('change');
+
+        updatedRow = current;
+
+    };
+
+    const clearFormAdding = function () {
+
+        $('#lines .card input').val('');
+        $('#lines .card textarea').val('');
+        $('#lines .card select:not(.slct2gl)').val('').trigger('change');
+
+        $('#details .card select:not(.slct2gl)').val('').trigger('change');
+        $('#details .card input').val('');
+        $('#details .card textarea').val('');
+
+    };
+
+    const validateLines = function () {
+
+        @*if ($('#lines #ReceiptTypeLkpId').find(':selected').val() === undefined || $('#lines #ReceiptTypeLkpId').find(':selected').val() === '') {
+            toastr.warning('@ArMiscReceiptHeaders.ReceiptTypeLkpId' + ' : ' + '@ERP.ResourcePack.Common.Settings.Required')
+            return false;
+        }*@
+
+        if ($('#lines #MiscReceiptAmount').val() === '') {
+            toastr.warning('@ArMiscReceiptHeaders.Amount' + ' : ' + '@ERP.ResourcePack.Common.Settings.Required')
+            return false;
+        }
+        return true;
+    };
+
+</script>
+
+<script id="miscDetails">
+
+    const _tblArMiscReceiptDetailsSelector = $('#tblArMiscReceiptDetails');
+    const _tblArMiscReceiptDetailsSelectorBody = $('#tblArMiscReceiptDetails tbody');
+    const _tblArMiscReceiptDetailsSelectorHead = $('#tblArMiscReceiptDetails thead tr');
+    const _listArMiscReceiptDetails = $('#ListArMiscReceiptDetails');
+
+    let _miscDetailsArr = [], tblMiscCounterIndex = 0,updatedRowDetail;
+
+    const fillMiscDetailArr = function () {
+
+        if (validateDetails() === false) return;
+
+        const current = {
+            index: ++tblMiscCounterIndex,
+            checkNumber: $('#details #CheckNumber').val(),
+            bankLkpId: $('#details #BankLkpId').find(':selected').val(),
+            bank: $('#details #BankLkpId').find(':selected').text(),
+            bankAccountId: $('#details #BankAccountdetailsId').find(':selected').val(),
+            bankAccount: $('#details #BankAccountdetailsId').find(':selected').text(),
+            amount: $('#details #AmountDetail').val(),
+            maturityDate:$('#details #MaturityDate').val(),
+            rowStatus: NewStatus
+        };
+
+        return current;
+    };
+
+    const AddMiscDetails = function () {
+
+        const current = fillMiscDetailArr();
+
+        if (current === undefined) return;
+
+        _miscDetailsArr.push(current);
+
+        _listArMiscReceiptDetails.val(JSON.stringify(_miscDetailsArr));
+
+        clearFormAdding();
+
+        bindMiscDetailsTable();
+    };
+
+    const bindMiscDetailsTable = function () {
+
+        totalCheck = 0;
+
+        let rows = '';
+
+        const detailArr = _miscDetailsArr.filter(z => z.rowStatus !== DeletedStatus);
+
+        $.each(detailArr, function (i, item) {
+
+            totalCheck = parseFloat(getMaskValNum(totalCheck)) + parseFloat(getMaskValNum(item.amount));
+
+            rows += '<tr>';
+
+            rows += `<td>${item.index}</td>`;
+            rows += `<td>${item.checkNumber}</td>`;
+            rows += `<td>${item.bank}</td>`;
+            rows += `<td>${item.maturityDate}</td>`;
+            rows += `<td>${item.bankAccount}</td>`;
+            rows += `<td>${Number(item.amount).toLocaleString(undefined, optionsNumFormat)}</td>`;
+
+            if (primaryEntityKeyId === 0 || trigger !== '@ERP.Front.Helpers.Enums.Common.FormTriggers.Show.ToString()') {
+                rows += `<td><a href="javascript:void(0)" onclick="return DeleteRowDetails(${item.index})"><i class="mx-2 fas fa-trash-alt text-danger"></i></a>`;
+                rows += `<a href="javascript:void(0)" onclick="return GetRowDetail(${item.index})"><i class="mx-2 fas fa-edit text-success"></i></a></td>`;
+            } else {
+                rows += '<td></td>';
+            }
+
+            rows += '</tr>';
+        });
+
+        @*rows += '<tr>';
+        rows += `<th class="text-center" colspan="2"><strong>@ArMiscReceiptHeaders.Total</strong></th>`;
+        rows += '<td></td><td></td><td>';
+        rows += `<th class="text-center" colspan="2"><strong>${totalCheck}</strong></th>`;
+        rows += '</tr>';*@
+
+        setTimeout(function () {
+            _tblArMiscReceiptDetailsSelector.DataTable().clear().destroy();
+            _tblArMiscReceiptDetailsSelectorBody.html(rows);
+            _tblArMiscReceiptDetailsSelector.DataTable();
+            _tblArMiscReceiptDetailsSelector.DataTable().row.add([`<b class="font-bold">@ArMiscReceiptHeaders.Total</b>`, '', '', '', '', `<b class="font-bold">${totalCheck.toLocaleString()}</b>`, '']).draw();
+        }, 100);
+
+    };
+
+    const DeleteRowDetails = function (index) {
+
+        const current = _miscDetailsArr.find(z => z.index === index);
+
+        const indexOfCurrent = _miscDetailsArr.indexOf(current);
+
+        if (current.arMiscDetailId === undefined || current.arMiscDetailId == null || current.arMiscDetailId == 0) {
+
+           _miscDetailsArr.splice(indexOfCurrent, 1);
+
+        } else {
+
+            current.rowStatus = DeletedStatus;
+
+           _miscDetailsArr.splice(indexOfCurrent, 1,current);
+        }
+
+        bindMiscDetailsTable();
+
+        _listArMiscReceiptDetails.val(_miscDetailsArr.length === 0 ? '' : JSON.stringify(_miscDetailsArr));
+    };
+
+    const LoadArMiscReceiptDetailsData = function () {
+
+        $('#tblLoaderDetail').show();
+
+        $.ajax({
+            url: `${baseUrl}/ArMiscReceiptHeaders/GetAllArMiscReceiptDetails`,
+            method: 'GET',
+            headers: {
+                        'Authorization': `Bearer ${$_token}`
+            },
+            data: {
+                miscReceiptId: primaryEntityKeyId
+            }
+        }).done(function (data) {
+
+            _miscDetailsArr = [...data.result];
+
+            bindMiscDetailsTable();
+
+            _listArMiscReceiptDetails.val(JSON.stringify(_miscDetailsArr));
+
+            const newarr = data.result.reverse();
+
+            if (newarr.length === 0) {
+                $('#tblLoaderDetail').hide();
+                return;
+            }
+
+            $('#tblLoaderDetail').hide();
+
+            tblMiscCounterIndex = newarr[0].index;
+
+
+        });
+
+    };
+
+    const GetRowDetail = function (tblIndex) {
+
+        clearFormAdding();
+
+        const current = _miscDetailsArr.find(z => z.index === tblIndex);
+
+        $('#btnAddMiscDetailRow').hide();
+        $('#btnUpdateMiscDetailRow').show();
+        $('#btnCancelMiscDetailRow').show();
+
+
+        $('#details #CheckNumber').val(current.checkNumber);
+        $('#details #AmountDetail').val(current.amount);
+        $('#details #MaturityDate').val(current.maturityDate);
+
+        $('#details #CheckNumber').parent('.form-line').addClass('focused');
+        $('#details #AmountDetail').parent('.form-line').addClass('focused');
+        $('#details #MaturityDate').parent('.form-line').addClass('focused');
+
+        $(`#details #BankLkpId`)
+        .append($("<option selected='selected'></option>")
+        .val(current.bankLkpId)
+        .text(current.bank))
+        .trigger('change');
+
+         $(`#details #BankAccountdetailsId`)
+        .append($("<option selected='selected'></option>")
+        .val(current.bankAccountId)
+        .text(current.bankAccount))
+        .trigger('change');
+
+        updatedRowDetail = current;
+
+    };
+
+    const UpdateMiscRow = function () {
+
+        let current = _miscDetailsArr.find(z => z.index === updatedRowDetail.index);
+
+        let indexOfCurrent = _miscDetailsArr.indexOf(_miscDetailsArr.find(z => z.index === updatedRowDetail.index));
+
+        if (fillMiscDetailArr() === undefined) return;
+
+        const newRow = fillMiscDetailArr();
+
+        newRow.arMiscDetailId = updatedRowDetail.arMiscDetailId;
+        newRow.rowStatus =
+            (updatedRowDetail.arMiscDetailId === undefined || updatedRowDetail.arMiscDetailId == null || updatedRowDetail.arMiscDetailId == 0) ? NewStatus : UpdatedStatus;
+
+        _miscDetailsArr.splice(indexOfCurrent, 1,newRow);
+
+        $('#btnAddMiscDetailRow').show();
+        $('#btnUpdateMiscDetailRow').hide();
+        $('#btnCancelMiscDetailRow').hide();
+
+        clearFormAdding();
+
+        _listArMiscReceiptDetails.val(JSON.stringify(_miscDetailsArr));
+
+        bindMiscDetailsTable();
+    };
+
+    const validateDetails = function () {
+
+        if ($('#details #BankLkpId').find(':selected').val() === undefined || $('#details #BankLkpId').find(':selected').val() === '') {
+            toastr.warning('@ArMiscReceiptHeaders.BankLkp' + ' : ' + '@ERP.ResourcePack.Common.Settings.Required')
+            return false;
+         }
+
+        if ($('#details #BankAccountdetailsId').find(':selected').val() === undefined || $('#details #BankAccountdetailsId').find(':selected').val() === '') {
+            toastr.warning('@ArMiscReceiptHeaders.BankAccountId' + ' : ' + '@ERP.ResourcePack.Common.Settings.Required')
+            return false;
+        }
+
+        if ($('#details #MaturityDate').val() === '') {
+            toastr.warning('@ArMiscReceiptHeaders.MaturityDate' + ' : ' + '@ERP.ResourcePack.Common.Settings.Required')
+            return false;
+        }
+
+        if ($('#details #CheckNumber').val() === '') {
+            toastr.warning('@ArMiscReceiptHeaders.CheckNumber' + ' : ' + '@ERP.ResourcePack.Common.Settings.Required')
+            return false;
+        }
+
+        if ($('#details #AmountDetail').val() === '') {
+            toastr.warning('@ArMiscReceiptHeaders.Amount' + ' : ' + '@ERP.ResourcePack.Common.Settings.Required')
+            return false;
+        }
+
+        return true;
+    };
+
+
+      const print = function (url,id,lang) {
+
+        const data = { id: id, lang : lang };
+
+        openModal(data, url);
+    };
+
+    function printExc() {
+        $('.page-loader-wrapper').show();
+        $('#tblArMiscReceiptHeadersPrint_wrapper').parent().addClass('d-none');
+        const parmss = {
+            Amount: _txtAmountSearch.val(),
+            ReceiptNumber: _txtReceiptNumberSearch.val(),
+            CheckNumber: _txtCheckNumberSearch.val(),
+            PostedLkpId: $('#searchBox #PostedLkpId').find(':selected').val(),
+            SourceCodeLkpId: $('#searchBox #SourceCodeLkpId').find(':selected').val(),
+            BeneficentId: $('#searchBox #BeneficentId').find(':selected').val(),
+            SpContractDetailsId: $('#searchBox #SpContractDetailsId').find(':selected').val(),
+            length: 1000000
+        };
+
+        const columns = [
+            {
+                "data": "result.data.id",
+                'render': function (data, type, row, meta) {
+                    return meta.row + meta.settings._iDisplayStart + 1;
+                }
+            },
+            {
+                "data": "ReceiptNumber",
+                "name": "ReceiptNumber",
+                "autoWidth": true
+            },
+            {
+                "data": "MiscReceiptDate",
+                "name": "MiscReceiptDate",
+                "autoWidth": true
+            },
+            {
+                "data": null,
+                "autoWidth": true,
+                "render": function (d, t, row) {
+                    return row.SpBeneficent ? row.SpBeneficent.BeneficentName : '';
+                }
+            },
+            {
+                "data": "Amount",
+                "name": "Amount",
+                "render": $.fn.dataTable.render.number(',', '.', 2),
+                "autoWidth": true
+            },
+            {
+                "data": null,
+                "autoWidth": true,
+                "render": function (d, t, row) {
+                    return row.FndLookupValuesPostedLkp ? (lang === 'ar-EG' ? row.FndLookupValuesPostedLkp.NameAr : row.FndLookupValuesPostedLkp.NameEn) :'';
+                }
+            }
+        ];
+
+        const dtObj = {
+            "language": dataTableLang,
+            "dom": 'Bfrtip',
+            "buttons": [
+                {
+                    extend: 'excel',
+                    messageTop: `${$('#Amount').siblings().text()}: ${(parmss.Amount) ? parmss.Amount : '--'}, ${$('#ReceiptNumber').siblings().text()}: ${(parmss.ReceiptNumber) ? parmss.ReceiptNumber : '--'}, ${$('#CheckNumber').siblings().text()}: ${(parmss.CheckNumber) ? parmss.CheckNumber : '--'}, ${$('[for="PostedLkpId"]').text()}: ${(parmss.PostedLkpId) ? parmss.PostedLkpId : '--'}, ${$('[for="SourceCodeLkpId"]').text()}: ${(parmss.SourceCodeLkpId) ? parmss.SourceCodeLkpId : '--'}, ${$('[for="BeneficentId"]').text()}: ${(parmss.BeneficentId) ? parmss.BeneficentId : '--'}, ${$('[for="BeneficentId"]').text()}: ${(parmss.SpContractDetailsId) ? parmss.SpContractDetailsId : '--'}`
+                },
+
+            ],
+            "ajax": {
+                "url": _loadDataUrl,
+                "type": "POST",
+                "datatype": "json",
+                "data": parmss,
+                "complete": function (d) {
+                    _tblLoader.hide();
+                }
+            },
+            "columns": columns,
+
+            "initComplete": function () {
+                $('#tblArMiscReceiptHeadersPrint_wrapper button.dt-button').click();
+                $('#tblArMiscReceiptHeadersPrint_wrapper').parent().addClass('d-none');
+
+            }
+        };
+
+        $('#tblArMiscReceiptHeadersPrint').dataTable().fnDestroy();
+        $('#tblArMiscReceiptHeadersPrint').DataTable(dtObj).on('buttons-processing', function (e, indicator) { if (!indicator) { $('.page-loader-wrapper').hide() } });
+
+
+    }
+
+</script>

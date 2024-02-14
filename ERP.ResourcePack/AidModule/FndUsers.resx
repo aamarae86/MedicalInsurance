@@ -1,0 +1,360 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="Address" xml:space="preserve">
+    <value>Address</value>
+  </data>
+  <data name="BirthDate" xml:space="preserve">
+    <value>Birth Date</value>
+  </data>
+  <data name="CityLkpId" xml:space="preserve">
+    <value>City</value>
+  </data>
+  <data name="DetailData" xml:space="preserve">
+    <value>Detail Data</value>
+  </data>
+  <data name="GenderLkpId" xml:space="preserve">
+    <value>Gender</value>
+  </data>
+  <data name="IdExpirationDate" xml:space="preserve">
+    <value>Id Expiration Date</value>
+  </data>
+  <data name="IdMaxLength" xml:space="preserve">
+    <value>Max Length 15</value>
+  </data>
+  <data name="IdMinLength" xml:space="preserve">
+    <value>Min Length 15</value>
+  </data>
+  <data name="IdNumber" xml:space="preserve">
+    <value>Id Number</value>
+  </data>
+  <data name="IdNumbersRepeated" xml:space="preserve">
+    <value>Id Numbers Repeated !!</value>
+  </data>
+  <data name="IdNumberWifeHusband1" xml:space="preserve">
+    <value>Id NumberWife Husband1</value>
+  </data>
+  <data name="IdNumberWife2" xml:space="preserve">
+    <value>Id Number Wife2</value>
+  </data>
+  <data name="IdNumberWife3" xml:space="preserve">
+    <value>Id Number Wife3</value>
+  </data>
+  <data name="IdNumberWife4" xml:space="preserve">
+    <value>Id Number Wife4</value>
+  </data>
+  <data name="JobDescription" xml:space="preserve">
+    <value>Job Description</value>
+  </data>
+  <data name="MaritalStatusLkpId" xml:space="preserve">
+    <value>Marital Status</value>
+  </data>
+  <data name="MobileNumber1" xml:space="preserve">
+    <value>Mobile Number1</value>
+  </data>
+  <data name="MobileNumber2" xml:space="preserve">
+    <value>Mobile Number2</value>
+  </data>
+  <data name="Name" xml:space="preserve">
+    <value>Name</value>
+  </data>
+  <data name="NationalityLkpId" xml:space="preserve">
+    <value>Nationality</value>
+  </data>
+  <data name="PhoneNumber" xml:space="preserve">
+    <value>Phone Number</value>
+  </data>
+  <data name="QualificationLkpId" xml:space="preserve">
+    <value>Qualification</value>
+  </data>
+  <data name="Region" xml:space="preserve">
+    <value>Region</value>
+  </data>
+  <data name="RelativesTypeLkpId" xml:space="preserve">
+    <value>Relatives Type</value>
+  </data>
+  <data name="RelGender" xml:space="preserve">
+    <value>Gender</value>
+  </data>
+  <data name="RelIdNumber" xml:space="preserve">
+    <value>Id Number</value>
+  </data>
+  <data name="RelName" xml:space="preserve">
+    <value>Name</value>
+  </data>
+  <data name="RelNationality" xml:space="preserve">
+    <value>Nationality</value>
+  </data>
+  <data name="RelQualification" xml:space="preserve">
+    <value>Qualification</value>
+  </data>
+  <data name="SearchForm" xml:space="preserve">
+    <value>Search Form</value>
+  </data>
+  <data name="Title" xml:space="preserve">
+    <value>Unified Users</value>
+  </data>
+  <data name="WifeHusbandName1" xml:space="preserve">
+    <value>Wife Husband Name1</value>
+  </data>
+  <data name="WifeName2" xml:space="preserve">
+    <value>Wife Name2</value>
+  </data>
+  <data name="WifeName3" xml:space="preserve">
+    <value>Wife Name3</value>
+  </data>
+  <data name="WifeName4" xml:space="preserve">
+    <value>Wife Name4</value>
+  </data>
+  <data name="EmailAddress" xml:space="preserve">
+    <value>Email Address</value>
+  </data>
+  <data name="Password" xml:space="preserve">
+    <value>Password</value>
+  </data>
+  <data name="UserName" xml:space="preserve">
+    <value>User Name</value>
+  </data>
+  <data name="ConfirmPassword" xml:space="preserve">
+    <value>Confirm Password</value>
+  </data>
+  <data name="IdRegisterdBefore" xml:space="preserve">
+    <value>Id Number Registerd Before</value>
+  </data>
+  <data name="JobWife2" xml:space="preserve">
+    <value>Job Wife2</value>
+  </data>
+  <data name="JobWife3" xml:space="preserve">
+    <value>Job Wife3</value>
+  </data>
+  <data name="JobWife4" xml:space="preserve">
+    <value>Job Wife4</value>
+  </data>
+  <data name="JobWifeHusband1" xml:space="preserve">
+    <value>Job Wife Husband1</value>
+  </data>
+  <data name="PassportExpiryDate" xml:space="preserve">
+    <value>Passport Expiry Date</value>
+  </data>
+  <data name="PassportIssueDate" xml:space="preserve">
+    <value>Passport Issue Date</value>
+  </data>
+  <data name="PassportNumber" xml:space="preserve">
+    <value>Passport Number</value>
+  </data>
+  <data name="ResidenceEndDate" xml:space="preserve">
+    <value>Residence End Date</value>
+  </data>
+  <data name="UnifiedNumber" xml:space="preserve">
+    <value>Unified Number</value>
+  </data>
+  <data name="Relatives" xml:space="preserve">
+    <value>Relatives</value>
+  </data>
+  <data name="Source" xml:space="preserve">
+    <value>Source</value>
+  </data>
+  <data name="PhoneNo" xml:space="preserve">
+    <value>Phone Number</value>
+  </data>
+  <data name="AidDate" xml:space="preserve">
+    <value>Aid Date</value>
+  </data>
+  <data name="AidName" xml:space="preserve">
+    <value>Aid Name</value>
+  </data>
+  <data name="PreviousAids" xml:space="preserve">
+    <value>Previous Aids</value>
+  </data>
+  <data name="TenantName" xml:space="preserve">
+    <value>Tenant Name</value>
+  </data>
+  <data name="AidValue" xml:space="preserve">
+    <value>Aid Value</value>
+  </data>
+  <data name="Employer" xml:space="preserve">
+    <value>Employer</value>
+  </data>
+  <data name="CreationTimeStr" xml:space="preserve">
+    <value>Creation Time</value>
+  </data>
+  <data name="FromDate" xml:space="preserve">
+    <value>From Date</value>
+  </data>
+  <data name="ToDate" xml:space="preserve">
+    <value>To Date</value>
+  </data>
+  <data name="TotalAmount" xml:space="preserve">
+    <value>Total Amount</value>
+  </data>
+  <data name="AidType" xml:space="preserve">
+    <value>Aid Type</value>
+  </data>
+  <data name="SourceCreatorName" xml:space="preserve">
+    <value>Source Creator Name</value>
+  </data>
+  <data name="Job" xml:space="preserve">
+    <value>Job</value>
+  </data>
+  <data name="RefusedRequests" xml:space="preserve">
+    <value>Refused Requests</value>
+  </data>
+  <data name="RefuseReason" xml:space="preserve">
+    <value>Refuse Reason</value>
+  </data>
+  <data name="RequestDate" xml:space="preserve">
+    <value>Request Date</value>
+  </data>
+  <data name="RequestNo" xml:space="preserve">
+    <value>Request No</value>
+  </data>
+  <data name="CaseCategoryLkpId" xml:space="preserve">
+    <value>Case Category</value>
+  </data>
+  <data name="CaseNumber" xml:space="preserve">
+    <value>Case Number</value>
+  </data>
+  <data name="head1" xml:space="preserve">
+    <value>Profile Data</value>
+  </data>
+  <data name="head2" xml:space="preserve">
+    <value>Personal Data</value>
+  </data>
+  <data name="head3" xml:space="preserve">
+    <value>Address and contact</value>
+  </data>
+  <data name="head4" xml:space="preserve">
+    <value>Wife Data</value>
+  </data>
+  <data name="IsZakat" xml:space="preserve">
+    <value>IsZakat</value>
+  </data>
+  <data name="AddToLoggedTenant" xml:space="preserve">
+    <value>AddToLoggedTenant</value>
+  </data>
+  <data name="LastModificationUser" xml:space="preserve">
+    <value>LastModification User</value>
+  </data>
+  <data name="PortalUserData" xml:space="preserve">
+    <value>Portal User Data</value>
+  </data>
+  <data name="Notes" xml:space="preserve">
+    <value>Notes</value>
+  </data>
+</root>

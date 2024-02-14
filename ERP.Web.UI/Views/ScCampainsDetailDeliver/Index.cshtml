@@ -1,0 +1,13 @@
+﻿@{
+    ViewBag.Title = ERP.ResourcePack.Accounts.ArCustomers.ScCampainsDetailDeliver;
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+<link href="~/Scripts/dist/themes/default/style.min.css" rel="stylesheet" />
+<link href="~/Content/@ERP.ResourcePack.Common.Styles.treeStyles" rel="stylesheet" />
+
+@Html.Action(nameof(ERP.Web.UI.Controllers.AidModule.ScCampainsDetailDeliverController.ScCampainsDetailDeliverSearch))
+@Html.Action(nameof(ERP.Web.UI.Controllers.AidModule.ScCampainsDetailDeliverController.ScCampainsDetailDeliverData))
+
+@section scripts{
+    @Html.Partial("~/ViewsScripts/ScCampainsDetailDeliver/ScCampainsDetailDeliverScripts.cshtml")
+}

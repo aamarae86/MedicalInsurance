@@ -1,0 +1,28 @@
+﻿@using ERP.ResourcePack.SpGuarantees
+@{
+    string insertTrigger = ERP.Front.Helpers.Enums.Common.FormTriggers.Insert.ToString();
+    string encInsertTrigger = ERP.Front.Helpers.Enums.Common.EncInsert;
+}
+<div class="row clearfix">
+    <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+        <div class="">
+            <div class="">
+                <div class="table-responsive">
+                    <table class="table table-bordered table-striped table-hover js-basic-example dataTable" id="tblSpCasesDetail">
+                        <thead>
+                            <tr>
+                                <th><i class="fas fa-hashtag"></i></th>
+                                <th>@SpCases.BankLkpId</th>
+                                <th>@SpCases.AccountNumber</th>
+                                <th>@SpCases.AccountOwnerName</th>
+                                <th>@SpCases.IsDefault</th>
+                                <th class="all"><i class="fas fa-cog"></i></th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

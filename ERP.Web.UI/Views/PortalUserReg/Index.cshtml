@@ -1,0 +1,11 @@
+﻿@{
+    ViewBag.Title = ERP.ResourcePack.Common.Menu.PortalUserReg;
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@Html.Action(nameof(ERP.Web.UI.Controllers.Authentications.UsersController.UsersSearch),"Users")
+@Html.Action(nameof(ERP.Web.UI.Controllers.Authentications.UsersController.UsersData))
+
+@section scripts{
+    @Html.Partial("~/ViewsScripts/Users/UsersRegScripts.cshtml")
+}

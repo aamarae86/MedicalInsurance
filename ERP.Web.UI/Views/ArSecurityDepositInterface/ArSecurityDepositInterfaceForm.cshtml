@@ -1,0 +1,159 @@
+﻿@using ERP.Web.UI.Models.ViewModels.Accounts
+@model ArSecurityDepositInterfaceVM
+@{
+    ViewBag.Title = ERP.ResourcePack.Accounts.ArSecurityDepositInterface.Title;
+    string lang = Request.Cookies["Lang"] == null ? "ar-EG" : Request.Cookies["Lang"].Value.ToString();
+    string formTrigger = ViewBag.trigger;
+}
+
+<div class="card">
+    <div class="body">
+        @using (Ajax.BeginForm(nameof(ERP.Web.UI.Controllers.Accounts.ArSecurityDepositInterfaceController.PostArSecurityDepositInterface), "ArSecurityDepositInterface",
+            new AjaxOptions { HttpMethod = "POST", OnBegin = "OnBegin", OnSuccess = "OnSuccess", OnComplete = "OnComplete", OnFailure = "OnFailure" }, new { @id = "mainForm" }))
+        {
+            @Html.HiddenFor(z => z.Id)
+            <div class="row clearfix">
+
+                <div class="col-sm-3">
+                    <div class="form-group form-float">
+                        <div class="form-line">
+                            @Html.TextBoxFor(z => z.SecurityDepositInterfaceNumber, new { @class = "form-control", @disabled = "disabled" })
+                            @Html.LabelFor(z => z.SecurityDepositInterfaceNumber, new { @class = "form-label", @style = "pointer-events: none;" })
+                        </div>
+                    </div>
+                </div>
+
+                @if (Model != null && Model.FndSourceCodeLkp != null)
+                {
+                    <div class="col-sm-3">
+                        <div class="form-group form-float">
+                            <div class="form-line">
+                                @if (lang == "ar-EG")
+                                {
+                                    @Html.TextBoxFor(z => z.FndSourceCodeLkp.NameAr, new { @class = "form-control", @disabled = "disabled" })
+                                }
+                                else
+                                {
+                                    @Html.TextBoxFor(z => z.FndSourceCodeLkp.NameEn, new { @class = "form-control", @disabled = "disabled" })
+                                }
+                                @Html.LabelFor(z => z.SourceCodeLkpId, new { @class = "form-label", @style = "pointer-events: none;" })
+                            </div>
+                        </div>
+                    </div>
+                }
+                else
+                {
+
+                    <div class="col-sm-3">
+                        <div class="form-group form-float">
+                            <div class="form-line">
+                                @Html.TextBoxFor(z => z.SourceCodeLkpId, new { @class = "form-control", @disabled = "disabled" })
+                                @Html.LabelFor(z => z.SourceCodeLkpId, new { @class = "form-label", @style = "pointer-events: none;" })
+                            </div>
+                        </div>
+                    </div>
+                }
+
+                @if (Model != null && Model.FndStatusLkp != null)
+                {
+                    <div class="col-sm-3">
+                        <div class="form-group form-float">
+                            <div class="form-line">
+                                @if (lang == "ar-EG")
+                                {
+                                    @Html.TextBoxFor(z => z.FndStatusLkp.NameAr, new { @class = "form-control", @disabled = "disabled" })
+                                }
+                                else
+                                {
+                                    @Html.TextBoxFor(z => z.FndStatusLkp.NameEn, new { @class = "form-control", @disabled = "disabled" })
+                                }
+                                @Html.LabelFor(z => z.StatusLkpId, new { @class = "form-label", @style = "pointer-events: none;" })
+                            </div>
+                        </div>
+                    </div>
+                }
+                else
+                {
+                    <div class="col-sm-3">
+                        <div class="form-group form-float">
+                            <div class="form-line">
+                                @Html.TextBoxFor(z => z.StatusLkpId, new { @class = "form-control", @disabled = "disabled" })
+                                @Html.LabelFor(z => z.StatusLkpId, new { @class = "form-label", @style = "pointer-events: none;" })
+                            </div>
+                        </div>
+                    </div>
+                }
+
+                @if (Model != null && Model.ArCustomers != null)
+                {
+                    <div class="col-sm-3">
+                        <div class="form-group form-float">
+                            <div class="form-line">
+                                @if (lang == "ar-EG")
+                                {
+                                    @Html.TextBoxFor(z => z.ArCustomers.CustomerNameAr, new { @class = "form-control", @disabled = "disabled" })
+                                }
+                                else
+                                {
+                                    @Html.TextBoxFor(z => z.ArCustomers.CustomerNameEn, new { @class = "form-control", @disabled = "disabled" })
+                                }
+                                @Html.LabelFor(z => z.ArCustomerId, new { @class = "form-label", @style = "pointer-events: none;" })
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-sm-3">
+                        <div class="form-group form-float">
+                            <div class="form-line">
+                                @Html.TextBoxFor(z => z.ArCustomers.CustomerNumber, new { @class = "form-control", @disabled = "disabled" })
+                                @Html.LabelFor(z => z.CustomerNumber, new { @class = "form-label", @style = "pointer-events: none;" })
+                            </div>
+                        </div>
+                    </div>
+                }
+                else
+                {
+                    <div class="col-sm-3">
+                        <div class="form-group form-float">
+                            <div class="form-line">
+                                @Html.TextBoxFor(z => z.ArCustomerId, new { @class = "form-control", @disabled = "disabled" })
+                                @Html.LabelFor(z => z.ArCustomerId, new { @class = "form-label", @style = "pointer-events: none;" })
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-sm-3">
+                        <div class="form-group form-float">
+                            <div class="form-line">
+                                @Html.TextBoxFor(z => z.ArCustomerId, new { @class = "form-control", @disabled = "disabled" })
+                                @Html.LabelFor(z => z.CustomerNumber, new { @class = "form-label", @style = "pointer-events: none;" })
+                            </div>
+                        </div>
+                    </div>
+                }
+
+                <div class="col-sm-3">
+                    <div class="form-group form-float">
+                        <div class="form-line">
+                            @Html.TextBoxFor(z => z.Amount, new { @class = "form-control", @disabled = "disabled" })
+                            @Html.LabelFor(z => z.Amount, new { @class = "form-label", @style = "pointer-events: none;" })
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+            <div class="row clearfix">
+                <div class="col-sm-12">
+                    @Html.LabelFor(z => z.Notes, new { @class = "form-label" })
+                    <div class="form-group form-float">
+                        <div class="form-line">
+                            @Html.TextAreaFor(z => z.Notes, new { @class = "form-control", @disabled = "disabled" })
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+<script src="~/Scripts/jquery.validate.min.js"></script>
+<script src="~/Scripts/jquery.validate.unobtrusive.min.js"></script>

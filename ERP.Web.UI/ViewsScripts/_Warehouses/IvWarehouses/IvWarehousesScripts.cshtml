@@ -1,0 +1,268 @@
+﻿@using ERP.Authorization;
+@using ERP.Web.UI.Controllers.Warehouses
+@using ERP.ResourcePack.Warehouses
+@{
+    string permissionsStr = TempData["Permissions"].ToString();
+}
+<script>
+    const _mainController = "IvWarehouses"
+
+    $(function () {
+        LoadDataGrid();
+        $('#tblIvWarehousesPrint thead').html($('#tblIvWarehouses thead').html());
+        $('#tblIvWarehousesPrint thead tr :last-child').remove();
+        $('#IvWarehouses').addClass('active');
+    });
+
+    const _loadDataUrl = `${$PrefixHostName}/${_mainController}/@nameof(IvWarehousesController.LoadDataGrid)`;
+    const _tblSelector = $('#tblIvWarehouses');
+
+    const _permissions = '@permissionsStr';
+    const _updatePermission = '@PermissionNames.Pages_IvWarehouses_Update';
+    const _deletePermission = '@PermissionNames.Pages_IvWarehouses_Delete';
+
+    var OnBegin = function (response) {
+      fireBtnLoader();
+    };
+
+    var OnSuccess = function (response) {
+
+        if (response.success) {
+
+            if (response.customRestResult.trigger === '@ERP.Front.Helpers.Enums.Common.FormTriggers.Insert') {
+
+                toastr.success(response.customRestResult.message);
+
+                LoadDataGrid();
+
+                _mainModal.modal('hide');
+
+            } else if (response.customRestResult.trigger === '@ERP.Front.Helpers.Enums.Common.FormTriggers.Update') {
+
+                LoadDataGrid();
+
+                _mainModal.modal('hide');
+
+                toastr.success(response.customRestResult.message);
+            }
+
+        } else {
+            toastr.error(response.customRestResult.message);
+        }
+
+    };
+
+    var OnComplete = function (response) {
+        downBtnLoader();
+    };
+
+    var OnFailure = function (response) {
+        toastr.error(response);
+        downBtnLoader();
+    };
+
+    const LoadDataGrid = function () {
+
+        const parms = {
+            CityLkpId: $('#CityLkpIdSearch').val(),
+            WarehouseNumber: $('#SearchNumber').val(),
+            WarehouseName: $('#SearchName').val()
+        };
+
+        const columns = [
+            {
+                "data": "result.data.id",
+                'render': function (data, type, row, meta) {
+                    return meta.row + meta.settings._iDisplayStart + 1;
+                }
+            },
+            {
+                "data": "WarehouseNumber",
+                "name": "WarehouseNumber",
+                "autoWidth": true
+            },
+            {
+                "data": "WarehouseName",
+                "name": "WarehouseName",
+                "autoWidth": true
+            },
+            {
+                "data": null,
+                "autoWidth": true,
+                "render": function (data, type, row) {
+                    if (!row.FndCityLkp) return '';
+
+                    if (lang === 'ar-EG') return row.FndCityLkp.NameAr;
+
+                    return row.FndCityLkp.NameEn;
+                }
+            },
+            {
+                "data": "WarehouseAddress",
+                "name": "WarehouseAddress",
+                "autoWidth": true
+            },
+            {
+                "data": "IsDefault",
+                "name": "IsDefault",
+                "autoWidth": true,
+                "render": function (isDef) {
+
+                    if (isDef) return '<i class="text-success fas fa-check"></i>';
+
+                    return '<i class="text-danger fas fa-times"></i>';
+                }
+            },
+            {
+                "data": null,
+                "sortable": false,
+                "render": function (data, type, row) {
+
+                    const formAction = `${$PrefixHostName}/${_mainController}/@nameof(IvWarehousesController.IvWarehousesForm)`;
+                    const DeleteAction = `${$PrefixHostName}/${_mainController}/@nameof(IvWarehousesController.Delete)`;
+
+                    let formTitle = '@IvWarehouses.Title', btns = '';
+
+                    if (_permissions.includes(_updatePermission)) {
+                        btns += `<a href="javascript:void(0)" onclick="AjaxController.GetFormModal(${row.Id},'@ERP.Front.Helpers.Enums.Common.FormTriggers.Update','${formAction}','${formTitle}');" title="@ERP.ResourcePack.Common.Settings.Edit"><i class="mx-2 fas fa-edit text-info"></i></a>`;
+                    }
+
+                    btns += `<a href="javascript:void(0)" onclick="AjaxController.GetFormModal(${row.Id},'@ERP.Front.Helpers.Enums.Common.FormTriggers.Show','${formAction}','${formTitle}');" title="@ERP.ResourcePack.Common.Settings.Show"><i class="mx-2 fas fa-eye text-info"></i></a>`;
+
+                    if (_permissions.includes(_deletePermission)) {
+                        btns += `<a href="javascript:void(0)" onclick="AjaxController.DeleteMainTableRow(${row.Id},'${DeleteAction}');" title="@ERP.ResourcePack.Common.Settings.Delete"><i class="mx-2 fas fa-trash-alt text-danger"></i></a>`;
+                    }
+
+                    const _auditedPermission = '@PermissionNames.Pages_IvWarehouses_Audit';
+
+                    if (_permissions.includes(_auditedPermission)) {
+
+                        row.permission = _auditedPermission;
+
+                        btns += GetAuditedButton(row);
+                    }
+
+                    return btns;
+                }
+            }
+        ];
+
+        const dtObj = {
+            "processing": true,
+            "serverSide": true,
+            "filter": false,
+            "orderMulti": false,
+            "language": dataTableLang,
+            "ajax": {
+                "url": _loadDataUrl,
+                "type": "POST",
+                "datatype": "json",
+                "data": parms,
+                "complete": function () {
+                    _tblLoader.hide();
+                }
+            },
+            "columns": columns,
+            "initComplete": function () {
+                $('[data-toggle="tooltip"]').tooltip();
+            }
+        };
+
+        _tblSelector.dataTable().fnDestroy();
+        _tblSelector.DataTable(dtObj).on('draw', function () { $('[data-toggle="tooltip"]').tooltip(); });
+
+    };
+
+    $('#searchBox #CityLkpIdSearch').select2(ReturnSelect2ObjectForLkpsTypes('@ERP.Front.Helpers.Enums.Common.FndLkpsTypes.City.ToString()'));
+
+    function printExc() {
+        $('.page-loader-wrapper').show();
+        $('#tblIvWarehousesPrint_wrapper').parent().addClass('d-none');
+        const parmss = {
+            CityLkpId: $('#CityLkpIdSearch').val(),
+            WarehouseNumber: $('#SearchNumber').val(),
+            WarehouseName: $('#SearchName').val(),
+            length: 1000000
+        };
+
+        const columns = [
+            {
+                "data": "result.data.id",
+                'render': function (data, type, row, meta) {
+                    return meta.row + meta.settings._iDisplayStart + 1;
+                }
+            },
+            {
+                "data": "WarehouseNumber",
+                "name": "WarehouseNumber",
+                "autoWidth": true
+            },
+            {
+                "data": "WarehouseName",
+                "name": "WarehouseName",
+                "autoWidth": true
+            },
+            {
+                "data": null,
+                "autoWidth": true,
+                "render": function (data, type, row) {
+                    if (!row.FndCityLkp) return '';
+
+                    if (lang === 'ar-EG') return row.FndCityLkp.NameAr;
+
+                    return row.FndCityLkp.NameEn;
+                }
+            },
+            {
+                "data": "WarehouseAddress",
+                "name": "WarehouseAddress",
+                "autoWidth": true
+            },
+            {
+                "data": "IsDefault",
+                "name": "IsDefault",
+                "autoWidth": true,
+                "render": function (isDef) {
+
+                    if (isDef) return '<i class="text-success fas fa-check"></i>';
+
+                    return '<i class="text-danger fas fa-times"></i>';
+                }
+            }
+        ];
+
+        const dtObj = {
+            "language": dataTableLang,
+            "dom": 'Bfrtip',
+            "buttons": [
+                {
+                    extend: 'excel',
+                    messageTop: `${$('[for="CityLkpId"]').text()}: ${(parmss.CityLkpId) ? parmss.CityLkpId : '--'}, ${$('#SearchNumber').siblings().text()}: ${(parmss.WarehouseNumber) ? parmss.WarehouseNumber : '--'}, ${$('#SearchName').siblings().text()}: ${(parmss.WarehouseName) ? parmss.WarehouseName : '--'}`
+                },
+
+            ],
+            "ajax": {
+                "url": _loadDataUrl,
+                "type": "POST",
+                "datatype": "json",
+                "data": parmss,
+                "complete": function (d) {
+                    _tblLoader.hide();
+                }
+            },
+            "columns": columns,
+
+            "initComplete": function () {
+                $('#tblIvWarehousesPrint_wrapper button.dt-button').click();
+                $('#tblIvWarehousesPrint_wrapper').parent().addClass('d-none');
+
+            }
+        };
+
+        $('#tblIvWarehousesPrint').dataTable().fnDestroy();
+        $('#tblIvWarehousesPrint').DataTable(dtObj).on('buttons-processing', function (e, indicator) { if (!indicator) { $('.page-loader-wrapper').hide() } });
+
+
+    }
+
+</script>

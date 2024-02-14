@@ -1,0 +1,455 @@
+﻿@using ERP.ResourcePack.SpGuarantees
+@using ERP.Web.UI.Controllers.SpGuarantees
+@using ERP.Authorization;
+@{
+    string encUpdateTrigger = ERP.Front.Helpers.Enums.Common.EncUpdate;
+    string encShowTrigger = ERP.Front.Helpers.Enums.Common.EncShow;
+    string permissionsStr = TempData["Permissions"].ToString();
+}
+@if (permissionsStr.Contains(PermissionNames.Pages_SpCases_Post))
+{
+    <script>
+        const PostAjax = function (id) {
+
+            bootbox.confirm({
+                message: _booBoxMessagePosting,
+                buttons: bootBoxDefaultBtns,
+                callback: function (result) {
+
+                    if (result) {
+
+                        const data = {
+                            id: id,
+                            lang: lang,
+                            userId: 0
+                        };
+
+                        $.ajax({
+                            url: `${baseUrl}/SpCases/PostSpCases`,
+                            type: 'POST',
+                            data: JSON.stringify(data),
+                            headers:
+                            {
+                                'Content-Type': 'application/json',
+                                'Authorization': `Bearer ${$_token}`
+                            },
+                        }).done(function (response) {
+
+                            if (response.result.finalStatues == 'F') {
+                                toastr.warning(response.result.reason);
+                            }
+                            else {
+                                toastr.success(response.result.reason);
+
+                                if (formView) {
+
+                                    setTimeout(function () {
+                                        window.location.href = $PrefixHostName + '/SpCases';
+                                    }, 100);
+
+                                } else {
+                                    LoadDataGrid();
+                                }
+                            }
+
+                        }).fail(function (response) {
+                            toastr.error(response.responseText);
+                        });
+
+                    }
+
+                }
+            });
+
+
+        };
+    </script>
+}
+else
+{
+    <script>
+        const PostAjax = function (id) { };
+    </script>
+}
+<script>
+    const _mainController = "SpCases", _apiAppService = "SpCases"
+
+    $(function () {
+        LoadDataGrid();
+
+        $('#SpCases').addClass('active');
+
+        $('#tblSpCasesAttachments_wrapper .row:first').remove();
+        $('#tblSpCasesAttachments_wrapper .row:last').remove();
+        $('#tblSpCasesAttachments_wrapper th').removeClass('sorting');
+
+    });
+
+    const _loadDataUrl = `${$PrefixHostName}/${_mainController}/@nameof(SpCasesController.LoadDataGrid)`;
+    const _tblSelector = $('#tblSpCases');
+    const _tblLoader = $('#tblLoader');
+    const _mainForm = $('#mainForm');
+
+    const _permissions = '@permissionsStr';
+    const _updatePermission = '@PermissionNames.Pages_SpCases_Update';
+    const _postPermission = '@PermissionNames.Pages_SpCases_Post';
+
+    let tblHeadersAdded = false;
+
+    $('#btnSubmition').on('click', function () {
+
+        _mainForm.submit();
+
+        if (_mainForm.valid()) {
+
+            $(this).hide();
+            $('#submitLoader').show();
+
+        } else {
+
+            $(this).show();
+            $('#submitLoader').hide();
+        }
+
+    });
+
+    var OnBegin = function (response) {
+        fireBtnLoader();
+    };
+
+    var OnSuccess = function (response) {
+
+        if (response.success) {
+
+            if (response.customRestResult.trigger === '@ERP.Front.Helpers.Enums.Common.FormTriggers.Insert') {
+
+                toastr.success(response.customRestResult.message);
+
+                setTimeout(function () {
+                    window.location.href = $PrefixHostName + '/SpCases';
+                }, 200);
+
+            } else if (response.customRestResult.trigger === '@ERP.Front.Helpers.Enums.Common.FormTriggers.Update') {
+
+                toastr.success(response.customRestResult.message);
+
+                setTimeout(function () {
+                    window.location.href = $PrefixHostName + '/SpCases';
+                }, 200);
+            }
+
+        } else {
+            toastr.error(response.customRestResult.message);
+        }
+
+    };
+
+    var OnComplete = function (response) {
+        downBtnLoader();
+    };
+
+    var OnFailure = function (response) {
+        toastr.error(response);
+        console.log(response);
+        downBtnLoader();
+    };
+
+    const LoadDataGrid = function () {
+
+        $('#tblLoader').show();
+
+        const parms = {
+            SpCaseId: $('#searchBox #Search_CaseName').find(':selected').val(),
+            SponsorCategoryLkpId: $('#searchBox #Search_SponsorCategoryId').find(':selected').val(),
+            NationallityLkpId: $('#searchBox #Search_NationalityId').find(':selected').val(),
+            SpFamilyId: $('#searchBox #Search_FamilyName').find(':selected').val(),
+            StatusLkpId: $('#searchBox #Search_StatusId').find(':selected').val(),
+            CaseNumber:$('#searchBox #Search_CaseNumber').val(),
+            FamilyNumber:$('#searchBox #Search_FamilyNumber').val(),
+            RegistrationDate: $('#searchBox #Search_RegistrationDate').val(),
+            SpBeneficentId: $('#searchBox #SpBeneficentId').val()
+        };
+
+        const columns = [
+            {
+                "data": "result.data.id",
+                'render': function (data, type, row, meta) {
+                    return meta.row + meta.settings._iDisplayStart + 1;
+                }
+            },
+            {
+                "data": "CaseNumber",
+                "name": "CaseNumber",
+                "autoWidth": true
+            },
+            {
+                "data": "CaseName",
+                "name": "CaseName",
+                "autoWidth": true
+            },
+            {
+                "data": "RegistrationDate",
+                "name": "RegistrationDate",
+                "autoWidth": true
+            },
+            {
+                "data": null,
+                "autoWidth": true,
+                "render": function (d, t, row) {
+
+                    if (row.StatusAr == null &&row.StatusEn == null )
+                        return '';
+
+                    if (lang === 'ar-EG')
+                        return row.StatusAr;
+
+                    return row.StatusEn;
+                },
+            },
+            {
+                "data": "FamilyName",
+                "name": "SpFamilyId",
+                "autoWidth": true
+            },
+            {
+                "data": "BirthDate",
+                "name": "BirthDate",
+                "autoWidth": true
+            },
+            {
+                "data": "PlaceOfBirth",
+                "name": "PlaceOfBirth",
+                "autoWidth": true
+            },
+            {
+                "data": null,
+                "autoWidth": true,
+                "render": function (d, t, row) {
+
+                    if (row.NationalityAr == null &&row.NationalityEn == null )
+                        return '';
+
+                    if (lang === 'ar-EG')
+                        return row.NationalityAr;
+
+                    return row.NationalityEn;
+                },
+            },
+            {
+                "data": "SpContractNumber",
+                "autoWidth": true,
+                "sortable":false
+            },
+            {
+                "data": "SpBeneficentName",
+                "autoWidth": true,
+                "sortable": false
+            },
+            {
+                "data": null,
+                "sortable": false,
+                "render": function (data, type, row) {
+
+                    let formAction = `${$PrefixHostName}/${_mainController}/@nameof(SpCasesController.SpCasesForm)`;
+
+                    let btns = '';
+
+                    btns += `<a href="javascript:void(0)" onclick="return GetCaseHistory(${row.Id},'${row.CaseName}')" title="@ERP.ResourcePack.SpGuarantees.SpCaseHistory.Title"><i class="mx-2 fas fa-history text-success"></i></a>`;
+
+                    if (_permissions.includes(_postPermission) && row.StatusLkpId == 685) {
+                        btns += `<a href="javascript:void(0)" onclick="PostAjax(${row.Id})" title="@ERP.ResourcePack.Common.Settings.Post"><i class="mx-2 fas fa-check-circle text-info"></i></a>`;
+                    }
+
+                    if (_permissions.includes(_updatePermission)) {
+                        btns += `<a href="${$PrefixHostName}/SpCases/FormView?id=${row.EncId}&t=@encUpdateTrigger" title="@ERP.ResourcePack.Common.Settings.Edit"><i class="mx-2 fas fa-edit text-info"></i></a>`;
+                    }
+
+                    btns += `<a href="${$PrefixHostName}/SpCases/FormView?id=${row.EncId}&t=@encShowTrigger" title="@ERP.ResourcePack.Common.Settings.Show"><i class="mx-2 fas fa-eye text-info"></i></a>`;
+
+                    const _auditedPermission = '@PermissionNames.Pages_SpCases_Audit';
+
+                    if (_permissions.includes(_auditedPermission)) {
+
+                        row.permission = _auditedPermission;
+
+                        btns += GetAuditedButton(row);
+                    }
+
+                    return btns;
+                }
+            }
+        ];
+
+        const dtObj = {
+            "processing": true,
+            "serverSide": true,
+            "filter": false,
+            "orderMulti": false,
+            "language": dataTableLang,
+            "ajax": {
+                "url": _loadDataUrl,
+                "type": "POST",
+                "datatype": "json",
+                "data": parms,
+                "complete": function () {
+                    _tblLoader.hide();
+                }
+            },
+            "columns": columns,
+            "initComplete": function () {
+                $('[data-toggle="tooltip"]').tooltip();
+            }
+
+        };
+
+        _tblSelector.dataTable().fnDestroy();
+        _tblSelector.DataTable(dtObj).on('draw', function () { $('[data-toggle="tooltip"]').tooltip(); });
+
+        setTimeout(function () {
+            $(".sorting_1").removeAttr('colspan');
+        }, 500);
+    };
+
+    $('#searchBox #Search_CaseName').select2(ReturnSelect2ObjectDefault(`${baseUrl}/SpCases/GetSpCasesSelect2`));
+    $('#searchBox #Search_FamilyName').select2(ReturnSelect2ObjectDefault(`${baseUrl}/SpFamilies/GetSelect2`));
+    $('#searchBox #SpBeneficentId').select2(ReturnSelect2ObjectDefault(`${baseUrl}/SpBeneficent/GetSpBeneficentSelect2`));
+    $('#searchBox #Search_SponsorCategoryId').select2(ReturnSelect2ObjectForLkpsTypes('@ERP.Front.Helpers.Enums.Common.FndLkpsTypes.SponsorCategory.ToString()'));
+    $('#searchBox #Search_NationalityId').select2(ReturnSelect2ObjectForLkpsTypes('@ERP.Front.Helpers.Enums.Common.FndLkpsTypes.Nationality.ToString()'));
+    $('#searchBox #Search_StatusId').select2(ReturnSelect2ObjectForLkpsTypesExcludingIds('@ERP.Front.Helpers.Enums.Common.FndLkpsTypes.StatusLkpId.ToString()', "694"));
+
+    @*$('#searchBox #Search_CaseName').select2(ReturnSelect2ObjectDefault(`${baseUrl}/SpCases/GetSpCasesSelect2`));
+    $('#searchBox #Search_FamilyName').select2(ReturnSelect2ObjectDefault(`${baseUrl}/SpFamilies/GetSelect2`));
+    $('#searchBox #Search_SponsorCategoryId').select2(ReturnSelect2ObjectForLkpsTypes('@ERP.Front.Helpers.Enums.Common.FndLkpsTypes.SponsorCategory.ToString()'));
+    $('#searchBox #Search_StatusId').select2(ReturnSelect2ObjectForLkpsTypes('@ERP.Front.Helpers.Enums.Common.FndLkpsTypes.StatusLkpId.ToString()'));*@
+    $('#NationalityLkpId').select2(ReturnSelect2ObjectForLkpsTypes('@ERP.Front.Helpers.Enums.Common.FndLkpsTypes.Nationality.ToString()'));
+    $('#GenderLkpId').select2(ReturnSelect2ObjectForLkpsTypes('@ERP.Front.Helpers.Enums.Common.FndLkpsTypes.Gender.ToString()'));
+    $('#MaritalStatusLkpId').select2(ReturnSelect2ObjectForLkpsTypes('@ERP.Front.Helpers.Enums.Common.FndLkpsTypes.MaritalStatus.ToString()'));
+    $('#HealthStatusLkpId').select2(ReturnSelect2ObjectForLkpsTypes('@ERP.Front.Helpers.Enums.Common.FndLkpsTypes.HealthStatus.ToString()'));
+    $('#EducationalLevelLkpId').select2(ReturnSelect2ObjectForLkpsTypes('@ERP.Front.Helpers.Enums.Common.FndLkpsTypes.EducationalLevel.ToString()'));
+    $('#EducationalStageLkpId').select2(ReturnSelect2ObjectForLkpsTypes('@ERP.Front.Helpers.Enums.Common.FndLkpsTypes.EducationalStage.ToString()'));
+
+
+
+    const print = function (url, id, lang) {
+        const data = { id: id, lang: lang };
+        openModal(data, url);
+    };
+
+
+      const GetCaseHistory = function (caseId,caseName) {
+
+        $('.page-loader-wrapper').css("display", "block");
+
+        $.ajax({
+            url: `${baseUrl}/SpCaseHistory/GetSpCaseHistory`,
+            method: 'GET',
+            headers: {
+                'Authorization': `bearer ${$_token}`
+            },
+            data: {
+                caseId: caseId
+            }
+        }).done(function (data) {
+            $('#main-modal #tblSpCaseHistory').dataTable().fnDestroy();
+
+            $('#main-modal .modal-dialog').css('max-width','80%');
+
+            _mainModalTitle.html(`@SpCaseHistory.Title : <strong class="text-info">${caseName}</strong>`);
+
+            _mainModalBody.empty().html($('#tbl_Container').html());
+
+            _mainModal.modal(_mainModalOprions);
+
+            const columns = [
+                {
+                    "data": "result.data.id",
+                    'render': function (data, type, row, meta) {
+                        return meta.row + meta.settings._iDisplayStart + 1;
+                    }
+                },
+                {
+                    'data': null,
+                    'render': function (d, t, row) {
+
+                        if (!row.fndOperationTypeLkp)  return '';
+
+                        if (lang == 'ar-EG') return row.fndOperationTypeLkp.nameAr;
+
+                        return row.fndOperationTypeLkp.nameEn;
+                    }
+                },
+                {
+                    'data': 'creationTime',
+                    'render': function (time) {
+                        return time.split('T')[0];
+                    }
+                },
+                {
+                    'data': null,
+                    'render': function (d, t, row) {
+                        return row.spBeneficent ? row.spBeneficent.beneficentNumber : '';
+                    }
+                },
+                {
+                    'data': null,
+                    'render': function (d,t,row) {
+                        return row.spBeneficent ? row.spBeneficent.beneficentName : '';
+                    }
+                },
+                { 'data': 'operationNotes' },
+                { 'data': 'creator' },
+                { 'data': 'notes' }
+            ];
+
+            const dtObj = {
+                data: data.result,
+                retrieve: true,
+                language: dataTableLang,
+                columns: columns,
+                drawCallback: function (c, v, b) { }
+            };
+
+            $('#main-modal #tblSpCaseHistory').DataTable(dtObj).on('draw', function () { $('[data-toggle="tooltip"]').tooltip(); });
+
+            $('.page-loader-wrapper').css("display", "none");
+
+        }).fail(function () {
+            $('.page-loader-wrapper').css("display", "none");
+        });
+    };
+
+</script>
+
+<script id="CasePhotoScript">
+    function readURL(input) {
+        if (input.files && input.files[0]) {
+            var reader = new FileReader();
+
+            reader.onload = function (e) {
+                $('#blah').attr('src', e.target.result);
+                console.log(e);
+            }
+
+            const _casePhotoUploader = $('#CasePhotoInput');
+            const _casePhotoBase64Str = $('#base64Str');
+            const _casePhotoFileExt = $('#fileExt');
+
+            reader.readAsDataURL(input.files[0]);
+            ConvertToBase64('CasePhotoInput').then(baseStr => {
+                //console.log(baseStr);
+                var casePhotoExt = `.${_casePhotoUploader.val().split('.')[_casePhotoUploader.val().split('.').length - 1]}`;
+                //const current = {
+                //    base64Str: baseStr,
+                //    fileExt: casePhotoExt
+                //};
+
+                _casePhotoBase64Str.val(baseStr);
+                _casePhotoFileExt.val(casePhotoExt);
+            });
+        }
+    }
+
+    $("#CasePhotoInput").change(function () {
+        readURL(this);
+    });
+</script>

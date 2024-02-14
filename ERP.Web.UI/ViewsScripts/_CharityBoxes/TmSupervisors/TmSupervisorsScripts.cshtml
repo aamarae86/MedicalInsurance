@@ -1,0 +1,168 @@
+﻿@using ERP.Authorization;
+@using ERP.Web.UI.Controllers.CharityBoxes
+@using ERP.ResourcePack.Accounts
+@{
+    string permissionsStr = TempData["Permissions"].ToString();
+}
+<script>
+    const _mainController = "TmSupervisors"
+
+    $(function () {
+        LoadDataGrid();
+        $('#TmSupervisors').addClass('active');
+    });
+
+    const _loadDataUrl = `${$PrefixHostName}/${_mainController}/@nameof(TmSupervisorsController.LoadDataGrid)`;
+    const _tblSelector = $('#tblTmSupervisors');
+    const _tblLoader = $('#tblLoader');
+    const _txtStatusLkpId = $('#searchBox #StatusLkpIdSearch');
+    const _txtSupervisorNumber = $('#searchBox #SupervisorNumber');
+    const _txtSupervisorName = $('#searchBox #SupervisorName');
+
+    const _permissions = '@permissionsStr';
+    const _updatePermission = '@PermissionNames.Pages_TmSupervisors_Update';
+    const _deletePermission = '@PermissionNames.Pages_TmSupervisors_Delete';
+
+    var OnBegin = function (response) {
+        fireBtnLoader();
+    };
+
+    var OnSuccess = function (response) {
+
+        if (response.success) {
+
+            if (response.customRestResult.trigger === '@ERP.Front.Helpers.Enums.Common.FormTriggers.Insert') {
+
+                toastr.success(response.customRestResult.message);
+
+                LoadDataGrid();
+
+                _mainModal.modal('hide');
+
+            } else if (response.customRestResult.trigger === '@ERP.Front.Helpers.Enums.Common.FormTriggers.Update') {
+
+                LoadDataGrid();
+
+                _mainModal.modal('hide');
+
+                toastr.success(response.customRestResult.message);
+            }
+
+        } else {
+            toastr.error(response.customRestResult.message);
+        }
+
+    };
+
+    var OnComplete = function (response) {
+
+        downBtnLoader();
+    };
+
+    var OnFailure = function (response) {
+        toastr.error(response);
+        console.log(response);
+        downBtnLoader();
+    };
+
+    const LoadDataGrid = function () {
+
+        $('#tblLoader').show();
+
+        const parms = {
+            StatusLkpId: _txtStatusLkpId.val(),
+            SupervisorNumber: _txtSupervisorNumber.val(),
+            SupervisorName: _txtSupervisorName.val()
+        };
+
+        const columns = [
+            {
+                "data": "result.data.id",
+                'render': function (data, type, row, meta) {
+                    return meta.row + meta.settings._iDisplayStart + 1;
+                }
+            },
+            {
+                "data": "SupervisorNumber",
+                "name": "SupervisorNumber",
+                "autoWidth": true
+            },
+            {
+                "data": "SupervisorName",
+                "name": "SupervisorName",
+                "autoWidth": true
+            }, {
+                "data": null,
+                "autoWidth": true,
+                "render": function (data, type, row) {
+                    if (!row.FndLookupValues) return "";
+
+                    if (lang === 'ar-EG') return row.FndLookupValues.NameAr;
+
+                    return row.FndLookupValues.NameEn;
+                }
+            },
+            {
+                "data": null,
+                "sortable": false,
+                "render": function (data, type, row) {
+
+                    let formAction = `${$PrefixHostName}/${_mainController}/@nameof(TmSupervisorsController.TmSupervisorsForm)`;
+                    let DeleteAction = `${$PrefixHostName}/${_mainController}/@nameof(TmSupervisorsController.Delete)`;
+
+                    let formTitle = '@ArCustomers.TmSupervisors';
+                    let btns = '';
+
+                    if (_permissions.includes(_updatePermission)) {
+                        btns += `<a href="javascript:void(0)" onclick="AjaxController.GetFormModal(${row.Id},'@ERP.Front.Helpers.Enums.Common.FormTriggers.Update','${formAction}','${formTitle}');" title="@ERP.ResourcePack.Common.Settings.Edit"><i class="mx-2 fas fa-edit text-info"></i></a>`;
+                    }
+
+                    btns += `<a href="javascript:void(0)" onclick="AjaxController.GetFormModal(${row.Id},'@ERP.Front.Helpers.Enums.Common.FormTriggers.Show','${formAction}','${formTitle}');" title="@ERP.ResourcePack.Common.Settings.Show"><i class="mx-2 fas fa-eye text-info"></i></a>`;
+
+                    if (_permissions.includes(_deletePermission)) {
+                        btns += `<a href="javascript:void(0)" onclick="AjaxController.DeleteMainTableRow(${row.Id},'${DeleteAction}');" title="@ERP.ResourcePack.Common.Settings.Delete"><i class="mx-2 fas fa-trash-alt text-danger"></i></a>`;
+                    }
+
+                    const _auditedPermission = '@PermissionNames.Pages_TmSupervisors_Audit';
+
+                    if (_permissions.includes(_auditedPermission)) {
+
+                        row.permission = _auditedPermission;
+
+                        btns += GetAuditedButton(row);
+                    }
+
+                    return btns;
+                }
+            }
+        ];
+
+        const dtObj = {
+            "processing": true,
+            "serverSide": true,
+            "filter": false,
+            "orderMulti": false,
+            "language": dataTableLang,
+            "ajax": {
+                "url": _loadDataUrl,
+                "type": "POST",
+                "datatype": "json",
+                "data": parms,
+                "complete": function () {
+                    _tblLoader.hide();
+                }
+            },
+            "columns": columns,
+            "initComplete": function () {
+                $('[data-toggle="tooltip"]').tooltip();
+            }
+        };
+
+        _tblSelector.dataTable().fnDestroy();
+        _tblSelector.DataTable(dtObj).on('draw', function () { $('[data-toggle="tooltip"]').tooltip(); });
+
+    };
+
+    $('#searchBox #StatusLkpIdSearch').select2(ReturnSelect2ObjectForLkpsTypes('@ERP.Front.Helpers.Enums.Common.FndLkpsTypes.TmSupervisorsStatus.ToString()'))
+
+</script>

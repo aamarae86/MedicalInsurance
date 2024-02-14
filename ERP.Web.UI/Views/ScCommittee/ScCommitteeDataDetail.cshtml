@@ -1,0 +1,35 @@
+﻿@using ERP.ResourcePack.AidModule
+@{
+    string insertTrigger = ERP.Front.Helpers.Enums.Common.FormTriggers.Insert.ToString();
+    string encInsertTrigger = ERP.Front.Helpers.Enums.Common.EncInsert;
+}
+<div class="row clearfix">
+    <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+        <div class="">
+            <div class="">
+                <div class="table-responsive">
+                    <table class="dt-responsive no-footer nowrap table table-bordered table-striped w-100" id="tblScCommitteeDetail" style="width:100%">
+                        <thead>
+                            <tr>
+                                <th><i class="fas fa-hashtag"></i></th>
+                                <th>@ScCommittee.Details_PortalRequestNumber</th>
+                                <th>@ScCommittee.Details_PortalUser_Name</th>
+                                <th>@ScCommittee.Details_CashingTo</th>
+                                <th>@ScCommittee.Notes</th>
+                                <th>@ScCommittee.Details_AidAmount</th>
+                                <th>@ScCommittee.Details_NoOfMonths</th>
+                                <th>@ScCommittee.OtherCommittee</th>
+                                <th>@ScCommittee.OtherCommitteeMonthNo</th>
+                                <th>@ScCommittee.StatusLkpId</th>
+                                <th>@ScCommittee.IsMedicine</th>
+                                <th>@ERP.ResourcePack.AidModule.ScPortalRequestStudy.Account</th>
+                                <th class="all"><i class="fas fa-cog"></i></th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

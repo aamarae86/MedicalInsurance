@@ -1,0 +1,33 @@
+﻿@using ERP.Web.UI.Models.ViewModels.AidModule
+@model ScMaintenanceQuotationsVM
+
+<div class="card" id="formMaintenanceDetails" style="display:none">
+    <div class="body">
+        <div class="row clearfix">
+            <div class="col-md-6">
+                <div class="form-group form-float">
+                    <div class="form-line">
+                        @Html.TextBoxFor(z => z.MaintenanceTechnicalReportItemDescription, new { @class = "form-control", @disabled = "disabled" })
+                        @Html.LabelFor(z => z.MaintenanceTechnicalReportItemDescription, new { @class = "form-label" })
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="form-group form-float">
+                    <div class="form-line">
+                        @Html.TextBoxFor(z => z.Amount, new { @class = "form-control currency"})
+                        @Html.LabelFor(z => z.Amount, new { @class = "form-label" })
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row clearfix">
+            <div class="col-sm-12 text-center">
+                <div class="form-group">
+                    <button style="display:none;" id="btnUpdateScMaintenanceQuotationDetails" onclick="return UpdateScMaintenanceQuotationDetailsRow()" class="btn btn-info">@ERP.ResourcePack.Common.Settings.BtnUpdate</button>
+                    <button style="display:none;" id="btnCancelScMaintenanceQuotationDetails" onclick="ClearDetailForm('formMaintenanceDetails'); $('#btnCancelScMaintenanceQuotationDetails').hide();$('#btnUpdateScMaintenanceQuotationDetails').hide();$('#formMaintenanceDetails').fadeOut(100)" class="btn btn-danger">@ERP.ResourcePack.Common.Settings.BtnCancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,366 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="AccountDetails" xml:space="preserve">
+    <value>تفاصيل الحساب</value>
+  </data>
+  <data name="AccountNumber" xml:space="preserve">
+    <value>رقم الحساب</value>
+  </data>
+  <data name="Amount" xml:space="preserve">
+    <value>القيمة</value>
+  </data>
+  <data name="BankLkpId" xml:space="preserve">
+    <value>البنك</value>
+  </data>
+  <data name="BirthDate" xml:space="preserve">
+    <value>تاريخ الميلاد</value>
+  </data>
+  <data name="CardNo" xml:space="preserve">
+    <value>رقم البطاقة</value>
+  </data>
+  <data name="CountryOfBrithLkpId" xml:space="preserve">
+    <value>بلد الميلاد</value>
+  </data>
+  <data name="CountryOfIssueLkpId" xml:space="preserve">
+    <value>بلد الاصدار</value>
+  </data>
+  <data name="DateOfExpiry" xml:space="preserve">
+    <value>تاريخ الإنتهاء</value>
+  </data>
+  <data name="DateOfIssue" xml:space="preserve">
+    <value>تاريخ الإصدار</value>
+  </data>
+  <data name="DestinationCountryLkpId" xml:space="preserve">
+    <value>الوجهة</value>
+  </data>
+  <data name="ElemantSalaryRepeated" xml:space="preserve">
+    <value>لا يمكن اضافة نفس العنصر والفترة لم تنتهي بعد</value>
+  </data>
+  <data name="EmailAddress" xml:space="preserve">
+    <value>البريد الاليكتروني</value>
+  </data>
+  <data name="EmployeeDetails" xml:space="preserve">
+    <value>تفاصيل الموظف</value>
+  </data>
+  <data name="EmployeeNumber" xml:space="preserve">
+    <value>رقم الموظف</value>
+  </data>
+  <data name="EndPeriodId" xml:space="preserve">
+    <value>يتنهي في</value>
+  </data>
+  <data name="FatherName" xml:space="preserve">
+    <value>اسم الاب</value>
+  </data>
+  <data name="FirstName" xml:space="preserve">
+    <value>الاسم الاول</value>
+  </data>
+  <data name="FirstTitleLkpId" xml:space="preserve">
+    <value>اللقب</value>
+  </data>
+  <data name="FullName" xml:space="preserve">
+    <value>الاسم كامل</value>
+  </data>
+  <data name="GenderLkpId" xml:space="preserve">
+    <value>الجنس</value>
+  </data>
+  <data name="HireDate" xml:space="preserve">
+    <value>تاريخ التعيين</value>
+  </data>
+  <data name="HrOrganizationsBranchId" xml:space="preserve">
+    <value>الفرع</value>
+  </data>
+  <data name="HrOrganizationsDeptId" xml:space="preserve">
+    <value>الادارة</value>
+  </data>
+  <data name="HrPersonId" xml:space="preserve">
+    <value>الموظف</value>
+  </data>
+  <data name="HrPersonSupervisorId" xml:space="preserve">
+    <value>المشرف</value>
+  </data>
+  <data name="IdentityCardNotes" xml:space="preserve">
+    <value>ملاحظات</value>
+  </data>
+  <data name="IdentityCasrdDetails" xml:space="preserve">
+    <value>الهوية</value>
+  </data>
+  <data name="IdNumber" xml:space="preserve">
+    <value>رقم الهوية</value>
+  </data>
+  <data name="IssuedByLkpId" xml:space="preserve">
+    <value>أصدرت بواسطة</value>
+  </data>
+  <data name="JobGradeLkpId" xml:space="preserve">
+    <value>الدرجة الوظيفية</value>
+  </data>
+  <data name="JobLkpId" xml:space="preserve">
+    <value>الوظيفة</value>
+  </data>
+  <data name="LastName" xml:space="preserve">
+    <value>الكنية</value>
+  </data>
+  <data name="MaritalStatusLkpId" xml:space="preserve">
+    <value>الحالة الاجتماعية</value>
+  </data>
+  <data name="NationalityLkpId" xml:space="preserve">
+    <value>الجنسية</value>
+  </data>
+  <data name="NoOfTickets" xml:space="preserve">
+    <value>عدد التذاكر</value>
+  </data>
+  <data name="Notes" xml:space="preserve">
+    <value>ملاحظات</value>
+  </data>
+  <data name="NoticeLength" xml:space="preserve">
+    <value>مدة الإنذار</value>
+  </data>
+  <data name="NoticeUnitLkpId" xml:space="preserve">
+    <value>الوحدة</value>
+  </data>
+  <data name="PassportDateOfExpiry" xml:space="preserve">
+    <value>تاريخ الإنتهاء</value>
+  </data>
+  <data name="PassportDateOfIssue" xml:space="preserve">
+    <value>تاريخ الإصدار</value>
+  </data>
+  <data name="PassportDetails" xml:space="preserve">
+    <value>جواز السفر</value>
+  </data>
+  <data name="PassportNotes" xml:space="preserve">
+    <value>ملاحظات</value>
+  </data>
+  <data name="PassportNumber" xml:space="preserve">
+    <value>رقم جواز السفر</value>
+  </data>
+  <data name="PassportTypeLkpId" xml:space="preserve">
+    <value>نوع جواز السفر</value>
+  </data>
+  <data name="PaymentTypeLkpId" xml:space="preserve">
+    <value>طريقة الدفع</value>
+  </data>
+  <data name="PeriodsConflict" xml:space="preserve">
+    <value>الفترات متداخلة</value>
+  </data>
+  <data name="PersonCategoryLkpId" xml:space="preserve">
+    <value>فئة الموظف</value>
+  </data>
+  <data name="PersonPhoto" xml:space="preserve">
+    <value>صورة الموظف</value>
+  </data>
+  <data name="PersonTasksDetails" xml:space="preserve">
+    <value>مهام الموظف</value>
+  </data>
+  <data name="PersonTypeLkpId" xml:space="preserve">
+    <value>نوع الموظف</value>
+  </data>
+  <data name="PhoneNumber" xml:space="preserve">
+    <value>رقم الهاتف</value>
+  </data>
+  <data name="PlaceOfBirth" xml:space="preserve">
+    <value>مكان الميلاد</value>
+  </data>
+  <data name="PlaceOfIssue" xml:space="preserve">
+    <value>مكان الإصدار</value>
+  </data>
+  <data name="PlaceOfIssueLkpId" xml:space="preserve">
+    <value>مكان الإصدار</value>
+  </data>
+  <data name="ProbationEndDate" xml:space="preserve">
+    <value>تنتهى بتاريخ</value>
+  </data>
+  <data name="ProbationLength" xml:space="preserve">
+    <value>مدة التجربة</value>
+  </data>
+  <data name="ProbationUnitLkpId" xml:space="preserve">
+    <value>الوحدة</value>
+  </data>
+  <data name="PyElementId" xml:space="preserve">
+    <value>العنصر</value>
+  </data>
+  <data name="PyPayrollTypeId" xml:space="preserve">
+    <value>كشف الراتب</value>
+  </data>
+  <data name="Region" xml:space="preserve">
+    <value>المنطقة</value>
+  </data>
+  <data name="ResidencePlace" xml:space="preserve">
+    <value>مكان الاقامة</value>
+  </data>
+  <data name="SalaryElements" xml:space="preserve">
+    <value>عناصر الراتب</value>
+  </data>
+  <data name="SearchForm" xml:space="preserve">
+    <value>بيانات البحث</value>
+  </data>
+  <data name="Segment1" xml:space="preserve">
+    <value>جزء 1</value>
+  </data>
+  <data name="Segment2" xml:space="preserve">
+    <value>جزء 2</value>
+  </data>
+  <data name="Segment3" xml:space="preserve">
+    <value>جزء 3</value>
+  </data>
+  <data name="Segment4" xml:space="preserve">
+    <value>جزء 4</value>
+  </data>
+  <data name="SponserLkpId" xml:space="preserve">
+    <value>الكفيل</value>
+  </data>
+  <data name="StartPeriodId" xml:space="preserve">
+    <value>يبدأ في</value>
+  </data>
+  <data name="StatusLkpId" xml:space="preserve">
+    <value>الحالة</value>
+  </data>
+  <data name="TestPeriodDetails" xml:space="preserve">
+    <value>فترة التجربة</value>
+  </data>
+  <data name="TicketAfterYears" xml:space="preserve">
+    <value>عدد السنوات</value>
+  </data>
+  <data name="TicketAmount" xml:space="preserve">
+    <value>مبلغ التذكرة</value>
+  </data>
+  <data name="TicketClassLkpId" xml:space="preserve">
+    <value>فئة التذكرة</value>
+  </data>
+  <data name="TicketsDetails" xml:space="preserve">
+    <value>تفاصيل التذكرة</value>
+  </data>
+  <data name="Title" xml:space="preserve">
+    <value>الموظفين</value>
+  </data>
+  <data name="VisaCost" xml:space="preserve">
+    <value>التكلفة</value>
+  </data>
+  <data name="VisaDetails" xml:space="preserve">
+    <value>الاقامة</value>
+  </data>
+  <data name="VisaNumber" xml:space="preserve">
+    <value>رقم الاقامة</value>
+  </data>
+  <data name="VisaTypeLkpId" xml:space="preserve">
+    <value>نوع الإقامة</value>
+  </data>
+  <data name="WarnPeriodDetails" xml:space="preserve">
+    <value>فترة الانذار</value>
+  </data>
+</root>

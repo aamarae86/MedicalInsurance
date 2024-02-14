@@ -1,0 +1,130 @@
+﻿@using ERP.Web.UI.Controllers.AidModule
+@using ERP.Web.UI.Models.ViewModels.AidModule
+@{
+    ViewBag.Title = ERP.ResourcePack.AidModule.FndUsers.PortalUserData;
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    string formTrigger = ViewBag.trigger;
+    long? id = ViewData["Id"] == null ? null : (long?)Convert.ToInt32(ViewData["Id"]);
+    var detailObj = ViewData["DetailAsync"] == null ? null : ViewData["DetailAsync"] as PortalUsersVM;
+}
+
+<div class="row clearfix">
+    <div class="col-12">
+        @Html.Action(nameof(PortalUserDataController.PortalUsersDataForm), new { id = id, trigger = formTrigger, portalUsersVM = detailObj })
+    </div>
+    <div class="col-12">
+        <div class="card">
+            <div class="body">
+                <ul class="mt-2 nav nav-tabs tab-nav-right" role="tablist">
+                    <li role="presentation">
+                        <a href="#relatives" data-toggle="tab" class="show active">@ERP.ResourcePack.AidModule.FndUsers.Relatives</a>
+                    </li>
+                    <li role="presentation">
+                        <a href="#Incomes" data-toggle="tab" class="show">@ERP.ResourcePack.AidModule.ScPortalRequests.Incomes</a>
+                    </li>
+                    <li role="presentation">
+                        <a href="#Duties" data-toggle="tab" class="show">@ERP.ResourcePack.AidModule.ScPortalRequests.Duties</a>
+                    </li>
+                    <li role="presentation">
+                        <a href="#attachments" data-toggle="tab" class="show">@ERP.ResourcePack.PmPropertiesModule.PmContract.Title4</a>
+                    </li>
+                    @if (formTrigger != ERP.Front.Helpers.Enums.Common.FormTriggers.Insert.ToString())
+                    {
+                        <li role="presentation">
+                            <a href="#prevAids" data-toggle="tab" class=" ">@ERP.ResourcePack.AidModule.FndUsers.PreviousAids</a>
+                        </li>
+                    }
+                    @if (formTrigger != ERP.Front.Helpers.Enums.Common.FormTriggers.Insert.ToString())
+                    {
+                        <li role="presentation">
+                            <a href="#RefusedRequests" data-toggle="tab" class=" ">@ERP.ResourcePack.AidModule.FndUsers.RefusedRequests</a>
+                        </li>
+                    }
+                </ul>
+                <div class="tab-content">
+                    <div role="tabpanel" class="tab-pane fade in active show" id="relatives">
+                        @Html.Action(nameof(PortalUserDataController.RelativesForm), new { id = id, trigger = formTrigger })
+                        @Html.Action(nameof(PortalUserDataController.RelativesData))
+                    </div>
+                    <div role="tabpanel" class="tab-pane fade in" id="Incomes">
+                        @Html.Action(nameof(PortalUserDataController.IncomesForm), new { id = id, trigger = formTrigger })
+                        @Html.Action(nameof(PortalUserDataController.IncomesData))
+                    </div>
+                    <div role="tabpanel" class="tab-pane fade in" id="Duties">
+                        @Html.Action(nameof(PortalUserDataController.DutiesForm), new { id = id, trigger = formTrigger })
+                        @Html.Action(nameof(PortalUserDataController.DutiesData))
+                    </div>
+                    <div role="tabpanel" class="tab-pane fade in  " id="attachments">
+                        @if (formTrigger != ERP.Front.Helpers.Enums.Common.FormTriggers.Show.ToString())
+                        {
+                            @Html.Partial("_AttachmentForm");
+                        }
+                        @Html.Partial("_AttachmentsData");
+                    </div>
+                    @if (formTrigger != ERP.Front.Helpers.Enums.Common.FormTriggers.Insert.ToString())
+                    {
+                        <div role="tabpanel" class="tab-pane fade in" id="prevAids">
+                            @Html.Action(nameof(PortalUserDataController.AidDataDetail))
+                        </div>
+                    }
+                    @if (formTrigger != ERP.Front.Helpers.Enums.Common.FormTriggers.Insert.ToString())
+                    {
+                        <div role="tabpanel" class="tab-pane fade in" id="RefusedRequests">
+                            @Html.Action(nameof(PortalUserDataController.RefusedRequestsDataDetail))
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body">
+                <div class="text-center">
+                    @if (formTrigger != ERP.Front.Helpers.Enums.Common.FormTriggers.Show.ToString())
+                    {
+                        <button type="submit" id="btnSubmition" class="btn btn-info btn-lg m-l-15 waves-effect">@(formTrigger == ERP.Front.Helpers.Enums.Common.FormTriggers.Insert.ToString() ? ERP.ResourcePack.Common.Settings.BtnSave : ERP.ResourcePack.Common.Settings.BtnUpdate)</button>
+                        <div id="submitLoader" style="display:none">
+                            <div class="lds-roller"><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div></div>
+                        </div>
+                    }
+                    <a href="~/PortalUserData" class="btn btn-danger btn-lg m-l-15 waves-effect">@(ERP.ResourcePack.Common.Settings.BtnClose)</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section scripts{
+    <script>
+        const primaryEntityKeyId =  @(id ?? 0);
+        const trigger = '@formTrigger';
+    </script>
+    <script src="~/Scripts/jquery.validate.min.js"></script>
+    <script src="~/Scripts/jquery.validate.unobtrusive.min.js"></script>
+    @Html.Partial("_ReportModal")
+    @Html.Partial("~/ViewsScripts/_AidModule/FndUsers/PortalUsersDataScripts.cshtml")
+    @if (id != null)
+    {
+        <script>
+            $(function () {
+                LoadFndUserRelativesData();
+                LoadAidsData(@detailObj.PortalUserId);
+                LoadRefusedRequestsData(@detailObj.PortalUserId);
+                LoadDutiesData();
+                LoadIncomesData();
+                LoadAttachments();
+
+                $('#NetValue').val(parseFloat($('#MonthlyIncomeAmount').val()) - parseFloat($('#MonthlyOutcomeAmount').val()));
+            });
+        </script>
+    }
+    @if (detailObj == null || (detailObj != null && !detailObj.FromUnifiedUser))
+    {
+        <script>
+            $('#PortalUserId').select2(ReturnSelect2ObjectDefault(`${baseUrl}/PortalUserData/GetPortalUnfiedUsersForUsersDataSelect2`));
+        </script>
+    }
+}
+

@@ -1,0 +1,13 @@
+﻿@{
+    ViewBag.Title = ERP.ResourcePack.Accounts.FaAssetDeprnHd.Title;
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@Html.Action(nameof(ERP.Web.UI.Controllers.AccountsExtend.FaAssetDeprnHdController.FaAssetDeprnHdSearch))
+@Html.Action(nameof(ERP.Web.UI.Controllers.AccountsExtend.FaAssetDeprnHdController.FaAssetDeprnHdData))
+
+@section scripts{
+    <script>let formView = false;</script>
+    @Html.Partial("~/ViewsScripts/_Accounts/FaAssetDeprnHd/FaAssetDeprnHdScripts.cshtml")
+}
+

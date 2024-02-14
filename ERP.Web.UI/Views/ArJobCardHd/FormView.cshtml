@@ -1,0 +1,371 @@
+﻿@using ERP.Web.UI.Controllers.Accounts
+@using ERP.Web.UI.Models.ViewModels.Accounts
+@{
+    ViewBag.Title = ERP.ResourcePack.Accounts.ArJobCardHd.Title;
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    string formTrigger = ViewBag.trigger;
+    long? id = ViewData["Id"] == null ? null : (long?)Convert.ToInt32(ViewData["Id"]);
+    var detailObj = ViewData["DetailAsync"] == null ? null : ViewData["DetailAsync"] as ArJobCardHdVM;
+}
+
+<div class="row clearfix">
+    <div class="col-12">
+        @Html.Action(nameof(ArJobCardHdController.ArJobCardHdForm), new { id = id, trigger = formTrigger, ArJobCardHdVM = detailObj })
+    </div>
+    <div class="col-12">
+        <div class="card">
+
+            <div class="body">
+                <ul class="mt-2 nav nav-tabs tab-nav-right" role="tablist">
+                    <li role="presentation">
+                        <a href="#jobcard-payments" data-toggle="tab" class="show active">@ERP.ResourcePack.Accounts.ArJobCardHd.PaymentTitle</a>
+
+                    </li>
+                    <li role="presentation">
+                        <a href="#jobcard-multifileattach" data-toggle="tab" class="show">@ERP.ResourcePack.Common.Menu.Attachments</a>
+                    </li>
+                </ul>
+                <div class="tab-content" id="MiscReceiptTaps">
+                    <div role="tabpanel" class="tab-pane fade in active show" id="jobcard-payments">
+                        @Html.Action(nameof(ArJobCardHdController.ArJobCardPaymentsDataDetail))
+                    </div>
+                    <div role="tabpanel" class="tab-pane fade in  " id="jobcard-multifileattach">
+                        
+                            @Html.Partial("ArJobCardAttachmentForm")
+                        
+                    </div>
+
+                </div>
+
+                <div class="row clearfix"> <div class="col-md-12 text-center" id="btnContainer"></div></div>
+            </div>
+
+        </div>
+    </div>
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body">
+                <div class="text-center">
+                    @if (formTrigger != ERP.Front.Helpers.Enums.Common.FormTriggers.Show.ToString())
+                    {
+                        <button type="submit" id="btnSubmition" class="btn btn-info btn-lg m-l-15 waves-effect">@(formTrigger == ERP.Front.Helpers.Enums.Common.FormTriggers.Insert.ToString() ? ERP.ResourcePack.Common.Settings.BtnSave : ERP.ResourcePack.Common.Settings.BtnUpdate)</button>
+                        <div id="submitLoader" style="display:none">
+                            <div class="lds-roller"><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div></div>
+                        </div>
+                    }
+                    <a href="~/ArJobCardHd" class="btn btn-danger btn-lg m-l-15 waves-effect">@(ERP.ResourcePack.Common.Settings.BtnClose)</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section scripts{
+    <script>
+
+
+        const primaryEntityKeyId =  @(id == null ? 0 : id);
+        const trigger = '@formTrigger';
+
+        let formView = true;
+
+        $(function () {
+            if ('@formTrigger' === '@ERP.Front.Helpers.Enums.Common.FormTriggers.Insert.ToString()') {
+                $("#mainForm #JobDate").datepicker("setDate", new Date());
+            }
+
+        });
+
+    </script>
+    <script src="~/Scripts/jquery.validate.min.js"></script>
+    <script src="~/Scripts/jquery.validate.unobtrusive.min.js"></script>
+    @Html.Partial("~/ViewsScripts/_Accounts/ArJobCardHd/ArJobCardHdScripts.cshtml")
+    @if (id != null)
+    {
+        <script>
+            $(function () {
+                /*LoadAttachments();*/
+                LoadAllAttachments();
+                CalcExcessAmount();
+            });
+
+        </script>
+    }
+
+    <script>
+        const CheckJobNumber = function (jobNumber) {
+                    if('@formTrigger' === '@ERP.Front.Helpers.Enums.Common.FormTriggers.Insert.ToString()')
+                    {
+                        $.ajax({
+                        url: `${baseUrl}/ArJobCardHd/CheckJobNumber?jobNum=${jobNumber}`,
+                        type: 'POST',
+                        data: jobNumber,
+                        headers:
+                        {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${$_token}`
+                        },
+                        }).done(function (response) {
+
+                            if (response.result === "false") {
+                                toastr.warning('@ERP.ResourcePack.Accounts.ArJobCardHd.JobNumberError');
+                                return;
+                            } else {
+                                $(this).prop('disabled', true);
+                                //<a href="~/ViewsScripts/_Accounts/ArJobCardHd/ArJobCardHdScripts.cshtml">~/ViewsScripts/_Accounts/ArJobCardHd/ArJobCardHdScripts.cshtml</a>
+                                $('#mainForm').submit();
+                            }
+                        });
+
+                    }
+                    else
+                    {
+                        $(this).prop('disabled', true);
+                        $('#mainForm').submit();
+                    }
+
+
+
+                };
+    </script>
+
+
+    <script id="attachmentsDetails">
+
+    const _tblArjobcardAttachmentsSelector = $('#tblArJobcardAttachments');
+    const _tblArjobcardAttachmentsSelectorBody = $('#tblArJobcardAttachments tbody');
+    const _arjobcardAttachmentsListStr = $('#AttachmentsListStr');
+    let _arjobcardAttachments = [], upadatedArjobcardAttachRow, tblArjobcardAttachIndex = 0;
+
+
+
+    const AddAttachRow = function (data) {
+
+        const current = {
+            index: ++tblArjobcardAttachIndex,
+            attachmentName: data.attachmentName,
+            filePath: data.filePath,
+            rowStatus: NewStatus,
+            id: 0
+        };
+
+        _arjobcardAttachments.push(current);
+
+        _arjobcardAttachmentsListStr.val(JSON.stringify(_arjobcardAttachments));
+        
+        $('.page-loader-wrapper').hide();
+
+        };
+
+    const UpdateAttachRow = function (filePathSelector) {
+
+        let current = _arjobcardAttachments.find(z => z.index === upadatedArjobcardAttachRow.index);
+
+        let indexOfCurrent = _arjobcardAttachments.indexOf(_arjobcardAttachments.find(z => z.index === upadatedArjobcardAttachRow.index));
+
+        /*if (validateAttachments(filePathSelector) === false) return;*/
+
+        $('.page-loader-wrapper').show();
+
+        const newRow = {
+            index: current.index,
+            attachmentName: $('#AttachmentName').val(),
+            filePath: current.filePath,
+            rowStatus: (upadatedArjobcardAttachRow.id ? UpdatedStatus : NewStatus),
+            id: upadatedArjobcardAttachRow.id
+        };
+
+        upadatedArjobcardAttachRow = undefined;
+
+        _arjobcardAttachments.splice(indexOfCurrent, 1, newRow);
+
+        _arjobcardAttachmentsListStr.val(JSON.stringify(_arjobcardAttachments));
+
+        ClearInput();        
+        BindAttachGrid();
+
+        $('#btnUpdateArJobcardAttchRow').hide();
+        $('#btnCancelArJobcardAttchRow').hide();
+        $('.page-loader-wrapper').hide();
+
+    }
+
+    const DeleteAttachRow = function (index) {
+
+        const current = _arjobcardAttachments.find(z => z.index === index);
+
+        const indexOfCurrent = _arjobcardAttachments.indexOf(current);
+
+        if (current.id) {
+
+            current.rowStatus = DeletedStatus;
+
+            _arjobcardAttachments.splice(indexOfCurrent, 1, current);
+
+        } else {
+            _arjobcardAttachments.splice(indexOfCurrent, 1);
+        }
+
+        BindAttachGrid();
+
+        _arjobcardAttachmentsListStr.val(_arjobcardAttachments.length === 0 ? '' : JSON.stringify(_arjobcardAttachments));
+
+    }
+    
+
+    const ClearInput = function () {
+        $('#AttachmentName').val('');
+
+        $('#btnUpdateArJobcardAttchRow').hide();
+        $('#btnCancelArJobcardAttchRow').hide();
+    }
+
+    const GetAttachRow = function (tblIndex) {
+
+         ClearInput();
+
+         const current = _arjobcardAttachments.find(z => z.index === tblIndex);
+
+        $('#AttachmentName').val(current.attachmentName);
+
+        $('#btnUpdateArJobcardAttchRow').show();
+        $('#btnCancelArJobcardAttchRow').show();     
+        $('#AttachmentName').parent('.form-line').addClass('focused');
+        upadatedArjobcardAttachRow = current;
+    }
+
+    const BindAttachGrid = function () {
+
+        let rows = '';
+        const detailArr = _arjobcardAttachments.filter(z => z.rowStatus !== DeletedStatus);
+
+        $.each(detailArr, function (i, item) {
+            let ext = item.filePath.split('.')[item.filePath.split('.').length - 1].toLowerCase();
+            rows += '<tr>';
+            rows += `<td>${item.index}</td>`;
+           
+
+            if (!window.location.pathname.includes('CrmAboutUs')) {
+                rows += `<td>${item.attachmentName}</td>`;
+            }
+          
+            rows += `<td><a target="_blank" href="${item.filePath}" download=${item.attachmentName}><i class="fas fa-download"></i></a></td>`;
+
+            if (primaryEntityKeyId === 0 || trigger !== '@ERP.Front.Helpers.Enums.Common.FormTriggers.Show.ToString()') {
+                rows += `<td><a href="javascript:void(0)" onclick="return DeleteAttachRow(${item.index})"><i class="mx-2 fas fa-trash-alt text-danger"></i></a>`;
+
+                rows += `<a class="js-edit-att-row" href="javascript:void(0)" onclick="return GetAttachRow(${item.index})"><i class="mx-2 fas fa-edit text-success"></i></a></td>`;
+
+            } else {
+                rows += '<td></td>';
+            }
+            rows += `<td>${(ext == 'png' || ext == 'jpg' || ext == 'jpeg') ? `<a class="attach-gal" href="${item.filePath}" target="_blank"><img class="attach-img" src="${item.filePath}" ></a>` : `<a class="attach-gal" href="${item.filePath}" target="_blank"><img class="attach-img" src="../AssetsPack/assets/images/file.png" ></a>`}</td>`;
+
+            rows += '</tr>';
+        });
+
+        _tblArjobcardAttachmentsSelectorBody.html(rows);
+
+        $('#tblAttachments_wrapper th').removeClass('sorting');
+
+        
+
+        if (window.location.pathname.includes('CrmAboutUs')) {            
+            $('#AttachmentName').parent().parent().parent().remove()
+
+            $('.js-edit-att-row').remove()
+            $('.js-th-att-name').remove()
+
+        }
+
+
+    }
+
+    const LoadAllAttachments = function () {
+
+        $.ajax({
+            url: `${baseUrl}/${_apiAppService}/GetAllAttachments`,
+            method: 'GET',
+            headers: { 'Authorization': `Bearer ${$_token}` },
+            data: { id: primaryEntityKeyId }
+        }).done(function (data) {
+
+            _arjobcardAttachments = [...data.result];
+
+            $.each(_arjobcardAttachments, function (i, item) {
+                item.index = ++tblArjobcardAttachIndex;
+            });
+
+            BindAttachGrid();
+
+            _arjobcardAttachmentsListStr.val(JSON.stringify(_arjobcardAttachments));
+                        
+        });
+    }
+
+    async function AJAXMultiAttachmentComponentSubmit(fileUploaderId) {
+
+                const fileUploaderSelector = $(`#${fileUploaderId}`)[0];
+
+                if (fileUploaderSelector.files.length === 0) {
+
+                    toastr.warning('@ERP.ResourcePack.AidModule.ScPortalRequestStudy.PleaseUploadAttachment : @ERP.ResourcePack.Common.Settings.Required');
+                    return false;
+                }
+
+                if (fileUploaderSelector.files.length > 5) {
+
+                    toastr.warning('@ERP.ResourcePack.AidModule.ScPortalRequestStudy.PleaseUploadAttachment : Max 5 files');
+                    return false;
+                }
+
+                $('.page-loader-wrapper').show();
+
+                const formData = new FormData();
+
+                for (var x = 0; x < fileUploaderSelector.files.length; x++) {
+
+                    formData.append('files', fileUploaderSelector.files[x]);
+                }
+
+                //for (var value of formData.values()) {
+                //    console.log(value);
+                //}
+
+                try {
+
+                    await fetch(`${baseUrl}/${_apiAppService}/UploadMultiAttach`, {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': `Bearer ${$_token}`
+                        },
+                        body: formData
+                    }).then(response => response.json()).then(data => {
+                                                
+                        if (data.result.length > 0)
+                            $('#arjobcard-editsection').show();
+
+                        // Add each data to Array
+                        $.each(data.result, function (i, item) {
+                            AddAttachRow(item);
+                        });
+
+                        // Bind each data into table
+                        BindAttachGrid();
+
+                        
+                        $('.page-loader-wrapper').hide();
+                        $('#fileUploadStatus').text('('+data.result.length+') Files Uploaded Successfully')
+                        $(fileUploaderSelector).val('');
+                    });
+
+                } catch (error) {
+
+                    console.error('Error:', error);
+                    $('.page-loader-wrapper').hide();
+                }
+    };
+
+    
+    </script>
+}

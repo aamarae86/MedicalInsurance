@@ -1,0 +1,161 @@
+﻿@using ERP.Web.UI.Controllers
+
+<script>
+    const _mainController = "Notifications"
+
+    $(function () {
+        LoadDataGrid();
+
+        $('#Notifications').addClass('active');
+
+        var prKey = 0;
+        if (formView && primaryEntityKeyId) {
+            prKey = primaryEntityKeyId;
+        }
+    });
+
+    const _loadDataUrl = `${$PrefixHostName}/${_mainController}/@nameof(NotificationsController.LoadDataGrid)`;
+    const _tblSelector = $('#tblNotifications');
+    const _tblLoader = $('#tblLoader');
+
+        $('#State').select2();
+
+    const LoadDataGrid = function () {
+
+        $('#tblLoader').show();
+
+        const parms = {
+            State: $('#State').find(':selected').val()
+        };
+
+        const columns = [
+            {
+                "data": "Date",
+                "name": "Date",
+                "autoWidth": true
+            },
+            {
+                "data": "props.Message",
+                "name": "props.Message",
+                "autoWidth": true
+            },
+            {
+                "data": null,
+                "autoWidth": true,
+                "render": function (d, t, row) {
+
+                    if (row.props.link == null)
+                        return '';
+                    return `<a onclick="return ReadNotification('${row.Id}',${row.State === 'Read' ? 1 : 0},'${row.props.link}')" href="javascript:void(0)">${lang === 'ar-EG' ? 'اضغط هنا' :'Click here'}</a>`;
+                }
+            },
+            {
+                "data": null,
+                "autoWidth": true,
+                "render": function (d, t, row) {
+
+                    if (row.State == null)
+                        return '';
+
+                    if (lang === 'ar-EG')
+                        return row.State == 'Unread' ? 'غير مقروء' : 'مقروء'; // row.StatusAr;
+
+                        return row.State == 'Unread' ? 'Unread' : 'Read';
+                }
+            },
+            {
+                "data": null,
+                "sortable": false,
+                "render": function (data, type, row) {
+
+                    let DeleteAction = `${$PrefixHostName}/${_mainController}/@nameof(NotificationsController.Delete)`;
+
+                    let btns = '';
+
+                    if (row.State == 'Read') {
+                        btns += `<a href="javascript:void(0)" onclick="return ReadNotification('${row.Id}',${1})" title="@ERP.ResourcePack.Common.Settings.MarkAsUnRread"><i class="mx-2 far fa-envelope text-danger"></i></a>`;
+                    }
+
+                    if (row.State == 'Unread') {
+                        btns += `<a href="javascript:void(0)" onclick="return ReadNotification('${row.Id}',${0})" title="@ERP.ResourcePack.Common.Settings.MarkAsRread"><i class="mx-2 far fa-envelope-open text-success"></i></a>`;
+                    }
+
+                    btns += `<a href="javascript:void(0)" onclick="AjaxController.DeleteMainTableRow('${row.Id}','${DeleteAction}');" title="@ERP.ResourcePack.Common.Settings.Delete"><i class="mx-2 fas fa-trash-alt text-danger"></i></a>`;
+
+                    return btns;
+                }
+            }
+        ];
+
+        const dtObj = {
+            "processing": true,
+            "serverSide": true,
+            "filter": false,
+            "orderMulti": false,
+            "language": dataTableLang,
+            "ajax": {
+                "url": _loadDataUrl,
+                "type": "POST",
+                "datatype": "json",
+                "data": parms,
+                "complete": function () {
+                    _tblLoader.hide();
+                }
+            },
+            "columns": columns,
+            "initComplete": function () {
+                $('[data-toggle="tooltip"]').tooltip();
+            }
+
+        };
+
+        _tblSelector.dataTable().fnDestroy();
+        _tblSelector.DataTable(dtObj).on('draw', function () { $('[data-toggle="tooltip"]').tooltip(); });
+
+        setTimeout(function () {
+            $(".sorting_1").removeAttr('colspan');
+        }, 500);
+    };
+
+    const setInUseValue = function () {
+        $("#mainForm #InUse").val($('#InUseAlt').is(':checked'));
+    }
+
+    const setInPhysicalInventoryValue = function () {
+        $("#mainForm #InPhysicalInventory").val($('#InPhysicalInventoryAlt').is(':checked'));
+    }
+
+    const setIsDepreciateValue = function () {
+        $("#mainForm #IsDepreciate").val($('#IsDepreciateAlt').is(':checked'));
+    }
+
+    const setIsAmortizeAdjustmentValue = function () {
+        $("#mainForm #IsAmortizeAdjustment").val($('#IsAmortizeAdjustmentAlt').is(':checked'));
+    }
+
+ function ReadNotification(id,state,link){
+
+    const newState = state == 1 ? 0 : 1;
+
+     $.ajax({
+         url: `${baseUrl}/User/ChangeNotificationState?notificationId=${id}&state=${newState}`,
+         cache: false,
+         type: "POST",
+         headers: {
+             'Authorization': `Bearer ${$_token}`
+         },
+         data: JSON.stringify({})
+     })
+         .done(function (data) {
+
+                 LoadDataGrid();
+         })
+         .fail(function () {
+             console.log("error");
+         });
+    
+    if(link) window.open(link, '_blank');
+
+};
+
+</script>

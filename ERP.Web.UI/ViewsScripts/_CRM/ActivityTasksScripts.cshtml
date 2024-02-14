@@ -1,0 +1,259 @@
+﻿@using ERP.Authorization;
+@using ERP.Web.UI.Controllers.CRM
+@using ERP.ResourcePack.CRM.activityTask
+@{
+    string permissionsStr = TempData["Permissions"].ToString();
+    string encUpdateTrigger = ERP.Front.Helpers.Enums.Common.EncUpdate;
+    string encShowTrigger = ERP.Front.Helpers.Enums.Common.EncShow;
+}
+<script>
+    const _mainController = "ActivityTasks"
+
+    $(function () {
+
+        LoadDataGrid();
+
+        $('#ActivityTasks').addClass('active');
+    });
+
+    const _loadDataUrl = `${$PrefixHostName}/${_mainController}/@nameof(ActivityTasksController.LoadDataGrid)`;
+    const _tblSelector = $('#tblActivityTasks');
+
+    const _permissions = '@permissionsStr';
+    const _updatePermission = '@PermissionNames.Pages_CrmLeadsPersons_Update';
+    const _deletePermission = '@PermissionNames.Pages_CrmLeadsPersons_Delete';
+
+    var OnBegin = function (response) {
+      fireBtnLoader();
+    };
+
+    var OnSuccess = function (response) {
+
+        if (response.success) {
+
+            if (response.customRestResult.trigger === '@ERP.Front.Helpers.Enums.Common.FormTriggers.Insert') {
+
+                toastr.success(response.customRestResult.message);
+
+                LoadDataGrid();
+
+                _mainModal.modal('hide');
+
+            } else if (response.customRestResult.trigger === '@ERP.Front.Helpers.Enums.Common.FormTriggers.Update') {
+
+                LoadDataGrid();
+
+                _mainModal.modal('hide');
+
+                toastr.success(response.customRestResult.message);
+            }
+
+        } else {
+            toastr.error(response.customRestResult.message);
+        }
+
+    };
+
+    var OnComplete = function (response) {
+        downBtnLoader();
+    };
+
+    var OnFailure = function (response) {
+        downBtnLoader();
+    };
+
+    const LoadDataGrid = function () {
+
+        const parms = {
+           // RelatedToLkpId: $('#RelatedToLkpId').val(),
+            CrmLeadsPersonsId: $('#CrmLeadsPersonsId').val(),
+            //Subject: $('#searchBox #Subject').val(),
+        };
+
+        const columns = [
+            {
+                "data": "result.data.id",
+                'render': function (data, type, row, meta) {
+                    return meta.row + meta.settings._iDisplayStart + 1;
+                }
+            },
+            {
+                "data": "RelatedToLkpVal",
+                "name": "RelatedToLkpVal",
+                "autoWidth": true
+            },
+            {
+                "data": "CrmLeadsPersonsVal",
+                "name": "CrmLeadsPersonsVal",
+                "autoWidth": true
+            },
+            {
+                "data": "Subject",
+                "name": "Subject",
+                "autoWidth": true
+
+            },
+            {
+                "data": "StatuesLkpVal",
+                "name": "StatuesLkpVal",
+                "autoWidth": true
+            },
+            {
+                "data": "DueDate",
+                "name": "DueDate",
+                "autoWidth": true
+            },
+
+
+            {
+                "data": null,
+                "sortable": false,
+                "render": function (data, type, row) {
+
+                    let formAction = `${$PrefixHostName}/${_mainController}/@nameof(ActivityTasksController.ActivityTasksForm)`;
+                    let DeleteAction = `${$PrefixHostName}/${_mainController}/@nameof(ActivityTasksController.Delete)`;
+
+                    let formTitle = '@activityTask.Title', btns = '';
+
+                    if (_permissions.includes(_updatePermission)) {
+ 
+
+                        btns += `<a href="${$PrefixHostName}/ActivityTasks/FormView?id=${row.EncId}&t=@encUpdateTrigger&LeadContactId=${row.CrmLeadsPersonsId}&Name=${row.CrmLeadsPersonsVal}&type=${getUrlParameter('type')}"  title="@ERP.ResourcePack.Common.Settings.Edit"><i class="mx-2 fas fa-edit text-info"></i></a>`;
+
+
+
+                    }
+
+                    @*btns += `<a href="javascript:void(0)" onclick="AjaxController.GetFormModal(${row.Id},'@ERP.Front.Helpers.Enums.Common.FormTriggers.Show','${formAction}','${formTitle}');" title="@ERP.ResourcePack.Common.Settings.Show"><i class="mx-2 fas fa-eye text-info"></i></a>`;*@
+
+                    if (_permissions.includes(_deletePermission)) {
+                        btns += `<a href="javascript:void(0)" onclick="AjaxController.DeleteMainTableRow(${row.Id},'${DeleteAction}');" title="@ERP.ResourcePack.Common.Settings.Delete"><i class="mx-2 fas fa-trash-alt text-danger"></i></a>`;
+                    }
+
+                    @*const _auditedPermission = '@PermissionNames.Pages_ActivityTasks_Audit';
+
+                    if (_permissions.includes(_auditedPermission)) {
+
+                        row.permission = _auditedPermission;
+
+                        btns += GetAuditedButton(row);
+                    }*@
+
+
+
+
+
+
+
+
+
+
+
+                    return btns;
+                }
+            }
+        ];
+
+        const dtObj = {
+            "processing": true,
+            "serverSide": true,
+            "filter": false,
+            "orderMulti": false,
+            "language": dataTableLang,
+            "ajax": {
+                "url": _loadDataUrl,
+                "type": "POST",
+                "datatype": "json",
+                "data": parms,
+                "complete": function () { }
+            },
+            "columns": columns,
+            "initComplete": function () {
+                $('[data-toggle="tooltip"]').tooltip();
+            }
+        };
+
+        _tblSelector.dataTable().fnDestroy();
+        _tblSelector.DataTable(dtObj).on('draw', function () { $('[data-toggle="tooltip"]').tooltip(); });
+
+    };
+
+    //$("#mainForm").submit(function (e) {
+    //    location.reload();
+
+    //});
+    $('#mainForm').on('submit', function (e) {
+
+        if ($('#mainForm').valid()) {
+          //  $('#mainForm').submit();
+        
+            setTimeout(function () {
+                //location.reload(true)
+                window.location.href = `/ActivityTasks/FormView?id=&t=ohY6agOArKMhinIh5af4rw,,&LeadContactId=${getUrlParameter('LeadContactId')}&Name=${getUrlParameter('Name')}&type=${getUrlParameter('type')}`;
+            }, 200);
+
+
+
+        } else {
+            e.preventDefault();
+
+        }
+
+    
+    });
+
+
+
+
+
+
+    //$('#RelatedToLkpIdSearch').select2(ReturnSelect2ObjectForLkpsTypes('CrmLeadsPersonsType'));
+
+    $('#StatuesLkpId').select2(ReturnSelect2ObjectForLkpsTypes('ActivityTasksStatues'));
+    $('#PriorityLkpId').select2(ReturnSelect2ObjectForLkpsTypes('ActivityTasksPriority'));
+
+    $('#CrmDealsId').select2(ReturnSelect2ObjectDefault(`${baseUrl}/ActivityMeeting/GetCrmDealsSelect2`));
+
+
+    //$('#CrmLeadsPersonsIdSerch').select2({
+    //    ajax: {
+    //        url: `${baseUrl}/ActivityTasks/GetCrmLeadsPersonsSelect2`,
+    //        dataType: 'json',
+    //        headers: {
+    //            'Authorization': `Bearer ${$_token}`
+    //        },
+    //        data: function (params) {
+    //            params.page = params.page || 1;
+    //            return {
+    //                //TypeLkpId: $('#RelatedToLkpId').find(':selected').val(),
+    //                pageSize: pageSize,
+    //                pageNumber: params.page,
+    //                searchTerm: params.term,
+    //                lang: lang
+    //            };
+    //        },
+    //        processResults: function (data, params) {
+
+    //            params.page = params.page || 1;
+
+    //            return {
+    //                results: data.result.results,
+    //                pagination: {
+    //                    more: (params.page * pageSize) < data.result.total
+    //                }
+    //            };
+    //        }
+    //    },
+    //    placeholder: select2Placeholder,
+    //    minimumInputLength: 0,
+    //    allowClear: true,
+    //    language: select2Lang
+    //});
+
+    $('#RelatedToLkpId0').select2();
+
+    $('#CrmLeadsPersonsId0').select2();
+
+
+
+</script>

@@ -1,0 +1,169 @@
+﻿@using ERP.Web.UI.Models.ViewModels.General
+@using ERP.Web.UI.Models.ViewModels.AidModule
+@model ScFndAidRequestTypeVM
+@{
+    string formTrigger = ViewBag.trigger;
+    string lang = Request.Cookies["Lang"] == null ? "ar-EG" : Request.Cookies["Lang"].Value.ToString();
+    string lkpKeyDdl = lang == "ar-EG" ? nameof(FndLookupValuesVM.NameAr) : nameof(FndLookupValuesVM.NameEn);
+}
+<div class="card">
+    <div class="body">
+        @using (Ajax.BeginForm(
+            nameof(ERP.Web.UI.Controllers.AidModule.ScFndAidRequestTypeController.PostScFndAidRequestType), "ScFndAidRequestType",
+            new AjaxOptions { HttpMethod = "POST", OnBegin = "OnBegin", OnSuccess = "OnSuccess", OnComplete = "OnComplete", OnFailure = "OnFailure" }, new { @id = "mainForm" }))
+        {
+            @Html.HiddenFor(z => z.Id)
+            <div class="row clearfix">
+                <div class="col-md-12">
+                    @Html.LabelFor(z => z.AidRequestTypeLkpId, new { @class = "form-label" })
+                    <div class="form-group form-float">
+                        @if (Model != null && Model.FndLookupValues != null)
+                        {
+                            var list = new List<FndLookupValuesVM> { new FndLookupValuesVM { Id = (long)Model.AidRequestTypeLkpId, NameAr = Model.FndLookupValues.NameAr, NameEn = Model.FndLookupValues.NameEn } };
+                            var selectList = new SelectList(list, "Id", lkpKeyDdl, Model.AidRequestTypeLkpId);
+
+                            @Html.DropDownListFor(z => z.AidRequestTypeLkpId, selectList, new { @class = "form-control" })
+                        }
+                        else if (formTrigger == ERP.Front.Helpers.Enums.Common.FormTriggers.Insert.ToString())
+                        {
+                            @Html.DropDownListFor(z => z.AidRequestTypeLkpId, Enumerable.Empty<SelectListItem>(), new { @class = "form-control" })
+                        }
+                        else
+                        {
+                            @Html.DropDownListFor(z => z.AidRequestTypeLkpId, Enumerable.Empty<SelectListItem>(), new { @class = "form-control" })
+                        }
+                    </div>
+                </div>
+            </div>
+            <div class="row clearfix">
+                <div class="col-md-6">
+                    @if (formTrigger == ERP.Front.Helpers.Enums.Common.FormTriggers.Show.ToString())
+                    {
+                        <p>
+                            @if (Model.IsMaintenance)
+                            {
+                                <i class="fas fa-check text-success fa-2x"></i>
+                            }
+                            else
+                            {
+                                <i class="fas fa-times text-danger fa-2x"></i>
+                            }
+                            <span>@Html.LabelFor(z => z.IsMaintenance)</span>
+                        </p>
+                    }
+                    else if (formTrigger == ERP.Front.Helpers.Enums.Common.FormTriggers.Update.ToString())
+                    {
+                        <p>
+                            <label>
+                                @if (Model.IsMaintenance)
+                                {
+                                    <input type="checkbox"  checked id="@nameof(Model.IsMaintenanceAlt)" name="@nameof(Model.IsMaintenanceAlt)" />
+                                }
+                                else
+                                {
+                                    <input type="checkbox" id="@nameof(Model.IsMaintenanceAlt)" name="@nameof(Model.IsMaintenanceAlt)" />
+                                }
+                                <span>@Html.LabelFor(z => z.IsMaintenance)</span>
+                            </label>
+                        </p>
+                    }
+                    else
+                    {
+                        <p>
+                            <label>
+                                <input type="checkbox"  id="@nameof(Model.IsMaintenanceAlt)" name="@nameof(Model.IsMaintenanceAlt)" />
+                                <span>@Html.LabelFor(z => z.IsMaintenance)</span>
+                            </label>
+                        </p>
+                    }
+
+                    <input type="hidden" id="@nameof(Model.IsMaintenance)" name="@nameof(Model.IsMaintenance)" value="@(formTrigger == ERP.Front.Helpers.Enums.Common.FormTriggers.Insert.ToString() ? "false" : Model.IsMaintenance.ToString())" />
+                </div>
+                <div class="col-md-6">
+                    @if (formTrigger == ERP.Front.Helpers.Enums.Common.FormTriggers.Show.ToString())
+                    {
+                        <p>
+                            @if (Model.IsElectronics)
+                            {
+                                <i class="fas fa-check text-success fa-2x"></i>
+                            }
+                            else
+                            {
+                                <i class="fas fa-times text-danger fa-2x"></i>
+                            }
+                            <span>@Html.LabelFor(z => z.IsElectronics)</span>
+                        </p>
+                    }
+                    else if (formTrigger == ERP.Front.Helpers.Enums.Common.FormTriggers.Update.ToString())
+                    {
+                        <p>
+                            <label>
+                                @if (Model.IsElectronics)
+                                {
+                                    <input type="checkbox"  checked id="@nameof(Model.IsElectronicsAlt)" name="@nameof(Model.IsElectronicsAlt)" />
+                                }
+                                else
+                                {
+                                    <input type="checkbox"  id="@nameof(Model.IsElectronicsAlt)" name="@nameof(Model.IsElectronicsAlt)" />
+                                }
+                                <span>@Html.LabelFor(z => z.IsElectronics)</span>
+                            </label>
+                        </p>
+                    }
+                    else
+                    {
+                        <p>
+                            <label>
+                                <input type="checkbox"  id="@nameof(Model.IsElectronicsAlt)" name="@nameof(Model.IsElectronicsAlt)" />
+                                <span>@Html.LabelFor(z => z.IsElectronics)</span>
+                            </label>
+                        </p>
+                    }
+
+                    <input type="hidden" id="@nameof(Model.IsElectronics)" name="@nameof(Model.IsElectronics)" value="@(formTrigger == ERP.Front.Helpers.Enums.Common.FormTriggers.Insert.ToString() ? "false" : Model.IsElectronics.ToString())" />
+                </div>
+            </div>
+            <div class="row clearfix">
+                <div class="form-group text-center form-float">
+                    <button type="submit" class="btn btn-primary btn-lg m-l-15 waves-effect">@(Model == null ? ERP.ResourcePack.Common.Settings.BtnSave : ERP.ResourcePack.Common.Settings.BtnUpdate)</button>
+                    <div id="submitLoader" style="display:none">
+                        <div class="lds-roller"><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div></div>
+                    </div>
+                </div>
+            </div>
+        }
+
+    </div>
+</div>
+<script src="~/Scripts/jquery.validate.min.js"></script>
+<script src="~/Scripts/jquery.validate.unobtrusive.min.js"></script>
+<script src="~/AssetsPack/assets/js/pages/forms/basic-form-elements.js"></script>
+
+<script>
+
+    $('#AidRequestTypeLkpId').select2(ReturnSelect2ObjectForLkpsTypes('@ERP.Front.Helpers.Enums.Common.FndLkpsTypes.FndAidRequestType.ToString()'));
+
+    $('#IsMaintenanceAlt').on('click', function () {
+
+        $('#IsMaintenance').val($(this).is(':checked'));
+
+        if ($(this).is(':checked')) {
+            $('#IsElectronicsAlt').prop('checked', false);
+            $('#IsElectronics').val($('#IsElectronicsAlt').is(':checked'));
+        }
+
+    });
+
+    $('#IsElectronicsAlt').on('click', function () {
+
+        $('#IsElectronics').val($(this).is(':checked'));
+
+        if ($(this).is(':checked')) {
+            $('#IsMaintenanceAlt').prop('checked', false);
+            $('#IsMaintenance').val($('#IsMaintenanceAlt').is(':checked'));
+        }
+
+    });
+
+</script>
+

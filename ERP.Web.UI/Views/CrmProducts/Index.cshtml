@@ -1,0 +1,20 @@
+﻿@{
+    ViewBag.Title = ERP.ResourcePack.CRM.products.products.Title;
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+
+@Html.Action(nameof(ERP.Web.UI.Controllers.CRM.CrmProductsController.CrmProductsSearch))
+@Html.Action(nameof(ERP.Web.UI.Controllers.CRM.CrmProductsController.CrmProductsData))
+
+@section scripts{
+    @Html.Partial("~/ViewsScripts/_CRM/CrmProductScripts.cshtml")
+<script>
+
+    const setInUseValue = function () {
+        $("#mainForm #IsActive").val($('#IsActive').is(':checked'));
+    }
+
+
+    </script>
+}

@@ -1,0 +1,513 @@
+﻿@using ERP.Web.UI.Controllers.Accounts
+@using ERP.Authorization;
+@{
+    string permissionsStr = TempData["Permissions"].ToString();
+    string encUpdateTrigger = ERP.Front.Helpers.Enums.Common.EncUpdate;
+    string encInsertTrigger = ERP.Front.Helpers.Enums.Common.EncInsert;
+    string encShowTrigger = ERP.Front.Helpers.Enums.Common.EncShow;
+    long openStatus = 50;
+    long pendingStatus = 51;
+}
+<script>
+    const _mainController = "GlPeriodsYears"
+
+    $(function () {
+        LoadDataGrid();
+
+        $('#tblGlPeriodsYearsPrint thead').html($('#tblGlPeriodsYears thead').html());
+        $('#tblGlPeriodsYearsPrint thead tr :last-child').remove();
+
+        $('#GlPeriodsYears').addClass('active');
+
+        $('#PeriodYear').prop('type', 'number');
+        $('#PeriodYear').prop('min', '0');
+
+        if (formView && primaryEntityKeyId) {
+           BindCodeComUtilitesDropDowns(__arrGlSelect2,'AccId',$('#codeComUtilityIds').val(),$('#codeComUtilityTexts').val());
+        }
+
+    });
+
+    const _loadDataUrl = `${$PrefixHostName}/${_mainController}/@nameof(GlPeriodsYearsController.LoadDataGrid)`;
+    const _tblSelector = $('#tblGlPeriodsYears');
+    const _tblLoader = $('#tblLoader');
+    const _txtPeriodYearSearch = $('#searchBox #PeriodYear');
+    const _txtStartDateSearch = $('#searchBox #StartDateStr');
+    const _txtEndDateSearch = $('#searchBox #EndDateStr');
+
+    const _permissions = '@permissionsStr';
+    const _updatePermission = '@PermissionNames.Pages_GlPeriodsYears_Update';
+    const _deletePermission = '@PermissionNames.Pages_GlPeriodsYears_Delete';
+
+    var OnBegin = function (response) {
+        fireBtnLoader();
+    };
+
+    var OnSuccess = function (response) {
+
+        if (response.success) {
+
+            if (response.customRestResult.trigger === '@ERP.Front.Helpers.Enums.Common.FormTriggers.Insert') {
+
+                toastr.success(response.customRestResult.message);
+
+                setTimeout(function () {
+                    window.location.href =  $PrefixHostName + '/GlPeriodsYears';
+                },200);
+
+            } else if (response.customRestResult.trigger === '@ERP.Front.Helpers.Enums.Common.FormTriggers.Update') {
+
+                toastr.success(response.customRestResult.message);
+
+                setTimeout(function () {
+                    window.location.href =  $PrefixHostName + '/GlPeriodsYears';
+                }, 200);
+            }
+
+        } else {
+            toastr.error(response.customRestResult.message);
+        }
+
+    };
+
+    var OnComplete = function (response) {
+        downBtnLoader();
+    };
+
+    var OnFailure = function (response) {
+        toastr.error(response);
+        downBtnLoader();
+    };
+
+    const LoadDataGrid = function () {
+
+        $('#tblLoader').show();
+
+        const params = {
+            PeriodYear: _txtPeriodYearSearch.val(),
+            StartDate: _txtStartDateSearch.val(),
+            EndDate: _txtEndDateSearch.val()
+        };
+
+        const columns = [
+            {
+                "data": "result.data.id",
+                'render': function (data, type, row, meta) {
+                    return meta.row + meta.settings._iDisplayStart + 1;
+                }
+            },
+            {
+                "data": "PeriodYear",
+                "name": "PeriodYear",
+                "autoWidth": true
+            },
+            {
+                "data": "StartDate",
+                "name": "StartDate",
+                "autoWidth": true
+            },
+            {
+                "data": "EndDate",
+                "name": "EndDate",
+                "autoWidth": true
+            },
+            {
+                "data": "codeComUtilityTexts",
+                "autoWidth": true
+            },
+            {
+                "data": null,
+                "sortable": false,
+                'searchable': false,
+                "render": function (data, type, row) {
+
+                    let formAction = `${$PrefixHostName}/${_mainController}/@nameof(GlPeriodsYearsController.GlPeriodsYearsForm)`;
+                    let DeleteAction = `${$PrefixHostName}/${_mainController}/@nameof(GlPeriodsYearsController.Delete)`;
+
+                    let formTitle = '@ERP.ResourcePack.Accounts.GlPeriodsYears.Title';
+                    let btns = '';
+
+                    if (_permissions.includes(_updatePermission)) {
+                        btns += `<a href="${$PrefixHostName}/GlPeriodsYears/FormView?id=${row.EncId}&t=@encUpdateTrigger" title="@ERP.ResourcePack.Common.Settings.Edit"><i class="mx-2 fas fa-edit text-info"></i></a>`;
+                    }
+
+                    btns += `<a href="${$PrefixHostName}/GlPeriodsYears/FormView?id=${row.EncId}&t=@encShowTrigger" title="@ERP.ResourcePack.Common.Settings.Show"><i class="mx-2 fas fa-eye text-info"></i></a>`;
+
+                    if (_permissions.includes(_deletePermission)) {
+                        btns += `<a href="javascript:void(0)" onclick="AjaxController.DeleteMainTableRow(${row.Id},'${DeleteAction}');"><i class="mx-2 fas fa-trash-alt text-danger" title="@ERP.ResourcePack.Common.Settings.Delete"></i></a>`;
+                    }
+
+                    const _auditedPermission = '@PermissionNames.Pages_GlPeriodsYears_Audit';
+
+                    if (_permissions.includes(_auditedPermission)) {
+
+                        row.permission = _auditedPermission;
+
+                        btns += GetAuditedButton(row);
+                    }
+
+                    return btns;
+                }
+            }
+        ];
+
+        const dtObj = {
+            "processing": true,
+            "serverSide": true,
+            "filter": false,
+            "orderMulti": false,
+            "language": dataTableLang,
+            "ajax": {
+                "url": _loadDataUrl,
+                "type": "POST",
+                "datatype": "json",
+                "data": params,
+                "complete": function () {
+                      _tblLoader.hide();
+                }
+            },
+            "columns": columns,
+            "initComplete": function () {
+                $('[data-toggle="tooltip"]').tooltip();
+            }
+
+        };
+
+        _tblSelector.dataTable().fnDestroy();
+        _tblSelector.DataTable(dtObj).on('draw', function () { $('[data-toggle="tooltip"]').tooltip(); });
+
+        setTimeout(function () {
+            $(".sorting_1").removeAttr('colspan');
+        }, 500);
+    };
+
+    $('#btnSubmition').on('click', function () {
+
+        const resultCodeComUtility = GetCodeComUtilites(__arrGlSelect2, 'AccId');
+
+        if (resultCodeComUtility === null) {
+            toastr.warning('@ERP.ResourcePack.Accounts.GlJeHeaders.FormDetailNotValid');
+            return;
+        }
+
+        $('#mainForm #@nameof(Model.codeComUtilityIds)').val(resultCodeComUtility.idsStr);
+        $('#mainForm #@nameof(Model.codeComUtilityTexts)').val(resultCodeComUtility.textsStr);
+      
+
+        $('#mainForm').submit();
+
+        if (_mainForm.valid()) {
+
+                $(this).hide();
+                $('#submitLoader').show();
+
+        } else {
+
+                 $(this).show();
+                 $('#submitLoader').hide();
+
+        }
+    });
+
+</script>
+
+<script>
+
+    const _tblGlPeriodsYearsDetailSelector = $('#tblGlPeriodsYearsDetail');
+    const _tblGlPeriodsYearsDetailSelectorBody = $('#tblGlPeriodsYearsDetail tbody');
+    const _tblGlPeriodsYearsDetailSelectorHead = $('#tblGlPeriodsYearsDetail thead tr');
+    const _listGlPeriodsYearsDetails = $('#ListPeriodDetails');
+
+    let _glPeriodsYearsDetails = [], _deletedDetailIds = [], updatedRow, tblCounterIndex = 0 ;
+
+    const fillDetail = function () {
+
+        const current = {
+            index: ++tblCounterIndex,
+            periodNameAr: $('#periodNameAr').val(),
+            periodNameEn: $('#periodNameEn').val(),
+            //startDate: $('#first #StartDateStrDetail').val(),
+            //endDate: $('#first #EndDateStrDetail').val(),
+            startDateStr: $('#first #StartDateStrDetail').val(),
+            endDateStr: $('#first #EndDateStrDetail').val(),
+            statusLkp: '@ERP.ResourcePack.Accounts.GlPeriodsYearsDetails.OpendStatus',
+            statusLkpId: '',
+            rowStatus: NewStatus,
+            id: 0,
+        };
+
+        return current;
+    };
+
+    const AddGlDetail = function () {
+
+        const current = fillDetail();
+
+        if (current === undefined) return;
+
+        _glPeriodsYearsDetails.push(current);
+
+        _listGlPeriodsYearsDetails.val(JSON.stringify(_glPeriodsYearsDetails));
+
+        bindglPeriodsYearsDetailsTable();
+
+        clearFormAdding();
+    };
+
+    const bindglPeriodsYearsDetailsTable = function () {
+
+        let rows = '';
+
+        const detailArr = _glPeriodsYearsDetails.filter(z => z.rowStatus !== DeletedStatus);
+
+        $.each(detailArr, function (i, item) {
+
+            rows += '<tr>';
+
+            rows += `<td style="width:10%">${item.index}</td>`;
+
+            rows += `<td>${item.periodNameAr}</td>`;
+            rows += `<td>${item.periodNameEn}</td>`;
+            rows += `<td>${item.startDateStr}</td>`;
+            rows += `<td>${item.endDateStr}</td>`;
+            rows += `<td>${item.statusLkp}</td>`;
+
+            if (trigger === '@ERP.Front.Helpers.Enums.Common.FormTriggers.Update.ToString()')
+            {
+                if (item.statusLkpId == @openStatus) {
+                  rows += `<td><a href="javascript:void(0)" onclick="return UpdateStatus(@pendingStatus,${item.id})" class="btn btn-outline-info">@ERP.ResourcePack.Accounts.GlPeriodsYearsDetails.Close</a></td>`;
+                } else if (item.statusLkpId == @pendingStatus) {
+                  rows += `<td><a href="javascript:void(0)" onclick="return UpdateStatus(@openStatus,${item.id})"  class="btn btn-outline-info">@ERP.ResourcePack.Accounts.GlPeriodsYearsDetails.Open</a></td>`;
+                }
+            }
+
+            if (primaryEntityKeyId === 0 || trigger !== '@ERP.Front.Helpers.Enums.Common.FormTriggers.Show.ToString()') {
+                rows += `<td><a href="javascript:void(0)" onclick="return DeleteGlPeriodsYearsDetail(${item.index})"><i class="mx-2 fas fa-trash-alt text-danger"></i></a>`;
+                rows += `<a href="javascript:void(0)" onclick="return GetGlPeriodsYearsDetailRow(${item.index})"><i class="mx-2 fas fa-edit text-success"></i></a></td>`;
+            }
+            else {
+                rows += '<td></td>';
+            }
+
+            rows += '</tr>';
+        });
+
+        _tblGlPeriodsYearsDetailSelectorBody.html(rows);
+    };
+
+    const DeleteGlPeriodsYearsDetail = function (index) {
+
+        const current = _glPeriodsYearsDetails.find(z => z.index === index);
+
+        const indexOfCurrent = _glPeriodsYearsDetails.indexOf(current);
+
+        if (current.id === undefined || current.id == null || current.id == 0) {
+
+           _glPeriodsYearsDetails.splice(indexOfCurrent, 1);
+
+        } else {
+
+            current.rowStatus = DeletedStatus;
+
+           _glPeriodsYearsDetails.splice(indexOfCurrent, 1,current);
+        }
+
+        bindglPeriodsYearsDetailsTable();
+
+        _listGlPeriodsYearsDetails.val(_glPeriodsYearsDetails.length === 0 ? '' : JSON.stringify(_glPeriodsYearsDetails));
+
+    };
+
+    const LoadDetailGlPeriodsDetailsData = function () {
+
+        $.ajax({
+            url: `${baseUrl}/GlPeriodsYears/GetAllDetails`,
+            method: 'GET',
+            headers: {
+                        'Authorization': `Bearer ${$_token}`
+            },
+            data: {
+                glPeriodsYearsId: primaryEntityKeyId
+            }
+        }).done(function (data) {
+
+            _glPeriodsYearsDetails = [...data.result];
+
+            tblCounterIndex = 0;
+
+            $.each(_glPeriodsYearsDetails, function (i, item) {
+                item.index = ++tblCounterIndex;
+            });
+
+            bindglPeriodsYearsDetailsTable();
+
+            _listGlPeriodsYearsDetails.val(JSON.stringify(_glPeriodsYearsDetails));
+
+        });
+
+    };
+
+    const GetGlPeriodsYearsDetailRow = function (tblIndex) {
+
+        clearFormAdding();
+
+        $('#btnAddDetailRow').hide();
+        $('#btnUpdateDetailRow').show();
+        $('#btnCancelDetailRow').show();
+
+        const current = _glPeriodsYearsDetails.find(z => z.index === tblIndex);
+
+        $('#periodNameAr').val(current.periodNameAr);
+        $('#periodNameEn').val(current.periodNameEn);
+        $('#first #StartDateStrDetail').val(current.startDateStr);
+        $('#first #EndDateStrDetail').val(current.endDateStr);
+
+        $('#periodNameAr').parent('.form-line').addClass('focused');
+        $('#periodNameEn').parent('.form-line').addClass('focused');
+
+        $('#first #StartDateStrDetail').parent('.form-line').addClass('focused');
+        $('#first #EndDateStrDetail').parent('.form-line').addClass('focused');
+
+        updatedRow = current;
+
+    };
+
+    const UpdateGlDetailRow = function () {
+
+        let current = _glPeriodsYearsDetails.find(z => z.index === updatedRow.index);
+
+        let indexOfCurrent = _glPeriodsYearsDetails.indexOf(_glPeriodsYearsDetails.find(z => z.index === updatedRow.index));
+
+        const newRow = fillDetail();
+
+        if (newRow === undefined) return;
+
+        newRow.index = current.index;
+        newRow.statusLkpId = updatedRow.statusLkpId;
+        newRow.id = updatedRow.id;
+        newRow.rowStatus =
+        (updatedRow.id === undefined || updatedRow.id == null || updatedRow.id == 0) ? NewStatus : UpdatedStatus;
+
+        _glPeriodsYearsDetails.splice(indexOfCurrent, 1,newRow);
+
+        $('#btnAddDetailRow').show();
+        $('#btnUpdateDetailRow').hide();
+        $('#btnCancelDetailRow').hide();
+
+        clearFormAdding();
+
+        _listGlPeriodsYearsDetails.val(JSON.stringify(_glPeriodsYearsDetails));
+
+        bindglPeriodsYearsDetailsTable();
+    };
+
+    const clearFormAdding = function () {
+        $('#periodNameAr').val('');
+        $('#periodNameEn').val('');
+        $('#first #StartDateStrDetail').val('');
+        $('#first #EndDateStrDetail').val('');
+    };
+
+    const UpdateStatus = function (statusId,tblId) {
+
+         $.ajax({
+            url: `${baseUrl}/GlPeriodsYears/UpdateStatusLkp`,
+            method: 'PUT',
+            headers: {
+                        'Authorization': `Bearer ${$_token}`
+            },
+             data: {
+                id:tblId,
+                statusLkpId: statusId
+            }
+         }).done(function (response) {
+
+             if (response) {
+                 LoadDetailGlPeriodsDetailsData();
+             } else {
+                 toastr.error('!!!');
+             }
+
+        });
+
+    };
+
+    function printExc() {
+        $('.page-loader-wrapper').show();
+        $('#tblLoader').show();
+        $('#tblGlPeriodsYearsPrint_wrapper').parent().addClass('d-none');
+
+        const parmss = {
+            PeriodYear: _txtPeriodYearSearch.val(),
+            StartDate: _txtStartDateSearch.val(),
+            EndDate: _txtEndDateSearch.val(),
+            length: 1000000
+        };
+
+       
+
+        const columns = [
+            {
+                "data": "result.data.id",
+                'render': function (data, type, row, meta) {
+                    return meta.row + meta.settings._iDisplayStart + 1;
+                }
+            },
+            {
+                "data": "PeriodYear",
+                "name": "PeriodYear",
+                "autoWidth": true
+            },
+            {
+                "data": "StartDate",
+                "name": "StartDate",
+                "autoWidth": true
+            },
+            {
+                "data": "EndDate",
+                "name": "EndDate",
+                "autoWidth": true
+            },
+            {
+                "data": "codeComUtilityTexts",
+                "autoWidth": true
+            },
+            
+        ];
+
+
+        const dtObj = {
+            "language": dataTableLang,
+            "dom": 'Bfrtip',
+            "buttons": [
+                {
+                    extend: 'excel',
+                    messageTop: `${$('#PeriodYear').siblings().text()}: ${(parmss.PeriodYear) ? parmss.PeriodYear : '--'}, ${$('#StartDateStr').siblings().text()}: ${(parmss.StartDate) ? parmss.StartDate : '--'}, ${$('#EndDateStr').siblings().text()}: ${(parmss.EndDate) ? parmss.EndDate : '--'}`
+                },
+
+            ],
+            "ajax": {
+                "url": _loadDataUrl,
+                "type": "POST",
+                "datatype": "json",
+                "data": parmss,
+                "complete": function (d) {
+                    _tblLoader.hide();
+                }
+            },
+            "columns": columns,
+
+            "initComplete": function () {
+                $('#tblGlPeriodsYearsPrint_wrapper').parent().addClass('d-none');
+
+                $('#tblGlPeriodsYearsPrint_wrapper button.dt-button').click();
+            }
+        };
+
+        $('#tblGlPeriodsYearsPrint').dataTable().fnDestroy();
+        $('#tblGlPeriodsYearsPrint').DataTable(dtObj).on('buttons-processing', function (e, indicator) { if (!indicator) { $('.page-loader-wrapper').hide() } });
+
+
+    }
+
+</script>

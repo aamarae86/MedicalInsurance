@@ -1,0 +1,949 @@
+﻿@using ERP.ResourcePack.Warehouses
+@using ERP.Web.UI.Controllers.Warehouses
+@using ERP.Authorization;
+@{
+    string permissionsStr = TempData["Permissions"].ToString();
+    string encUpdateTrigger = ERP.Front.Helpers.Enums.Common.EncUpdate;
+    string encInsertTrigger = ERP.Front.Helpers.Enums.Common.EncInsert;
+    string encShowTrigger = ERP.Front.Helpers.Enums.Common.EncShow;
+}
+
+@if (permissionsStr.Contains(PermissionNames.Pages_IvReceiveHd_Post))
+{
+    <script>
+        const PostAjax = function (id) {
+
+            bootbox.confirm({
+                message: _booBoxMessagePosting,
+                buttons: bootBoxDefaultBtns,
+                callback: function (result) {
+
+                    if (result) {
+
+                        const data = {
+                            id: id,
+                            lang: lang,
+                            userId: 0
+                        };
+
+                        $.ajax({
+                            url: `${baseUrl}/IvReceiveHd/PostIvReceiveHd`,
+                            type: 'POST',
+                            data: JSON.stringify(data),
+                            headers:
+                            {
+                                'Content-Type': 'application/json',
+                                'Authorization': `Bearer ${$_token}`
+                            },
+                        }).done(function (response) {
+
+                            if (response.result.finalStatues == 'F') {
+                                toastr.warning(response.result.reason);
+                            }
+                            else {
+                                toastr.success(response.result.reason);
+
+                                if (formView) {
+
+                                    setTimeout(function () {
+                                        window.location.href = $PrefixHostName + '/IvReceiveHd';
+                                    }, 100);
+
+                                } else {
+                                    LoadDataGrid();
+                                }
+                            }
+
+                        }).fail(function (response) {
+                            toastr.error(response.responseJSON.error.message);
+                        });
+
+                    }
+
+                }
+            });
+
+
+        };
+    </script>
+}
+else
+{
+    <script>
+        const PostAjax = function (id) { };
+    </script>
+}
+
+<script>
+    const _mainController = "IvReceiveHd"
+    const _newStatus = @Convert.ToInt64(ERP.Front.Helpers.Enums.Common.IvReceiveHd.New);
+
+    $(function () {
+
+        LoadDataGrid();
+        $('#tblIvReceiveHdPrint thead').html($('#tblIvReceiveHd thead').html());
+        $('#tblIvReceiveHdPrint thead tr :last-child').remove();
+        $('#IvReceiveHd').addClass('active');
+
+        $('#ItemNumber').parent('.form-line').addClass('focused');
+        $('#Qty').parent('.form-line').addClass('focused');
+        $('#UnitPrice').parent('.form-line').addClass('focused');
+        $('#Amount').parent('.form-line').addClass('focused');
+        $('#TaxAmount').parent('.form-line').addClass('focused');
+        $('#TotalAmount').parent('.form-line').addClass('focused');
+
+    });
+
+    const _loadDataUrl = `${$PrefixHostName}/${_mainController}/@nameof(IvReceiveHdController.LoadDataGrid)`;
+    const _tblSelector = $('#tblIvReceiveHd');
+    const _permissions = '@permissionsStr';
+    const _updatePermission = '@PermissionNames.Pages_IvReceiveHd_Update';
+    const _deletePermission = '@PermissionNames.Pages_IvReceiveHd_Delete';
+    const _postPermission = '@PermissionNames.Pages_IvReceiveHd_Post';
+
+    var OnBegin = function (response) {
+        fireBtnLoader();
+    };
+
+    var OnSuccess = function (response) {
+
+        $('#btnSubmition').prop('disabled', false);
+
+        if (response.success) {
+
+            if (response.customRestResult.trigger === '@ERP.Front.Helpers.Enums.Common.FormTriggers.Insert') {
+
+                toastr.success(response.customRestResult.message);
+
+                setTimeout(function () {
+                    window.location.href = $PrefixHostName + '/IvReceiveHd';
+                }, 200);
+
+            }
+            else if (response.customRestResult.trigger === '@ERP.Front.Helpers.Enums.Common.FormTriggers.Update') {
+
+                toastr.success(response.customRestResult.message);
+
+                setTimeout(function () {
+                    window.location.href = $PrefixHostName + '/IvReceiveHd';
+                }, 200);
+
+            }
+            else {
+                toastr.error(response.customRestResult.message);
+            }
+
+        } else {
+            toastr.error(response.error.message);
+        }
+
+    };
+
+    var OnComplete = function (response) {
+        downBtnLoader();
+    };
+
+    var OnFailure = function (response) {
+        toastr.error(response);
+        downBtnLoader();
+    };
+
+    const LoadDataGrid = function () {
+
+        $('#tblLoader').show();
+
+        const params = {
+            HdReceiveDate: $('#searchBox #HdReceiveDate').val(),
+            HdReceiveNumber: $('#searchBox #HdReceiveNumber').val(),
+            IvWarehouseId: $('#searchBox #IvWarehouseId').find(':selected').val(),
+            VendorId: $('#searchBox #VendorId').find(':selected').val()
+        };
+
+        const columns = [
+            {
+                "data": "result.data.id",
+                'render': function (data, type, row, meta) {
+                    return meta.row + meta.settings._iDisplayStart + 1;
+                }
+            },
+            {
+                "data": "HdReceiveNumber",
+                "name": "HdReceiveNumber",
+                "autoWidth": true
+            },
+            {
+                "data": "HdReceiveDate",
+                "name": "HdReceiveDate",
+                "autoWidth": true
+            },
+           
+            {
+                "data": null,
+                "autoWidth": true,
+                "render": function (d, t, row) {
+                    return row.IvWarehouses ? row.IvWarehouses.WarehouseName : '';
+                }
+            },
+            //{
+            //    "data": null,
+            //    "autoWidth": true,
+            //    "render": function (d, t, row) {
+            //        return row.FndReceiveTypeLkp ? (lang === 'ar-EG' ? row.FndReceiveTypeLkp.NameAr : row.FndReceiveTypeLkp.NameEn) : '';
+            //    }
+            //},
+            {
+                "data": null,
+                "autoWidth": true,
+                "render": function (d, t, row) {
+                    return row.PoPurchaseOrderHd ? row.PoPurchaseOrderHd.PurchaseOrderNumber :'';
+                }
+            },
+            {
+                "data": null,
+                "autoWidth": true,
+                "render": function (d, t, row) {
+                    return row.ApVendors ? (lang === 'ar-EG' ? row.ApVendors.VendorNameAr : row.ApVendors.VendorNameEn) : '';
+                }
+            },
+            {
+                "data": "Amount",
+                "name": "Amount",
+                "autoWidth": true
+            },
+            {
+                "data": null,
+                "sortable": false,
+                "render": function (data, type, row) {
+
+                    let formAction = `${$PrefixHostName}/${_mainController}/@nameof(IvReceiveHdController.IvReceiveHdForm)`;
+                    let DeleteAction = `${$PrefixHostName}/${_mainController}/@nameof(IvReceiveHdController.Delete)`;
+
+                    let formTitle = '@ERP.ResourcePack.Warehouses.IvReceiveHd.Title';
+                    let btns = '';
+
+                    if (_permissions.includes(_postPermission) && row.StatusLkpId == _newStatus) {
+                        btns += `<a href="javascript:void(0)" onclick="PostAjax(${row.Id})" title="@ERP.ResourcePack.Common.Settings.Post"><i class="mx-2 fas fa-check-circle text-info"></i></a>`;
+                    }
+
+                    if (_permissions.includes(_updatePermission) && row.StatusLkpId == _newStatus) {
+                        btns += `<a href="${$PrefixHostName}/IvReceiveHd/FormView?id=${row.EncId}&t=@encUpdateTrigger" title="@ERP.ResourcePack.Common.Settings.Edit"><i class="mx-2 fas fa-edit text-info"></i></a>`;
+                    }
+
+                    btns += `<a href="${$PrefixHostName}/IvReceiveHd/FormView?id=${row.EncId}&t=@encShowTrigger" title="@ERP.ResourcePack.Common.Settings.Show"><i class="mx-2 fas fa-eye text-info"></i></a>`;
+
+                    if (_permissions.includes(_deletePermission) && row.StatusLkpId == _newStatus) {
+                        btns += `<a href="javascript:void(0)" onclick="AjaxController.DeleteMainTableRow(${row.Id},'${DeleteAction}');" title="@ERP.ResourcePack.Common.Settings.Delete"><i class="mx-2 fas fa-trash-alt text-danger"></i></a>`;
+                    }
+
+                    btns += `<a href="javascript:void(0);" onclick="return print('${$PrefixHostName}/IvReceiveHd/PrintIvReceiveHdScreen','${row.EncId}','${lang}')" title="@ERP.ResourcePack.Common.Settings.Print"><i class="mx-2 fas fa-print text-success"></i></a>`;
+
+                    const _auditedPermission = '@PermissionNames.Pages_IvReceiveHd_Audit';
+
+                    if (_permissions.includes(_auditedPermission)) {
+
+                        row.permission = _auditedPermission;
+
+                        btns += GetAuditedButton(row);
+                    }
+
+                    return btns;
+                }
+            }
+        ];
+
+        const dtObj = {
+            "processing": true,
+            "serverSide": true,
+            "filter": false,
+            "orderMulti": false,
+            "pageLength": 100,
+            "language": dataTableLang,
+            "ajax": {
+                "url": _loadDataUrl,
+                "type": "POST",
+                "datatype": "json",
+                "data": params,
+                "complete": function () { }
+            },
+            "columns": columns,
+            "initComplete": function () {
+                $('[data-toggle="tooltip"]').tooltip();
+            }
+
+        };
+
+        _tblSelector.dataTable().fnDestroy();
+        _tblSelector.DataTable(dtObj).on('draw', function () { $('[data-toggle="tooltip"]').tooltip(); });
+
+        setTimeout(function () {
+            $(".sorting_1").removeAttr('colspan');
+        }, 500);
+    };
+
+    $('#btnSubmition').on('click', function () {
+
+        if ($('#mainForm').valid()) {
+
+            $(this).prop('disabled', true);
+
+            $('#submitLoader').show();
+
+            $('#mainForm').submit();
+
+        } else {
+            $(this).prop('disabled', false);
+
+            $('#submitLoader').hide();
+        }
+
+    });
+
+    $('#searchBox #IvWarehouseId').select2(ReturnSelect2ObjectDefault(`${baseUrl}/IvReceiveHd/GetIvUserWarehousesPrivilegesSelect2`));
+    $('#searchBox #VendorId').select2(ReturnSelect2ObjectDefault(`${baseUrl}/ApVendors/GetVendorsSelect2`));
+    $('#ReceiveTypeLkpId').select2(ReturnSelect2ObjectForLkpsTypes('@ERP.Front.Helpers.Enums.Common.FndLkpsTypes.IvReceiveHdReceiveType.ToString()'));
+    $('#VendorId').select2(ReturnSelect2ObjectDefault(`${baseUrl}/ApVendors/GetVendorsSelect2`));
+    $('#IvWarehouseId').select2(ReturnSelect2ObjectDefault(`${baseUrl}/IvReceiveHd/GetIvUserWarehousesPrivilegesSelect2`));
+    $('#IvUnitId').select2(ReturnSelect2ObjectDefault(`${baseUrl}/IvReceiveHd/GetIvUnitsSelect2`));
+    $('#CurrencyId').select2(ReturnSelect2ObjectDefault(`${baseUrl}/Currency/GetCurrenciesSelect2`));
+    $('#IvItemId').select2({
+        ajax: {
+            url: `${baseUrl}/IvReceiveHd/GetIvItemsSelect2`,
+            dataType: 'json',
+            headers: {
+                'Authorization': `Bearer ${$_token}`
+            },
+            data: function (params) {
+                params.page = params.page || 1;
+                return {
+                    IvReceiveHdReceiveTypeId: $('#ReceiveTypeLkpId').find(':selected').val(),
+                    pageSize: pageSize,
+                    pageNumber: params.page,
+                    searchTerm: params.term,
+                    lang: lang
+                };
+            },
+            processResults: function (data, params) {
+
+                params.page = params.page || 1;
+
+                return {
+                    results: data.result.results,
+                    pagination: {
+                        more: (params.page * pageSize) < data.result.total
+                    }
+                };
+            }
+        },
+        placeholder: select2Placeholder,
+        minimumInputLength: 0,
+        allowClear: true,
+        language: select2Lang,
+        templateSelection: function (data,container) {
+
+            if (data.altText) $('#ItemNumber').val(data.altText);
+
+            return data.text;
+        }
+    });
+    $('#ReceiveTypeLkpId').on('change', function () {
+
+        $('#PoPurchaseOrderHdId').val('').trigger('change');
+
+        _IvReceiveHdDetail = [];
+
+        tblCounterDetIndex = 0;
+
+        bindIvReceiveHdDetailTable();
+
+        _listIvReceiveHdDetail.val(JSON.stringify(_IvReceiveHdDetail));
+    });
+
+    $('#PoPurchaseOrderHdId').select2({
+        ajax: {
+            url: `${baseUrl}/IvReceiveHd/GetPurchaseOrderSelect2`,
+            dataType: 'json',
+            headers: {
+                'Authorization': `Bearer ${$_token}`
+            },
+            data: function (params) {
+                params.page = params.page || 1;
+                return {
+                    IvReceiveHdReceiveTypeId: $('#ReceiveTypeLkpId').find(':selected').val(),
+                    pageSize: pageSize,
+                    pageNumber: params.page,
+                    searchTerm: params.term,
+                    lang: lang
+                };
+            },
+            processResults: function (data, params) {
+
+                params.page = params.page || 1;
+
+                return {
+                    results: data.result.results,
+                    pagination: {
+                        more: (params.page * pageSize) < data.result.total
+                    }
+                };
+            }
+        },
+        placeholder: select2Placeholder,
+        minimumInputLength: 0,
+        allowClear: true,
+        language: select2Lang,
+        templateSelection: function (data, container) {
+
+            if (data.altText) {
+                $(`#VendorId`).append($("<option selected='selected'></option>")
+                    .val(data.altText.split('-')[0])
+                    .text(lang === 'ar-EG' ? data.altText.split('-')[1] : data.altText.split('-')[2]))
+                    .trigger('change');
+            }
+
+            return data.text;
+        }
+    });
+
+    $('#CurrencyId').on('change', function (e) {
+
+        const currency = $(this);
+        const rateTxt = $('#CurrencyRate');
+
+        if (!currency) {
+            $('#CurrencyRate').val('');
+        } else {
+            $.ajax({
+                url: `${baseUrl}/Currency/GetRate`,
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${$_token}`
+                },
+                data: {
+                    Id: currency.find(':selected').val(),
+                    date: ''
+                }
+            }).done(function (rate) {
+
+                let _inputSelector = $('#CurrencyRate');
+
+                _inputSelector.parent('.form-line').addClass('focused');
+
+                rateTxt.val(rate.result);
+
+            }).fail(function (response) {
+                toastr.error(response);
+            });
+        }
+    });
+
+    $('#PoPurchaseOrderHdId').on('change', function (e) {
+
+        if ($('#PoPurchaseOrderHdId').find(':selected').val()) {
+
+            $.ajax({
+                url: `${baseUrl}/IvReceiveHd/GetItemsPurchaseOrder`,
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${$_token}`
+                },
+                data: {
+                    purchaseOrderId: $('#PoPurchaseOrderHdId').find(':selected').val(),
+                    receiveTypeLkpId: $('#ReceiveTypeLkpId').find(':selected').val()
+                }
+            }).done(function (data) {
+
+                _IvReceiveHdDetail = [...data.result];
+
+                tblCounterDetIndex = 0;
+
+                $.each(_IvReceiveHdDetail, function (i, item) {
+                    item.index = ++tblCounterDetIndex;
+                });
+
+                bindIvReceiveHdDetailTable();
+
+                _listIvReceiveHdDetail.val(JSON.stringify(_IvReceiveHdDetail));
+
+            }).fail(function (response) {
+                toastr.error(response);
+            });
+
+        }
+
+    });
+
+    $('#IvItemId').on('change', function (e) {
+        $('#Qty').val('');
+        $('#UnitPrice').val('');
+        $('#TaxAmount').val('');
+        $('#Amount').val('');
+        $('#TotalAmount').val('');
+        $('#IvUnitId').val('').trigger('change');
+        const Item = $(this);
+        debugger;
+        //const rateTxt = $('#CurrencyRate');
+        if (Item === undefined || Item.find(':selected').val() === undefined) { } else {
+            $.ajax({
+                url: `${baseUrl}/IvItems/GetItemData`,
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${$_token}`
+                }
+                ,
+                data: {
+                    Id: Item.find(':selected').val()
+                }
+            }).done(function (Respone) {
+                debugger;
+                var itemdata = Respone.result;
+                $('#Percentage').val(itemdata.percentage);
+                $('#FndTaxtypeId').val(itemdata.fndTaxtypeId);
+                $(`#IvUnitId`).append($("<option selected='selected'></option>")
+                    .val(itemdata.ivUnits.id).text(itemdata.ivUnits.unitName)).trigger('change');
+                //$('#Avilablequantity').parent('.form-line').addClass('focused');
+                //$('#UnitPrice').val(itemdata.price);
+                //$('#UnitPrice').parent('.form-line').addClass('focused');
+                
+                if (itemdata.FndTaxtypeId == null) {
+                    $('#FndTaxtypeId').val(null);
+                }
+                else {
+                    $('#FndTaxtypeId').val(itemdata.fndTaxtypeId);
+                }
+                //if (itemdata.taxPercentageLkpId == 10996) {
+                //    $('#TaxAmount').val((UnitPrice * qty * 5) / 100)
+                //}
+                //else {
+                //    $('#TaxAmount').val(UnitPrice * qty * 0)
+                //}
+
+
+            }).fail(function (response) {
+                toastr.error(response);
+            });
+        }
+
+
+
+    });
+
+
+    $(`#VendorId`).on('change', function () { $('#PoPurchaseOrderHdId').select2('data', null, false);  });
+
+    $('#Qty').on('change keyup', function (e) {
+        debugger;
+        var qty = $('#Qty').val();
+        var UnitPrice = $('#UnitPrice').val();
+        var FndTaxtypeId = $('#FndTaxtypeId').val();
+        var Percentage = $('#Percentage').val();
+        $('#TaxAmount').val((qty * UnitPrice * Percentage)/100);
+      
+        calcAmount(); calcTotalAmount();
+    });
+    $('#UnitPrice').on('change keyup', function (e) {
+        var qty = $('#Qty').val();
+        var UnitPrice = $('#UnitPrice').val();
+        var FndTaxtypeId = $('#FndTaxtypeId').val();
+        var Percentage = $('#Percentage').val();
+        $('#TaxAmount').val((qty * UnitPrice * Percentage) / 100);
+        calcAmount(); calcTotalAmount();
+    });
+    $('#TaxAmount').on('change keyup', function (e) {
+        calcTotalAmount();
+    });
+
+    const calcAmount = function () {
+        $('#Amount').val(+$('#Qty').val() * +$('#UnitPrice').val());
+
+        return $('#Amount').val();
+    };
+
+    const calcTotalAmount = function () {
+        $('#TotalAmount').val(+$('#Amount').val() + +$('#TaxAmount').val());
+
+        return $('#TotalAmount').val();
+    };
+
+    const print = function (url,id,lang) {
+        const data = { id: id, lang : lang };
+        openModal(data, url);
+    };
+
+</script>
+
+<script name="detailssssssssssss">
+
+    const _tblIvReceiveHdDetailSelector = $('#tblDetails');
+    const _listIvReceiveHdDetail = $('#ListIvReceiveDetailsStr');
+
+    let _IvReceiveHdDetail = [], updatedDetailsRow, tblCounterDetIndex = 0 ;
+
+    const fillDetail = function () {
+
+        if (validator() === false) return;
+
+        const current = {
+            index: ++tblCounterDetIndex,
+            qty: $('#Qty').val(),
+            unitPrice: $('#UnitPrice').val(),
+            taxAmount: $('#TaxAmount').val(),
+            ivItemId: $('#IvItemId').find(':selected').val(),
+            item: $('#IvItemId').find(':selected').text(),
+            ivUnitId: $('#IvUnitId').find(':selected').val(),
+            unit: $('#IvUnitId').find(':selected').text(),
+            amount: calcAmount(),
+            totalAmount: calcTotalAmount(),
+            itemNumber: $('#ItemNumber').val(),
+            rowStatus: NewStatus,
+            id: 0
+        };
+
+        return current;
+    };
+
+    const AddIvReceiveHdDetail = function () {
+
+        const current = fillDetail();
+
+        if (current === undefined) return;
+
+        if (_IvReceiveHdDetail.find(item => item.ivItemId == $('#IvItemId').find(':selected').val())) {
+            toastr.warning('@IvItems.ItemExists');
+            return ;
+        }
+
+        _IvReceiveHdDetail.push(current);
+
+        _listIvReceiveHdDetail.val(JSON.stringify(_IvReceiveHdDetail));
+
+        bindIvReceiveHdDetailTable();
+
+        clearFormDetAdding();
+    };
+
+    const bindIvReceiveHdDetailTable = function () {
+
+        const detailArr = _IvReceiveHdDetail.filter(z => z.rowStatus !== DeletedStatus);
+
+        const columns = [
+            { 'data': 'index' },
+            { 'data': 'itemNumber' },
+            { 'data': 'item' },
+            { 'data': 'unit' },
+            { 'data': 'qty' },
+            {
+                'data': 'unitPrice',
+                "render": $.fn.dataTable.render.number(',', '.', 2)
+            },
+            {
+                'data': 'amount',
+                "render": $.fn.dataTable.render.number(',', '.', 2)
+            },
+            {
+                'data': 'taxAmount',
+                "render": $.fn.dataTable.render.number(',', '.', 2)
+            },
+            {
+                'data': 'totalAmount',
+                "render": $.fn.dataTable.render.number(',', '.', 2)
+            },
+            {
+                'data': null,
+                'searchable': false,
+                'ordering': false,
+                'sorting': false,
+                'render': function (d, t, row) {
+
+                    let rows = '';
+
+                    if (primaryEntityKeyId === 0 || trigger !== '@ERP.Front.Helpers.Enums.Common.FormTriggers.Show.ToString()') {
+
+                        rows += `<td><a href="javascript:void(0)" onclick="return DeleteIvReceiveHdDetail(${row.index})"><i class="mx-2 fas fa-trash-alt text-danger"></i></a>`;
+                        rows += `<a href="javascript:void(0)" onclick="return GetIvReceiveHdDetailRow(${row.index})"><i class="mx-2 fas fa-edit text-success"></i></a></td>`;
+                    }
+                    else {
+                        rows += '<td></td>';
+                    }
+
+                    return rows;
+                }
+            }
+        ];
+
+        const dtObj = {
+            data: detailArr,
+            retrieve: true,
+            language: dataTableLang,
+            columns: columns,
+            drawCallback: function (c, v, b) {
+
+                let rows = '';
+
+                Total = 0; TotalTax = 0; TotalAmount = 0;
+
+                detailArr.map(z => Total += parseFloat(z.amount));
+                detailArr.map(z => TotalTax += parseFloat(z.taxAmount));
+                detailArr.map(z => TotalAmount += parseFloat(z.totalAmount));
+                /*detailArr.map(z => sumAccountLineCredit += parseFloat(getMaskValNum(z.creditAmount)));*/
+
+                rows += '<tr>';
+                rows += `<td></td>`;
+                rows += `<td></td>`;
+                rows += `<td></td>`;
+                rows += `<td></td>`;
+                rows += `<td></td>`;
+                rows += `<td>Totals:</td>`;
+
+                 
+                rows += `<td class="text-success">${Total.toFixed(2)}</td>`;
+                rows += `<td class="text-success">${TotalTax.toFixed(2)}</td>`;
+                rows += `<td class="text-success">${TotalAmount.toFixed(2)}</td>`;
+                rows += '</tr>';
+                    
+
+               
+
+                $('#tblDetails tfoot').html(rows);
+
+            }
+        };
+
+        setTimeout(function () {
+
+            _tblIvReceiveHdDetailSelector.dataTable().fnDestroy();
+            _tblIvReceiveHdDetailSelector.DataTable(dtObj).on('draw', function () { $('[data-toggle="tooltip"]').tooltip(); });
+
+        }, 100);
+
+    };
+
+    const DeleteIvReceiveHdDetail = function (index)  {
+
+        const current = _IvReceiveHdDetail.find(z => z.index === index);
+
+        const indexOfCurrent = _IvReceiveHdDetail.indexOf(current);
+
+        if (!current.id) {
+
+           _IvReceiveHdDetail.splice(indexOfCurrent, 1);
+
+        } else {
+
+            current.rowStatus = DeletedStatus;
+
+           _IvReceiveHdDetail.splice(indexOfCurrent, 1,current);
+        }
+
+        bindIvReceiveHdDetailTable();
+
+        _listIvReceiveHdDetail.val(_IvReceiveHdDetail.length === 0 ? '' : JSON.stringify(_IvReceiveHdDetail));
+
+    };
+
+    const LoadIvReceiveHdDetailData = function () {
+
+        $.ajax({
+            url: `${baseUrl}/IvReceiveHd/GetIvReceiveTrDetails`,
+            method: 'GET',
+            headers: {
+                        'Authorization': `Bearer ${$_token}`
+            },
+            data: {
+                id: primaryEntityKeyId
+            }
+        }).done(function (data) {
+
+            _IvReceiveHdDetail = [...data.result];
+
+            tblCounterDetIndex = 0;
+
+            $.each(_IvReceiveHdDetail, function (i, item) {
+
+                item.index = ++tblCounterDetIndex;
+
+            });
+
+            bindIvReceiveHdDetailTable();
+
+            _listIvReceiveHdDetail.val(JSON.stringify(_IvReceiveHdDetail));
+
+        });
+
+    };
+
+    const GetIvReceiveHdDetailRow = function (tblIndex) {
+
+        clearFormDetAdding();
+
+        $('#btnAddDetailRow').hide();
+        $('#btnUpdateDetailRow').show();
+        $('#btnCancelDetailRow').show();
+
+        const current = _IvReceiveHdDetail.find(z => z.index === tblIndex);
+
+        $(`#IvItemId`).append($("<option selected='selected'></option>")
+            .val(current.ivItemId).text(current.item)).trigger('change');
+
+        $(`#IvUnitId`).append($("<option selected='selected'></option>")
+            .val(current.ivUnitId).text(current.unit)).trigger('change');
+
+        $('#ItemNumber').val(current.itemNumber);
+        $('#Qty').val(current.qty);
+        $('#UnitPrice').val(current.unitPrice);
+        $('#TaxAmount').val(current.taxAmount);
+        $('#Amount').val(current.amount);
+        $('#TotalAmount').val(current.totalAmount);
+
+        updatedDetailsRow = current;
+    };
+
+    const UpdateIvReceiveHdDetailRow = function () {
+
+        let current = _IvReceiveHdDetail.find(z => z.index === updatedDetailsRow.index);
+
+        let indexOfCurrent = _IvReceiveHdDetail.indexOf(current);
+
+        const newRow = fillDetail();
+
+        if (newRow === undefined) return;
+
+        if (_IvReceiveHdDetail.find(item => item.ivItemId == $('#IvItemId').find(':selected').val() && item.index != updatedDetailsRow.index)) {
+            toastr.warning('@IvItems.ItemExists');
+            return ;
+        }
+
+        newRow.index = current.index;
+        newRow.id = updatedDetailsRow.id;
+        newRow.rowStatus =  !updatedDetailsRow.id ? NewStatus : UpdatedStatus;
+
+        _IvReceiveHdDetail.splice(indexOfCurrent, 1,newRow);
+
+        $('#btnAddDetailRow').show();
+        $('#btnUpdateDetailRow').hide();
+        $('#btnCancelDetailRow').hide();
+
+        clearFormDetAdding();
+
+        _listIvReceiveHdDetail.val(JSON.stringify(_IvReceiveHdDetail));
+
+        setTimeout(function () {
+            bindIvReceiveHdDetailTable();
+        }, 100);
+    };
+
+    const clearFormDetAdding = function () {
+        $('#details .card:first input,textarea').val('');
+        $('#details .card:first select').val('').trigger('change');
+    };
+
+    const validator = function () {
+
+        if (!$('#IvItemId').find(':selected').val()) {
+            toastr.warning('@IvReceiveHd.IvItemId' + ' : ' + '@ERP.ResourcePack.Common.Settings.Required');
+            return false;
+        }
+
+        if (!$('#IvUnitId').find(':selected').val()) {
+            toastr.warning('@IvReceiveHd.IvUnitId' + ' : ' + '@ERP.ResourcePack.Common.Settings.Required');
+            return false;
+        }
+
+        if (!$('#Qty').val()) {
+            toastr.warning('@IvReceiveHd.Qty' + ' : ' + '@ERP.ResourcePack.Common.Settings.Required');
+            return false;
+        }
+
+        if (!$('#UnitPrice').val()) {
+            toastr.warning('@IvReceiveHd.UnitPrice' + ' : ' + '@ERP.ResourcePack.Common.Settings.Required');
+            return false;
+        }
+
+    };
+
+
+    function printExc() {
+        $('.page-loader-wrapper').show();
+        $('#tblIvReceiveHdPrint_wrapper').parent().addClass('d-none');
+        const parmss = {
+            HdReceiveDate: $('#searchBox #HdReceiveDate').val(),
+            HdReceiveNumber: $('#searchBox #HdReceiveNumber').val(),
+            IvWarehouseId: $('#searchBox #IvWarehouseId').find(':selected').val(),
+            VendorId: $('#searchBox #VendorId').find(':selected').val(),
+            length: 1000000
+        };
+
+        const columns = [
+            {
+                "data": "result.data.id",
+                'render': function (data, type, row, meta) {
+                    return meta.row + meta.settings._iDisplayStart + 1;
+                }
+            },
+            {
+                "data": "HdReceiveNumber",
+                "name": "HdReceiveNumber",
+                "autoWidth": true
+            },
+            {
+                "data": "HdReceiveDate",
+                "name": "HdReceiveDate",
+                "autoWidth": true
+            },
+            {
+                "data": null,
+                "autoWidth": true,
+                "render": function (d, t, row) {
+                    return row.IvWarehouses ? row.IvWarehouses.WarehouseName : '';
+                }
+            },
+            {
+                "data": null,
+                "autoWidth": true,
+                "render": function (d, t, row) {
+                    return row.PoPurchaseOrderHd ? row.PoPurchaseOrderHd.PurchaseOrderNumber :'';
+                }
+            },
+            {
+                "data": null,
+                "autoWidth": true,
+                "render": function (d, t, row) {
+                    return row.ApVendors ? (lang === 'ar-EG' ? row.ApVendors.VendorNameAr : row.ApVendors.VendorNameEn) : '';
+                }
+            }
+        ];
+
+        const dtObj = {
+            "language": dataTableLang,
+            "dom": 'Bfrtip',
+            "buttons": [
+                {
+                    extend: 'excel',
+                    messageTop: `${$('#HdReceiveDate').siblings().text()}: ${(parmss.HdReceiveDate) ? parmss.HdReceiveDate : '--'}, ${$('#HdReceiveNumber').siblings().text()}: ${(parmss.HdReceiveNumber) ? parmss.HdReceiveNumber : '--'}, ${$('[for="IvWarehouseId"]').text()}: ${(parmss.IvWarehouseId) ? parmss.IvWarehouseId : '--'}, ${$('[for="VendorId"]').text()}: ${(parmss.VendorId) ? parmss.VendorId : '--'}`
+                },
+
+            ],
+            "ajax": {
+                "url": _loadDataUrl,
+                "type": "POST",
+                "datatype": "json",
+                "data": parmss,
+                "complete": function (d) {
+                    _tblLoader.hide();
+                }
+            },
+            "columns": columns,
+
+            "initComplete": function () {
+                $('#tblIvReceiveHdPrint_wrapper button.dt-button').click();
+                $('#tblIvReceiveHdPrint_wrapper').parent().addClass('d-none');
+
+            }
+        };
+
+        $('#tblIvReceiveHdPrint').dataTable().fnDestroy();
+        $('#tblIvReceiveHdPrint').DataTable(dtObj).on('buttons-processing', function (e, indicator) { if (!indicator) { $('.page-loader-wrapper').hide() } });
+
+
+    }
+
+</script>

@@ -1,0 +1,101 @@
+﻿<script name="shared-methods">
+
+    const GetCodeComUtilites = function (arrSelectors, accIdSelector) {
+        //debugger;
+        let validator = 0;
+
+        const result = { idSelectorsArr: [], ids: [], texts: [], idsStr: '', textsStr: '' };
+
+        accIdSelector = $(`#${accIdSelector}`);
+
+        const accId = accIdSelector.find(':selected').val(),   accText = accIdSelector.find(':selected').text();
+
+        $.each(arrSelectors, function (i, item) {
+
+            let currentSelector = $(`#${item}`);
+            let currentVal = currentSelector.find(':selected').val();
+            let currentText = currentSelector.find(':selected').text();
+
+            if (!currentVal) {
+                validator++;
+                return;
+            }
+
+            result.idSelectorsArr.push(currentSelector.attr('id'));
+            result.ids.push(currentVal);
+            result.texts.push(currentText);
+        });
+
+        if (accId) {
+            result.ids.push(accId);
+            result.texts.push(accText);
+        } else {
+            validator++;
+        }
+
+        result.idsStr = result.ids.toString();
+        result.textsStr = result.texts.toString();
+
+        return (validator > 0 ? null : result);
+    };
+
+    const BindCodeComUtilitesDropDowns = function (arrSelectors, accIdSelector, idsStr, textsStr) {
+        //debugger;
+        // attr1,....,attr9
+        const idsArr = idsStr.split(',');
+        const textsArr = textsStr.split(',');
+
+        $.each(arrSelectors, function (i, item) {
+
+            let currentSelector = $(`#${item}`);
+
+            let currentId = idsArr[i];
+            let currentText = textsArr[i];
+
+            let currentOption = $("<option selected='selected'></option>").val(currentId).text(currentText);
+
+            currentSelector.append(currentOption).trigger('change');
+        });
+
+        // accId
+        accIdSelector = $(`#${accIdSelector}`);
+
+        const lastElmIndex = [...idsArr].length - 1;
+
+        const currentAccId = idsArr[lastElmIndex];
+        const currentAccText = textsArr[lastElmIndex];
+
+        let currentOption = $("<option selected='selected'></option>").val(currentAccId).text(currentAccText);
+
+        accIdSelector.append(currentOption).trigger('change');
+    };
+
+    const GetCodeComUtilitesForReports = function (arrSelectors, accIdSelector) {
+
+        const result = { attr1: -1, attr2: -1, attr3: -1, attr4: -1, attr5: -1, attr6: -1, attr7: -1, attr8: -1, attr9: -1, accId: -1 };
+
+        $.each(arrSelectors, function (i, item) {
+
+            let currentSelector = $(`#${item}`);
+            let currentVal = currentSelector.find(':selected').val();
+            let currentAttrLkpId = currentSelector.attr('data-attrLkp-Id');
+
+            if (currentAttrLkpId == 1 && currentVal) result.attr1 = currentVal;
+            if (currentAttrLkpId == 2 && currentVal) result.attr2 = currentVal;
+            if (currentAttrLkpId == 3 && currentVal) result.attr3 = currentVal;
+            if (currentAttrLkpId == 4 && currentVal) result.attr4 = currentVal;
+            if (currentAttrLkpId == 5 && currentVal) result.attr5 = currentVal;
+            if (currentAttrLkpId == 6 && currentVal) result.attr6 = currentVal;
+            if (currentAttrLkpId == 8 && currentVal) result.attr8 = currentVal;
+            if (currentAttrLkpId == 9 && currentVal) result.attr9 = currentVal;
+
+        });
+
+        const accVal = $(`#${accIdSelector}`).find(':selected').val();
+
+        result.accId = accVal ? accVal : result.accId;
+
+        return result;
+    };
+
+</script>

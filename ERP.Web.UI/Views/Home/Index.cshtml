@@ -1,0 +1,1986 @@
+﻿@{
+    ViewBag.Title = ERP.ResourcePack.Common.Menu.Home;
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    string permissions = Session["UserMenuPermissions"] != null ? Session["UserMenuPermissions"]?.ToString() : "";
+    string lang = Request.Cookies["Lang"] == null ? "ar-EG" : Request.Cookies["Lang"].Value.ToString();
+    string lang2 = lang == "ar-EG" ? "ar" : "en";
+}
+@using ERP.ResourcePack.Notifications
+
+@*@Html.Action(nameof(ERP.Web.UI.Controllers.AidModule.ScPortalRequestsController.ScPortalRequestsData))*@
+<link rel="stylesheet" href="~/AssetsPack/plugins/evo-calendar/css/evo-calendar.min.css" />
+<link rel="stylesheet" href="~/AssetsPack/plugins/evo-calendar/css/evo-calendar.midnight-blue.min.css" />
+<link rel="stylesheet" href="~/AssetsPack/plugins/evo-calendar/css/evo-calendar.orange-coral.min.css" />
+<link rel="stylesheet" href="~/AssetsPack/plugins/evo-calendar/css/evo-calendar.royal-navy.min.css" />
+<link href="~/AssetsPack/plugins/owl-carousel/owl.carousel.min.css" rel="stylesheet" />
+<link href="~/AssetsPack/plugins/owl-carousel/owl.theme.default.min.css" rel="stylesheet" />
+
+<script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+
+<script src="~/Scripts/jspdf.min.js"></script>
+
+<style>
+    .evo-calendar td, .evo-calendar th {
+        text-align: center !important;
+        font-size: .8rem !important;
+    }
+
+    .evo-calendar th {
+        font-size: 1rem;
+    }
+
+
+    /*Evo Calendar*/
+    .calendar-months {
+        text-align: center;
+    }
+
+    .calendar-inner {
+        padding: 0;
+        height: 100%;
+    }
+
+        .calendar-inner .calendar-table {
+            height: 100%;
+        }
+
+    tr.calendar-body .calendar-day .day[title] {
+        margin-top: 5px;
+        margin-bottom: 20px;
+    }
+
+        tr.calendar-body .calendar-day .day[title]:after {
+            content: "" attr(title) "";
+            position: absolute;
+            top: 23px;
+            color: #000;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: #eee;
+            border-radius: 5px;
+            padding: 2px 5px;
+            white-space: nowrap;
+            width: 50px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+    .event-indicator > .type-bullet {
+        padding: 0;
+    }
+
+    .calendar-sidebar .month-list {
+        height: calc(100% - 85px);
+        overflow: auto;
+    }
+
+    tr.calendar-header .calendar-header-day {
+        font-size: .8rem;
+        padding: 2px;
+    }
+
+    tr.calendar-body .calendar-day {
+        padding: 2px 0px;
+    }
+
+        tr.calendar-body .calendar-day .day {
+            padding: 3px;
+            height: 22px;
+            width: 22px;
+        }
+    /*Top Cards Carousel*/
+    .top-cards .item {
+        max-width: 300px;
+        margin: 10px auto 20px;
+        transition: all 0.2s ease-in-out;
+        padding: 15px 15px 30px;
+        box-shadow: 0 4px 10px rgba(0,0,0,.1);
+        border: 2px solid #fff;
+        border-radius: 0px;
+    }
+
+        .top-cards .item:hover {
+            transform: scale(1.1);
+            color: #fff !important;
+        }
+
+            .top-cards .item:hover h3, .top-cards .item:hover small, .top-cards .item:hover i, .top-cards .item:hover p {
+                color: #fff;
+            }
+
+        .top-cards .item h3 {
+            font-size: 30px;
+            font-weight: 400;
+            margin-bottom: 5px;
+        }
+
+        .top-cards .item small {
+            font-size: 14px;
+            color: #AAB5BC;
+            font-weight: 600;
+        }
+
+        .top-cards .item i {
+            font-size: 47px;
+        }
+
+        .top-cards .item p {
+            margin-top: 5px;
+            font-size: 12px;
+            color: #AAB5BC;
+            font-weight: 600;
+        }
+
+        .top-cards .item hr {
+            margin-bottom: 0;
+            border-top: 2px solid rgba(0,0,0,0.1);
+        }
+
+        .top-cards .item.top_red {
+            color: #f36a5a;
+        }
+
+            .top-cards .item.top_red:hover {
+                background-color: #f36a5a;
+            }
+
+        .top-cards .item.top_blue {
+            color: #5c9bd1;
+        }
+
+            .top-cards .item.top_blue:hover {
+                background-color: #5c9bd1;
+            }
+
+        .top-cards .item.top_green {
+            color: #2ab4c0;
+        }
+
+            .top-cards .item.top_green:hover {
+                background-color: #2ab4c0;
+            }
+
+        .top-cards .item.top_purple {
+            color: #8877a9;
+        }
+
+            .top-cards .item.top_purple:hover {
+                background-color: #8877a9;
+            }
+
+    button.icon-button > span.bars {
+        height: 2px;
+    }
+
+        button.icon-button > span.bars::after {
+            bottom: -5px;
+        }
+
+        button.icon-button > span.bars::before {
+            top: -6px;
+        }
+
+    .calendar-sidebar > span#sidebarToggler {
+        width: 30px;
+        height: 30px;
+        padding: 5px 6px;
+    }
+
+    .calendar-sidebar {
+        width: 170px;
+    }
+
+        .calendar-sidebar > .month-list > .calendar-months > li {
+            font-size: 1rem;
+        }
+
+        .calendar-sidebar > .calendar-year > p {
+            font-size: 1.2rem;
+        }
+
+        .calendar-sidebar > .month-list > .calendar-months > li {
+            font-size: 1rem;
+        }
+
+        .calendar-sidebar > .calendar-year > button.icon-button {
+            width: 11px;
+            height: 11px;
+        }
+
+    button.icon-button > span.bars::before, button.icon-button > span.bars::after {
+        height: 2px;
+    }
+
+    .calendar-events {
+        display: none;
+    }
+
+    /*favorites*/
+    #favorites .alert {
+        display: inline-block;
+        border-radius: 10px;
+        margin: 5px;
+        text-align: center;
+        position: relative;
+        max-width: 140px;
+    }
+
+        #favorites .alert img {
+            margin: 10px;
+        }
+
+        #favorites .alert i {
+            position: absolute;
+            top: -7px;
+            left: -7px;
+            background: #ddd;
+            padding: 5px;
+            color: #23265f !important;
+            border-radius: 50%;
+            width: 25px;
+            height: 25px;
+            cursor: pointer;
+        }
+</style>
+
+<style>
+
+    a:active, a:focus, a:hover {
+        outline: 0
+    }
+
+    .action {
+        display: inline-block;
+        line-height: 14px;
+        font-size: 14px;
+        padding: 0 8px;
+        color: var(--theme-color);
+        font-weight: 900;
+        font-style: normal;
+        font-variant: normal;
+        text-rendering: auto;
+        box-sizing: border-box;
+    }
+
+    .circle {
+        border-radius: 50%;
+        width: 18px;
+        height: 18px;
+        /*padding: 8px;*/
+        background: #fff;
+        border: 1px solid #000;
+        color: #AAB5BC;
+        text-align: center;
+        font: 14px Arial, sans-serif;
+        margin: 2px;
+    }
+
+    .pointer {
+        border-radius: 50%;
+        width: 10px;
+        height: 10px;
+        background: #3b3b3b;
+        border: 1px solid #000;
+        color: #AAB5BC;
+        text-align: center;
+        font: 8px Arial, sans-serif;
+        margin: 2px;
+    }
+
+    .txt-st {
+        width: 100%;
+        font-weight: bold;
+        font-size: large;
+    }
+</style>
+
+@if (permissions.Contains("AdminSubInValid") || permissions.Contains("UserSubInValid"))
+{
+    <style>
+        .nvalid-alert {
+            padding: 30px;
+            border-radius: 10px;
+            font-size: xx-large;
+        }
+    </style>
+    <div class="row  text-center">
+        @if (permissions.Contains("AdminSubInValid"))
+        {
+            <div class="alert alert-danger w-100 m-auto nvalid-alert" role="alert">
+                Tenant Subscription Not Valid Please Contact Your Tenant Admin!
+            </div>
+
+            if (permissions.Contains("TenentAdmin"))
+            {
+                <div class=" renbtn m-auto my-3 p-3">
+                    <a class="btn btn-outline-success" href="/tenant">Renew</a>
+                </div>
+            }
+
+        }
+        else
+        {
+            <div class="alert alert-danger nvalid-alert w-100" role="alert">
+                User Subscription Not Valid Please Contact Your Tenant Admin!
+            </div>
+        }
+
+
+
+    </div>
+
+
+
+
+}
+else
+{
+
+
+    <div class="row owl-carousel owl-theme top-cards" id="top_carousel"></div>
+
+    <div class="row">
+        <div class="col-lg-6 mb-4">
+            <div class="card h-100">
+                <div class="card-body h-100">
+                    <div class="row" id="favorites">
+                        @*favorites*@
+
+
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-6 mb-4">
+            <div class="card h-100">
+                <div class="card-body h-100">
+                    <div id="evoCalendar" style="font-family: 'Poppins';direction:ltr" class="h-100"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-lg-6 mb-4">
+            <div class="card h-100">
+                <div class="card-body h-100">
+                    <div class="row" id="">
+                        @*favorites*@
+
+                        <div class="row owl-carousel owl-theme" id="chart_carousel">
+                            <div class="item card " style="margin:20px;height:400px">
+                                <div id="Chart1h" style="height:100px;width:100%;display:flex">
+                                    <div style="width:70%"><label class="center txt-st" id="lblChart1">Top 10 items sold by value</label></div>
+                                    <div style="width:30%">
+
+                                        <div class="action">
+                                            <a class="fas fa-link" data-toggle="tooltip" data-placement="top" title="" href="#" data-original-title="فتح التفاصيل" tabindex="0"> </a>
+                                        </div>
+                                        <div class="action">
+                                            <a class="fas fa-download" data-toggle="tooltip" data-placement="top" id="btn_chart25" title="" onclick="View(1, true)" data-original-title="تحميل pdf" tabindex="0"> </a>
+                                        </div>
+                                        <div class="action">
+                                            <a class="far fa-window-restore" data-toggle="tooltip" data-placement="top" title="" onclick="View(1)" data-original-title="عرض" tabindex="0"> </a>
+                                        </div>
+
+
+                                    </div>
+
+                                </div>
+                                @*<div style="width:100%;  height:350px;" id="google_chart_carousel1"></div>*@
+                                <div id="myChart" style="width:100%;height:100%;max-width:700px"></div>
+
+
+                            </div>
+                            <div id="Chart7h" class="item card " style="margin: 20px; height: 400px">
+
+                                <div style="height:100px;width:100%;display:flex">
+                                    <div style="width:70%"><label class="center txt-st" id="lblChart7">Chart Monthly Expense <span id="GetBarChartMonthly"></span></label></div>
+                                    <div style="width:30%">
+
+                                        <div class="action">
+                                            <a class="fas fa-link" data-toggle="tooltip" data-placement="top" title="" href="#" data-original-title="فتح التفاصيل" tabindex="0"> </a>
+                                        </div>
+                                        <div class="action">
+                                            <a class="fas fa-download" data-toggle="tooltip" data-placement="top" id="btn_chart25" title="" onclick="View(7, true, false,true)" data-original-title="تحميل pdf" tabindex="0"> </a>
+                                        </div>
+                                        <div class="action">
+                                            <a class="far fa-window-restore" data-toggle="tooltip" data-placement="top" title="" onclick="View(7, false, false,true)" data-original-title="عرض" tabindex="0"> </a>
+                                        </div>
+
+
+                                    </div>
+
+                                </div>
+                               <select id="GetGlPeriodsYears"></select>
+                                <div id="myChart7" style="width: 100%; height: 100%;max-width:700px"></div>
+                              @*   <div id="chart_div1"></div>*@
+
+                            </div>
+
+
+                            <div id="Chart2h" class="item card " style="margin: 20px; height: 400px">
+
+                                <div style="height:100px;width:100%;display:flex">
+                                    <div style="width:70%"><label class="center txt-st" id="lblChart2">Sales in <span id="CurrentDateReport"></span></label></div>
+                                    <div style="width:30%">
+
+                                        <div class="action">
+                                            <a class="fas fa-link" data-toggle="tooltip" data-placement="top" title="" href="#" data-original-title="فتح التفاصيل" tabindex="0"> </a>
+                                        </div>
+                                        <div class="action">
+                                            <a class="fas fa-download" data-toggle="tooltip" data-placement="top" id="btn_chart25" title="" onclick="View(2, true, false,true)" data-original-title="تحميل pdf" tabindex="0"> </a>
+                                        </div>
+                                        <div class="action">
+                                            <a class="far fa-window-restore" data-toggle="tooltip" data-placement="top" title="" onclick="View(2, false, false,true)" data-original-title="عرض" tabindex="0"> </a>
+                                        </div>
+
+
+                                    </div>
+
+                                </div>
+                                <select id="SalesMonthDialy"></select>
+                                <div id="myChart2" style="width: 100%; height: 100%;max-width:700px"></div>
+
+                            </div>
+
+
+
+
+
+                            <div id="Chart3h" class="item card " style="margin: 20px; height: 400px">
+
+
+                                <div style="height:100px;width:100%;display:flex">
+                                    <div style="width:70%">
+                                        <label class="center txt-st" id="lblChart3">Total Sales by Category in <span id="CurrentDateTotalSalesCategoryReport"></span></label>
+                                    </div>
+                                    <div style="width:30%">
+
+                                        <div class="action">
+                                            <a class="fas fa-link" data-toggle="tooltip" data-placement="top" title="" href="#" data-original-title="فتح التفاصيل" tabindex="0"> </a>
+                                        </div>
+                                        <div class="action">
+                                            <a class="fas fa-download" data-toggle="tooltip" data-placement="top" id="btn_chart25" title="" onclick="View(3, true)" data-original-title="تحميل pdf" tabindex="0"> </a>
+                                        </div>
+                                        <div class="action">
+                                            <a class="far fa-window-restore" data-toggle="tooltip" data-placement="top" title="" onclick="View(3)" data-original-title="عرض" tabindex="0"> </a>
+                                        </div>
+
+
+                                    </div>
+
+                                </div>
+
+                                @*<div style="width:100%;  height:350px;" id="google_chart_carousel3"></div>*@
+                                <select id="SaleByCategory"></select>
+                                <div id="myChart3" style="width: 100%; height: 100%;max-width:700px"></div>
+
+                            </div>
+                            <div class="item card " style="margin: 20px; height: 400px">
+                                <div style="height:100px;width:100%;display:flex">
+                                    <div style="width:70%">
+                                        <label class="center txt-st" id="lblChart4">Revenue VS Expensis for the last 6 months </label>
+
+                                    </div>
+                                    <div style="width:30%">
+
+                                        <div class="action">
+                                            <a class="fas fa-link" data-toggle="tooltip" data-placement="top" title="" href="#" data-original-title="فتح التفاصيل" tabindex="0"> </a>
+                                        </div>
+                                        <div class="action">
+                                            <a class="fas fa-download" data-toggle="tooltip" data-placement="top" id="btn_chart25" title="" onclick="View(4, true)" data-original-title="تحميل pdf" tabindex="0"> </a>
+                                        </div>
+                                        <div class="action">
+                                            <a class="far fa-window-restore" data-toggle="tooltip" data-placement="top" title="" onclick="View(4)" data-original-title="عرض" tabindex="0"> </a>
+                                        </div>
+
+
+                                    </div>
+
+                                </div>
+                                @*<div style="width:100%;  height:350px;" id="google_chart_carousel4"></div>*@
+                                <div id="myChart4" style="width: 100%; height: 100%;max-width:700px"></div>
+
+                            </div>
+
+                            <div class="item card " style="margin: 20px; height: 400px">
+                                <div style="height:100px;width:100%;display:flex">
+                                    <div style="width:70%">
+                                        <label class="center txt-st" id="lblChart5">SalesMan </label>
+
+                                    </div>
+                                    <div style="width:30%">
+
+                                        <div class="action">
+                                            <a class="fas fa-link" data-toggle="tooltip" data-placement="top" title="" href="#" data-original-title="فتح التفاصيل" tabindex="0"> </a>
+                                        </div>
+                                        <div class="action">
+                                            <a class="fas fa-download" data-toggle="tooltip" data-placement="top" id="btn_chart25" title="" onclick="View(5, true,true)" data-original-title="تحميل pdf" tabindex="0"> </a>
+                                        </div>
+                                        <div class="action">
+                                            <a class="far fa-window-restore" data-toggle="tooltip" data-placement="top" title="" onclick="View(5, false, true)" data-original-title="عرض" tabindex="0"> </a>
+                                        </div>
+
+
+                                    </div>
+
+                                </div>
+                                @*<div style="width:100%;  height:350px;" id="google_chart_carousel4"></div>*@
+                                <select id="SaleManMonth"></select>
+                                <div id="myChart5" style="width: 100%; height: 100%;max-width:700px"></div>
+
+                            </div>
+
+                        </div>
+
+                        <div style="width:100%; max-width:600px; height:500px;" id="google_chart_carousel" hidden></div>
+                        <div style="width:100%; max-width:600px; height:500px;" id="chart_div" hidden></div>
+                        <div style="width:100%; max-width:600px; height:500px;" id="chart_div1" hidden></div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-6 mb-4">
+            <div class="card">
+                <div class="card-body body">
+                    <div class="table-responsive">
+                        <div id="tblLoader" style="display:none">
+                            <div class="lds-roller"><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div></div>
+                        </div>
+                        <table class="dataTable dt-responsive no-footer nowrap table table-bordered table-striped w-100" id="tblNotif" style="width:100%;">
+                            <thead>
+                                <tr>
+                                    <th>@Notifications.Date</th>
+                                    <th>@Notifications.Message</th>
+                                    <th>@Notifications.Link</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Events Modal -->
+    <div class="modal fade" id="eventsModal">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel"></h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <textarea rows="3" class="form-control p-2" id="eventInput"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">@ERP.ResourcePack.Common.Styles.close</button>
+                    <button type="button" class="btn btn-primary" id="saveBtn">@ERP.ResourcePack.Common.Styles.save</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+
+    <div class="modal fade" id="model" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-body">
+                    <div style="height:600px;" id="chart100">
+
+                        <div style="width:100%;" id="cChart"></div>
+                        <label class="center txt-st" id="CurrentChartLabel"></label>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-12" id="divmain">
+
+        <div class="portlet light">
+            <div class="portlet-title">
+
+
+
+            </div>
+            <div class="portlet-body">
+                <div id="chartM" style=" height :400px !important">
+
+                    <center><i class="fa fa-spinner fa-pulse fa-2x fa-fw"></i></center>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    @section scripts{
+        <script>
+            let formView = false;
+            let calEvents = [];
+            let selectedEvent = null;
+            let selectedDate;
+
+            $('#SalesMonthDialy').select2(ReturnSelect2ObjectDefault(`${baseUrl}/GlPeriodsDetails/GetGlPeriodsSelect2`));//7777
+            $('#SaleByCategory').select2(ReturnSelect2ObjectDefault(`${baseUrl}/GlPeriodsDetails/GetGlPeriodsSelect2`));//7777
+
+            function GetFirstPeriod() {
+
+                $.ajax({
+                    url: `${baseUrl}/GlPeriodsDetails/GetFirstItemByUserId`,
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${$_token}`
+                    }
+
+                }).done(function (Respone) {
+
+                    var itemdata = Respone.result;
+                    console.log(itemdata);
+
+                    $(`#SaleManMonth`).append($("<option selected='selected'></option>")
+                        .val(itemdata.id).text(itemdata.periodNameEn)).trigger('change');
+                    $(`#SalesMonthDialy`).append($("<option selected='selected'></option>")
+                        .val(itemdata.id).text(itemdata.periodNameEn)).trigger('change');
+                    $(`#SaleByCategory`).append($("<option selected='selected'></option>")
+                        .val(itemdata.id).text(itemdata.periodNameEn)).trigger('change');
+                    $(`#GetGlPeriodsYears`).append($("<option selected='selected'></option>")
+                        .val(itemdata.id).text(itemdata.year)).trigger('change');
+
+                }).fail(function (response) {
+                    toastr.error(response);
+                });
+            }
+            $(document).ready(function () {
+
+
+
+                var rightNow = new Date();
+                var res = rightNow.toISOString().slice(0, 7);
+                var newRes = res.split('-')[1] + '-' + res.split('-')[0]
+
+                prepareCarousel();
+
+
+                $('#CurrentDateReport').text(newRes);
+                $('#GetBarChartMonthly').text(newRes);
+
+                $('#CurrentDateTotalSalesCategoryReport').text(newRes);
+
+                //Top Carousel
+                function getTopCarouselData() {
+                    $.ajax({
+                        url: `${baseUrl}/Home/GetTopGraphHomePage?lang=${lang}`,
+                        cache: false,
+                        type: "GET",
+                        headers: {
+                            'Authorization': `Bearer ${$_token}`
+                        }
+                    })
+                        .done(function (data) {
+
+                            let cards = '';
+                            data.result.forEach((item, i) => {
+                                let color;
+                                if ((i + 1) % 4 == 1) {
+                                    color = 'top_red';
+                                } else if ((i + 1) % 4 == 2) {
+                                    color = 'top_blue';
+                                } else if ((i + 1) % 4 == 3) {
+                                    color = 'top_green';
+                                } else if ((i + 1) % 4 == 0) {
+                                    color = 'top_purple';
+                                }
+                                let card =
+                                    `<div class="item card ${color}">
+                                                                                        <div class="d-flex justify-content-between">
+                                                                                            <div>
+                                                                                                <h3 class="timer count-title count-number" data-to="${item.value1}" data-speed="5000">${item.value1}</h3>
+                                                                                                <small>${item.nameAr}</small>
+                                                                                            </div>
+                                                                                            <i class="material-icons">receipt</i>
+                                                                                        </div>
+                                                                                        <hr />
+                                                                                        <div class="d-flex justify-content-between align-items-center">
+                                                                                            <p>${item.nameEn}</p>
+                                                                                            <p class="timer count-title count-number" data-to="${item.value2}" data-speed="5000">${item.value2}</p>
+                                                                                        </div>
+                                                                                    </div>`;
+
+                                cards = cards + card;
+                            });
+                            $('#top_carousel').html(cards);
+
+                            //Start Counter
+                            jQuery(function ($) {
+                                // custom formatting example
+                                $('.count-number').data('countToOptions', {
+                                    formatter: function (value, options) {
+                                        return value.toFixed(2).replace(/\B(?=(?:\d{3})+(?!\d))/g, ',');
+                                    }
+                                });
+                                // start all the timers
+                                $('.timer').each(count);
+
+                                function count(options) {
+                                    var $this = $(this);
+                                    options = $.extend({}, options || {}, $this.data('countToOptions') || {});
+                                    $this.countTo(options);
+                                }
+                            });
+
+                            $('#top_carousel').owlCarousel({
+                                rtl: (lang == 'ar-EG'),
+                                loop: true,
+                                dots: true,
+                                margin: 10,
+                                nav: false,
+                                //autoplay:true,
+                                responsiveClass: true,
+                                responsive: {
+                                    0: {
+                                        items: 1,
+                                    },
+                                    576: {
+                                        items: 2,
+                                    },
+                                    786: {
+                                        items: 3,
+                                    },
+                                    992: {
+                                        items: 4,
+                                    }
+                                }
+                            })
+
+                        })
+                        .fail(function () {
+                            console.log("error");
+                        })
+                }
+
+                google.charts.load('current', { 'packages': ['corechart'] });
+                google.charts.setOnLoadCallback(drawChart);
+
+
+                google.charts.load('current', { packages: ['corechart', 'line'] });
+                google.charts.setOnLoadCallback(drawCurveTypes);
+
+                GetFirstPeriod();
+                getTopCarouselData();
+                GetBarChartItemSoldbyValue();
+                GetBarChartPeriodRevVSExp();
+                GetBarChartSalesCurrentMonthDaily();
+                GetBarChartSaleByCategory();
+                GetBarChartSalesBySaleManMonthly();
+                GetBarChartMonthlyExpenseData();
+
+                $('#SaleManMonth').select2(ReturnSelect2ObjectDefault(`${baseUrl}/GlPeriodsDetails/GetGlPeriodsSelect2`));
+
+                $('#GetGlPeriodsYears').select2(ReturnSelect2ObjectDefault(`${baseUrl}/GlPeriodsYears/GetGlPeriodsYearsSelect2`));
+
+                //Favorite Pages
+                function getFavoritePages() {
+                    $.ajax({
+                        url: `${baseUrl}/Home/GetAll`,
+                        cache: false,
+                        type: "GET",
+                        headers: {
+                            'Authorization': `Bearer ${$_token}`
+                        }
+                    })
+                        .done(function (data) {
+                            let favorites = '';
+                            data.result.forEach((item, i) => {
+                                let iconImg = '', link = item.link ? item.link : `javascript:;`;
+
+                                if (item.icon) {
+                                    if (item.icon.startsWith('fas') || item.icon.startsWith('far')) {
+                                        iconImg += ` <div style="margin:25px auto"><span class="${item.icon} fa-2x"></span></div>`
+                                    } else {
+                                        iconImg += ` <img src="${item.icon}" width="50%"  />`
+                                    }
+                                } else {
+                                    iconImg += `<img src="../../AssetsPack/SystemLogos/star.png" width="62px"  />`
+                                }
+
+                                let favorite = `<div class="alert alert-info fade show" role="alert">
+                                                                                        <a class="text-white d-block" href="${link}"> ${iconImg}
+                                                                                            <p><strong>${(lang == 'ar-EG') ? item.pageNameAr : item.pageNameEn}</strong></p>
+                                                                                        </a>
+                                                                                        <i class="fa fa-times m-0 mr-3 remove_favorite" data-id="${item.id}"></i>
+                                                                                    </div>`;
+
+                                favorites = favorites + favorite;
+                            });
+                            $('#favorites').html(favorites);
+
+                        })
+                        .fail(function () {
+                            console.log("error");
+                        })
+                }
+                getFavoritePages();
+
+                function deleteFavorite(id) {
+                    $.ajax({
+                        url: `${baseUrl}/Home/Remove?id=${id}`,
+                        cache: false,
+                        type: "DELETE",
+                        headers: {
+                            'Authorization': `Bearer ${$_token}`
+                        }
+                    })
+                        .done(function (data) {
+                            getFavoritePages();
+                        })
+                        .fail(function () {
+                            console.log("error");
+                        })
+                }
+
+                $(document).on("click", ".remove_favorite", function (evt) {
+                    let id = $(this).attr('data-id');
+                    deleteFavorite(id);
+                });
+
+                //Evo Calendar
+                function calendarAfterInit() {
+                    if ($(".event-indicator").length > 0) {
+                        //alert('yaaaaaaaaaa');
+                        //console.log($('.day').attr('data-date-val'));
+
+                        document.querySelectorAll('.day').forEach((el) => {
+                            if (el.childNodes[1]) {
+                                let day = el.childNodes['1'].parentElement;
+                                //console.log(el.childNodes['1']);
+                                let eventDate = day.getAttribute('data-date-val');
+                                let eventFounded = calEvents.find(x => x.date == eventDate);
+                                (eventFounded) ? day.setAttribute('title', eventFounded.name) : null;
+                            }
+                        })
+                        //console.log($(".event-indicator").parent('.day').length);
+                    }
+
+                }
+
+                function calendarInit() {
+                    $("#evoCalendar").evoCalendar({
+                        calendarEvents: calEvents,
+                        sidebarToggler: true,
+                        sidebarDisplayDefault: false,
+                        eventListToggler: false,
+                        eventDisplayDefault: false,
+                        todayHighlight: true,
+                        format: 'dd/mm/yyyy',
+                        language: '@lang2'
+                    });
+
+                    $('.day').on({
+                        mouseenter: function () {
+                            if ($(this).find(".event-indicator").length > 0) {
+                                console.log($(this).attr('data-date-val'));
+                                let eventDate = $(this).attr('data-date-val');
+                                let eventFounded = calEvents.find(x => x.date == eventDate);
+                                (eventFounded) ? $(this).attr('title', eventFounded.name) : null;
+                            };
+                        }
+                    });
+                }
+
+                //$('.calendar-table .calendar-body .day[title] ').click();
+
+                function getEventsList() {
+                    $.ajax({
+                        url: `${baseUrl}/CalenderMemo/GetAll2`,
+                        cache: false,
+                        type: "GET",
+                        headers: {
+                            'Authorization': `Bearer ${$_token}`
+                        }
+                    })
+                        .done(function (data) {
+                            let items = data.result;
+                            console.log(items);
+                            calEvents = items.map(item => {
+                                return {
+                                    id: item.id,
+                                    name: item.memo,
+                                    date: conDate(item.memoDate),
+                                    color: "#d42"
+                                };
+                            });
+
+                            calendarInit();
+
+                        })
+                        .fail(function () {
+                            console.log("error");
+                        })
+                }
+
+                function saveEvent() {
+                    if ($('#eventInput').val() != '') {
+                        if (selectedEvent == null) {
+                            let event = {
+                                memo: $('#eventInput').val(),
+                                memoDate: selectedDate,
+                            }
+                            addToBackEnd(event);
+                        } else {
+                            let event = {
+                                id: selectedEvent.id,
+                                memo: $('#eventInput').val(),
+                                memoDate: selectedDate,
+                            }
+                            updateToBackEnd(event);
+                        }
+                    } else {
+                        deleteFromBackEnd(selectedEvent.id);
+                    }
+
+                }
+
+                function addToBackEnd(event) {
+                    $.ajax({
+                        url: `${baseUrl}/CalenderMemo/Create`,
+                        cache: false,
+                        type: "POST",
+                        contentType: "application/json",
+                        headers: {
+                            'Authorization': `Bearer ${$_token}`
+                        },
+                        data: JSON.stringify(event)
+                    })
+                        .done(function (data) {
+                            console.log(data);
+                            let item = {
+                                id: data.result.id,
+                                name: data.result.memo,
+                                date: conDate(data.result.memoDate),
+                                color: "#09c"
+                            }
+                            $("#evoCalendar").evoCalendar('addCalendarEvent', [item]);
+                            calendarAfterInit();
+                        })
+                        .fail(function () {
+                            console.log("error");
+                        })
+                }
+
+                function updateToBackEnd(event) {
+                    $.ajax({
+                        url: `${baseUrl}/CalenderMemo/Update`,
+                        cache: false,
+                        type: "PUT",
+                        contentType: "application/json",
+                        headers: {
+                            'Authorization': `Bearer ${$_token}`
+                        },
+                        data: JSON.stringify(event)
+                    })
+                        .done(function (data) {
+                            console.log(data);
+                            let item = calEvents.find(x => x.id == data.result.id);
+                            item.name = data.result.memo;
+                        })
+                        .fail(function () {
+                            console.log("error");
+                        })
+                }
+
+                function deleteFromBackEnd(id) {
+                    $.ajax({
+                        url: `${baseUrl}/CalenderMemo/Delete?id=${id}`,
+                        cache: false,
+                        type: "DELETE",
+                        headers: {
+                            'Authorization': `Bearer ${$_token}`
+                        }
+                    })
+                        .done(function (data) {
+                            console.log(data);
+                            $("#evoCalendar").evoCalendar('removeCalendarEvent', id);
+                            $("#evoCalendar").evoCalendar('destroy');
+                            calendarInit();
+                        })
+                        .fail(function () {
+                            console.log("error");
+                        })
+                }
+
+                function conDate(string) {
+                    let x = string.split("/");
+                    return new Date(+x[2], x[1] - 1, +x[0]);
+                }
+
+
+
+                //$('#SaleManMonth').val(month).trigger('change');
+
+                $("#SaleManMonth").on('change', function (e, evoCalendar) {
+                    GetBarChartSalesBySaleManMonthly();
+                });
+
+                $("#SalesMonthDialy").on('change', function (e, evoCalendar) {
+                    GetBarChartSalesCurrentMonthDaily();
+               });
+
+                $("#SaleByCategory").on('change', function (e, evoCalendar) {
+                    GetBarChartSaleByCategory();
+                });
+
+
+                $("#GetGlPeriodsYears").on('change', function (e, evoCalendar) {
+                   GetBarChartMonthlyExpenseData();
+                });
+
+                $("#evoCalendar").on('selectDate', function (e, evoCalendar) {
+                    selectedDate = evoCalendar;
+                    if (calEvents.find(x => x.date == evoCalendar)) {
+                        selectedEvent = calEvents.find(x => x.date == evoCalendar);
+                        $('#eventInput').val(selectedEvent.name);
+                    } else {
+                        selectedEvent = null;
+                    }
+
+                    $('#eventsModal').modal('show');
+
+
+                    //$("#evoCalendar").evoCalendar('addCalendarEvent', [event]);
+                });
+
+                $('#eventsModal').on('hidden.bs.modal', function (e) {
+                    $('#eventInput').val('');
+                });
+
+                $(document).on("click", "#saveBtn", function (evt) {
+                    $('#eventsModal').modal('hide');
+                    saveEvent();
+                });
+
+                getEventsList();
+
+
+
+            });
+
+            function prepareCarousel() {
+
+                let card =
+                    `<div class="item card " style="margin:50px;">
+                             <div class="d-flex justify-content-between">
+                                <div>
+                                   <div id="myChart" style="width:100%;height:100%;max-width:700px"></div>
+                                    <label class="center txt-st">Top 10 items sold by value</label>
+                                </div>
+
+                             </div>
+
+                         </div>`+
+                    `<div class="item card " style="margin:50px;">
+                             <div class="d-flex justify-content-between">
+                                <div>
+                                    <div id="myChart2" style="width: 100%; height: 100%;max-width:700px"></div>
+                                    <label class="center txt-st" >Sales in <span id="CurrentDateReport"></span></label>
+                                </div>
+
+                             </div>
+                         </div>`+
+                    `<div class="item card " style="margin:50px;">
+                             <div class="d-flex justify-content-between">
+                                <div>
+                                     <div id="myChart3" style="width: 100%; height: 100%;max-width:700px"></div>
+                            <label class="center txt-st" >Total Sales by Category in <span id="CurrentDateTotalSalesCategoryReport"></span></label>
+                                </div>
+
+                             </div>
+                         </div>`+
+                    `<div class="item card " style="margin:50px;">
+                             <div class="d-flex justify-content-between">
+                                <div>
+                                     <div id="myChart7" style="width: 100%; height: 100%;max-width:700px"></div>
+                            <label class="center txt-st" >Total Monthly Expense in <span id="GetBarChartMonthly"></span></label>
+                                </div>
+
+                             </div>
+                         </div>`+
+                    `<div class="item card " style="margin:50px;">
+                             <div class="d-flex justify-content-between">
+                                <div>
+                                     <div id="myChart4" style="width: 100%; height: 100%;max-width:700px"></div>
+                                     <label class="center txt-st" >Revenue VS Expensis for the last 6 months </label>
+                                </div>
+
+                             </div>
+                         </div>`;
+                //$('#chart_carousel').html(card);
+                $('#chart_carousel').owlCarousel({
+                    rtl: (lang == 'ar-EG'),
+                    loop: false,
+                    dots: true,
+
+                    nav: false,
+                    //autoplay:true,
+                    responsiveClass: true,
+                    responsive: {
+                        0: {
+                            items: 1,
+                        },
+                        576: {
+                            items: 1,
+                        },
+                        786: {
+                            items: 1,
+                        },
+                        992: {
+                            items: 1,
+                        }
+                    }
+                })
+
+            }
+
+            function drawChart() {
+
+                var data = google.visualization.arrayToDataTable([
+                    ['Month', 'Bolivia', 'Ecuador', 'Madagascar', 'Papua New Guinea', 'Rwanda', 'Average'],
+                    ['2004/05', 165, 938, 522, 998, 450, 614.6],
+                    ['2005/06', 135, 1120, 599, 1268, 288, 682],
+                    ['2006/07', 157, 1167, 587, 807, 397, 623],
+                    ['2007/08', 139, 1110, 615, 968, 215, 609.4],
+                    ['2008/09', 136, 691, 629, 1026, 366, 569.6]
+                ]);
+
+                var options = {
+                    title: 'Monthly Coffee Production by Country',
+                    vAxis: { title: 'Cups' },
+                    hAxis: { title: 'Month' },
+                    seriesType: 'bars',
+                    series: { 5: { type: 'line' } }
+                };
+
+                //var options = {
+                //    title: 'World Wide Wine Production',
+                //    is3D: true
+                //};
+
+                //var chart = new google.visualization.PieChart(document.getElementById('google_chart_carousel'));
+                var chart = new google.visualization.ComboChart(document.getElementById('google_chart_carousel'));
+
+                chart.draw(data, options);
+
+                //savePDF(chart);
+
+            }
+
+
+
+
+
+
+
+
+            function drawCurveTypes() {
+                var data = new google.visualization.DataTable();
+                data.addColumn('number', 'X');
+                data.addColumn('number', 'Dogs');
+                data.addColumn('number', 'Cats');
+
+                data.addRows([
+                    [0, 0, 0], [1, 10, 5], [2, 23, 15], [3, 17, 9], [4, 18, 10], [5, 9, 5],
+                    [6, 11, 3], [7, 27, 19], [8, 33, 25], [9, 40, 32], [10, 32, 24], [11, 35, 27],
+                    [12, 30, 22], [13, 40, 32], [14, 42, 34], [15, 47, 39], [16, 44, 36], [17, 48, 40],
+                    [18, 52, 44], [19, 54, 46], [20, 42, 34], [21, 55, 47], [22, 56, 48], [23, 57, 49],
+                    [24, 60, 52], [25, 50, 42], [26, 52, 44], [27, 51, 43], [28, 49, 41], [29, 53, 45],
+                    [30, 55, 47], [31, 60, 52], [32, 61, 53], [33, 59, 51], [34, 62, 54], [35, 65, 57],
+                    [36, 62, 54], [37, 58, 50], [38, 55, 47], [39, 61, 53], [40, 64, 56], [41, 65, 57],
+                    [42, 63, 55], [43, 66, 58], [44, 67, 59], [45, 69, 61], [46, 69, 61], [47, 70, 62],
+                    [48, 72, 64], [49, 68, 60], [50, 66, 58], [51, 65, 57], [52, 67, 59], [53, 70, 62],
+                    [54, 71, 63], [55, 72, 64], [56, 73, 65], [57, 75, 67], [58, 70, 62], [59, 68, 60],
+                    [60, 64, 56], [61, 60, 52], [62, 65, 57], [63, 67, 59], [64, 68, 60], [65, 69, 61],
+                    [66, 70, 62], [67, 72, 64], [68, 75, 67], [69, 80, 72]
+                ]);
+
+                var options = {
+                    hAxis: {
+                        title: 'Time'
+                    },
+                    vAxis: {
+                        title: 'Popularity'
+                    },
+                    series: {
+                        1: { curveType: 'function' }
+                    }
+                };
+
+                var chart = new google.visualization.LineChart(document.getElementById('chart_div1'));
+                chart.draw(data, options);
+            }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+            var chart1;
+            var chart1Data;
+            var chart2;
+            var chart2Data;
+            var chart3;
+            var chart3Data;
+            var chart4;
+            var chart4Data;
+            var chart5;
+            var chart5Data;
+            var chart7;
+            var chart7Data;
+            function ChartByValue(selector, data, type, print, isPieChart = false, isLine = false) {
+
+                if (isPieChart) {
+                    var chart = new google.visualization.PieChart(document.getElementById(selector));
+                } else if (isLine) {
+                    var chart = new google.visualization.LineChart(document.getElementById(selector));
+                } else {
+                    var chart = new google.visualization.ComboChart(document.getElementById(selector));
+
+                }
+                if (selector == "cChart") {
+
+                    var options = {
+                        //title: 'Top 10 items sold by value',
+                        //vAxis: { title: 'Cups' },
+                        hAxis: {
+                            title: 'Month',
+                            //slantedText: true,
+                            //slantedTextAngle: 60,
+                        },
+                        legend: { position: 'bottom', alignment: 'start' },
+
+                        //vAxis: {
+
+                        //    title: 'Count',
+                        //    textStyle: { fontSize: 7 }
+                        //},
+                        //width: 700,
+                        //height: 350,
+                        'width': 700,
+                        'height': 500,
+                        //chartArea: {
+                        //    height: 350,
+                        //    top: 50,
+                        //    width:550
+                        //},
+                        chartArea: { left: 120, top: 50, width: 500, height: 350 },
+                        seriesType: 'bars',
+                        //series: { 5: { type: 'line' } }
+                    };
+                } else {
+
+                    var options = {
+                        //title: 'Top 10 items sold by value',
+                        //vAxis: { title: 'Cups' },
+                        //hAxis: { title: 'Month' },
+
+                        seriesType: 'bars',
+                        series: { 5: { type: 'line' } }
+                    };
+
+                }
+                if (isLine) {
+                    options.seriesType = 'line';
+                }
+                assignChart(type, chart, data);
+                chart.draw(data, options);
+                $('#listed_v_sold_graph_div').css("display", "block");
+
+                if (print)
+                  savePDF(chart);
+
+            }
+            function assignChart(type, ctx, data) {
+                console.log('type ' + type);
+                console.log('data ' + data);
+                switch (type) {
+                    case 1:
+                        chart1 = ctx;
+                        chart1Data = data;
+
+                        break;
+                    case 2:
+                        chart2 = ctx;
+                        chart2Data = data;
+
+                        break;
+                    case 3:
+                        chart3 = ctx;
+                        chart3Data = data;
+
+                        break;
+                    case 4:
+                        chart4 = ctx;
+                        chart4Data = data;
+
+                        break;
+                    case 5:
+                        chart5 = ctx;
+                        chart5Data = data;
+
+                        break;
+                    case 7:
+                        chart7 = ctx;
+                        chart7Data = data;
+
+                        break;
+                }
+                $('#CurrentChartLabel').html($('#lblChart' + type).html());
+            }
+
+            function GetBarChartItemSoldbyValue() {
+                $.ajax({
+                    url: `${baseUrl}/Home/GetBarChartItemSoldbyValue?lang=${lang}`,
+                    cache: false,
+                    type: "GET",
+                    headers: {
+                        'Authorization': `Bearer ${$_token}`
+                    }
+                })
+                    .done(function (data) {
+
+                            var newList = [];
+
+                            newList.push("Item Name", "Sales");
+
+                            data.result.forEach((item, i) => {
+                                if (i < 10) {
+                                    newList.push(data.result[i].itemName, data.result[i].valuE1);
+                                }
+                            });
+                            //for (var i = 0; i < 10; i++) {
+                            //    newList.push(data.result[i].itemName, data.result[i].valuE1);
+                            //}
+
+                            const perChunk = 2 // items per chunk
+                            const inputArray = newList;
+                            const result = inputArray.reduce((resultArray, item, index) => {
+                                const chunkIndex = Math.floor(index / perChunk)
+                                if (!resultArray[chunkIndex]) {
+                                    resultArray[chunkIndex] = [] // start a new chunk
+                                }
+                                resultArray[chunkIndex].push(item)
+
+                                return resultArray
+                            }, [])
+
+                            var data = google.visualization.arrayToDataTable(result);
+
+                            google.charts.setOnLoadCallback(function () {
+                                ChartByValue('myChart', data, 1, false);
+                            });
+
+
+
+                    })
+                    .fail(function () {
+                        console.log("error");
+
+                    })
+            }
+
+            function GetBarChartSalesCurrentMonthDaily() {
+
+                var periodId = $('#SalesMonthDialy :selected').val();
+               // var url = `${baseUrl}/Home/GetBarChartSalesCurrentMonthDaily?lang=${lang}`;
+                if (!periodId)
+                  url = `${baseUrl}/Home/GetBarChartSalesCurrentMonthDaily?lang=${lang}`;
+                else
+                   url = `${baseUrl}/Home/GetBarChartSalesCurrentMonthDaily?PeriodId=${periodId}&lang=${lang}`;
+
+
+                //var url = `${baseUrl}/Home/GetBarChartSalesCurrentMonthDaily?PeriodId=${PeriodId}&lang=${lang}`;
+
+                $.ajax({
+                    url: url,
+                    cache: false,
+                    type: "GET",
+                    headers: {
+                        'Authorization': `Bearer ${$_token}`
+                    }
+                })
+                    .done(function (data) {
+                        console.log('GetBarChartSalesCurrentMonthDaily');
+                        console.log(data)
+
+                        var list = [];
+                        list.push("ItemName", "MonthDaily")
+                        data.result.forEach((item, i) => {
+                            list.push(item.itemName, item.valuE1);
+                        });
+
+                        const perChunk = 2 // items per chunk
+                        const inputArray = list;
+
+                        const result = inputArray.reduce((resultArray, item, index) => {
+                            const chunkIndex = Math.floor(index / perChunk)
+
+                            if (!resultArray[chunkIndex]) {
+                                resultArray[chunkIndex] = [] // start a new chunk
+                            }
+                            resultArray[chunkIndex].push(item)
+
+                            return resultArray
+                        }, [])
+
+
+                        var data = google.visualization.arrayToDataTable(result);
+
+                        google.charts.setOnLoadCallback(function () {
+                            ChartByValue('myChart2', data, 2, false, false, true);
+                        });
+
+                    })
+                    .fail(function () {
+                        console.log("error");
+
+                    })
+            }
+
+
+
+
+      function GetBarChartMonthlyExpenseData() {
+            var periodId = $('#GetGlPeriodsYears :selected').val();
+                    // var url = `${baseUrl}/Home/GetBarChartSalesCurrentMonthDaily?lang=${lang}`;
+                    if (!periodId)
+                        url = `${baseUrl}/Home/GetBarChartMonthlyExpense?lang=${lang}`;
+                    else
+                        url = `${baseUrl}/Home/GetBarChartMonthlyExpense?PeriodId=${periodId}&lang=${lang}`;
+    $.ajax({
+        url: url,
+        cache: false,
+        type: "GET",
+        headers: {
+            'Authorization': `Bearer ${$_token}`
+        }
+    })
+    .done(function (data) {
+        console.log('GetBarChartMonthlyExpense');
+        console.log(data);
+
+        var dataTable = new google.visualization.DataTable();
+        dataTable.addColumn('string', 'Month');
+        
+        // إضافة أعمدة لكل عنصر في data.result
+        data.result.forEach((item, i) => {
+            dataTable.addColumn('number', data.result[i].description);
+        });
+
+
+        // إضافة البيانات للجدول
+        var rows = [];
+        data.result.forEach((item, i) => {
+            var rowData = [data.result[i].periodName];
+            for (var j = 0; j < data.result.length; j++) {
+                rowData.push(data.result[j].amount);
+            }
+            rows.push(rowData);
+        });
+        dataTable.addRows(rows);
+
+        var options = {
+            title: 'Monthly Expenses',
+            hAxis: {
+                title: 'periodName'
+            },
+            vAxis: {
+                title: 'amount'
+            }
+        };
+
+        var chart = new google.visualization.LineChart(document.getElementById('myChart7'));
+        chart.draw(dataTable, options);
+    })
+    .fail(function () {
+        console.log("error");
+    });
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                function GetBarChartSaleByCategory() {
+                    var periodId = $('#SaleByCategory :selected').val();
+                    // var url = `${baseUrl}/Home/GetBarChartSalesCurrentMonthDaily?lang=${lang}`;
+                    if (!periodId)
+                        url = `${baseUrl}/Home/GetBarChartSaleByCategory?lang=${lang}`;
+                    else
+                        url = `${baseUrl}/Home/GetBarChartSaleByCategory?PeriodId=${periodId}&lang=${lang}`;
+
+
+                $.ajax({
+                    url: url,
+                    cache: false,
+                    type: "GET",
+                    headers: {
+                        'Authorization': `Bearer ${$_token}`
+                    }
+                })
+                    .done(function (data) {
+
+                        var newList = [];
+                        newList.push("ItemName", "Sales");
+
+                        data.result.forEach((item, i) => {
+                            if (i < 10) {
+                                newList.push(data.result[i].itemName, data.result[i].valuE1);
+                            }
+                        });
+
+                        //for (var i = 0; i < 10; i++) {
+                        //    newList.push(data.result[i].itemName, data.result[i].valuE1);
+                        //}
+
+                        const perChunk = 2
+                        const inputArray = newList;
+
+                        const result = inputArray.reduce((resultArray, item, index) => {
+                            const chunkIndex = Math.floor(index / perChunk)
+
+                            if (!resultArray[chunkIndex]) {
+                                resultArray[chunkIndex] = []
+                            }
+
+                            resultArray[chunkIndex].push(item)
+
+                            return resultArray
+                        }, [])
+
+                        var data = google.visualization.arrayToDataTable(result);
+
+                        google.charts.load('current', { 'packages': ['corechart'] });
+                        google.charts.setOnLoadCallback(function () {
+                            ChartByValue('myChart3', data, 3, false);
+                        });
+
+
+                    })
+                    .fail(function () {
+                        console.log("error");
+                    })
+            }
+
+            function GetBarChartPeriodRevVSExp() {
+                $.ajax({
+                    url: `${baseUrl}/Home/GetBarChartPeriodRevVSExp?lang=${lang}`,
+                    cache: false,
+                    type: "GET",
+                    headers: {
+                        'Authorization': `Bearer ${$_token}`
+                    }
+                })
+                    .done(function (data) {
+
+                        var newList = [];
+
+                        newList.push("Revenue vs Expense","Revenue", "Expense");
+                        data.result.forEach((item, i) => {
+                            newList.push(data.result[i].itemName, data.result[i].valuE1, data.result[i].valuE2);
+                        });
+
+                        const perChunk = 3
+
+                        const inputArray = newList;
+
+                        const result = inputArray.reduce((resultArray, item, index) => {
+                            const chunkIndex = Math.floor(index / perChunk)
+
+                            if (!resultArray[chunkIndex]) {
+                                resultArray[chunkIndex] = []
+                            }
+
+                            resultArray[chunkIndex].push(item)
+
+                            return resultArray
+                        }, [])
+
+
+                        var data = google.visualization.arrayToDataTable(result);
+
+                        google.charts.load('current', { 'packages': ['corechart'] });
+                        google.charts.setOnLoadCallback(function () {
+                            ChartByValue('myChart4', data, 4, false);
+
+                        });
+
+                    })
+                    .fail(function () {
+                        console.log("error");
+                    })
+            }
+
+            function GetBarChartSalesBySaleManMonthly() {
+
+                var periodId = $('#SaleManMonth :selected').val();
+                var url = `${baseUrl}/Home/GetBarChartSalesBySaleManMonthly?PeriodId=${periodId}&lang=${lang}`;
+                if (!periodId)
+                    url = `${baseUrl}/Home/GetBarChartSalesBySaleManMonthly?lang=${lang}`;
+                $.ajax({
+                    url: url,
+                    cache: false,
+                    type: "GET",
+                    headers: {
+                        'Authorization': `Bearer ${$_token}`
+                    }
+                })
+                    .done(function (data) {
+
+                        var newList = [];
+                        newList.push("SalesMan", "Sales");
+                        for (var i = 0; i < data.result.length; i++) {
+                            newList.push(data.result[i].itemName, data.result[i].valuE1);
+                        }
+
+                        const perChunk = 2
+                        const inputArray = newList;
+                        const result = inputArray.reduce((resultArray, item, index) => {
+                            const chunkIndex = Math.floor(index / perChunk)
+                            if (!resultArray[chunkIndex]) {
+                                resultArray[chunkIndex] = [] // start a new chunk
+                            }
+                            resultArray[chunkIndex].push(item)
+
+                            return resultArray
+                        }, [])
+
+                        var data1 = google.visualization.arrayToDataTable(result);
+
+                        google.charts.setOnLoadCallback(function () {
+                            ChartByValue('myChart5', data1, 5, false, true);
+
+                        });
+
+                    })
+                    .fail(function () {
+                        console.log("error");
+                    })
+            }
+
+            function printpdf(morethanValue, data, btn, type, chartnamef, color) {
+                $('#divmain').show();
+                chartname = chartnamef;
+                drawMorethanValue = morethanValue;
+                chartDatadata = data;
+                if (drawMorethanValue) {
+                    if (type == 1) {
+                        drawChart1(chartDatadata, 'chartM', type, btn);
+                    }
+                    else {
+                        drawChart2(chartDatadata, 'chartM', type, btn);
+                    }
+                } else {
+                    if (type == 2) {
+                        drawChartPie(chartDatadata, 'chartM', type, btn);
+                    }
+                    else {
+                        drawChart(chartDatadata, 'chartM', type, btn, color);
+
+                    }
+                }
+
+
+            }
+
+            function newPrint(type) {
+                var current;
+                switch (type) {
+                    case 1:
+                        current= chart1;
+                        break;
+                    case 2:
+                        current = chart2;
+                        break;
+                    case 3:
+                        current = chart3;
+                        break;
+                    case 4:
+                        current = chart4;
+                        break;
+                    case 5:
+                        current = chart5;
+                        break;
+                    case 7:
+                        current = chart7;
+                        break;
+                }
+                savePDF(current);
+            }
+
+
+            function View(type,print,isPie=false,isLine=false) {
+
+                $('#CurrentChartLabel').text('')
+                $('#cChart').html('')
+                var data;
+                switch (type) {
+                    case 1:
+                        data = chart1Data;
+                        break;
+                    case 2:
+                        data = chart2Data;
+                        break;
+                    case 3:
+                        data = chart3Data;
+                        break;
+                    case 4:
+                        data = chart4Data;
+                        break;
+                    case 5:
+                        data = chart5Data;
+                        break;
+                    case 7:
+                        data = chart7Data;
+                        break;
+                }
+
+                console.log('assasa');
+                console.log(isPie);
+                $('#model').modal('show');
+                setTimeout(function () {
+                    ChartByValue("cChart", data, type, print, isPie, isLine);
+                    if (print)
+                        $('#model').modal('hide');
+                }, 2000);
+
+
+            }
+
+            function getPrevMonth() {
+                const d = new Date();
+                let month = d.getMonth() + 1;
+
+                var list = [];
+                for (var i = 1; i <= month; i++) {
+                    list.push(i);
+                }
+                return list;
+
+            }
+
+            function savePDF(chart) {
+                //var doc = new jsPDF();
+                //doc.addImage(chart.getImageURI(), 0, 0);
+                //doc.save('chart.pdf');
+
+
+                var doc = new jsPDF('l', 'mm', [300, 150]);
+                var width = (doc.internal.pageSize.width - 10);
+                var height = (doc.internal.pageSize.height - 10);
+
+                doc.addImage(chart.getImageURI(), 0, 0, width, height);
+                doc.save('chart.pdf');
+            }
+
+            function drawChart2(selector, xValues, yValues, yValues2, yValues3, yValues4, type, listLabelPointername) {
+                var speedCanvas = document.getElementById(selector);
+
+                Chart.defaults.global.defaultFontFamily = "Lato";
+                Chart.defaults.global.defaultFontSize = 10;
+
+                var dataFirst = {
+                    label: listLabelPointername[0],
+                    data: yValues,
+                    lineTension: 0,
+                    fill: type == 'bar' ? true : false,
+                    backgroundColor: 'red'
+                };
+
+                var dataSecond = {
+                    label: listLabelPointername[1],
+                    data: yValues2,
+                    lineTension: 0,
+                    fill: type == 'bar' ? true : false,
+                    backgroundColor: 'blue'
+                };
+
+                var dataThird = {
+                    label: listLabelPointername[2],
+                    data: yValues3,
+                    lineTension: 0,
+                    fill: type == 'bar' ? true : false,
+                    backgroundColor: 'yellow'
+                };
+
+                var dataForth = {
+                    label: listLabelPointername[3],
+                    data: yValues4,
+                    lineTension: 0,
+                    fill: type == 'bar' ? true : false,
+                    backgroundColor: 'black'
+                };
+
+                var speedData = {
+                    labels: xValues,
+                    datasets: [dataFirst, dataSecond, dataThird, dataForth]
+                };
+
+                var chartOptions = {
+                    legend: {
+                        display: false,
+                        position: 'top',
+                        labels: {
+                            boxWidth: 80,
+                            fontColor: 'black'
+                        }
+                    }
+                };
+
+                var lineChart = new Chart(speedCanvas, {
+                    type: type,
+                    data: speedData,
+                    options: chartOptions
+                });
+
+            }
+
+
+
+
+
+
+        </script>
+        <script src="~/AssetsPack/plugins/evo-calendar/js/evo-calendar.js"></script>
+        @*<script src="~/AssetsPack/plugins/evo-calendar/js/evo-calendar.min.js"></script>*@
+        <script src="~/AssetsPack/plugins/owl-carousel/owl.carousel.min.js"></script>
+        <script>
+            (function ($) {
+                $.fn.countTo = function (options) {
+                    options = options || {};
+
+                    return $(this).each(function () {
+                        // set options for current element
+                        var settings = $.extend({}, $.fn.countTo.defaults, {
+                            from: $(this).data('from'),
+                            to: $(this).data('to'),
+                            speed: $(this).data('speed'),
+                            refreshInterval: $(this).data('refresh-interval'),
+                            decimals: $(this).data('decimals')
+                        }, options);
+
+                        // how many times to update the value, and how much to increment the value on each update
+                        var loops = Math.ceil(settings.speed / settings.refreshInterval),
+                            increment = (settings.to - settings.from) / loops;
+
+                        // references & variables that will change with each update
+                        var self = this,
+                            $self = $(this),
+                            loopCount = 0,
+                            value = settings.from,
+                            data = $self.data('countTo') || {};
+
+                        $self.data('countTo', data);
+
+                        // if an existing interval can be found, clear it first
+                        if (data.interval) {
+                            clearInterval(data.interval);
+                        }
+                        data.interval = setInterval(updateTimer, settings.refreshInterval);
+
+                        // initialize the element with the starting value
+                        render(value);
+
+                        function updateTimer() {
+                            value += increment;
+                            loopCount++;
+
+                            render(value);
+
+                            if (typeof (settings.onUpdate) == 'function') {
+                                settings.onUpdate.call(self, value);
+                            }
+
+                            if (loopCount >= loops) {
+                                // remove the interval
+                                $self.removeData('countTo');
+                                clearInterval(data.interval);
+                                value = settings.to;
+
+                                if (typeof (settings.onComplete) == 'function') {
+                                    settings.onComplete.call(self, value);
+                                }
+                            }
+                        }
+
+                        function render(value) {
+                            var formattedValue = settings.formatter.call(self, value, settings);
+                            $self.html(formattedValue);
+                        }
+                    });
+                };
+
+                $.fn.countTo.defaults = {
+                    from: 0,               // the number the element should start at
+                    to: 0,                 // the number the element should end at
+                    speed: 1000,           // how long it should take to count between the target numbers
+                    refreshInterval: 100,  // how often the element should be updated
+                    decimals: 0,           // the number of decimal places to show
+                    formatter: formatter,  // handler for formatting the value before rendering
+                    onUpdate: null,        // callback method for every time the element is updated
+                    onComplete: null       // callback method for when the element finishes updating
+                };
+
+                function formatter(value, settings) {
+                    return value.toFixed(settings.decimals);
+                }
+            }(jQuery));
+        </script>
+        @*@Html.Partial("~/ViewsScripts/CommonScripts.cshtml")*@
+    }
+
+
+}
+

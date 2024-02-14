@@ -1,0 +1,466 @@
+﻿@using ERP.ResourcePack.AidModule
+@using ERP.Web.UI.Controllers.AidModule
+@using ERP.Authorization;
+@{
+    string permissionsStr = TempData["Permissions"].ToString();
+    string encUpdateTrigger = ERP.Front.Helpers.Enums.Common.EncUpdate;
+    string encShowTrigger = ERP.Front.Helpers.Enums.Common.EncShow;
+}
+
+@if (permissionsStr.Contains(PermissionNames.Pages_ScDeliveryOtherAids_Post))
+{
+    <script>
+
+        const PostAjax = function (id) {
+
+            bootbox.confirm({
+                message: _booBoxMessagePosting,
+                buttons: bootBoxDefaultBtns,
+                callback: function (result) {
+
+                    if (result) {
+
+                        const data = {
+                            id: id,
+                            lang: lang
+                        };
+
+                        $.ajax({
+                            url: `${baseUrl}/ScDeliveryOtherAids/PostScDeliveryOtherAids`,
+                            type: 'POST',
+                            data: JSON.stringify(data),
+                            headers:
+                            {
+                                'Content-Type': 'application/json',
+                                'Authorization': `Bearer ${$_token}`
+                            },
+                        }).done(function (response) {
+
+                            if (response.result.finalStatues == 'F') {
+                                toastr.warning(response.result.reason);
+                            }
+                            else {
+
+                                if (formView) {
+
+                                    setTimeout(function () {
+                                        window.location.href = $PrefixHostName + '/ScDeliveryOtherAids';
+                                    }, 100);
+
+                                } else {
+                                    LoadDataGrid();
+                                }
+
+                            }
+
+                        }).fail(function (response) {
+
+                            toastr.error(response.responseText);
+
+                        });
+                    }
+
+                }
+            });
+
+        };
+
+    </script>
+}
+else
+{
+    <script>
+        const PostAjax = function (id) { };
+    </script>
+}
+
+<script>
+    const _mainController = "ScDeliveryOtherAids"
+
+    $(function () {
+        LoadDataGrid();
+
+        $('#ScDeliveryOtherAids').addClass('active');
+    });
+
+    const _loadDataUrl = `${$PrefixHostName}/${_mainController}/@nameof(ScDeliveryOtherAidsController.LoadDataGrid)`;
+    const _tblSelector = $('#tblScDeliveryOtherAids');
+    const _tblLoader = $('#tblLoader');
+
+    const _permissions = '@permissionsStr';
+    const _updatePermission = '@PermissionNames.Pages_ScDeliveryOtherAids_Update';
+    const _deletePermission = '@PermissionNames.Pages_ScDeliveryOtherAids_Delete';
+    const _postPermission = '@PermissionNames.Pages_ScDeliveryOtherAids_Post';
+
+    const _postStatus = @Convert.ToInt64(ERP.Front.Helpers.Enums.Common.ScDeliveryOtherAidsStatues.Posted);
+
+    var OnBegin = function (response) {
+        fireBtnLoader();
+    };
+
+    var OnSuccess = function (response) {
+
+        $('#btnSubmition').prop('disabled', false);
+
+        if (response.success) {
+
+            if (response.customRestResult.trigger === '@ERP.Front.Helpers.Enums.Common.FormTriggers.Insert') {
+
+                toastr.success(response.customRestResult.message);
+
+                setTimeout(function () {
+                    window.location.href = $PrefixHostName + '/ScDeliveryOtherAids';
+                }, 200);
+
+            }
+            else if (response.customRestResult.trigger === '@ERP.Front.Helpers.Enums.Common.FormTriggers.Update') {
+
+                toastr.success(response.customRestResult.message);
+
+                setTimeout(function () {
+                    window.location.href = $PrefixHostName + '/ScDeliveryOtherAids';
+                }, 200);
+
+            }
+            else {
+                toastr.error(response.customRestResult.message);
+            }
+
+        } else {
+                toastr.error(response.error.message);
+        }
+
+    };
+
+    var OnComplete = function (response) {
+        downBtnLoader();
+    };
+
+    var OnFailure = function (response) {
+        toastr.error(response);
+        downBtnLoader();
+    };
+
+    const LoadDataGrid = function () {
+
+        const params = {
+            OperationNumber: $('#searchBox #OperationNumber').val(),
+            OperationDate: $('#searchBox #OperationDate').val(),
+            StatusLkpId: $('#searchBox #StatusLkpId').find(':selected').val(),
+            CommitteeId: $('#searchBox #CommitteeId').find(':selected').val()
+        };
+
+        const columns = [
+            {
+                "data": "result.data.id",
+                'render': function (data, type, row, meta) {
+                    return meta.row + meta.settings._iDisplayStart + 1;
+                }
+            },
+            {
+                "data": "OperationNumber",
+                "name": "OperationNumber",
+                "autoWidth": true
+            },
+             {
+                "data": "OperationDate",
+                "name": "OperationDate",
+                "autoWidth": true
+            },
+            {
+                "data": null,
+                "autoWidth": true,
+                "render": function (d, t, row) {
+                    return row.ScCommittee ? row.ScCommittee.CommitteeName : '';
+                }
+            },
+            {
+                "data": null,
+                "autoWidth": true,
+                "render": function (d, t, row) {
+                    return row.FndStatusLkp ? (lang === 'ar-EG' ? row.FndStatusLkp.NameAr : row.FndStatusLkp.NameEn) : '';
+                }
+            },
+            {
+                "data": null,
+                "sortable": false,
+                "render": function (data, type, row) {
+
+                    let formAction = `${$PrefixHostName}/${_mainController}/@nameof(ScDeliveryOtherAidsController.ScDeliveryOtherAidsForm)`;
+                    let DeleteAction = `${$PrefixHostName}/${_mainController}/@nameof(ScDeliveryOtherAidsController.Delete)`;
+
+                    let formTitle = '@ERP.ResourcePack.AidModule.ScCommitteesCheck.ScDeliveryOtherAids';
+                    let btns = '';
+
+                    if (_permissions.includes(_postPermission) & row.StatusLkpId != _postStatus) {
+                         btns += `<a href="javascript:void(0)" onclick="PostAjax(${row.Id})" title="@ERP.ResourcePack.Common.Settings.Post"><i class="mx-2 fas fa-check-circle text-info"></i></a>`;
+                    }
+
+                    if (_permissions.includes(_updatePermission) && row.StatusLkpId != _postStatus) {
+                        btns += `<a href="${$PrefixHostName}/ScDeliveryOtherAids/FormView?id=${row.EncId}&t=@encUpdateTrigger" title="@ERP.ResourcePack.Common.Settings.Edit"><i class="mx-2 fas fa-edit text-info"></i></a>`;
+                    }
+
+                    btns += `<a href="${$PrefixHostName}/ScDeliveryOtherAids/FormView?id=${row.EncId}&t=@encShowTrigger" title="@ERP.ResourcePack.Common.Settings.Show"><i class="mx-2 fas fa-eye text-info"></i></a>`;
+
+                    if (_permissions.includes(_deletePermission) && row.StatusLkpId != _postStatus)
+                    {
+                        btns += `<a href="javascript:void(0)" onclick="AjaxController.DeleteMainTableRow(${row.Id},'${DeleteAction}');" title="@ERP.ResourcePack.Common.Settings.Delete"><i class="mx-2 fas fa-trash-alt text-danger"></i></a>`;
+                    }
+
+                    const _auditedPermission = '@PermissionNames.Pages_ScDeliveryOtherAids_Audit';
+
+                    if (_permissions.includes(_auditedPermission)) {
+
+                        row.permission = _auditedPermission;
+
+                        btns += GetAuditedButton(row);
+                    }
+
+                    return btns;
+                }
+            }
+        ];
+
+        const dtObj = {
+            "processing": true,
+            "serverSide": true,
+            "filter": false,
+            "orderMulti": false,
+            "language": dataTableLang,
+            "ajax": {
+                "url": _loadDataUrl,
+                "type": "POST",
+                "datatype": "json",
+                "data": params,
+                "complete": function () { }
+            },
+            "columns": columns,
+            "initComplete": function () {
+                $('[data-toggle="tooltip"]').tooltip();
+            }
+
+        };
+
+        _tblSelector.dataTable().fnDestroy();
+        _tblSelector.DataTable(dtObj).on('draw', function () { $('[data-toggle="tooltip"]').tooltip(); });
+
+        setTimeout(function () {
+            $(".sorting_1").removeAttr('colspan');
+        }, 500);
+    };
+
+    $('#btnSubmition').on('click', function () {
+
+        if ($('#mainForm').valid()) {
+
+            $(this).prop('disabled', true);
+
+            $('#submitLoader').show();
+
+            $('#mainForm').submit();
+
+        } else {
+            $(this).prop('disabled', false);
+
+            $('#submitLoader').hide();
+        }
+
+    });
+
+    $('#searchBox #StatusLkpId').select2(ReturnSelect2ObjectForLkpsTypes('@ERP.Front.Helpers.Enums.Common.FndLkpsTypes.ScDeliveryOtherAidsStatues.ToString()'));
+    $('#CommitteeId').select2(ReturnSelect2ObjectDefault(`${baseUrl}/ScCommittee/GetScCommitteeForChecksSelect2`));
+
+</script>
+
+<script>
+
+    const LoadData = function () {
+
+        if ($('#MaturityDate').val()) {
+
+            requestCommitteeData($('#CommitteeId').find(':selected').val(), $('#MaturityDate').val());
+
+        } else {
+            toastr.warning('@ScCommitteesCheck.MaturityDate : @ERP.ResourcePack.Common.Settings.Required');
+        }
+
+    };
+
+    const requestCommitteeData = function (id, maturityDate) {
+
+        $('.page-loader-wrapper').css("display", "block");
+
+        $.ajax({
+            url: `${baseUrl}/ScDeliveryOtherAids/GetScDeliveryOtherAidDetailsData`,
+            method: 'GET',
+            data: {
+                committeeId: id,
+                maturityDate: maturityDate
+            },
+            headers: {  'Authorization': `Bearer ${$_token}` }
+        }).done(function (response) {
+
+            const data = response.result;
+
+            if (!primaryEntityKeyId) {
+                _ScDeliveryOtherAidsDetail = [];
+            }
+
+            if (data.length === 0) {
+                _listScDeliveryOtherAidsDetail.val('');
+                _ScDeliveryOtherAidsDetail = [];
+                bindScDeliveryOtherAidsDetailTable();
+            }
+
+            $.each(data, function (i, item) {
+
+                 const current = {
+                     index: ++tblCounterIndex,
+                     idNumber: item.idNumber,
+                     name: item.name,
+                     cashingTo: item.cashingTo,
+                     aidAmountAr: item.aidAmountAr,
+                     aidAmountEn: item.aidAmountEn,
+                     committeeDetailsId: item.committeeDetailsId,
+                     scPortalRequestMgrDecisionId: item.scPortalRequestMgrDecisionId,
+                     rowStatus:  NewStatus,
+                     id: 0
+                 };
+
+                AddScDeliveryOtherAidsDetail(current);
+
+            });
+
+            $('.page-loader-wrapper').css("display", "none");
+
+        }).fail(function (response) {
+            $('.page-loader-wrapper').css("display", "none");
+            toastr.error(response.responseText);
+        });
+
+    };
+
+</script>
+
+<script>
+
+    let _ScDeliveryOtherAidsDetail = [], updatedRow, tblCounterIndex = 0 ;
+
+    const _tblScDeliveryOtherAidsDetailSelector = $('#tblScDeliveryOtherAidsDetail');
+    const _listScDeliveryOtherAidsDetail = $('#ListOtherAidDetailsStr');
+
+    const AddScDeliveryOtherAidsDetail = function (current) {
+
+        if (current === undefined) return;
+
+            _ScDeliveryOtherAidsDetail.push(current);
+
+            _listScDeliveryOtherAidsDetail.val(JSON.stringify(_ScDeliveryOtherAidsDetail));
+
+            bindScDeliveryOtherAidsDetailTable();
+    };
+
+    const bindScDeliveryOtherAidsDetailTable = function () {
+
+        const detailArr = _ScDeliveryOtherAidsDetail.filter(z => z.rowStatus !== DeletedStatus);
+
+        const columns = [
+                { 'data': 'index'  },
+                { 'data': 'idNumber'  },
+                { 'data': 'name'  },
+                { 'data': 'cashingTo'  },
+                { 'data': lang === 'ar-EG' ? 'aidAmountAr' : 'aidAmountEn'  },
+                {
+                    'data': null,
+                    'searchable': false,
+                    'ordering': false,
+                    'sorting':false,
+                    'render': function (d, t, row) {
+
+                        let rows = '';
+
+                        if (primaryEntityKeyId === 0 || trigger !== '@ERP.Front.Helpers.Enums.Common.FormTriggers.Show.ToString()') {
+
+                            rows += `<td><a href="javascript:void(0)" onclick="return DeleteScDeliveryOtherAidsDetail(${row.index})"><i class="mx-2 fas fa-trash-alt text-danger"></i></a></td>`;
+                        }
+                        else {
+                            rows += '<td></td>';
+                        }
+
+                        return rows;
+                    }
+                }
+        ];
+
+        const dtObj = {
+                data: detailArr,
+                retrieve: true,
+                language: dataTableLang,
+                columns: columns,
+                drawCallback: function (c,v,b) { }
+        };
+
+        setTimeout(function () {
+
+            _tblScDeliveryOtherAidsDetailSelector.dataTable().fnDestroy();
+            _tblScDeliveryOtherAidsDetailSelector.DataTable(dtObj).on('draw', function () { $('[data-toggle="tooltip"]').tooltip(); });
+
+        }, 100);
+
+    };
+
+    const DeleteScDeliveryOtherAidsDetail = function (index)  {
+
+        const current = _ScDeliveryOtherAidsDetail.find(z => z.index === index);
+
+        const indexOfCurrent = _ScDeliveryOtherAidsDetail.indexOf(current);
+
+        if (!current.id) {
+
+           _ScDeliveryOtherAidsDetail.splice(indexOfCurrent, 1);
+
+        } else {
+
+            current.rowStatus = DeletedStatus;
+
+           _ScDeliveryOtherAidsDetail.splice(indexOfCurrent, 1,current);
+        }
+
+        bindScDeliveryOtherAidsDetailTable();
+
+        _listScDeliveryOtherAidsDetail.val(_ScDeliveryOtherAidsDetail.length === 0 ? '' : JSON.stringify(_ScDeliveryOtherAidsDetail));
+
+    };
+
+    const LoadScDeliveryOtherAidsDetailData = function () {
+
+        $.ajax({
+            url: `${baseUrl}/ScDeliveryOtherAids/GetScDeliveryOtherAidDetailsDetail`,
+            method: 'GET',
+            headers: { 'Authorization': `Bearer ${$_token}`  },
+            data: { scDeliveryOtherAidsId: primaryEntityKeyId    }
+        }).done(function (data) {
+
+            $.each(data.result, function (i, item) {
+
+                tblCounterIndex = 0;
+
+                 const current = {
+                     index: ++tblCounterIndex,
+                     idNumber: item.idNumber,
+                     name: item.name,
+                     aidAmountAr: item.aidAmountAr,
+                     cashingTo: item.cashingTo,
+                     aidAmountEn: item.aidAmountEn,
+                     committeeDetailsId: item.committeeDetailsId,
+                     scPortalRequestMgrDecisionId: item.scPortalRequestMgrDecisionId,
+                     rowStatus: item.rowStatus,
+                     id: item.id
+                 };
+
+                AddScDeliveryOtherAidsDetail(current);
+            });
+        });
+    };
+
+</script>

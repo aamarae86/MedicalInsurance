@@ -1,0 +1,214 @@
+﻿@using ERP.Web.UI.Models.ViewModels.CharityBoxes
+@model TmCharityBoxCollectVM
+@{
+    ViewBag.Title = ERP.ResourcePack.CharityBoxes.TmCharityBoxCollect.Title;
+    string formTrigger = ViewBag.trigger;
+    string lang = Request.Cookies["Lang"] == null ? "ar-EG" : Request.Cookies["Lang"].Value.ToString();
+    string lkpKeyDdl = lang == "ar-EG" ? nameof(ERP.Web.UI.Models.ViewModels.General.FndLookupValuesVM.NameAr) : nameof(ERP.Web.UI.Models.ViewModels.General.FndLookupValuesVM.NameEn);
+    string lkpBankKeyDdl = lang == "ar-EG" ? nameof(ERP.Web.UI.Models.ViewModels.Accounts.ApBankAccountsVM.BankAccountNameAr) : nameof(ERP.Web.UI.Models.ViewModels.Accounts.ApBankAccountsVM.BankAccountNameEn);
+    bool isFormDetail = Model != null && formTrigger == ERP.Front.Helpers.Enums.Common.FormTriggers.Show.ToString();
+}
+
+<div class="card">
+    <div class="body">
+        <div class="header">
+            <h2><strong>@ERP.ResourcePack.Accounts.GlJeHeaders.MasterData</strong></h2>
+        </div>
+        @using (Ajax.BeginForm(nameof(ERP.Web.UI.Controllers.CharityBoxes.TmCharityBoxCollectController.PostTmCharityBoxCollect), "TmCharityBoxCollect", new AjaxOptions { HttpMethod = "POST", OnBegin = "OnBegin", OnSuccess = "OnSuccess", OnComplete = "OnComplete", OnFailure = "OnFailure" }, new { @id = "mainForm" }))
+        {
+            @Html.HiddenFor(z => z.Id)
+            @Html.HiddenFor(z => z.CharityBoxCollectMembersListStr)
+            @Html.HiddenFor(z => z.CharityBoxCollectDetailsListStr)
+
+            <div class="row clearfix">
+                <div class="col-sm-3">
+                    <div class="form-group form-float">
+                        <div class="form-line">
+                            @Html.TextBoxFor(z => z.CollectNumber, getHtmlAttributes(true, "form-control", string.Empty))
+                            @Html.LabelFor(z => z.CollectNumber, new { @class = "form-label" })
+                        </div>
+                    </div>
+                </div>
+                <div class="col-sm-3">
+                    @Html.LabelFor(z => z.BankAccountId, new { @class = "form-label" })
+                    <div class="form-group form-float">
+                        <div class="">
+                            @if (Model != null && Model.ApBankAccounts != null)
+                            {
+                                var list = new List<ERP.Web.UI.Models.ViewModels.Accounts.ApBankAccountsVM> { new ERP.Web.UI.Models.ViewModels.Accounts.ApBankAccountsVM { Id = (long)Model.BankAccountId, BankAccountNameAr = Model.ApBankAccounts.BankAccountNameAr, BankAccountNameEn = Model.ApBankAccounts.BankAccountNameEn } };
+                                var selectList = new SelectList(list, "Id", lkpBankKeyDdl, Model.BankAccountId);
+
+                                @Html.DropDownListFor(z => z.BankAccountId, selectList, getHtmlAttributes(isFormDetail, "form-control", string.Empty))
+                            }
+                            else if (formTrigger == ERP.Front.Helpers.Enums.Common.FormTriggers.Insert.ToString())
+                            {
+                                @Html.DropDownListFor(z => z.BankAccountId, Enumerable.Empty<SelectListItem>(), new { @class = "form-control" })
+                            }
+                            else
+                            {
+                                @Html.DropDownListFor(z => z.BankAccountId, Enumerable.Empty<SelectListItem>(), new { @class = "form-control" })
+                            }
+                        </div>
+                    </div>
+                </div>
+                <div class="col-sm-3">
+                    <div class="form-group form-float">
+                        <div class="form-line">
+                            @Html.TextBoxFor(z => z.CollectDate, getHtmlAttributes(isFormDetail, "form-control", "datepicker"))
+                            @Html.LabelFor(z => z.CollectDate, new { @class = "form-label" })
+                        </div>
+                        @Html.ValidationMessageFor(z => z.CollectDate)
+                    </div>
+                </div>
+                <div class="col-sm-3">
+                    <div class="form-group form-float">
+                        <div class="form-line">
+                            @if (Model == null || Model.FndStatusLookup == null)
+                            {
+                                @Html.TextBoxFor(z => z.Status, getHtmlAttributes(true, "form-control", string.Empty))
+                                @Html.LabelFor(z => z.StatusLkpId, new { @class = "form-label" })
+                            }
+                            else if (lang == "ar-EG")
+                            {
+                                @Html.TextBoxFor(z => z.FndStatusLookup.NameAr, getHtmlAttributes(true, "form-control", string.Empty))
+                                @Html.LabelFor(z => z.StatusLkpId, new { @class = "form-label" })
+                            }
+                            else
+                            {
+                                @Html.TextBoxFor(z => z.FndStatusLookup.NameEn, getHtmlAttributes(true, "form-control", string.Empty))
+                                @Html.LabelFor(z => z.StatusLkpId, new { @class = "form-label" })
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row clearfix">
+                <div class="col-md-10">
+                    <div class="form-group form-float">
+                        <div class="form-line">
+                            @Html.TextAreaFor(z => z.Notes, getHtmlAttributes(isFormDetail, "form-control", string.Empty))
+                            @Html.LabelFor(z => z.Notes, new { @class = "form-label" })
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-2">
+                    <div class="form-group form-float">
+                        <div class="form-line">
+                            @Html.TextBoxFor(z => z.Total, getHtmlAttributes(true, "form-control", string.Empty))
+                            @Html.LabelFor(z => z.Total, new { @class = "form-label" })
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="header">
+                <h2><strong>@ERP.ResourcePack.CharityBoxes.TmCharityBoxCollect.CoinsCategory</strong></h2>
+            </div>
+            <div class="row clearfix">
+                <div class="col-sm-2">
+                    <div class="form-group form-float">
+                        <div class="form-line">
+                            @Html.TextBoxFor(z => z.Value25F, getHtmlAttributes(isFormDetail, "form-control", string.Empty))
+                            @Html.LabelFor(z => z.Value25F, new { @class = "form-label" })
+                        </div>
+                    </div>
+                </div>
+                <div class="col-sm-2">
+                    <div class="form-group form-float">
+                        <div class="form-line">
+                            @Html.TextBoxFor(z => z.Value50F, getHtmlAttributes(isFormDetail, "form-control", string.Empty))
+                            @Html.LabelFor(z => z.Value50F, new { @class = "form-label" })
+                        </div>
+                    </div>
+                </div>
+                <div class="col-sm-2">
+                    <div class="form-group form-float">
+                        <div class="form-line">
+                            @Html.TextBoxFor(z => z.Value1Dh, getHtmlAttributes(isFormDetail, "form-control", string.Empty))
+                            @Html.LabelFor(z => z.Value1Dh, new { @class = "form-label" })
+                        </div>
+                    </div>
+                </div>
+                <div class="col-sm-2">
+                    <div class="form-group form-float">
+                        <div class="form-line">
+                            @Html.TextBoxFor(z => z.Value5Dh, getHtmlAttributes(isFormDetail, "form-control", string.Empty))
+                            @Html.LabelFor(z => z.Value5Dh, new { @class = "form-label" })
+                        </div>
+                    </div>
+                </div>
+                <div class="col-sm-4">
+                    <div class="form-group form-float">
+                        <div class="form-line">
+                            @Html.TextBoxFor(z => z.Value10Dh, getHtmlAttributes(isFormDetail, "form-control", string.Empty))
+                            @Html.LabelFor(z => z.Value10Dh, new { @class = "form-label" })
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row clearfix">
+                <div class="col-sm-2">
+                    <div class="form-group form-float">
+                        <div class="form-line">
+                            @Html.TextBoxFor(z => z.Value20Dh, getHtmlAttributes(isFormDetail, "form-control", string.Empty))
+                            @Html.LabelFor(z => z.Value20Dh, new { @class = "form-label" })
+                        </div>
+                    </div>
+                </div>
+                <div class="col-sm-2">
+                    <div class="form-group form-float">
+                        <div class="form-line">
+                            @Html.TextBoxFor(z => z.Value50Dh, getHtmlAttributes(isFormDetail, "form-control", string.Empty))
+                            @Html.LabelFor(z => z.Value50Dh, new { @class = "form-label" })
+                        </div>
+                    </div>
+                </div>
+                <div class="col-sm-2">
+                    <div class="form-group form-float">
+                        <div class="form-line">
+                            @Html.TextBoxFor(z => z.Value100Dh, getHtmlAttributes(isFormDetail, "form-control", string.Empty))
+                            @Html.LabelFor(z => z.Value100Dh, new { @class = "form-label" })
+                        </div>
+                    </div>
+                </div>
+                <div class="col-sm-2">
+                    <div class="form-group form-float">
+                        <div class="form-line">
+                            @Html.TextBoxFor(z => z.Value200Dh, getHtmlAttributes(isFormDetail, "form-control", string.Empty))
+                            @Html.LabelFor(z => z.Value200Dh, new { @class = "form-label" })
+                        </div>
+                    </div>
+                </div>
+                <div class="col-sm-2">
+                    <div class="form-group form-float">
+                        <div class="form-line">
+                            @Html.TextBoxFor(z => z.Value500Dh, getHtmlAttributes(isFormDetail, "form-control", string.Empty))
+                            @Html.LabelFor(z => z.Value500Dh, new { @class = "form-label" })
+                        </div>
+                    </div>
+                </div>
+                <div class="col-sm-2">
+                    <div class="form-group form-float">
+                        <div class="form-line">
+                            @Html.TextBoxFor(z => z.Value1000Dh, getHtmlAttributes(isFormDetail, "form-control", string.Empty))
+                            @Html.LabelFor(z => z.Value1000Dh, new { @class = "form-label" })
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        }
+
+    </div>
+</div>
+
+@functions {
+    object getHtmlAttributes(bool Disabled, string CssClass, string CssClass2)
+    {
+        if (Disabled)
+        {
+            return new { @class = CssClass, Disabled = Disabled };
+        }
+        return new { @class = $"{CssClass} {CssClass2}" };
+    }
+}
+

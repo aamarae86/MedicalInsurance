@@ -1,0 +1,11 @@
+﻿@{
+    ViewBag.Title = ERP.ResourcePack.PmPropertiesModule.FmEngineers.Title;
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@Html.Action(nameof(ERP.Web.UI.Controllers.PmPropertiesModule.FmEngineersController.FmEngineersSearch))
+@Html.Action(nameof(ERP.Web.UI.Controllers.PmPropertiesModule.FmEngineersController.FmEngineersData))
+
+@section scripts{
+    @Html.Partial("~/ViewsScripts/_PmPropertiesModule/FmEngineers/FmEngineersScripts.cshtml")
+}

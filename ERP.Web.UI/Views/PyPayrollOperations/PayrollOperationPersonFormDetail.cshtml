@@ -1,0 +1,92 @@
+﻿@using ERP.Web.UI.Models.ViewModels.HR
+@model PyPayrollOperationsVM
+@{
+    string lang = Request.Cookies["Lang"] == null ? "ar-EG" : Request.Cookies["Lang"].Value.ToString();
+}
+<div class="card">
+    <div class="header d-flex justify-content-start align-items-center">
+        <i class="fas fa-2x fa-chevron-down down-arr mr-2" data-toggle="collapse" data-target="#masterData"></i>
+        <h2><strong>@ERP.ResourcePack.HR.PyPayrollOperations.PayRollPersons</strong></h2>
+    </div>
+    <div class="body collapse show" id="masterData">
+        <div class="row clearfix">
+            <div class="col-md-4">
+                <div class="form-group form-float">
+                    <div class="form-line">
+                        @Html.TextBoxFor(z => z.OperationNumber, new { @disabled = true, @class = "from-control" })
+                        @Html.LabelFor(z => z.OperationNumber, new { @class = "form-label" })
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="form-group form-float">
+                    <div class="form-line">
+                        @Html.TextBoxFor(z => z.OperationDate, new { @disabled = true, @class = "form-control" })
+                        @Html.LabelFor(z => z.OperationDate, new { @class = "form-label" })
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="form-group form-float">
+                    <div class="form-line">
+                        @Html.TextBoxFor(z => z.PyPayrollTypes.PyPayrollTypeName, new { @disabled = true, @class = "form-control" })
+                        @Html.LabelFor(z => z.PyPayrollTypeId, new { @class = "form-label" })
+                    </div>
+                </div>
+            </div>
+
+        </div>
+        <div class="row clearfix">
+            <div class="col-md-4">
+                <div class="form-group form-float">
+                    <div class="form-line">
+                        @if (lang == "ar-EG")
+                        {
+                            @Html.TextBoxFor(z => z.Periods.periodNameAr, new { @disabled = true, @class = "form-control" })
+                        }
+                        else
+                        {
+                            @Html.TextBoxFor(z => z.Periods.periodNameEn, new { @disabled = true, @class = "form-control" })
+                        }
+                        @Html.LabelFor(z => z.PeriodId, new { @class = "form-label" })
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="form-group form-float">
+                    <div class="form-line">
+                        @Html.TextBoxFor(z => z.StartDate, new { @class = "form-control", @disabled = true, Value = Model?.Periods?.StartDate?.Split('T')[0] ?? string.Empty })
+                        @Html.LabelFor(z => z.StartDate, new { @class = "form-label" })
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="form-group form-float">
+                    <div class="form-line">
+                        @Html.TextBoxFor(z => z.EndDate, new { @class = "form-control", @disabled = true, Value = Model?.Periods?.EndDate?.Split('T')[0] ?? string.Empty })
+                        @Html.LabelFor(z => z.EndDate, new { @class = "form-label" })
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row clearfix">
+            <div class="col-md-10">
+                <div class="form-group form-float">
+                    <div class="form-line">
+                        @Html.TextAreaFor(z => z.Notes, new { @disabled = true, @class = "form-control" })
+                        @Html.LabelFor(z => z.Notes, new { @class = "form-label" })
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-2">
+                <div class="form-group form-float">
+                    <div class="form-line">
+                        @Html.TextBoxFor(z => z.PayrollTotalValue, new { @disabled = true, @class = "from-control" })
+                        @Html.LabelFor(z => z.PayrollTotalValue, new { @class = "form-label" })
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

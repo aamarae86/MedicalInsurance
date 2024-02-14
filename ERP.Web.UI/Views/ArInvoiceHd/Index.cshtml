@@ -1,0 +1,13 @@
+﻿@{
+    ViewBag.Title = ERP.ResourcePack.Accounts.ArCustomers.ArInvoiceHd;
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@Html.Action(nameof(ERP.Web.UI.Controllers.Accounts.ArInvoiceHdController.ArInvoiceHdSearch))
+@Html.Action(nameof(ERP.Web.UI.Controllers.Accounts.ArInvoiceHdController.ArInvoiceHdData))
+@Html.Partial("_ReportModal")
+
+@section scripts{
+    <script>let formView = false;</script>
+    @Html.Partial("~/ViewsScripts/ArInvoiceHd/ArInvoiceHdScripts.cshtml")
+}

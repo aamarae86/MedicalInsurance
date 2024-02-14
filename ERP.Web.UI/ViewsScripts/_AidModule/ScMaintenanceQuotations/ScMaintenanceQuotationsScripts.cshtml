@@ -1,0 +1,508 @@
+﻿@using ERP.Web.UI.Controllers.AidModule
+@using ERP.Web.UI.Models.ViewModels.AidModule
+@using ERP.ResourcePack.AidModule
+@using ERP.Authorization;
+@{
+    string permissionsStr = TempData["Permissions"].ToString();
+    string encUpdateTrigger = ERP.Front.Helpers.Enums.Common.EncUpdate;
+    string encShowTrigger = ERP.Front.Helpers.Enums.Common.EncShow;
+}
+
+@if (permissionsStr.Contains(PermissionNames.Pages_ScMaintenanceQuotations_Post))
+{
+    <script>
+        const PostAjax = function (id) {
+
+            bootbox.confirm({
+                message: _booBoxMessagePosting,
+                buttons: bootBoxDefaultBtns,
+                callback: function (result) {
+
+                    if (result) {
+
+                        const data = {
+                            id: id,
+                            lang: lang,
+                            userId: 0
+                        };
+
+                        $.ajax({
+                            url: `${baseUrl}/ScMaintenanceQuotations/PostScMaintenanceQuotations`,
+                            type: 'POST',
+                            data: JSON.stringify(data),
+                            headers:
+                            {
+                                'Content-Type': 'application/json',
+                                'Authorization': `Bearer ${$_token}`
+                            },
+                        }).done(function (response) {
+
+                            if (response.result.finalStatues == 'F') {
+                                toastr.warning(response.result.reason);
+                            }
+                            else {
+                                toastr.success(response.result.reason);
+
+                                if (formView) {
+
+                                    setTimeout(function () {
+                                        window.location.href = $PrefixHostName + '/ScMaintenanceQuotations';
+                                    }, 100);
+
+                                } else {
+                                    LoadDataGrid();
+                                }
+                            }
+                        }).fail(function (response) {
+                            toastr.error(response);
+                        });
+                    }
+                }
+            });
+        };
+    </script>
+}
+else
+{
+    <script>
+        const PostAjax = function (id) { };
+    </script>
+}
+
+<script>
+    $(function () {
+
+        $('.datepicker').on('change', function (e, date) {
+            $(this).siblings('label').focus();
+        });
+
+        $('#ScMaintenanceQuotations').addClass('active');
+
+        LoadDataGrid();
+    });
+
+    const _mainController = "ScMaintenanceQuotations", _apiAppService = "ScMaintenanceQuotations";
+    const _loadDataUrl = `${$PrefixHostName}/${_mainController}/@nameof(ScMaintenanceQuotationsController.LoadDataGrid)`;
+    const _tblSelector = $('#tblScMaintenanceQuotations');
+    const _mainForm = $('#mainForm');
+
+    const _permissions = '@permissionsStr';
+    const _updatePermission = '@PermissionNames.Pages_ScMaintenanceQuotations_Update';
+    const _deletePermission = '@PermissionNames.Pages_ScMaintenanceQuotations_Delete';
+    const _postPermission = '@PermissionNames.Pages_ScMaintenanceQuotations_Post';
+    const _PostStatus = @Convert.ToInt64(ERP.Front.Helpers.Enums.Common.ScMaintenanceQuotationStatus.Posted);
+    const _NewStatus = @Convert.ToInt64(ERP.Front.Helpers.Enums.Common.ScMaintenanceQuotationStatus.New);
+
+    $('#btnSubmition').on('click', function () {
+
+        _mainForm.submit();
+
+        if (_mainForm.valid()) {
+
+            $(this).prop('disabled',true);
+
+        } else {
+
+            $(this).prop('disabled', false);
+        }
+
+    });
+
+    var OnBegin = function (response) {
+        fireBtnLoader();
+    };
+
+    var OnSuccess = function (response) {
+
+        if (response.success) {
+
+            if (response.customRestResult.trigger === '@ERP.Front.Helpers.Enums.Common.FormTriggers.Insert') {
+
+                toastr.success(response.customRestResult.message);
+
+                setTimeout(function () {
+                    window.location.href = $PrefixHostName + '/ScMaintenanceQuotations';
+                }, 200);
+
+
+            } else if (response.customRestResult.trigger === '@ERP.Front.Helpers.Enums.Common.FormTriggers.Update') {
+
+
+                toastr.success(response.customRestResult.message);
+
+                setTimeout(function () {
+                    window.location.href = $PrefixHostName + '/ScMaintenanceQuotations';
+                }, 200);
+            }
+
+        } else {
+            toastr.error(response.customRestResult.message);
+        }
+
+        $('#btnSubmition').prop('disabled', false);
+    };
+
+    var OnComplete = function (response) {
+        downBtnLoader();
+        $('#btnSubmition').prop('disabled', false);
+    };
+
+    var OnFailure = function (response) {
+        toastr.error(response);
+        $('#btnSubmition').prop('disabled', false);
+    };
+
+   const LoadDataGrid = function () {
+
+        const parms = {
+            QuotationDate: $('#searchBox #QuotationDate').val(),
+            QuotationNumber: $('#searchBox #QuotationNumber').val(),
+            PortalRequestNumber: $('#searchBox #PortalRequestNumber').val(),
+            StatusLkpId: $('#searchBox #StatusLkpId').find(':selected').val(),
+            PortalUserId: $('#searchBox #PortalUserName').find(':selected').val(),
+            VendorId: $('#searchBox #VendorId').find(':selected').val()
+        };
+
+       const columns = [
+           {
+               "data": "result.data.id",
+               'render': function (data, type, row, meta) {
+                   return meta.row + meta.settings._iDisplayStart + 1;
+               }
+           },
+           {
+               "data": "QuotationNumber",
+               "name": "QuotationNumber",
+               "autoWidth": true
+           },
+           {
+               "data": "PortalUserName",
+               "autoWidth": true
+           },
+           {
+               "data": "QuotationDate",
+               "name": "QuotationDate",
+               "autoWidth": true
+           },
+           {
+               "data": null,
+               "autoWidth": true,
+               "render": function (data, type, row) {
+                   return row.ScMaintenanceTechnicalReport.TechnicalReportNumber;
+               }
+           },
+           {
+               "data": null,
+               "autoWidth": true,
+               "render": function (data, type, row) {
+                   return lang === 'ar-EG' ? row.ApVendors.VendorNameAr : row.ApVendors.VendorNameEn;
+               }
+           },
+           {
+               "data": null,
+               "autoWidth": true,
+               "render": function (data, type, row) {
+                   return lang === 'ar-EG' ? row.FndStatusLkp.NameAr : row.FndStatusLkp.NameEn
+               }
+           },
+           {
+               "data": null,
+               "sortable": false,
+               "render": function (data, type, row) {
+
+                   let formAction = `${$PrefixHostName}/${_mainController}/@nameof(ScMaintenanceQuotationsController.ScMaintenanceQuotationsForm)`;
+                   let DeleteAction = `${$PrefixHostName}/${_mainController}/@nameof(ScMaintenanceQuotationsController.Delete)`;
+
+                   let btns = '';
+
+                   if (_permissions.includes(_postPermission) & row.StatusLkpId == _NewStatus) {
+                       btns += `<a href="javascript:void(0)" onclick="PostAjax(${row.Id})" title="@ERP.ResourcePack.Common.Settings.Post"><i class="mx-2 fas fa-check-circle text-info"></i></a>`;
+                   }
+
+                   if (_permissions.includes(_updatePermission) && row.StatusLkpId == _NewStatus) {
+                       btns += `<a href="${$PrefixHostName}/ScMaintenanceQuotations/FormView?id=${row.EncId}&t=@encUpdateTrigger" title="@ERP.ResourcePack.Common.Settings.Edit"><i class="mx-2 fas fa-edit text-info"></i></a>`;
+                   }
+
+                   btns += `<a href="${$PrefixHostName}/ScMaintenanceQuotations/FormView?id=${row.EncId}&t=@encShowTrigger" title="@ERP.ResourcePack.Common.Settings.Show"><i class="mx-2 fas fa-eye text-info"></i></a>`;
+
+                   if (_permissions.includes(_updatePermission) && row.StatusLkpId == _NewStatus) {
+                       btns += `<a href="javascript:void(0)" onclick="AjaxController.DeleteMainTableRow(${row.Id},'${DeleteAction}');" title="@ERP.ResourcePack.Common.Settings.Delete"><i class="mx-2 fas fa-trash-alt text-danger"></i></a>`;
+                   }
+
+                   const _auditedPermission = '@PermissionNames.Pages_ScMaintenanceQuotations_Audit';
+
+                   if (_permissions.includes(_auditedPermission)) {
+
+                       row.permission = _auditedPermission;
+
+                       btns += GetAuditedButton(row);
+                   }
+
+                   return btns;
+               }
+           }
+       ];
+
+        const dtObj = {
+            "processing": true,
+            "serverSide": true,
+            "filter": false,
+            "orderMulti": false,
+            "language": dataTableLang,
+            "ajax": {
+                "url": _loadDataUrl,
+                "type": "POST",
+                "datatype": "json",
+                "data": parms,
+                "complete": function () { }
+            },
+            "columns": columns,
+            "initComplete": function () {
+                $('[data-toggle="tooltip"]').tooltip();
+            }
+        };
+
+        _tblSelector.dataTable().fnDestroy();
+        _tblSelector.DataTable(dtObj).on('draw', function () { $('[data-toggle="tooltip"]').tooltip(); });
+
+        setTimeout(function () {
+            $(".sorting_1").removeAttr('colspan');
+        }, 500);
+
+    };
+
+    $('#searchBox #StatusLkpId').select2(ReturnSelect2ObjectForLkpsTypes('@ERP.Front.Helpers.Enums.Common.FndLkpsTypes.ScMaintenanceQuotationStatus.ToString()'));
+    $('#searchBox #VendorId').select2(ReturnSelect2ObjectDefault(`${baseUrl}/ApVendors/GetVendorsSelect2`));
+    $('#searchBox #PortalUserName').select2(ReturnSelect2ObjectDefault(`${baseUrl}/PortalUserData/GetUnifiedPortalUsersFromPortalUsersDataSelect2`));
+    $('#VendorId').select2(ReturnSelect2ObjectDefault(`${baseUrl}/ApVendors/GetVendorsSelect2`));
+    $('#ScMaintenanceTechnicalReportId').select2({
+        ajax: {
+            url: `${baseUrl}/ScMaintenanceTechnicalReport/GetScMaintenanceTechnicalReportSelect2`,
+            dataType: 'json',
+            headers: {
+                'Authorization': `Bearer ${$_token}`
+            },
+            data: function (params) {
+                params.page = params.page || 1;
+                return {
+                    pageSize: pageSize,
+                    pageNumber: params.page,
+                    searchTerm: params.term,
+                    lang: lang
+                };
+            },
+            processResults: function (data, params) {
+
+                params.page = params.page || 1;
+                return {
+                    results: data.result.results,
+                    pagination: {
+                        more: (params.page * pageSize) < data.result.total
+                    }
+                };
+            }
+        },
+        placeholder: select2Placeholder,
+        minimumInputLength: 0,
+        allowClear: true,
+        language: select2Lang,
+        templateSelection: function (data, container) {
+
+            if (data.altText) {
+                $('#PortalRequestNumber').val(data.altText.split('-')[0]);
+                $('#PortalUserName').val(data.altText.split('-')[1]);
+
+                $('#PortalRequestNumber').parent('.form-line').addClass('focused');
+                $('#PortalUserName').parent('.form-line').addClass('focused');
+            }
+
+            return data.text;
+        }
+    });
+
+    $('#ScMaintenanceTechnicalReportId').on('change', function () {
+
+        const currentVal = $(this).find(':selected').val();
+
+        if (currentVal) {
+
+            $.ajax({
+                url: `${baseUrl}/ScMaintenanceTechnicalReport/GetMaintenanceTechnicalReportDetailForMaintenanceQuotations`,
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${$_token}`
+                },
+                data: {
+                    id: currentVal
+                }
+            }).done(function (data) {
+
+                _MaintenanceQuotationDetailsArr = [...data.result];
+
+                tblDetailsCounterIndex = 0;
+
+                _MaintenanceQuotationDetailsArr.forEach(function (item, index) {
+                    item.scMaintenanceTechnicalReportDetailId = item.id;
+                    item.id = 0;
+                    item.index = ++tblDetailsCounterIndex;
+                    item.maintenanceTechnicalReportItemDescription = item.itemDescription;
+                    item.amount = 0.0;
+                });
+
+                BindScMaintenanceQuotationDetailsTable();
+
+                _ScMaintenanceQuotationDetailsListStr.val(JSON.stringify(_MaintenanceQuotationDetailsArr));
+            });
+        }
+
+    });
+
+</script>
+
+<script name="quotations-details">
+
+    const _tblScMaintenanceQuotationDetailselector = $('#tblScMaintenanceQuotationDetails');
+    const _ScMaintenanceQuotationDetailsListStr = $('#MaintenanceQuotationDetailsListStr');
+
+    let _MaintenanceQuotationDetailsArr = [], updatedDetailsRow, tblDetailsCounterIndex = 0;
+
+    const fillScMaintenanceQuotationDetails = function () {
+
+        const current = {
+            index: ++tblDetailsCounterIndex,
+            amount: $('#quotations-details #Amount').val(),
+            rowStatus: NewStatus
+        };
+
+        return current;
+    };
+
+    const BindScMaintenanceQuotationDetailsTable = function () {
+
+        const detailArr = _MaintenanceQuotationDetailsArr.filter(z => z.rowStatus !== DeletedStatus);
+
+        const columns = [
+            { 'data': 'index' },
+            { 'data': 'maintenanceTechnicalReportItemDescription' },
+            { 'data': 'amount' },
+            {
+                'data': null,
+                'searchable': false,
+                'ordering': false,
+                'sorting': false,
+                'render': function (d, t, row) {
+
+                    let rows = '';
+
+                    if (primaryEntityKeyId === 0 || trigger !== '@ERP.Front.Helpers.Enums.Common.FormTriggers.Show.ToString()') {
+
+                        rows += `<td><a href="javascript:void(0)" onclick="return GetMaintenanceQuotationDetailsRow(${row.index})"><i class="mx-2 fas fa-edit text-success"></i></a></td>`;
+                    }
+                    else {
+                        rows += '<td></td>';
+                    }
+
+                    return rows;
+                }
+            }
+        ];
+
+        const dtObj = {
+            data: detailArr,
+            retrieve: true,
+            language: dataTableLang,
+            columns: columns,
+            drawCallback: function (c, v, b) {
+                $('#tblScMaintenanceQuotationDetails tfoot th:eq(2)').html(detailArr.map(item => +item.amount.toString().replace(',', '')).reduce((x, y) => x + y, 0));
+            }
+        };
+
+        setTimeout(function () {
+
+            _tblScMaintenanceQuotationDetailselector.dataTable().fnDestroy();
+            _tblScMaintenanceQuotationDetailselector.DataTable(dtObj).on('draw', function () { $('[data-toggle="tooltip"]').tooltip(); });
+
+        }, 100);
+
+    };
+
+    const LoadScMaintenanceQuotationDetailsData = function () {
+
+        $.ajax({
+            url: `${baseUrl}/ScMaintenanceQuotations/GetAllScMaintenanceQuotationDetailsData`,
+            method: 'GET',
+            headers: {
+                        'Authorization': `Bearer ${$_token}`
+            },
+            data: {
+                id: primaryEntityKeyId
+            }
+        }).done(function (data) {
+
+            _MaintenanceQuotationDetailsArr = [...data.result];
+
+            tblDetailsCounterIndex = 0;
+
+            _MaintenanceQuotationDetailsArr.forEach(function (item, index) {
+                item.index = ++tblDetailsCounterIndex;
+            });
+
+            BindScMaintenanceQuotationDetailsTable();
+
+            _ScMaintenanceQuotationDetailsListStr.val(JSON.stringify(_MaintenanceQuotationDetailsArr));
+        });
+
+    };
+
+    const GetMaintenanceQuotationDetailsRow = function (tblIndex) {
+
+        $('#formMaintenanceDetails').fadeIn(100);
+
+        $('#btnUpdateScMaintenanceQuotationDetails').show();
+        $('#btnCancelScMaintenanceQuotationDetails').show();
+
+        const current = _MaintenanceQuotationDetailsArr.find(z => z.index === tblIndex);
+
+        $('#quotations-details #MaintenanceTechnicalReportItemDescription').val(current.maintenanceTechnicalReportItemDescription);
+        $('#quotations-details #Amount').val(current.amount);
+
+        $('#quotations-details #Amount').parent('.form-line').addClass('focused');
+        $('#quotations-details #MaintenanceTechnicalReportItemDescription').parent('.form-line').addClass('focused');
+
+        updatedDetailsRow = current;
+    };
+
+    const UpdateScMaintenanceQuotationDetailsRow = function () {
+
+        let current = _MaintenanceQuotationDetailsArr.find(z => z.index === updatedDetailsRow.index);
+
+        let indexOfCurrent = _MaintenanceQuotationDetailsArr.indexOf(current);
+
+       const newRow = fillScMaintenanceQuotationDetails();
+
+        if (!newRow) {
+             toastr.warning('!!');
+             return;
+        }
+
+        newRow.id = updatedDetailsRow.id;
+        newRow.index = current.index;
+        newRow.maintenanceTechnicalReportItemDescription = current.maintenanceTechnicalReportItemDescription;
+        newRow.scMaintenanceTechnicalReportDetailId = current.scMaintenanceTechnicalReportDetailId;
+        newRow.rowStatus = !updatedDetailsRow.id ? NewStatus : UpdatedStatus;
+
+        _MaintenanceQuotationDetailsArr.splice(indexOfCurrent, 1,newRow);
+
+        $('#btnUpdateScMaintenanceQuotationDetails').hide();
+        $('#btnCancelScMaintenanceQuotationDetails').hide();
+
+        ClearDetailForm('formMaintenanceDetails');
+
+        _ScMaintenanceQuotationDetailsListStr.val(JSON.stringify(_MaintenanceQuotationDetailsArr));
+
+        BindScMaintenanceQuotationDetailsTable();
+
+        $('#formMaintenanceDetails').fadeOut(100);
+    };
+
+</script>

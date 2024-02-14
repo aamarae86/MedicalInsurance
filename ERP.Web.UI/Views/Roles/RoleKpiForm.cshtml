@@ -1,0 +1,123 @@
+﻿@using ERP.Web.UI.Controllers.Authentications
+@using ERP.Web.UI.Models.ViewModels.Authentications
+
+@model RoleKpiVM
+@{
+    string roleId = ViewBag.roleId == null? "0": ViewBag.roleId;
+    string formTrigger = ViewBag.trigger;
+    string lang = Request.Cookies["Lang"] == null ? "ar-EG" : Request.Cookies["Lang"].Value.ToString();
+}
+<div class="card">
+    <div class="body">
+        @using (Ajax.BeginForm(
+            nameof(ERP.Web.UI.Controllers.Authentications.RolesController.PostRoleKpi), "Roles",
+            new AjaxOptions { HttpMethod = "POST", OnBegin = "OnBegin", OnSuccess = "OnSuccess", OnComplete = "OnComplete", OnFailure = "OnFailure" }, new { @id = "KpiForm" }))
+        {
+            @Html.HiddenFor(z => z.Id)
+            @Html.HiddenFor(z => z.AbpKpiRoleStr)
+            @Html.Hidden("RoleId", roleId )
+        <div class="row no-gutters clearfix">
+            @*<div class="col-sm-1">
+            </div>*@
+            <div class="col-sm-4">
+                @Html.Label(ERP.ResourcePack.Common.Menu.Modules, new { @class = "form-label" })
+                <div class="form-group form-float">
+                    <div>
+                        <select class="form-control" id="KpiModules">
+                        </select>
+                    </div>
+                </div>
+            </div>
+            @*<div class="col-sm-2">
+            </div>*@
+            <div class="col-sm-4">
+                @Html.Label(ERP.ResourcePack.Authentications.Roles.Kpis, new { @class = "form-label" })
+                <div class="form-group form-float">
+                    <div>
+                        <select class="form-control" id="Kpi">
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-sm-4">               
+                <label for="Charts" class="form-label">Charts</label>
+                <div class="form-group form-float">
+                    <div>
+                        <select class="form-control" id="Charts">
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+            <div class="row clearfix text-center">
+                <div class="col-sm-4"></div>
+                <div class="col-sm-4"></div>
+                <div class="col-sm-4">
+                    <div class="form-group m-2">
+                        <button type ="button" id="btnAddKpiDetailRow22222" onclick="return AddKpiDetails()" class="btn btn-success">@ERP.ResourcePack.Common.Settings.BtnAddNew</button>  @**@
+                    </div>
+                </div>
+            </div>
+            <div class="row no-gutters clearfix">
+                <div class="col-sm-12">
+                    <div class="card">
+                        <div class="table-responsive">
+                            <div id="tblLoader" style="display:none">
+                                <div class="lds-roller"><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div></div>
+                            </div>
+                            <table class="table table-bordered table-striped table-hover js-basic-example dataTable" id="tblKpi">
+                                <thead>
+                                    <tr>
+                                        <th><i class="fas fa-hashtag"></i></th>
+                                        <th><i class="fas fa-hashtag"></i>@ERP.ResourcePack.Authentications.Roles.Kpis</th>
+                                        <th><i class="fas fa-cogs"></i></th>
+                                    </tr>
+                                </thead>
+                                <tbody id="TableTestBody"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row clearfix">
+                <div class="form-group text-center form-float">
+                    <button type="submit" class="btn btn-info btn-lg m-l-15 waves-effect">@(Model == null ? ERP.ResourcePack.Common.Settings.BtnSave : ERP.ResourcePack.Common.Settings.BtnUpdate)</button>
+                    <div id="submitLoader" style="display:none">
+                        <div class="lds-roller"><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div></div>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+<script src="~/Scripts/jquery.validate.min.js"></script>
+<script src="~/Scripts/jquery.validate.unobtrusive.min.js"></script>
+<script src="~/AssetsPack/assets/js/pages/forms/basic-form-elements.js"></script>
+
+<script name="Kpi">
+
+    $('#KpiModules').select2(ReturnSelect2ObjectForLkpsTypes('@ERP.Front.Helpers.Enums.Common.FndLkpsTypes.KpiModules.ToString()'));
+    $('#Kpi').select2(ReturnSelect2ObjectForLkpsTypesWithParent('@ERP.Front.Helpers.Enums.Common.FndLkpsTypes.Kpi.ToString()', 'KpiModules'));
+
+    $('#Charts').select2(ReturnSelect2ObjectForLkpsTypesWithParent('Chart', 'KpiModules'));
+
+
+    $('#KpiModules').on('select2:select', function (e) {
+        LoadKpiDetailData();
+    });
+    $('#KpiModules').on('change', function (e) {
+        $("#Kpi").val('');
+        $("#Kpi").text('');
+
+        $('#Kpi').val(null).trigger('change');
+        $('#Charts').val(null).trigger('change');
+        LoadKpiDetailData();
+    });
+
+    $(function () {
+        LoadKpiDetailData();
+    });
+</script>

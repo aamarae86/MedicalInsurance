@@ -1,0 +1,379 @@
+﻿@using ERP.Authorization;
+@using ERP.Web.UI.Controllers.HR
+@using ERP.ResourcePack.HR
+@{
+    string permissionsStr = TempData["Permissions"].ToString();
+}
+@*@if (permissionsStr.Contains(PermissionNames.Pages_HrPersonVacations_Post))
+{
+    <script>
+        const PostAjax = function (id) {
+
+            bootbox.confirm({
+                message: _booBoxMessagePosting,
+                buttons: bootBoxDefaultBtns,
+                callback: function (result) {
+
+                    if (result) {
+
+                        const data = {
+                            id: id,
+                            lang: lang
+                        };
+
+                        $.ajax({
+                            url: `${baseUrl}/HrPersonVacations/PostHrPersonVacations`,
+                            type: 'POST',
+                            data: JSON.stringify(data),
+                            headers:
+                            {
+                                'Content-Type': 'application/json',
+                                'Authorization': `Bearer ${$_token}`
+                            },
+                        }).done(function (response) {
+
+                            if (response.result.finalStatues == 'F') {
+                                toastr.warning(response.result.reason);
+                            }
+                            else {
+                                toastr.success(response.result.reason);
+
+                                if (formView) {
+
+                                    setTimeout(function () {
+                                        window.location.href = $PrefixHostName + '/HrPersonVacations';
+                                    }, 100);
+
+                                } else {
+                                    LoadDataGrid();
+                                }
+                            }
+
+                        }).fail(function (response) {
+                            toastr.error(response.responseText);
+                        });
+                    }
+                }
+            });
+        };
+    </script>
+}
+else
+{
+    <script>
+        const PostAjax = function (id) { };
+    </script>
+}*@
+
+<script>
+
+    const _mainController = "HrPersonPermission"
+    @*const _newStatus = @Convert.ToInt64(ERP.Front.Helpers.Enums.Common.HrPersonPermissionStatues.New);*@
+
+    $(function () {
+        LoadDataGrid();
+        $('#tblHrPersonPermissionPrint thead').html($('#tblHrPersonPermission thead').html());
+        $('#tblHrPersonPermissionPrint thead tr :last-child').remove();
+        $('#HrPersonPermission').addClass('active');
+    });
+
+    const _loadDataUrl = `${$PrefixHostName}/${_mainController}/@nameof(HrPersonPermissionController.LoadDataGrid)`;
+    const _tblSelector = $('#tblHrPersonPermission');
+
+    const _permissions = '@permissionsStr';
+    const _updatePermission = '@PermissionNames.Pages_HrPersonPermission_Update';
+    const _deletePermission = '@PermissionNames.Pages_HrPersonPermission_Delete';
+    const _postPermission = '@PermissionNames.Pages_HrPersonPermission_Post';
+
+    var OnBegin = function (response) {
+      fireBtnLoader();
+    };
+
+    var OnSuccess = function (response) {
+
+        if (response.success) {
+
+            if (response.customRestResult.trigger === '@ERP.Front.Helpers.Enums.Common.FormTriggers.Insert') {
+
+                toastr.success(response.customRestResult.message);
+
+                LoadDataGrid();
+
+                _mainModal.modal('hide');
+
+            } else if (response.customRestResult.trigger === '@ERP.Front.Helpers.Enums.Common.FormTriggers.Update') {
+
+                LoadDataGrid();
+
+                _mainModal.modal('hide');
+
+                toastr.success(response.customRestResult.message);
+            }
+
+        } else {
+            toastr.error(response.customRestResult.message);
+        }
+
+    };
+
+    var OnComplete = function (response) {
+        downBtnLoader();
+    };
+
+    var OnFailure = function (response) {
+        toastr.error(response);
+        downBtnLoader();
+    };
+
+    const LoadDataGrid = function () {
+
+        const parms = {
+            OperationNumber: $('#OperationNumberSearch').val(),
+            HrPersonId: $('#HrPersonIdSearch').find(':selected').val(),
+            PermissionTypeId: $('#PermissionTypeIdSearch').find(':selected').val()
+          
+        };
+
+        const columns = [
+            {
+                "data": "result.data.id",
+                'render': function (data, type, row, meta) {
+                    return meta.row + meta.settings._iDisplayStart + 1;
+                }
+            },
+            {
+                "data": "OperationNumber",
+                "name": "OperationNumber",
+                "autoWidth": true
+            },
+            {
+                "data": "FromTime",
+                "name": "FromTime",
+                "autoWidth": true
+            },
+            {
+                "data": "EndTime",
+                "name": "EndTime",
+                "autoWidth": true
+            },
+            {
+                "data": "TotalPermission",
+                "name": "TotalPermission",
+                "autoWidth": true
+            },
+            {
+                "data": null,
+                "name": "HrPersonId",
+                "autoWidth": true,
+                "render": function (data, type, row) {
+                    return row.HrPersons.FullName;
+                }
+            },
+            {
+                "data": null,
+                "name": "PermissionTypeId",
+                "autoWidth": true,
+                "render": function (data, type, row) {
+                    return row.HrPermissionType.PermissionName;
+                }
+            },
+            {
+                "data": null,
+                "name": "StatusLkpId",
+                "autoWidth": true,
+                "render": function (data, type, row) {
+                    return lang === 'ar-EG' ? row.FndStatusLkp.NameAr : row.FndStatusLkp.NameEn;
+                }
+            },
+            {
+                "data": null,
+                "sortable": false,
+                "render": function (data, type, row) {
+
+                    const formAction = `${$PrefixHostName}/${_mainController}/@nameof(HrPersonPermissionController.HrPersonPermissionForm)`;
+                    const DeleteAction = `${$PrefixHostName}/${_mainController}/@nameof(HrPersonPermissionController.Delete)`;
+
+                    let formTitle = '@HrPersonVacations.Title', btns = ''
+
+                    if (_permissions.includes(_postPermission) ) {
+                        btns += `<a href="javascript:void(0)" onclick="PostAjax(${row.Id})" title="@ERP.ResourcePack.Common.Settings.Post"><i class="mx-2 fas fa-check-circle text-info"></i></a>`;
+                    }
+
+                    if (_permissions.includes(_updatePermission) ) {
+                        btns += `<a href="javascript:void(0)" onclick="AjaxController.GetFormModal(${row.Id},'@ERP.Front.Helpers.Enums.Common.FormTriggers.Update','${formAction}','${formTitle}');" title="@ERP.ResourcePack.Common.Settings.Edit"><i class="mx-2 fas fa-edit text-info"></i></a>`;
+                    }
+
+                    btns += `<a href="javascript:void(0)" onclick="AjaxController.GetFormModal(${row.Id},'@ERP.Front.Helpers.Enums.Common.FormTriggers.Show','${formAction}','${formTitle}');" title="@ERP.ResourcePack.Common.Settings.Show"><i class="mx-2 fas fa-eye text-info"></i></a>`;
+
+                    if (_permissions.includes(_deletePermission) ) {
+                        btns += `<a href="javascript:void(0)" onclick="AjaxController.DeleteMainTableRow(${row.Id},'${DeleteAction}');" title="@ERP.ResourcePack.Common.Settings.Delete"><i class="mx-2 fas fa-trash-alt text-danger"></i></a>`;
+                    }
+
+                    const _auditedPermission = '@PermissionNames.Pages_HrPersonPermission_Audit';
+
+                    if (_permissions.includes(_auditedPermission)) {
+
+                        row.permission = _auditedPermission;
+
+                        btns += GetAuditedButton(row);
+                    }
+
+                    return btns;
+                }
+            }
+        ];
+
+        const dtObj = {
+            "processing": true,
+            "serverSide": true,
+            "filter": false,
+            "orderMulti": false,
+            "language": dataTableLang,
+            "ajax": {
+                "url": _loadDataUrl,
+                "type": "POST",
+                "datatype": "json",
+                "data": parms,
+                "complete": function () {}
+            },
+            "columns": columns,
+            "initComplete": function () {
+                $('[data-toggle="tooltip"]').tooltip();
+            }
+        };
+
+        _tblSelector.dataTable().fnDestroy();
+        _tblSelector.DataTable(dtObj).on('draw', function () { $('[data-toggle="tooltip"]').tooltip(); });
+
+    };
+
+
+
+    const CalcTime = function () {
+        debugger;
+        if (!$('#FromTimeStr').val()) return;
+        if (!$('#EndTimeStr').val()) return;
+
+        try {
+
+            const stDtArr = $('#FromTimeStr').val().split(':');
+            const newStDt = `${stDtArr[0]}.${stDtArr[1]}`;
+
+            const enDtArr = $('#EndTimeStr').val().split(':');
+            const newEnDt = `${enDtArr[0]}.${enDtArr[1]}`;
+
+            //const date1 = new Date(newStDt);
+            //const date2 = new Date(newEnDt);
+            var s = parseFloat(newStDt).toFixed(2);
+            var t = parseFloat(newEnDt).toFixed(2);
+            const diffTime = Math.abs(parseFloat(newStDt).toFixed(2) - parseFloat(newEnDt).toFixed(2));
+            //const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
+
+            $('#TotalPermission').val(diffTime);
+
+        } catch (e) {
+            $('#TotalPermission').val(0);
+        }
+
+        $('#TotalPermission').parent('.form-line').addClass('focused');
+    };
+   
+
+    
+    $('#HrPersonIdSearch').select2(ReturnSelect2ObjectDefault(`${baseUrl}/HrPersons/GetPersonsSelect2`));
+    $('#PermissionTypeIdSearch').select2(ReturnSelect2ObjectDefault(`${baseUrl}/HrPermissionType/GetPermissionTypeSelect2`));
+    //$('#SearchStatusLkpId').select2(ReturnSelect2ObjectForLkpsTypes('@ERP.Front.Helpers.Enums.Common.FndLkpsTypes.HrPersonVacationsStatues.ToString()'));
+
+    function printExc() {
+        $('.page-loader-wrapper').show();
+
+        const parmss = {
+            OperationNumber: $('#SearchOperationNumber').val(),
+            OperationDate: $('#SearchOperationDate').val(),
+            HrPersonId: $('#SearchHrPersonId').find(':selected').val(),
+            HrVacationsTypeId: $('#SearchHrVacationsTypeId').find(':selected').val(),
+            StatusLkpId: $('#SearchStatusLkpId').find(':selected').val(),
+            length: 1000000
+        };
+
+        const columns = [
+            {
+                "data": "result.data.id",
+                'render': function (data, type, row, meta) {
+                    return meta.row + meta.settings._iDisplayStart + 1;
+                }
+            },
+            {
+                "data": "OperationNumber",
+                "name": "OperationNumber",
+                "autoWidth": true
+            },
+            {
+                "data": "OperationDate",
+                "name": "OperationDate",
+                "autoWidth": true
+            },
+            {
+                "data": null,
+                "name": "HrPersonId",
+                "autoWidth": true,
+                "render": function (data, type, row) {
+                    return row.HrPersons.FullName;
+                }
+            },
+            {
+                "data": "VacationBalance",
+                "name": "VacationBalance",
+                "autoWidth": true
+            },
+            {
+                "data": null,
+                "name": "HrVacationsTypeId",
+                "autoWidth": true,
+                "render": function (data, type, row) {
+                    return row.HrVacationsTypes.VacationsTypeName;
+                }
+            },
+            {
+                "data": null,
+                "name": "StatusLkpId",
+                "autoWidth": true,
+                "render": function (data, type, row) {
+                    return lang === 'ar-EG' ? row.FndStatusLkp.NameAr : row.FndStatusLkp.NameEn;
+                }
+            }
+        ];
+
+        const dtObj = {
+            "language": dataTableLang,
+            "dom": 'Bfrtip',
+            "buttons": [
+                {
+                    extend: 'excel',
+                    messageTop: `${$('#SearchOperationNumber').siblings().text()}: ${(parmss.OperationNumber) ? parmss.OperationNumber : '--'}, ${$('#SearchOperationDate').siblings().text()}: ${(parmss.OperationDate) ? parmss.OperationDate : '--'}, ${$('[for="HrPersonId"]').text()}: ${(parmss.HrPersonId) ? parmss.HrPersonId : '--'}, ${$('[for="HrVacationsTypeId"]').text()}: ${(parmss.HrVacationsTypeId) ? parmss.HrVacationsTypeId : '--'}, ${$('[for="StatusLkpId"]').text()}: ${(parmss.StatusLkpId) ? parmss.StatusLkpId : '--'}`
+                },
+
+            ],
+            "ajax": {
+                "url": _loadDataUrl,
+                "type": "POST",
+                "datatype": "json",
+                "data": parmss,
+                "complete": function (d) {
+                    _tblLoader.hide();
+                }
+            },
+            "columns": columns,
+
+            "initComplete": function () {
+                $('#tblHrPersonVacationsPrint_wrapper button.dt-button').click();
+            }
+        };
+
+        $('#tblHrPersonVacationsPrint').dataTable().fnDestroy();
+        $('#tblHrPersonVacationsPrint').DataTable(dtObj).on('buttons-processing', function (e, indicator) { if (!indicator) { $('.page-loader-wrapper').hide() } });
+
+
+    }
+
+</script>

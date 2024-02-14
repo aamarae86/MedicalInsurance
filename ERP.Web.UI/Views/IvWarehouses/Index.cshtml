@@ -1,0 +1,11 @@
+﻿@{
+    ViewBag.Title = ERP.ResourcePack.Warehouses.IvWarehouses.Title;
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@Html.Action(nameof(ERP.Web.UI.Controllers.Warehouses.IvWarehousesController.IvWarehousesSearch))
+@Html.Action(nameof(ERP.Web.UI.Controllers.Warehouses.IvWarehousesController.IvWarehousesData))
+
+@section scripts{
+    @Html.Partial("~/ViewsScripts/_Warehouses/IvWarehouses/IvWarehousesScripts.cshtml")
+}

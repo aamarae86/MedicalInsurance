@@ -1,0 +1,628 @@
+﻿@using ERP.ResourcePack.Accounts
+@using ERP.Web.UI.Controllers.Accounts
+@using ERP.Authorization;
+@{
+    string permissionsStr = TempData["Permissions"].ToString();
+    string encUpdateTrigger = ERP.Front.Helpers.Enums.Common.EncUpdate;
+    string encInsertTrigger = ERP.Front.Helpers.Enums.Common.EncInsert;
+    string encShowTrigger = ERP.Front.Helpers.Enums.Common.EncShow;
+}
+
+@if (permissionsStr.Contains(PermissionNames.Pages_ArJobSurveyHd_Post))
+{
+    <script>
+
+        const PostInvoice = function (id) {
+
+            bootbox.confirm({
+                message: _booBoxMessagePosting,
+                buttons: bootBoxDefaultBtns,
+                callback: function (result) {
+
+                    if (result) {
+
+                        const data = {
+                            id: id,
+                            lang: lang
+                        };
+
+                        $.ajax({
+                            url: `${baseUrl}/ArJobSurveyHd/PostArJobSurveyHd`,
+                            type: 'POST',
+                            data: JSON.stringify(data),
+                            headers:
+                            {
+                                'Content-Type': 'application/json',
+                                'Authorization': `Bearer ${$_token}`
+                            },
+                        }).done(function (response) {
+
+                            if (response.result.finalStatues == 'F') {
+                                toastr.warning(response.result.reason);
+                            }
+                            else {
+                                toastr.success(response.result.reason);
+                                LoadDataGrid();
+                            }
+                        }).fail(function (response) {
+                            toastr.error(response);
+                        });
+
+                    }
+                }
+            });
+        };
+
+    </script>
+}
+else
+{
+    <script>
+        const PostInvoice = function (id) { };
+    </script>
+}
+
+<script>
+    const _mainController = "ArJobSurveyHd"
+
+    $(function () {
+        LoadDataGrid();
+        $('#tblArJobSurveyHdPrint thead').html($('#tblArJobSurveyHd thead').html());
+        $('#tblArJobSurveyHdPrint thead tr :last-child').remove();
+        $('#ArJobSurveyHd').addClass('active');
+
+        $('#HdDate').parent('.form-line').addClass('focused');
+
+    });
+
+    const _loadDataUrl = `${$PrefixHostName}/${_mainController}/@nameof(ArJobSurveyHdController.LoadDataGrid)`;
+    const _tblSelector = $('#tblArJobSurveyHd');
+    const _tblLoader = $('#tblLoader');
+
+    const _permissions = '@permissionsStr';
+    const _updatePermission = '@PermissionNames.Pages_ArJobSurveyHd_Update';
+    const _deletePermission = '@PermissionNames.Pages_ArJobSurveyHd_Delete';
+    const _postPermission = '@PermissionNames.Pages_ArJobSurveyHd_Post';
+    const _postStatus = 31690;
+    const _newStatus = 31689;
+
+    var OnBegin = function (response) {
+        fireBtnLoader();
+    };
+
+    var OnSuccess = function (response) {
+
+        $('#btnSubmition').prop('disabled', false);
+
+        if (response.success) {
+
+            if (response.customRestResult.trigger === '@ERP.Front.Helpers.Enums.Common.FormTriggers.Insert') {
+
+                toastr.success(response.customRestResult.message);
+
+                setTimeout(function () {
+                    window.location.href = $PrefixHostName + '/ArJobSurveyHd';
+                }, 200);
+
+            }
+            else if (response.customRestResult.trigger === '@ERP.Front.Helpers.Enums.Common.FormTriggers.Update') {
+
+                toastr.success(response.customRestResult.message);
+
+                setTimeout(function () {
+                    window.location.href = $PrefixHostName + '/ArJobSurveyHd';
+                }, 200);
+
+            }
+            else {
+                toastr.error(response.customRestResult.message);
+            }
+
+        } else {
+                toastr.error(response.error.message);
+        }
+
+    };
+
+    var OnComplete = function (response) {
+        downBtnLoader();
+    };
+
+    var OnFailure = function (response) {
+        toastr.error(response);
+        downBtnLoader();
+    };
+          function PrintArJobSurvey(rowId)
+    {
+          var url1 = `${$PrefixHostName}/ArJobSurveyHd/@nameof(ArJobSurveyHdController.PrintGetrptArJobSurvey)`;
+        $.ajax({
+            url: url1,
+            //cache: false,
+            type: "POST",
+            header: {
+                'Authorization': `bearer ${$_token}`
+            },
+            data: {
+                id: rowId
+            }
+        }).done(function (data) {
+            if (data.length > 0) {
+                $('.page-loader-wrapper').css('display', 'none');
+                let pdfWindow = window.open("")
+                pdfWindow.document.write(
+                    "<iframe width='100%' height='100%' src='data:application/pdf;base64, " +
+                    encodeURI(data) + "'></iframe>"
+                )
+            }
+            else {
+                $('.page-loader-wrapper').css('display', 'none');
+                toastr.warning(NoData);
+            }
+        })
+            .fail(function () {
+                console.log("error");
+                alert('error');
+            });
+    }
+
+    const LoadDataGrid = function () {
+
+        $('#tblLoader').show();
+
+        const params = {
+            ClaimNo: $('#searchBox #ClaimNo').val(),
+            ClaimDate: $('#searchBox #ClaimDate').val(),
+            ArJobSurveyStatusLkpId: $('#searchBox #ArJobSurveyStatusLkpId').find(':selected').val(),
+            VehicleModelLkpId: $('#searchBox #VehicleModelLkpId').find(':selected').val()
+        };
+
+        const columns = [
+            {
+                "data": "result.data.id",
+                'render': function (data, type, row, meta) {
+                    return meta.row + meta.settings._iDisplayStart + 1;
+                }
+            },
+            {
+                "data": "ClaimNo",
+                "name": "ClaimNo",
+                "autoWidth": true
+            },
+            {
+                "data": "ClaimDate",
+                "name": "ClaimDate",
+                "autoWidth": true
+            },
+            {
+                "data": "PlateNo",
+                "name": "PlateNo",
+                "autoWidth": true
+            },
+            {
+                "data": null,
+                "autoWidth": true,
+                "render": function (d, t, row) {
+                    if (row.ArJobCardVehicleModelLkp == null) return '';
+
+                    return lang === 'ar-EG' ? row.ArJobCardVehicleModelLkp.NameAr : row.ArJobCardVehicleModelLkp.NameEn;
+                }
+            },
+            {
+                "data": null,
+                "autoWidth": true,
+                "render": function (d, t, row) {
+                    if (row.ArJobSurveyStatusLkp == null) return '';
+
+                    return lang === 'ar-EG' ? row.ArJobSurveyStatusLkp.NameAr : row.ArJobSurveyStatusLkp.NameEn;
+                }
+            },
+
+            {
+                "data": null,
+                "sortable": false,
+                "render": function (data, type, row) {
+
+                    let formAction = `${$PrefixHostName}/${_mainController}/@nameof(ArJobSurveyHdController.ArJobSurveyHdForm)`;
+                    let DeleteAction = `${$PrefixHostName}/${_mainController}/@nameof(ArJobSurveyHdController.Delete)`;
+
+                    let formTitle = '@ERP.ResourcePack.Accounts.ArJobSurveyHd.Title';
+                    let btns = '';
+
+                    if (_permissions.includes(_updatePermission) && row.ArJobSurveyStatusLkpId == _newStatus) {
+                        btns += `<a href="${$PrefixHostName}/ArJobSurveyHd/FormView?id=${row.EncId}&t=@encUpdateTrigger" title="@ERP.ResourcePack.Common.Settings.Edit"><i class="mx-2 fas fa-edit text-info"></i></a>`;
+                    }
+
+                    btns += `<a href="${$PrefixHostName}/ArJobSurveyHd/FormView?id=${row.EncId}&t=@encShowTrigger" title="@ERP.ResourcePack.Common.Settings.Show"><i class="mx-2 fas fa-eye text-info"></i></a>`;
+
+                    if (_permissions.includes(_deletePermission) && row.ArJobSurveyStatusLkpId == _newStatus) {
+                        btns += `<a href="javascript:void(0)" onclick="AjaxController.DeleteMainTableRow(${row.Id},'${DeleteAction}');" title="@ERP.ResourcePack.Common.Settings.Delete"><i class="mx-2 fas fa-trash-alt text-danger"></i></a>`;
+                    }
+
+                    if (_permissions.includes(_postPermission) & row.ArJobSurveyStatusLkpId == _newStatus) {
+                        btns += `<a href="javascript:void(0)" onclick="PostInvoice(${row.Id})"  title="@ERP.ResourcePack.Common.Settings.Post"><i class="mx-2 fas fa-check-circle text-info"></i></a>`;
+                    }
+
+
+                    btns += `<a href="javascript:void(0);" onclick="return PrintArJobSurvey('${row.Id}')" title="@ERP.ResourcePack.Common.Settings.Print"><i class="mx-2 fas fa-print text-success"></i></a>`;
+                    const _auditedPermission = '@PermissionNames.Pages_ArJobSurveyHd_Audit';
+
+                    if (_permissions.includes(_auditedPermission)) {
+
+                        row.permission = _auditedPermission;
+
+                        btns += GetAuditedButton(row);
+                    }
+
+                    return btns;
+                }
+            }
+        ];
+
+        const dtObj = {
+            "processing": true,
+            "serverSide": true,
+            "filter": false,
+            "orderMulti": false,
+            "language": dataTableLang,
+            "ajax": {
+                "url": _loadDataUrl,
+                "type": "POST",
+                "datatype": "json",
+                "data": params,
+                "complete": function () {
+                      _tblLoader.hide();
+                }
+            },
+            "columns": columns,
+            "initComplete": function () {
+                $('[data-toggle="tooltip"]').tooltip();
+            }
+
+        };
+
+        _tblSelector.dataTable().fnDestroy();
+        _tblSelector.DataTable(dtObj).on('draw', function () { $('[data-toggle="tooltip"]').tooltip(); });
+
+        setTimeout(function () {
+            $(".sorting_1").removeAttr('colspan');
+        }, 500);
+    };
+
+    $('#btnSubmition').on('click', function () {
+
+        if ($('#mainForm').valid()) {
+
+            $(this).prop('disabled', true);
+
+            $('#submitLoader').show();
+
+            $('#mainForm').submit();
+
+        } else {
+            $(this).prop('disabled', false);
+
+            $('#submitLoader').hide();
+        }
+
+    });
+
+    $('#searchBox #ArJobSurveyStatusLkpId').select2(ReturnSelect2ObjectForLkpsTypes('ArJobSurveyStatus'));
+    $('#searchBox #VehicleModelLkpId').select2(ReturnSelect2ObjectForLkpsTypes('ArJobCardVehicleModel'));
+
+    $('#mainForm #ArJobSurveyStatusLkpId').select2(ReturnSelect2ObjectForLkpsTypes('ArJobSurveyStatus'));
+    $('#mainForm #VehicleMakeLkpId').select2(ReturnSelect2ObjectForLkpsTypes('ArJobCardVehicleMake'));
+    $('#mainForm #VehicleModelLkpId').select2(ReturnSelect2ObjectForLkpsTypes('ArJobCardVehicleModel'));
+     $('#VehicleEmirateLkpId').select2(ReturnSelect2ObjectForLkpsTypes('@ERP.Front.Helpers.Enums.Common.FndLkpsTypes.ArJobCardVehicleEmirate.ToString()'));
+    $('#VehicleColorLkpId').select2(ReturnSelect2ObjectForLkpsTypes('@ERP.Front.Helpers.Enums.Common.FndLkpsTypes.ArJobCardVehicleColor.ToString()'));
+    $('#ArCustomerId').select2(ReturnSelect2ObjectDefault(`${baseUrl}/ArCustomers/GetArCustomersSelect2`));
+      $('#JobTypeLkpId').select2(ReturnSelect2ObjectForLkpsTypes('@ERP.Front.Helpers.Enums.Common.FndLkpsTypes.ArJobCardJobType.ToString()'));
+    
+
+    $('#PartsCategoryLkpId').select2(ReturnSelect2ObjectForLkpsTypes('PartsCategory'));
+  //  $('#ArJobSurveyPartsId').select2(ReturnSelect2ObjectDefault(`${baseUrl}/ArJobSurveyPartsList/GetArJobSurveyPartsListSelect2`));
+
+    const ReturnSelect2ObjectWithParentForPrRequestType = function (url, selector) {
+
+        return {
+            ajax: {
+                url: url,
+                dataType: 'json',
+                headers: {
+                    'Authorization': `Bearer ${$_token}`
+                },
+                data: function (params) {
+                    params.page = params.page || 1;
+                    return {
+                        parentId: $(`#${selector}`).find(':selected').val(),
+                        pageSize: pageSize,
+                        pageNumber: params.page,
+                        searchTerm: params.term,
+                        lang: lang,
+                        dateofrequest: $('#AidRequestDate').val()
+                    };
+                },
+                processResults: function (data, params) {
+
+                    params.page = params.page || 1;
+
+                    return {
+                        results: data.result.results,
+                        pagination: {
+                            more: (params.page * pageSize) < data.result.total
+                        }
+                    };
+                }
+            },
+            placeholder: select2Placeholder,
+            minimumInputLength: 0,
+            allowClear: true,
+            language: select2Lang
+        };
+
+    };
+
+
+    $('#ArJobSurveyPartsId').select2(ReturnSelect2ObjectWithParentForPrRequestType(`${baseUrl}/ArJobSurveyPartsList/GetArJobSurveyPartsListByPerentIdSelect2`, 'PartsCategoryLkpId'));
+
+
+
+    $("#LumpsumAmount").on('change', function () {
+        if ($("#EstimatedAmount").val() > 0) {
+            CalcTotalAmount();
+        }
+    });
+
+    $("#EstimatedAmount").on('change', function () {
+        if ($("#EstimatedAmount").val() > 0) {
+            CalcTotalAmount();
+        }
+    });
+
+    $("#LabourCharges").on('change', function () {
+        if ($("#LabourCharges").val() > 0) {
+            CalcTotalAmount();
+        }
+    });
+
+    const CalcTotalAmount = function () {
+        debugger;
+        var L = isNaN(parseFloat($("#LabourCharges").val())) ? 0 : parseFloat($("#LabourCharges").val()); 
+        var E = isNaN(parseFloat($("#EstimatedAmount").val())) ? 0 : parseFloat($("#EstimatedAmount").val());
+        var Lp = isNaN(parseFloat($("#LumpsumAmount").val())) ? 0 : parseFloat($("#LumpsumAmount").val());
+        $("#TotalAmount").val(L+E+Lp);
+
+    }
+
+</script>
+<script name="ArJobSurveyTrss">
+
+    const _tblArJobSurveyTrSelector = $('#tblArJobSurveyTrDetail');
+    const _tblArJobSurveyTrSelectorBody = $('#tblArJobSurveyTrDetail tbody');
+    const _listArJobSurveyTr = $('#ListArJobSurveyTr');
+
+    let _ArJobSurveyTrArr = [], tblArJobSurveyTrCounterIndex = 0 , updatedArJobSurveyTrRow;
+
+    const fillArJobSurveyTrArr = function () {
+
+        if (validateArJobSurveyTr() === false)  return;
+
+        const current = {
+            index: ++tblArJobSurveyTrCounterIndex,
+            arJobSurveyPartsId: $('#ArJobSurveyPartsId').find(':selected').val(),
+            surveyPartsName: $('#ArJobSurveyPartsId').find(':selected').text(),
+            partsCategoryLkpId: $('#PartsCategoryLkpId').find(':selected').val(),
+            partsCategoryName: $('#PartsCategoryLkpId').find(':selected').text(),
+            isRepair: $('#IsRepair').is(':checked'),
+            isReplace:$('#IsReplace').is(':checked'),
+            rowStatus: NewStatus,
+            id:0
+        };
+
+        return current;
+    };
+
+    const AddArJobSurveyTrDetail = function () {
+
+        const current = fillArJobSurveyTrArr();
+
+        if (current === undefined) return;
+
+        _ArJobSurveyTrArr.push(current);
+
+        _listArJobSurveyTr.val(JSON.stringify(_ArJobSurveyTrArr));
+
+        bindArJobSurveyTrTable();
+
+        clearFormAddingArJobSurveyTr();
+
+       
+    };
+
+    const UpdateArJobSurveyTrDetailRow = function () {
+
+        let current = _ArJobSurveyTrArr.find(z => z.index === updatedArJobSurveyTrRow.index);
+
+        let indexOfCurrent = _ArJobSurveyTrArr.indexOf(current);
+
+        const newRow = fillArJobSurveyTrArr();
+
+        if (newRow === undefined) return;
+
+        newRow.id = updatedArJobSurveyTrRow.id;
+        newRow.index = current.index;
+        newRow.rowStatus = !updatedArJobSurveyTrRow.id ? NewStatus : UpdatedStatus;
+
+        _ArJobSurveyTrArr.splice(indexOfCurrent, 1,newRow);
+
+        $('#btnAddArJobSurveyTrRow').show();
+        $('#btnUpdateArJobSurveyTrRow').hide();
+        $('#btnCancelArJobSurveyTrRow').hide();
+
+        clearFormAddingArJobSurveyTr();
+
+        _listArJobSurveyTr.val(JSON.stringify(_ArJobSurveyTrArr));
+
+        bindArJobSurveyTrTable();
+
+         
+    };
+
+    const bindArJobSurveyTrTable = function () {
+
+        let rows = '';
+
+        const detailArr = _ArJobSurveyTrArr.filter(z => z.rowStatus !== DeletedStatus);
+
+        $.each(detailArr, function (i, item) {
+
+            rows += '<tr>';
+            rows += `<td>${item.index}</td>`;
+            rows += `<td>${item.surveyPartsName}</td>`;
+            rows += `<td>${item.partsCategoryName}</td>`;
+            if (item.isRepair) {
+                rows += `<td><i class="fas fa-check text-success"></i></td>`;
+            } else {
+                rows += `<td><i class="fas fa-times text-danger"></i></td>`;
+            }
+            if (item.isReplace) {
+                rows += `<td><i class="fas fa-check text-success"></i></td>`;
+            } else {
+                rows += `<td><i class="fas fa-times text-danger"></i></td>`;
+            }
+
+            if (primaryEntityKeyId === 0 || trigger !== '@ERP.Front.Helpers.Enums.Common.FormTriggers.Show.ToString()') {
+                rows += `<td><a href="javascript:void(0)" onclick="return DeleteRowArJobSurveyTr(${item.index})"><i class="mx-2 fas fa-trash-alt text-danger"></i></a>`;
+                rows += `<a href="javascript:void(0)" onclick="return GetArJobSurveyTrRow(${item.index})"><i class="mx-2 fas fa-edit text-success"></i></a></td>`;
+            } else {
+                rows += '<td></td>';
+            }
+
+            rows += '</tr>';
+        });
+
+        setTimeout(function () {
+            _tblArJobSurveyTrSelectorBody.html(rows);
+        }, 100);
+    };
+
+    const DeleteRowArJobSurveyTr = function (index) {
+
+        const current = _ArJobSurveyTrArr.find(z => z.index === index);
+
+        const indexOfCurrent = _ArJobSurveyTrArr.indexOf(current);
+
+        if (!current.id) {
+
+           _ArJobSurveyTrArr.splice(indexOfCurrent, 1);
+
+        } else {
+
+            current.rowStatus = DeletedStatus;
+
+           _ArJobSurveyTrArr.splice(indexOfCurrent, 1,current);
+        }
+
+        bindArJobSurveyTrTable();
+
+        _listArJobSurveyTr.val(_ArJobSurveyTrArr.length === 0 ? '' : JSON.stringify(_ArJobSurveyTrArr));
+
+        calcNetValue();
+    };
+
+    const LoadArJobSurveyTrData = function () {
+
+         $.ajax({
+             url: `${baseUrl}/ArJobSurveyHd/GetAllArJobSurveyTr`,
+            method: 'GET',
+            headers: {  'Authorization': `Bearer ${$_token}`  },
+            data: { id: primaryEntityKeyId }
+        }).done(function (data) {
+
+            _ArJobSurveyTrArr = [...data.result];
+
+            tblArJobSurveyTrCounterIndex = 0;
+
+            $.each(_ArJobSurveyTrArr, function (i, item) {
+                item.index = ++tblArJobSurveyTrCounterIndex;
+            });
+
+            bindArJobSurveyTrTable();
+
+            _listArJobSurveyTr.val(JSON.stringify(_ArJobSurveyTrArr));
+             
+         });
+
+    };
+
+    const GetArJobSurveyTrRow = function (tblIndex) {
+
+        clearFormAddingArJobSurveyTr();
+
+        $('#btnAddArJobSurveyTrRow').hide();
+        $('#btnUpdateArJobSurveyTrRow').show();
+        $('#btnCancelArJobSurveyTrRow').show();
+
+        const current = _ArJobSurveyTrArr.find(z => z.index === tblIndex);
+
+        //$('#ArJobSurveyTrForm #DutyType').val(current.dutyType);
+        $(`#ArJobSurveyTrForm #ArJobSurveyPartsId`)
+            .append($("<option selected='selected'></option>")
+                .val(current.arJobSurveyPartsId)
+                .text(current.surveyPartsName))
+            .trigger('change');
+            $(`#ArJobSurveyTrForm #PartsCategoryLkpId`)
+            .append($("<option selected='selected'></option>")
+                .val(current.partsCategoryLkpId)
+                .text(current.partsCategoryName))
+            .trigger('change');
+        if (current.isReplace) {
+            $("#IsReplace").prop("checked", true);
+        }
+        else {
+            $("#IsReplace").prop("checked", false);
+        }
+        if (current.isRepair) {
+                $("#IsRepair").prop( "checked", true );
+            }
+        else {
+            $("#IsRepair").prop("checked", false);
+        }
+
+        
+
+        $('#ArJobSurveyTrForm #PartsCategoryLkpId').parent('.form-line').addClass('focused');
+        $('#ArJobSurveyTrForm #ArJobSurveyPartsId').parent('.form-line').addClass('focused');
+       
+
+        updatedArJobSurveyTrRow = current;
+     //   $("#ArJobSurveyTrForm .modal").modal();
+
+    };
+
+    const clearFormAddingArJobSurveyTr = function () {
+
+        $('#ArJobSurveyTrForm   select').val('').trigger('change');
+        $('#ArJobSurveyTrForm   input').val('');
+        $('#ArJobSurveyTrForm   textarea').val('');
+    };
+
+    const validateArJobSurveyTr = function () {
+
+        if (!$('#ArJobSurveyTrForm #ArJobSurveyPartsId').find(':selected').val()) {
+            toastr.warning('@ArJobSurveyHd.ArJobSurveyPartsId' + ' : ' + '@ERP.ResourcePack.Common.Settings.Required')
+            return false;
+        }
+
+
+        if (!$('#ArJobSurveyTrForm #PartsCategoryLkpId').find(':selected').val()) {
+            toastr.warning('@ArJobSurveyHd.PartsCategoryLkpId' + ' : ' + '@ERP.ResourcePack.Common.Settings.Required')
+            return false;
+        }
+
+        return true;
+    };
+    
+</script>
+
+
+ 

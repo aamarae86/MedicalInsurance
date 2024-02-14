@@ -1,0 +1,58 @@
+﻿@using ERP.Web.UI.Models.ViewModels.Accounts
+
+@model GlJeLinesVM
+@{
+    string formTrigger = ViewBag.trigger;
+    string lang = Request.Cookies["Lang"] == null ? "ar-EG" : Request.Cookies["Lang"].Value.ToString();
+    bool isFormDetail = Model != null && formTrigger ==ERP.Front.Helpers.Enums.Common.FormTriggers.Show.ToString();
+}
+
+<div class="card" style="display:@( formTrigger ==ERP.Front.Helpers.Enums.Common.FormTriggers.Show.ToString() ? "none":"block" ) ">
+    <div class="body">
+        <div class="row clearfix">
+            @Html.Action(nameof(ERP.Web.UI.Controllers.Accounts.GlAccDetailsController.DrawGlAccController), "GlAccDetails",
+               new { glAccHeadersVMs = ViewData["ListGlAccHeadersVM"] == null ? new List<GlAccHeadersVM>() : ViewData["ListGlAccHeadersVM"] as List<GlAccHeadersVM> })
+            <div class="col-sm-3">
+                <div class="form-group form-float">
+                    <div class="form-line">
+                        @Html.TextBoxFor(z => z.DebitAmount, getHtmlAttributes(isFormDetail, "form-control currency", string.Empty))
+                        @Html.LabelFor(z => z.DebitAmount, new { @class = "form-label" })
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-3">
+                <div class="form-group form-float">
+                    <div class="form-line">
+                        @Html.TextBoxFor(z => z.CreditAmount, getHtmlAttributes(isFormDetail, "form-control currency", string.Empty))
+                        @Html.LabelFor(z => z.CreditAmount, new { @class = "form-label" })
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-3">
+                <div class="form-group form-float">
+                    <div class="form-line">
+                        @Html.TextBoxFor(z => z.Notes, getHtmlAttributes(isFormDetail, "form-control", string.Empty))
+                        @Html.LabelFor(z => z.Notes, new { @class = "form-label" })
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-3">
+                <div class="form-group">
+                    <button id="btnAddDetailRow" onclick="return AddGlDetail()" class="btn btn-success">@ERP.ResourcePack.Common.Settings.BtnAddNew</button>
+                    <button style="display:none;" id="btnUpdateDetailRow" onclick="return UpdateGlDetailRow()" class="btn btn-info">@ERP.ResourcePack.Common.Settings.BtnUpdate</button>
+                    <button style="display:none;" id="btnCancelDetailRow" onclick="clearFormAdding(); $('#btnCancelDetailRow').hide();$('#btnUpdateDetailRow').hide();$('#btnAddDetailRow').show();" class="btn btn-danger">@ERP.ResourcePack.Common.Settings.BtnCancel</button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+
+@functions {
+    object getHtmlAttributes(bool Disabled, string CssClass, string CssClass2)
+    {
+        if (Disabled) return new { @class = CssClass, Disabled = Disabled };
+        return new { @class = $"{CssClass} {CssClass2}" };
+    }
+}

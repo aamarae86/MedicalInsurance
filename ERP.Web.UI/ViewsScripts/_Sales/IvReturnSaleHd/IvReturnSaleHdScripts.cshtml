@@ -1,0 +1,811 @@
+﻿@using ERP.ResourcePack.Sales
+@using ERP.Web.UI.Controllers.Sales
+@using ERP.Authorization;
+@{
+    string permissionsStr = TempData["Permissions"].ToString();
+    string encUpdateTrigger = ERP.Front.Helpers.Enums.Common.EncUpdate;
+    string encInsertTrigger = ERP.Front.Helpers.Enums.Common.EncInsert;
+    string encShowTrigger = ERP.Front.Helpers.Enums.Common.EncShow;
+}
+
+<script>
+    const _mainController = "IvReturnSaleHd"
+    const _newStatus = @Convert.ToInt64(ERP.Front.Helpers.Enums.Common.IvReturnSaleHd.New);
+
+    $(function () {
+
+        LoadDataGrid();
+        $('#tblIvReturnSaleHdPrint thead').html($('#tblIvReturnSaleHd thead').html());
+        $('#tblIvReturnSaleHdPrint thead tr :last-child').remove();
+        $('#IvReturnSaleHd').addClass('active');
+        $('#CurrencyId').trigger('change');
+        $('#IvSaleHdId').trigger('change');
+
+
+        var iii = '@ViewData["ReturnDate"]'
+        if (iii) {
+            $('#IvReturnSaleDate').val(iii);
+           
+            $('#IvReturnSaleDate').parent('.form-line').addClass('focused');
+        }
+
+    });
+
+    function GetPaymentMethod(ivSaleId) {
+        $.ajax({
+            url: `${baseUrl}/IvSaleHd/GetPaymentMethodBySaleId`,
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${$_token}`
+            },
+            data: {
+                id: ivSaleId,
+
+            }
+
+        }).done(function (Respone) {
+
+            console.log(Respone);
+            var itemdata = Respone.result;
+            $('#IvPriceListHdText').val(itemdata);
+
+            $('#paymentClass').addClass('focused');
+           
+        }).fail(function (response) {
+            toastr.error(response);
+        });
+
+    }
+    function getBankAccount(ivSaleId) {
+        $.ajax({
+            url: `${baseUrl}/ApUserBankAccess/GetBankAccessName`,
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${$_token}`
+            }
+            , data: {
+                saleid: ivSaleId
+            }
+        }).done(function (Respone) {
+
+            console.log(Respone);
+            var itemdata = Respone.result;
+            $('#BankText').val(itemdata.apBanksDto.bankNameEn);
+            $('#BankText').parent('.form-line').addClass('focused');
+            //var id = itemdata.bankAccountId;
+            //var text = itemdata.apBankAccounts.bankAccountNameEn;
+
+            //$(`#BankAccountId`).append($("<option selected='selected'></option>")
+            //    .val(id).text(text).trigger('change'));
+
+
+
+
+        }).fail(function (response) {
+            toastr.error(response);
+        });
+    }
+
+    const _loadDataUrl = `${$PrefixHostName}/${_mainController}/@nameof(IvReturnSaleHdController.LoadDataGrid)`;
+    const _tblSelector = $('#tblIvReturnSaleHd');
+
+    const _permissions = '@permissionsStr';
+    @*const _updatePermission = '@PermissionNames.Pages_IvReturnSaleHd_Update';
+    const _deletePermission = '@PermissionNames.Pages_IvReturnSaleHd_Delete';
+    const _postPermission = '@PermissionNames.Pages_IvReturnSaleHd_Post';*@
+
+    var OnBegin = function (response) {
+        fireBtnLoader();
+    };
+
+    var OnSuccess = function (response) {
+
+        $('#btnSubmition').prop('disabled', false);
+
+        if (response.success) {
+
+            if (response.customRestResult.trigger === '@ERP.Front.Helpers.Enums.Common.FormTriggers.Insert') {
+
+                toastr.success(response.customRestResult.message);
+
+                setTimeout(function () {
+                    window.location.href = $PrefixHostName + '/IvReturnSaleHd';
+                }, 200);
+
+            }
+            else if (response.customRestResult.trigger === '@ERP.Front.Helpers.Enums.Common.FormTriggers.Update') {
+
+                toastr.success(response.customRestResult.message);
+
+                setTimeout(function () {
+                    window.location.href = $PrefixHostName + '/IvReturnSaleHd';
+                }, 200);
+
+            }
+            else {
+                toastr.error(response.customRestResult.message);
+            }
+
+        } else {
+            toastr.error(response.error.message);
+        }
+
+    };
+
+    var OnComplete = function (response) {
+        downBtnLoader();
+    };
+
+    var OnFailure = function (response) {
+        toastr.error(response);
+        downBtnLoader();
+    };
+
+    const LoadDataGrid = function () {
+        debugger;
+        const params = {
+            StatusLkpId: $('#searchBox #StatusLkpId').val(),
+            ArCustomerId: $('#searchBox #ArCustomerId').val(),
+            IvWarehouseId: $('#searchBox #IvWarehouseId').val(),
+            IvReturnSaleNumber: $('#searchBox #IvReturnSaleNumber').val(),
+            IvReturnSaleDate: $('#searchBox #IvReturnSaleDate').val(),
+            IvSaleHdId: $('#searchBox #IvSaleHdId').val()
+
+        };
+
+        const columns = [
+            {
+                "data": "result.data.id",
+                'render': function (data, type, row, meta) {
+                    return meta.row + meta.settings._iDisplayStart + 1;
+                }
+            },
+            {
+                "data": "IvReturnSaleNumber",
+                "name": "IvReturnSaleNumber",
+                "autoWidth": true
+            },
+            {
+                "data": "IvReturnSaleDate",
+                "name": "IvReturnSaleDate",
+                "autoWidth": true
+            },
+            {
+                "data": null,
+                "autoWidth": true,
+                "render": function (d, t, row) {
+                    debugger;
+                    if (row.IvSaleHd.ArCustomers == null) return '';
+                    return lang === 'ar-EG' ? row.IvSaleHd.ArCustomers.CustomerNameAr : row.IvSaleHd.ArCustomers.CustomerNameEn;
+                }
+            },
+            {
+                "data": null,
+                "autoWidth": true,
+                "render": function (d, t, row) {
+                    if (row.FndLookupStatusLkp == null) return '';
+                    return lang === 'ar-EG' ? row.FndLookupStatusLkp.NameAr : row.FndLookupStatusLkp.NameEn;
+                }
+            },
+            {
+                "data": "Amount",
+                "name": "Amount",
+                "render": $.fn.dataTable.render.number(',', '.', 2),
+                "autoWidth": true
+            },
+            {
+                "data": null,
+                "autoWidth": true,
+                "render": function (d, t, row) {
+                    debugger;
+                    if (row.IvSaleHd.IvWarehouses == null) return '';
+                    return row.IvSaleHd.IvWarehouses.WarehouseName;
+                }
+            },
+            {
+                "data": null,
+                "sortable": false,
+                "render": function (data, type, row) {
+                    let formAction = `${$PrefixHostName}/${_mainController}/@nameof(IvReturnSaleHdController.IvReturnSaleHdForm)`;
+                    let DeleteAction = `${$PrefixHostName}/${_mainController}/@nameof(IvReturnSaleHdController.Delete)`;
+
+                    let formTPage='@ERP.ResourcePack.Sales.ReturnSale.Title';
+                    let btns = '';
+
+                    @*if (_permissions.includes(_updatePermission) ) {
+                        btns += `<a href="javascript:void(0)" onclick="PostAjax(${row.Id})" title="@ERP.ResourcePack.Common.Settings.Post"><i class="mx-2 fas fa-check-circle text-info"></i></a>`;
+                    }*@
+                     @*if (_permissions.includes(_postPermission) && row.StatusLkpId == _newStatus) {
+                        btns += `<a href="javascript:void(0)" onclick="PostAjax(${row.Id})" title="@ERP.ResourcePack.Common.Settings.Post"><i class="mx-2 fas fa-check-circle text-info"></i></a>`;
+                    }
+                    if (_permissions.includes(_updatePermission) && row.StatusLkpId == _newStatus) {
+                        btns += `<a href="${$PrefixHostName}/IvSaleHd/FormView?id=${row.EncId}&t=@encUpdateTrigger" title="@ERP.ResourcePack.Common.Settings.Edit"><i class="mx-2 fas fa-edit text-info"></i></a>`;
+                    }*@
+
+                    btns += `<a href="${$PrefixHostName}/IvReturnSaleHd/FormView?id=${row.EncId}&t=@encShowTrigger" title="@ERP.ResourcePack.Common.Settings.Show"><i class="mx-2 fas fa-eye text-info"></i></a>`;
+
+                    @*if (_permissions.includes(_deletePermission) && row.StatusLkpId == _newStatus) {
+                        btns += `<a href="javascript:void(0)" onclick="AjaxController.DeleteMainTableRow(${row.Id},'${DeleteAction}');" title="@ERP.ResourcePack.Common.Settings.Delete"><i class="mx-2 fas fa-trash-alt text-danger"></i></a>`;
+                    }
+                    btns += `<a href="javascript:void(0);" onclick="return print('${$PrefixHostName}/IvSaleHd/PrintsaleScreen','${row.EncId}','${lang}')" title="@ERP.ResourcePack.Common.Settings.Print"><i class="mx-2 fas fa-print text-success"></i></a>`;*@
+                    const _auditedPermission = '@PermissionNames.Pages_IvReturnSaleHd_Audit';
+
+                    if (_permissions.includes(_auditedPermission)) {
+
+                        row.permission = _auditedPermission;
+
+                        btns += GetAuditedButton(row);
+                    }
+
+                    return btns;
+                }
+            }
+        ];
+
+        const dtObj = {
+            "processing": true,
+            "serverSide": true,
+            "filter": false,
+            "orderMulti": false,
+            "language": dataTableLang,
+            "ajax": {
+                "url": _loadDataUrl,
+                "type": "POST",
+                "datatype": "json",
+                "data": params,
+                "complete": function () {}
+            },
+            "columns": columns,
+            "initComplete": function () {
+                $('[data-toggle="tooltip"]').tooltip();
+
+            }
+
+        };
+
+        _tblSelector.dataTable().fnDestroy();
+        _tblSelector.DataTable(dtObj).on('draw', function () { $('[data-toggle="tooltip"]').tooltip(); });
+
+        setTimeout(function () {
+            $(".sorting_1").removeAttr('colspan');
+        }, 500);
+    };
+
+    $('#btnSubmition').on('click', function () {
+
+        if ($('#mainForm').valid()) {
+
+            $(this).prop('disabled', true);
+
+            $('#submitLoader').show();
+
+            $('#mainForm').submit();
+
+        } else {
+            $(this).prop('disabled', false);
+
+            $('#submitLoader').hide();
+        }
+
+    });
+    const clearFormChangeWarehousesAndPriclist = function () {
+        $('#TaxAmount').val('');
+        $('#TrCost').val('');
+        $('#FndTaxtypeId').val('');
+        $('#UnitPrice').val('');
+        $('#RQty').val('');
+        $('#Totbeforetax').val('');
+        $('#Avilablequantity').val('');
+        $('#IvItemId').val('').trigger('change');
+        $('#Total').val(0);
+    };
+  $('#searchBox #StatusLkpId').select2(ReturnSelect2ObjectForLkpsTypes('@ERP.Front.Helpers.Enums.Common.FndLkpsTypes.IvReturnSaleHdStatus.ToString()'));
+  $('#IvSaleHdId').select2(ReturnSelect2ObjectDefault(`${baseUrl}/IvSaleHd/GetSalesSelect2`));
+  $('#IvWarehouseId').select2(ReturnSelect2ObjectDefault(`${baseUrl}/IvAdjustmentHd/GetIvWarehousesByUserIdSelect2`));
+  $('#CurrencyId').select2(ReturnSelect2ObjectDefault(`${baseUrl}/Currency/GetCurrenciesSelect2`));
+  $('#CurrencyId').on('change', function (e) {
+        debugger;
+        $('#CustomerCurrencyRate').val('');
+        const currency = $(this);
+        const rateTxt = $('#CurrencyRate');
+        if (currency === undefined || currency.find(':selected').val() === undefined) { } else {
+            $.ajax({
+                url: `${baseUrl}/Currency/GetRate`,
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${$_token}`
+                },
+                data: {
+                    Id: currency.find(':selected').val(),
+                    date: ''
+                }
+            }).done(function (rate) {
+                debugger;
+                let _inputSelector = $('#CurrencyRate');
+
+                _inputSelector.parent('.form-line').addClass('focused');
+
+                rateTxt.val(rate.result);
+                $('#ReturnCurrencyRate').val(rate.result);
+
+            }).fail(function (response) {
+                toastr.error(response);
+            });
+        }
+    });
+  $('#IvSaleHdId').on('change', function (e) {
+      debugger;
+      clearFormAdding();
+        const SaleHdId = $(this);
+        //const rateTxt = $('#CurrencyRate');
+        if (SaleHdId === undefined || SaleHdId.find(':selected').val() === undefined) { } else {
+            $.ajax({
+                url: `${baseUrl}/IvSaleHd/GetSaleData`,
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${$_token}`
+                },
+                data: {
+                    Id: SaleHdId.find(':selected').val(),
+                    date: ''
+                }
+            }).done(function (result) {
+                debugger;
+                saledate = result.result;
+                customerNumber = saledate.arCustomers.customerNumber;
+                customername = lang === 'ar-EG' ? saledate.arCustomers.customerNameAr : saledate.arCustomers.customerNameEn;
+                warehouseName = saledate.ivWarehouses.warehouseName;
+                $('#IvWarehouseName').val(warehouseName);
+                $('#CustomerNumber').val(customerNumber);
+                $('#CustomerName').val(customername);
+
+                $('#IvWarehouseName').parent('.form-line').addClass('focused');
+                $('#CustomerNumber').parent('.form-line').addClass('focused')
+                $('#CustomerName').parent('.form-line').addClass('focused')
+
+                //let _inputSelector = $('#CurrencyRate');
+
+                //_inputSelector.parent('.form-line').addClass('focused');
+
+                //rateTxt.val(rate.result);
+                //$('#ReturnCurrencyRate').val(rate.result);
+                var saleid = $('#IvSaleHdId').val();
+                getBankAccount(saleid)
+                GetPaymentMethod(saleid)
+
+
+            }).fail(function (response) {
+                toastr.error(response);
+            });
+        }
+    });
+  $('#IvItemId').select2({
+        ajax: {
+            url: `${baseUrl}/IvSaleHd/GetIvitemBySaleSelect2`,
+            dataType: 'json',
+            headers: {
+                'Authorization': `Bearer ${$_token}`
+            },
+            data: function (params) {
+                params.page = params.page || 1;
+                return {
+                    IvSaleHdId: $('#IvSaleHdId').find(':selected').val(),
+                    pageSize: pageSize,
+                    pageNumber: params.page,
+                    searchTerm: params.term,
+                    lang: lang
+                };
+            },
+            processResults: function (data, params) {
+                debugger;
+                params.page = params.page || 1;
+
+                return {
+                    results: data.result.results,
+                    pagination: {
+                        more: (params.page * pageSize) < data.Total
+                    }
+                };
+            }
+        },
+        placeholder: select2Placeholder,
+        minimumInputLength: 0,
+        allowClear: true,
+        language: select2Lang
+    });
+  $('#IvItemId').on('change', function (e) {
+        $('#TaxAmount').val('');
+        $('#TrCost').val('');
+      $('#FndTaxtypeId').val('');
+        $('#UnitPrice').val('');
+        $('#RQty').val('');
+        $('#Totbeforetax').val('');
+        $('#Avilablequantity').val('');
+      $('#Total').val(0);
+      $('#IvSaleTrId').val('');
+
+        const Item = $(this);
+        debugger;
+        //const rateTxt = $('#CurrencyRate');
+        if (Item === undefined || Item.find(':selected').val() === undefined) { } else {
+            $.ajax({
+                url: `${baseUrl}/IvReturnSaleHd/GetItemDatasaledetails`,
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${$_token}`
+                }
+                ,
+                data: {
+                    Id: Item.find(':selected').val(),
+                    IvSaleHdId: $('#IvSaleHdId').find(':selected').val()
+                }
+            }).done(function (Respone) {
+                debugger;
+                var itemdata = Respone.result;
+                var UnitPrice = itemdata.unitPrice;
+                $('#TrCost').val(itemdata.trCost);
+                $('#UnitPrice').val(itemdata.unitPrice);
+                $('#Avilablequantity').val(itemdata.availableQty);
+                $('#IvSaleTrId').val(itemdata.ivSaleTrId);
+                $('#Avilablequantity').parent('.form-line').addClass('focused');
+                $('#UnitPrice').parent('.form-line').addClass('focused');
+                $('#Percentage').val(itemdata.percentage);
+                if (itemdata.fndTaxtypeId == null || itemdata.fndTaxtypeId == '') {
+                    $('#FndTaxtypeId').val(null);
+                }
+                else {
+                    $('#FndTaxtypeId').val(itemdata.fndTaxtypeId);
+                }
+
+
+                //if (itemdata.taxPercentageLkpId == 10996) {
+                //    $('#TaxAmount').val((UnitPrice * Rqty * 5) / 100)
+                //}
+                //else {
+                //    $('#TaxAmount').val(UnitPrice * Rqty * 0)
+                //}
+
+
+            }).fail(function (response) {
+                toastr.error(response);
+            });
+        }
+    });
+  $('#RQty').on('change', function (e) {
+        debugger;
+        var rQty = $('#RQty').val();
+        var UnitPrice = $('#UnitPrice').val();
+        $('#Totbeforetax').val(UnitPrice * rQty);
+        $('#Totbeforetax').parent('.form-line').addClass('focused');
+      var FndTaxtypeId = $('#FndTaxtypeId').val();
+      var Percentage = $('#Percentage').val();
+      $('#TaxAmount').val((rQty * UnitPrice * Percentage) / 100);
+
+        $('#TaxAmount').parent('.form-line').addClass('focused');
+        var taxamount = $('#TaxAmount').val();
+        var TotalBeforeTax = $('#Totbeforetax').val();
+        $('#Total').val(parseFloat(taxamount) + parseFloat(TotalBeforeTax));
+        $('#Total').parent('.form-line').addClass('focused');
+    });
+</script>
+
+
+<script name="detailsss">
+    const _tblDetailSelector = $('#tblReturnSalesDetails'), _ReturnSaleslistDetail = $('#ReturnSaleDetailsListStr');
+    let _ReturnSalesDetails = [], updatedDetailsRow, tblCounterIndex = 0 ;
+    let sum = 0;
+    const fillDetail = function () {
+        debugger;
+        if (validator($('#IvItemId').find(':selected').val()) === false) return;
+        const current = {
+            index: ++tblCounterIndex,
+            ivItemId: $('#IvItemId').find(':selected').val(),
+            itemName: $('#IvItemId').find(':selected').text(),
+            availableQty: $('#Avilablequantity').val(),
+            rQty: $('#RQty').val(),
+            unitPrice: $('#UnitPrice').val(),
+            totbeforetax: $('#Totbeforetax').val(),
+            taxAmount: $('#TaxAmount').val(),
+            totalamount: $('#Total').val(),
+            trCost: $('#TrCost').val(),
+            ivSaleTrId: $('#IvSaleTrId').val(),
+            FndTaxtypeId: $('#FndTaxtypeId').val(),
+            rowStatus: NewStatus,
+            id: 0
+        };
+        return current;
+    };
+
+
+
+    const AddReturnsalesDetails = function () {
+        debugger;
+        const current = fillDetail();
+
+        if (current === undefined) return;
+
+        if (CheckItemExist(current.ivItemId) === false) {
+            return;
+        }
+
+        _ReturnSalesDetails.push(current);
+
+        _ReturnSaleslistDetail.val(JSON.stringify(_ReturnSalesDetails));
+
+        bindDetailTable();
+
+        clearFormAdding();
+    };
+
+    const bindDetailTable = function () {
+        debugger;
+        const detailArr = _ReturnSalesDetails.filter(z => z.rowStatus !== DeletedStatus);
+        const columns = [
+            { 'data': 'index' },
+            { 'data': 'ivItemId' },
+            { 'data': 'itemName' },
+            {
+                'data': 'availableQty',
+                "className": "myclass textrightDatatable"
+            },
+            {
+                'data': 'rQty',
+                "className": "myclass textrightDatatable"
+            },
+            {
+                'data': 'unitPrice',
+                "className":"myclass textrightDatatable",
+                 "render": $.fn.dataTable.render.number(',', '.', 2),
+            },
+            {
+                'data': 'totbeforetax',
+                "className": "myclass textrightDatatable",
+                 "render": $.fn.dataTable.render.number(',', '.', 2),
+            },
+            {
+                'data': 'taxAmount',
+                "className":"myclass textrightDatatable",
+                "render": $.fn.dataTable.render.number(',', '.', 2),
+            },
+            {
+                'data': 'totalamount',
+                "className": "myclass textrightDatatable",
+                 "render": $.fn.dataTable.render.number(',', '.', 2),
+            },
+            {
+                'data': null,
+                'searchable': false,
+                'ordering': false,
+                'sorting': false,
+                'render': function (d, t, row) {
+
+                    let rows = '';
+
+                    if (primaryEntityKeyId === 0 || trigger !== '@ERP.Front.Helpers.Enums.Common.FormTriggers.Show.ToString()') {
+
+                        rows += `<td><a href="javascript:void(0)" onclick="return DeleteDetail(${row.index})"><i class="mx-2 fas fa-trash-alt text-danger"></i></a>`;
+                        rows += `<a href="javascript:void(0)" onclick="return GetDetailRow(${row.index})"><i class="mx-2 fas fa-edit text-success"></i></a></td>`;
+                    }
+                    else {
+                        rows += '<td></td>';
+                    }
+
+                    return rows;
+                }
+            }
+        ];
+
+        const dtObj = {
+            data: detailArr,
+            retrieve: true,
+            language: dataTableLang,
+            columns: columns,
+            drawCallback: function (c, v, b) {
+            },
+            "footerCallback": function (row, data, start, end, display) {
+                var api = this.api();
+                debugger;
+                // Remove the formatting to get integer data for summation
+                var intVal = function (i) {
+                    return typeof i === 'string' ?
+                        i.replace(/[\$,]/g, '') * 1 :
+                        typeof i === 'number' ?
+                            i : 0;
+                };
+                var numberRenderer = $.fn.dataTable.render.number(',', '.', 2).display;
+                // Total over all pages
+                total = api
+                    .column(8)
+                    .data()
+                    .reduce(function (a, b) {
+                        return intVal(a) + intVal(b);
+                    }, 0);
+
+                // Total over this page
+                pageTotal = api
+                    .column(8, { page: 'current' })
+                    .data()
+                    .reduce(function (a, b) {
+                        return intVal(a) + intVal(b);
+                    }, 0);
+
+                // Update footer
+                total = parseFloat(total).toFixed(2);
+                $(api.column(8).footer()).html(
+                    numberRenderer(total)
+                );
+            }
+
+        };
+
+        setTimeout(function () {
+            _tblDetailSelector.dataTable().fnDestroy();
+            _tblDetailSelector.DataTable(dtObj).on('draw', function () { $('[data-toggle="tooltip"]').tooltip(); });
+        }, 100);
+    };
+
+    const DeleteDetail = function (index)  {
+        debugger;
+        const current = _ReturnSalesDetails.find(z => z.index === index);
+
+        const indexOfCurrent = _ReturnSalesDetails.indexOf(current);
+
+        if (!current.id) {
+
+            _ReturnSalesDetails.splice(indexOfCurrent, 1);
+
+        } else {
+
+            current.rowStatus = DeletedStatus;
+
+            _ReturnSalesDetails.splice(indexOfCurrent, 1,current);
+        }
+
+        bindDetailTable();
+
+        _ReturnSaleslistDetail.val(_ReturnSalesDetails.length === 0 ? '' : JSON.stringify(_ReturnSalesDetails));
+
+    };
+
+    const LoadDetailData = function () {
+        debugger;
+        $.ajax({
+            url: `${baseUrl}/IvReturnSaleHd/GetAllReturnSaleslistDetails`,
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${$_token}`
+            },
+            data: {
+                id: primaryEntityKeyId
+            }
+        }).done(function (data) {
+            debugger;
+            _ReturnSalesDetails = [...data.result];
+
+            tblCounterIndex = 0;
+
+            $.each(_ReturnSalesDetails, function (i, item) {
+                item.index = ++tblCounterIndex;
+            });
+
+            bindDetailTable();
+
+            _ReturnSaleslistDetail.val(JSON.stringify(_ReturnSalesDetails));
+
+        });
+
+    };
+    const GetDetailRow = function (tblIndex) {
+        debugger;
+        clearFormAdding();
+
+        $('#btnAddReturnsalesDetailRow').hide();
+        $('#btnUpdateReturnsalesDetailRow').show();
+        $('#btnCancelReturnsalesDetailRow').show();
+
+        const current = _ReturnSalesDetails.find(z => z.index === tblIndex);
+        debugger;
+        $(`#IvItemId`).append($("<option selected='selected'></option>")
+            .val(current.ivItemId).text(current.itemName)).trigger('change');
+        $(`#Avilablequantity`).val(current.availableQty);
+        $(`#RQty`).val(current.rQty);
+        $(`#UnitPrice`).val(current.unitPrice);
+        $(`#Totbeforetax`).val(current.totbeforetax);
+        $(`#TaxAmount`).val(current.taxAmount);
+        $(`#Total`).val(current.totalamount);
+        $(`#TrCost`).val(current.trCost);
+
+        $('#Avilablequantity').parent('.form-line').addClass('focused');
+        $('#RQty').parent('.form-line').addClass('focused');
+        $('#UnitPrice').parent('.form-line').addClass('focused');
+        $('#Totbeforetax').parent('.form-line').addClass('focused');
+        $('#TaxAmount').parent('.form-line').addClass('focused');
+        $('#Total').parent('.form-line').addClass('focused');
+        updatedDetailsRow = current;
+    };
+
+    const UpdateReturnsalesDetailsRow = function () {
+        debugger;
+        let current = _ReturnSalesDetails.find(z => z.index === updatedDetailsRow.index);
+
+        let indexOfCurrent = _ReturnSalesDetails.indexOf(_ReturnSalesDetails.find(z => z.index === updatedDetailsRow.index));
+
+        const newRow = fillDetail();
+        if (newRow === undefined) return;
+        if (_ReturnSalesDetails.find(z => z.index === updatedDetailsRow.index).IvItemId == newRow.IvItemId) {
+
+        }
+        else {
+            if (CheckItemExist(newRow.ivItemId, newRow.rowStatus) === false) {
+                return;
+            }
+        }
+
+        newRow.index = current.index;
+        newRow.id = updatedDetailsRow.id;
+        newRow.rowStatus =  !updatedDetailsRow.id ? NewStatus : UpdatedStatus;
+
+        _ReturnSalesDetails.splice(indexOfCurrent, 1,newRow);
+
+        $('#btnAddReturnsalesDetailRow').show();
+        $('#btnUpdateReturnsalesDetailRow').hide();
+        $('#btnCancelReturnsalesDetailRow').hide();
+
+        clearFormAdding();
+
+        _ReturnSaleslistDetail.val(JSON.stringify(_ReturnSalesDetails));
+
+        setTimeout(function () {
+            bindDetailTable();
+        }, 100);
+    };
+
+    const clearFormAdding = function () {
+        $('#details .card:first input').val('');
+        $('#details .card:first select').val('').trigger('change');
+    };
+
+    const validator = function () {
+        debugger;
+        if (!$('#IvItemId').find(':selected').val()) {
+            toastr.warning('@IvSaleHd.Itemcode' + ' : ' + '@ERP.ResourcePack.Common.Settings.Required');
+            return false;
+        }
+        if (!$('#RQty').val()) {
+            toastr.warning('@IvSaleHd.Qtys' + ' : ' + '@ERP.ResourcePack.Common.Settings.Required');
+            return false;
+        }
+        if (parseInt($('#Avilablequantity').val()) < parseInt($('#RQty').val())) {
+               toastr.warning('@IvSaleHd.quantitymustbeless' + ' : ' + '@ERP.ResourcePack.Common.Settings.Required');
+            return false;
+
+        }
+
+    };
+
+    const CheckItemExist = function (itemid, rowStatus) {
+        debugger;
+        var s = _ReturnSalesDetails
+        const found = _ReturnSalesDetails.some(el => el.ivItemId == itemid && el.rowStatus != "Deleted");
+        if (!found) {
+            return true;
+        }
+        else {
+            toastr.warning('There is already exsiting data');
+            console.log(false);
+            return false;
+
+        }
+    };
+
+
+    const print = function (url, id, lang) {
+        debugger;
+        const data = { id: id, lang: lang };
+        openModal(data, url);
+    };
+
+</script>
+
+
+

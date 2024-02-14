@@ -1,0 +1,13 @@
+﻿@{
+    ViewBag.Title = ERP.ResourcePack.PmPropertiesModule.PmProperties.Title;
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@Html.Action(nameof(ERP.Web.UI.Controllers.PmPropertiesModule.PmPropertiesController.PmPropertiesSearch))
+@Html.Action(nameof(ERP.Web.UI.Controllers.PmPropertiesModule.PmPropertiesController.PmPropertiesData))
+
+@section scripts{
+    <script>let formView = false;</script>
+    @Html.Partial("~/ViewsScripts/_PmPropertiesModule/PmProperties/PmPropertiesScripts.cshtml")
+}
+

@@ -1,0 +1,244 @@
+﻿@using ERP.Web.UI.Controllers.PmPropertiesModule
+@using ERP.Authorization;
+@{
+    string encUpdateTrigger = ERP.Front.Helpers.Enums.Common.EncUpdate;
+    string encShowTrigger = ERP.Front.Helpers.Enums.Common.EncShow;
+    string permissionsStr = TempData["Permissions"].ToString();
+}
+
+<script>
+    const _mainController = "CrmAboutUs", _apiAppService = "CrmAboutUs";
+
+    $(function () {
+        LoadDataGrid();
+        $('#tblCrmAboutUsPrint thead').html($('#tblCrmAboutUs thead').html());
+        $('#tblCrmAboutUsPrint thead tr :last-child').remove();
+        $('#CrmAboutUs').addClass('active');
+
+        $('.summernote').summernote({
+            tabsize: 2,
+            height: 100,
+        });
+
+    });
+
+    const _loadDataUrl = `${$PrefixHostName}/${_mainController}/@nameof(CrmAboutUsController.LoadDataGrid)`;
+    const _tblSelector = $('#tblCrmAboutUs');
+    const _tblLoader = $('#tblLoader');
+    const _mainForm = $('#mainForm');
+
+    const _permissions = '@permissionsStr';
+    const _updatePermission = '@PermissionNames.Pages_CrmAboutUs_Update';
+    const _deletePermission = '@PermissionNames.Pages_CrmAboutUs_Delete';
+
+    $('#btnSubmition').on('click', function () {
+
+        _mainForm.submit();
+
+        if (_mainForm.valid()) {
+
+            $(this).hide();
+            $('#submitLoader').show();
+
+        } else {
+
+            $(this).show();
+            $('#submitLoader').hide();
+        }
+
+    });
+
+    var OnBegin = function (response) {
+        fireBtnLoader();
+    };
+
+    var OnSuccess = function (response) {
+
+        if (response.success) {
+
+            if (response.customRestResult.trigger === '@ERP.Front.Helpers.Enums.Common.FormTriggers.Insert') {
+
+                toastr.success(response.customRestResult.message);
+
+                setTimeout(function () {
+                    window.location.href = $PrefixHostName + '/CrmAboutUs';
+                }, 200);
+
+            } else if (response.customRestResult.trigger === '@ERP.Front.Helpers.Enums.Common.FormTriggers.Update') {
+
+                toastr.success(response.customRestResult.message);
+
+                setTimeout(function () {
+                    window.location.href = $PrefixHostName + '/CrmAboutUs';
+                }, 200);
+            }
+
+        } else {
+            toastr.error(response.customRestResult.message);
+        }
+
+    };
+
+    var OnComplete = function (response) {
+        downBtnLoader();
+    };
+
+    var OnFailure = function (response) {
+        toastr.error(response);
+        downBtnLoader();
+    };
+
+    const LoadDataGrid = function () {
+
+        const parms = {
+            HeaderName: $('#searchBox #HeaderName').val(),
+        };
+
+        const columns = [
+            {
+                "data": "result.data.id",
+                'render': function (data, type, row, meta) {
+                    return meta.row + meta.settings._iDisplayStart + 1;
+                }
+            },
+            {
+                "data": "HeaderNameAr",
+                "name": "HeaderNameAr",
+                "autoWidth": true
+            },
+            {
+                "data": "HeaderNameEN",
+                "name": "HeaderNameEN",
+                "autoWidth": true
+            },
+
+            {
+                "data": null,
+                "sortable": false,
+                "render": function (data, type, row) {
+
+                    let formAction = `${$PrefixHostName}/${_mainController}/@nameof(CrmAboutUsController.CrmAboutUsForm)`;
+                    let DeleteAction = `${$PrefixHostName}/${_mainController}/@nameof(CrmAboutUsController.Delete)`;
+
+                    let btns = '';
+
+                    if (_permissions.includes(_updatePermission)) {
+                        btns += `<a href="${$PrefixHostName}/CrmAboutUs/FormView?id=${row.EncId}&t=@encUpdateTrigger" title="@ERP.ResourcePack.Common.Settings.Edit"><i class="mx-2 fas fa-edit text-info"></i></a>`;
+                    }
+
+                    btns += `<a href="${$PrefixHostName}/CrmAboutUs/FormView?id=${row.EncId}&t=@encShowTrigger" title="@ERP.ResourcePack.Common.Settings.Show"><i class="mx-2 fas fa-eye text-info"></i></a>`;
+
+                    if (_permissions.includes(_deletePermission)) {
+                        btns += `<a href="javascript:void(0)" onclick="AjaxController.DeleteMainTableRow(${row.Id},'${DeleteAction}');" title="@ERP.ResourcePack.Common.Settings.Delete"><i class="mx-2 fas fa-trash-alt text-danger"></i></a>`;
+                    }
+
+                    const _auditedPermission = '@PermissionNames.Pages_CrmAboutUs_Audit';
+
+                    if (_permissions.includes(_auditedPermission)) {
+
+                        row.permission = _auditedPermission;
+
+                        btns += GetAuditedButton(row);
+                    }
+
+                    return btns;
+                }
+            }
+        ];
+
+        const dtObj = {
+            "processing": true,
+            "serverSide": true,
+            "filter": false,
+            "orderMulti": false,
+            "language": dataTableLang,
+            "ajax": {
+                "url": _loadDataUrl,
+                "type": "POST",
+                "datatype": "json",
+                "data": parms,
+                "complete": function () { }
+            },
+            "columns": columns,
+            "initComplete": function () {
+                $('[data-toggle="tooltip"]').tooltip();
+            }
+
+        };
+
+        _tblSelector.dataTable().fnDestroy();
+        _tblSelector.DataTable(dtObj).on('draw', function () { $('[data-toggle="tooltip"]').tooltip(); });
+
+        setTimeout(function () {
+            $(".sorting_1").removeAttr('colspan');
+        }, 500);
+    };
+
+
+    //$(document).ready(function () {
+    //    debugger;
+
+    //});
+
+
+    function printExc() {
+        $('.page-loader-wrapper').show();
+
+        const parmss = {
+            HeaderName: $('#searchBox #HeaderName').val(),
+            length: 1000000
+        };
+
+        const columns = [
+            {
+                "data": "result.data.id",
+                'render': function (data, type, row, meta) {
+                    return meta.row + meta.settings._iDisplayStart + 1;
+                }
+            },
+            {
+                "data": "HeaderNameAr",
+                "name": "HeaderNameAr",
+                "autoWidth": true
+            },
+            {
+                "data": "HeaderNameEN",
+                "name": "HeaderNameEN",
+                "autoWidth": true
+            }
+        ];
+
+        const dtObj = {
+            "language": dataTableLang,
+            "dom": 'Bfrtip',
+            "buttons": [
+                {
+                    extend: 'excel',
+                    messageTop: `${$('#HeaderName').siblings().text()}: ${(parmss.HeaderName) ? parmss.HeaderName : '--'}`
+                },
+
+            ],
+            "ajax": {
+                "url": _loadDataUrl,
+                "type": "POST",
+                "datatype": "json",
+                "data": parmss,
+                "complete": function (d) {
+                    _tblLoader.hide();
+                }
+            },
+            "columns": columns,
+
+            "initComplete": function () {
+                $('#tblCrmAboutUsPrint_wrapper button.dt-button').click();
+            }
+        };
+
+        $('#tblCrmAboutUsPrint').dataTable().fnDestroy();
+        $('#tblCrmAboutUsPrint').DataTable(dtObj).on('buttons-processing', function (e, indicator) { if (!indicator) { $('.page-loader-wrapper').hide() } });
+
+
+    }
+
+
+</script>

@@ -1,0 +1,198 @@
+﻿@using ERP.Web.UI.Models.ViewModels.AccountsExtend
+@using ERP.Web.UI.Models.ViewModels.Accounts
+@using ERP.ResourcePack.AccountsExtend
+@model ApInvoiceHdVM
+@{
+    string formTrigger = ViewBag.trigger;
+    string lang = Request.Cookies["Lang"] == null ? "ar-EG" : Request.Cookies["Lang"].Value.ToString();
+    string lkpKeyDdl = lang == "ar-EG" ? nameof(ERP.Web.UI.Models.ViewModels.Accounts.CurrenciesVM.DescriptionAr) : nameof(ERP.Web.UI.Models.ViewModels.Accounts.CurrenciesVM.DescriptionEn);
+    string lkpKeyDdlVndr = lang == "ar-EG" ? nameof(ERP.Web.UI.Models.ViewModels.Accounts.ApVendorsVM.VendorNameAr) : nameof(ERP.Web.UI.Models.ViewModels.Accounts.ApVendorsVM.VendorNameEn);
+    string lkpKeyDdlFnd = lang == "ar-EG" ? nameof(ERP.Web.UI.Models.ViewModels.General.FndLookupValuesVM.NameAr) : nameof(ERP.Web.UI.Models.ViewModels.General.FndLookupValuesVM.NameEn);
+    bool isFormDetail = Model != null && formTrigger == ERP.Front.Helpers.Enums.Common.FormTriggers.Show.ToString();
+    var lastDateTime = ViewData["Version"] == null ? null : ViewData["Version"] as Nullable<DateTime>;
+}
+<div class="card">
+    <div class="header">
+        <h2><strong>@ERP.ResourcePack.Accounts.GlJeHeaders.MasterData</strong></h2>
+    </div>
+    <div class="body">
+        @using (Ajax.BeginForm(nameof(ERP.Web.UI.Controllers.Accounts.ApInvoiceHdController.CreateApInvoiceHd), "ApInvoiceHd",
+            new AjaxOptions { HttpMethod = "POST", OnBegin = "OnBegin", OnSuccess = "OnSuccess", OnComplete = "OnComplete", OnFailure = "OnFailure" }, new { @id = "mainForm" }))
+        {
+            @Html.HiddenFor(z => z.Id)
+            @Html.HiddenFor(z => z.codeComUtilityIds)
+            @Html.HiddenFor(z => z.codeComUtilityTexts)
+            @Html.HiddenFor(z => z.codeComUtilityIds_alt1)
+            @Html.HiddenFor(z => z.codeComUtilityTexts_alt1)
+            @Html.HiddenFor(z => z.InvoiceDetailsListStr)
+            <input type="hidden" id="LastModificationTime" name="LastModificationTime" value="@lastDateTime" />
+            <div class="row clearfix">
+                <div class="col-md-3">
+                    <div class="form-group form-float">
+                        <div class="form-line">
+                            @Html.TextBoxFor(z => z.HdInvNo, getHtmlAttributes(true, "form-control", string.Empty))
+                            @Html.LabelFor(z => z.HdInvNo, new { @class = "form-label" })
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="form-group form-float">
+                        <div class="form-line text-center">
+                            @if (lang == "ar-EG")
+                            {
+                                @Html.TextBoxFor(z => z.FndStatusLkp.NameAr, getHtmlAttributes(true, "form-control", string.Empty))
+                            }
+                            else
+                            {
+                                @Html.TextBoxFor(z => z.FndStatusLkp.NameEn, getHtmlAttributes(true, "form-control", string.Empty))
+                            }
+                            @Html.LabelFor(z => z.StatusLkpId, new { @class = "form-label" })
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="form-group form-float">
+                        <div class="form-line">
+                            @Html.TextBoxFor(z => z.HdDate, getHtmlAttributes(isFormDetail, "form-control", "datepicker"))
+                            @Html.LabelFor(z => z.HdDate, new { @class = "form-label" })
+                        </div>
+                        @Html.ValidationMessageFor(z => z.HdDate)
+                    </div>
+                </div>
+                <div class="col-sm-3">
+                    @Html.LabelFor(z => z.HdTypeLkpId, new { @class = "form-label" })
+                    <div class="form-group form-float">
+                        <div class="form-line">
+                            @if (Model != null && Model.FndHdTypeLkp != null)
+                            {
+                                var list = new List<ERP.Web.UI.Models.ViewModels.General.FndLookupValuesVM> { new ERP.Web.UI.Models.ViewModels.General.FndLookupValuesVM { Id = Model.HdTypeLkpId, NameAr = Model.FndHdTypeLkp.NameAr, NameEn = Model.FndHdTypeLkp.NameEn } };
+
+                                var selectList = new SelectList(list, "Id", lkpKeyDdlFnd, Model.HdTypeLkpId);
+
+                                @Html.DropDownListFor(z => z.HdTypeLkpId, selectList, getHtmlAttributes(isFormDetail, "form-control", string.Empty))
+                            }
+                            else
+                            {
+                                @Html.DropDownListFor(z => z.HdTypeLkpId, Enumerable.Empty<SelectListItem>(), getHtmlAttributes(isFormDetail, "form-control", string.Empty))
+                            }
+
+                            @Html.ValidationMessageFor(z => z.HdTypeLkpId)
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row clearfix">
+                <div class="col-md-3">
+                    @Html.LabelFor(z => z.CurrencyId, new { @class = "form-label" })
+                    <div class="form-group form-float">
+                        <div class="form-line">
+                            @if (Model != null && Model.Currency != null)
+                            {
+                                var list = new List<CurrenciesVM> { new CurrenciesVM { Id = (long)Model.CurrencyId, DescriptionAr = Model.Currency.DescriptionAr, DescriptionEn = Model.Currency.DescriptionEn } };
+                                var selectList = new SelectList(list, "Id", lkpKeyDdl, Model.CurrencyId);
+
+                                @Html.DropDownListFor(z => z.CurrencyId, selectList, getHtmlAttributes(isFormDetail, "form-control", string.Empty))
+                            }
+                            else
+                            {
+                                @Html.DropDownListFor(z => z.CurrencyId, Enumerable.Empty<SelectListItem>(), getHtmlAttributes(isFormDetail, "form-control", string.Empty))
+                            }
+                        </div>
+                        @Html.ValidationMessageFor(z => z.CurrencyId)
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="form-group form-float">
+                        <div class="form-line">
+                            @Html.TextBoxFor(z => z.CurrencyRate, new { @class = "form-control", @readonly = "readonly", @tabindex = "-1", @style = "pointer-events: none;" })
+                            @Html.LabelFor(z => z.CurrencyRate, new { @class = "form-label", @style = "pointer-events: none;" })
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    @Html.LabelFor(z => z.VendorId, new { @class = "form-label" })
+                    <div class="form-group form-float">
+                        <div class="form-line">
+                            @if (Model != null && Model.ApVendors != null)
+                            {
+                                var list = new List<ApVendorsVM> { new ApVendorsVM { Id = Model.VendorId, VendorNameAr = Model.ApVendors.VendorNameAr, VendorNameEn = Model.ApVendors.VendorNameEn } };
+                                var selectList = new SelectList(list, "Id", lkpKeyDdlVndr, Model.VendorId);
+
+                                @Html.DropDownListFor(z => z.VendorId, selectList, getHtmlAttributes(isFormDetail, "form-control", string.Empty))
+                            }
+                            else
+                            {
+                                @Html.DropDownListFor(z => z.VendorId, Enumerable.Empty<SelectListItem>(), getHtmlAttributes(isFormDetail, "form-control", string.Empty))
+                            }
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="form-group form-float">
+                        <div class="form-line">
+                            @Html.TextBoxFor(z => z.TaxNo, getHtmlAttributes(true, "form-control", string.Empty))
+                            @Html.LabelFor(z => z.TaxNo, new { @class = "form-label" })
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row clearfix">
+                <div class="col-md-12">
+                    <div class="form-group form-float">
+                        <div class="form-line">
+                            @Html.TextAreaFor(z => z.Comments, getHtmlAttributes(isFormDetail, "form-control", string.Empty))
+                            @Html.LabelFor(z => z.Comments, new { @class = "form-label" })
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="header">
+                <h2><strong>@ApInvoiceHd.FromAccountId</strong></h2>
+            </div>
+            <div class="body">
+                <div class="row clearfix">
+                    @Html.Action(nameof(ERP.Web.UI.Controllers.Accounts.GlAccDetailsController.DrawGlAccController), "GlAccDetails",
+                       new { glAccHeadersVMs = ViewData["ListGlAccHeadersVM"] == null ? new List<GlAccHeadersVM>() : ViewData["ListGlAccHeadersVM"] as List<GlAccHeadersVM>, repeatTrigger = "from" })
+                    <div class="col-md-3">
+                        <div class="form-group form-float">
+                            <div class="form-line">
+                                @Html.TextBoxFor(z => z.PrepaidPeriod, getHtmlAttributes(isFormDetail, "form-control", string.Empty))
+                                @Html.LabelFor(z => z.PrepaidPeriod, new { @class = "form-label" })
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="header">
+                <h2><strong>@ApInvoiceHd.ToAccountId</strong></h2>
+            </div>
+            <div class="body">
+                <div class="row clearfix">
+                    @Html.Action(nameof(ERP.Web.UI.Controllers.Accounts.GlAccDetailsController.DrawGlAccController), "GlAccDetails",
+                       new { glAccHeadersVMs = ViewData["ListGlAccHeadersVM"] == null ? new List<GlAccHeadersVM>() : ViewData["ListGlAccHeadersVM"] as List<GlAccHeadersVM>, repeatTrigger = "to" })
+                    <div class="col-md-3">
+                        <div class="form-group form-float">
+                            <div class="form-line">
+                                @Html.TextBoxFor(z => z.PrepaidAmount, getHtmlAttributes(isFormDetail, "form-control currency", string.Empty))
+                                @Html.LabelFor(z => z.PrepaidAmount, new { @class = "form-label" })
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+
+</div>
+
+@functions {
+    object getHtmlAttributes(bool Disabled, string CssClass, string CssClass2)
+    {
+        if (Disabled)
+        {
+            return new { @class = CssClass, Disabled = Disabled };
+        }
+        return new { @class = $"{CssClass} {CssClass2}" };
+    }
+}

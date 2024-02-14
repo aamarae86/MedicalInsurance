@@ -1,0 +1,13 @@
+﻿@{
+    ViewBag.Title = ERP.ResourcePack.PmPropertiesModule.FmMaintRequisitionsExe.Title;
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@Html.Action(nameof(ERP.Web.UI.Controllers.PmPropertiesModule.FmMaintRequisitionsExeController.FmMaintRequisitionsExeSearch))
+@Html.Action(nameof(ERP.Web.UI.Controllers.PmPropertiesModule.FmMaintRequisitionsExeController.FmMaintRequisitionsExeData))
+
+@section scripts{
+    <script>let formView = false;</script>
+
+    @Html.Partial("~/ViewsScripts/_PmPropertiesModule/FmMaintRequisitionsExe/FmMaintRequisitionsExeScripts.cshtml")
+}

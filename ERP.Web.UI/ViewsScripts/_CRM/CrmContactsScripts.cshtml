@@ -1,0 +1,517 @@
+﻿@using ERP.Web.UI.Controllers.CRM
+@using ERP.Web.UI.Models.ViewModels.CRM.Leads
+@using ERP.Authorization;
+@{
+    string encUpdateTrigger = ERP.Front.Helpers.Enums.Common.EncUpdate;
+    string encShowTrigger = ERP.Front.Helpers.Enums.Common.EncShow;
+    string permissionsStr = TempData["Permissions"].ToString();
+}
+
+@*if (permissionsStr.Contains(PermissionNames.Pages_CrmLeadsPersons_Update))
+    {
+     <script>
+
+            const PostAjax = function (id) {
+
+                bootbox.confirm({
+                    message: "@ERP.ResourcePack.Common.Settings.AreYouSureAboutForwarding",
+                    buttons: bootBoxDefaultBtns,
+                    callback: function (result) {
+
+                        if (result) {
+
+                            const data = { id: id, lang: lang };
+
+                            $.ajax({
+                                url: `${baseUrl}/CrmLeadsPersons/PostFmContract`,
+                                type: 'POST',
+                                data: JSON.stringify(data),
+                                headers:
+                                {
+                                    'Content-Type': 'application/json',
+                                    'Authorization': `Bearer ${$_token}`
+                                },
+                            }).done(function (response) {
+                                debugger;
+                                if (response.result.finalStatues == 'F') {
+                                    toastr.error(response.result.reason);
+                                }
+                                else {
+
+                                    toastr.success(response.result.reason);
+                                    setTimeout(function () {
+                                        window.location.href = $PrefixHostName + '/CrmLeadsPersons';
+                                    }, 200);
+                                }
+
+                            }).fail(function (response) {
+                                toastr.error(response);
+                            });
+                        }
+                    }
+                });
+            };
+
+    </script>
+     }
+    else
+    {
+        <script>
+            const PostAjax = function (id) { };
+        </script>
+    }*@
+
+
+
+<script>
+    const _mainController = "CrmContact", _apiAppService = "CrmLeadsPersons";
+
+    $(function () {
+        LoadDataGrid();
+        $('#tblCrmContactPrint thead').html($('#tblCrmContact thead').html());
+        $('#tblCrmContactPrint thead tr :last-child').remove();
+        $('#CrmContact').addClass('active');
+    });
+
+    const _loadDataUrl = `${$PrefixHostName}/${_mainController}/@nameof(CrmContactController.LoadDataGrid)`;
+    const _tblSelector = $('#tblCrmContact');
+    const _mainForm = $('#mainForm');
+    const _tblLoader = $('#tblLoader');
+    const _permissions = '@permissionsStr';
+
+    @*const _postPermission = '@PermissionNames.Pages_CrmLeadsPersons_Post';*@
+
+    const _updatePermission = '@PermissionNames.Pages_CrmLeadsPersons_Insert';
+    const _deletePermission = '@PermissionNames.Pages_CrmLeadsPersons_Delete';
+
+    $('#btnSubmition').on('click', function () {
+
+        if (formValidator()) {
+            _mainForm.submit();
+        }
+
+
+    });
+
+    var OnBegin = function (response) {
+        fireBtnLoader();
+    };
+
+    var OnSuccess = function (response) {
+
+        if (response.success) {
+
+            if (response.customRestResult.trigger === '@ERP.Front.Helpers.Enums.Common.FormTriggers.Insert') {
+
+                toastr.success(response.customRestResult.message);
+
+                setTimeout(function () {
+                    window.location.href = $PrefixHostName + '/CrmContact';
+                }, 200);
+
+            } else if (response.customRestResult.trigger === '@ERP.Front.Helpers.Enums.Common.FormTriggers.Update') {
+
+                toastr.success(response.customRestResult.message);
+
+                setTimeout(function () {
+                    window.location.href = $PrefixHostName + '/CrmContact';
+                }, 200);
+            }
+
+        } else {
+            toastr.error(response.customRestResult.message);
+            $('#btnSubmition').prop('disabled', false);
+        }
+
+    };
+
+    var OnComplete = function (response) {
+        downBtnLoader();
+    };
+
+    var OnFailure = function (response) {
+        toastr.error(response);
+        downBtnLoader();
+        $('#btnSubmition').prop('disabled', false);
+    };
+
+    const LoadDataGrid = function () {
+
+        const parms = {
+            FullName: $('#FullName').val(),
+            Phone: $('#Phone').val(),
+            City: $('#City').val(),
+            Company: $('#Company').val(),
+            RatingLkpId: $('#searchBox #RatingLkpId').find(':selected').val(),
+            CountryLkpId: $('#searchBox #CountryLkpId').find(':selected').val(),
+            LeadSourceLkpId: $('#searchBox #LeadSourceLkpId').find(':selected').val(),
+            IndustryLkpId: $('#searchBox #IndustryLkpId').find(':selected').val(),
+            CrmProductId: $('#CrmProductId').find(':selected').val(),
+            CrmServiceId: $('#CrmServiceId').find(':selected').val(),
+            State: $('#State').val(),
+            UserId: $('#UserId').find(':selected').val(),
+            CreatedDate: $('#SearchCreatedDate').val(),
+            CallResultLkpId: $('#CallResultLkpId').find(':selected').val(),
+            FromDate: $('#FromDateSearch').val(),
+            ToDate: $('#ToDateSearch').val(),
+            Email: $('#Email').val(),
+            AssistantPhone: $('#AssistantPhone').val(),
+
+        };
+
+        const columns = [
+            {
+                "data": "result.data.id",
+                'render': function (data, type, row, meta) {
+                    return meta.row + meta.settings._iDisplayStart + 1;
+                }
+            },
+            {
+                "data": "FullName",
+                "name": "FullName",
+                "autoWidth": true
+            },
+            {
+                "data": "Company",
+                "name": "Company",
+                "autoWidth": true
+            },
+            {
+                "data": "Street",
+                "name": "Street",
+                "autoWidth": true
+            },
+            {
+                "data": "CountryVal",
+                "name": "CountryVal",
+                "autoWidth": true
+            },
+             {
+                "data": "State",
+                "name": "State",
+                "autoWidth": true
+            },
+            {
+                "data": "City",
+                "name": "City",
+                "autoWidth": true
+            },
+            {
+                "data": "Mobile",
+                "name": "Mobile",
+                "autoWidth": true
+            },
+            {
+                "data": "Phone",
+                "name": "Phone",
+                "autoWidth": true
+            },
+            
+
+            {
+                "data": "Email",
+                "name": "Email",
+                "autoWidth": true
+            },
+           
+            
+            {
+                "data": "Department",
+                "name": "Department",
+                "autoWidth": true
+            },
+            {
+                "data": "Assistant",
+                "name": "Assistant",
+                "autoWidth": true
+            },
+            {
+                "data": "AssistantPhone",
+                "name": "AssistantPhone",
+                "autoWidth": true
+            },
+            {
+                "data": "CallResultLkpVal",
+                "name": "CallResultLkpVal",
+                "autoWidth": true
+            },
+            {
+                "data": "CreatedBy",
+                "name": "CreatedBy",
+                "autoWidth": true
+            },
+           
+
+            
+
+
+
+
+
+              {
+                "data": null,
+                "sortable": false,
+                "render": function (data, type, row) {
+
+                    let formAction = `${$PrefixHostName}/${_mainController}/@nameof(CrmContactController.CrmContactForm)`;
+                    let DeleteAction = `${$PrefixHostName}/${_mainController}/@nameof(CrmContactController.Delete)`;
+
+                    let btns = '';
+
+                    if (_permissions.includes(_updatePermission) ) {
+                        btns += `<a href="${$PrefixHostName}/CrmContact/FormView?id=${row.EncId}&t=@encUpdateTrigger"  title="@ERP.ResourcePack.Common.Settings.Edit"><i class="mx-2 fas fa-edit text-info"></i></a>`;
+                    }
+
+                    btns += `<a href="${$PrefixHostName}/CrmContact/FormView?id=${row.EncId}&t=@encShowTrigger"  title="@ERP.ResourcePack.Common.Settings.Show"><i class="mx-2 fas fa-eye text-info"></i></a>`;
+
+                    if (_permissions.includes(_deletePermission) ) {
+                        btns += `<a href="javascript:void(0)" onclick="AjaxController.DeleteMainTableRow(${row.Id},'${DeleteAction}');"  title="@ERP.ResourcePack.Common.Settings.Delete"><i class="mx-2 fas fa-trash-alt text-danger"></i></a>`;
+                    }
+
+                     @*btns += `<a href="${$PrefixHostName}/ActivityCall/ActivityCallForm?id=&trigger=&LeadContactId=${row.Id}&Name=${row.FullName}&type=contact&t=@encShowTrigger"  title="@ERP.ResourcePack.CRM.activityCall.activityCall.Title"><i class="mx-2 fas fa-phone text-info"></i></a>`;*@
+                    btns += `<a href="${$PrefixHostName}/ActivityCall/FormView?id=&t=ohY6agOArKMhinIh5af4rw,,&LeadContactId=${row.Id}&Name=${row.FullName}&type=contact"  title="@ERP.ResourcePack.CRM.activityCall.activityCall.Title"><i class="mx-2 fas  fa-phone  text-info"></i></a>`;
+
+
+                    btns += `<a href="${$PrefixHostName}/ActivityTasks/FormView?id=&t=ohY6agOArKMhinIh5af4rw,,&LeadContactId=${row.Id}&Name=${row.FullName}&type=contact"  title="@ERP.ResourcePack.CRM.activityTask.activityTask.Title"><i class="mx-2 fas fa-tasks text-info"></i></a>`;
+
+                    btns += `<a href="${$PrefixHostName}/ActivityMeeting/FormView?id=&t=ohY6agOArKMhinIh5af4rw,,&LeadContactId=${row.Id}&Name=${row.FullName}&type=contact"  title="@ERP.ResourcePack.CRM.Meetings.activityMeeting.MasterTitle"><i class="mx-2   fas fa-handshake  text-info"></i></a>`;
+
+
+                    @*if (row.TypeLkpId == 11119 ) {
+                        btns += `<a href="javascript:void(0)" onclick="PostAjax(${row.Id});"  title="@ERP.ResourcePack.Common.Settings.forward"><i class="mx-2 fas fa-arrow-left  text-info"></i></a>`;
+                    }*@
+
+                    const _auditedPermission = '@PermissionNames.Pages_CrmLeadsPersons_Audit';
+
+                    if (_permissions.includes(_auditedPermission)) {
+
+                        row.permission = _auditedPermission;
+
+                        btns += GetAuditedButton(row);
+                    }
+
+                    return btns;
+                }
+            }
+
+
+        ];
+
+        const dtObj = {
+            "processing": true,
+            "serverSide": true,
+            "filter": false,
+            "orderMulti": false,
+            "language": dataTableLang,
+            "ajax": {
+                "url": _loadDataUrl,
+                "type": "POST",
+                "datatype": "json",
+                "data": parms,
+                "complete": function (d) {
+
+                    totalLengthOfRecords = parseInt(d.responseJSON.recordsTotal, 10);
+                }
+            },
+            "columns": columns,
+            "initComplete": function () {
+                $('[data-toggle="tooltip"]').tooltip();
+            }
+
+        };
+
+        _tblSelector.dataTable().fnDestroy();
+        _tblSelector.DataTable(dtObj).on('draw', function () { $('[data-toggle="tooltip"]').tooltip(); });
+
+        setTimeout(function () {
+            $(".sorting_1").removeAttr('colspan');
+        }, 500);
+    };
+
+    $('#LeadStatusIdLkp').select2(ReturnSelect2ObjectForLkpsTypes('@ERP.Front.Helpers.Enums.Common.FndLkpsTypes.CrmLeadsPersonsStatues.ToString()'));
+    $('#LeadSourceLkpId').select2(ReturnSelect2ObjectForLkpsTypes('@ERP.Front.Helpers.Enums.Common.FndLkpsTypes.CrmLeadsPersonsSource.ToString()'));
+
+    $('#IndustryLkpId').select2(ReturnSelect2ObjectForLkpsTypes('@ERP.Front.Helpers.Enums.Common.FndLkpsTypes.CrmLeadsPersonsindustry.ToString()'));
+    $('#RatingLkpId').select2(ReturnSelect2ObjectForLkpsTypes('@ERP.Front.Helpers.Enums.Common.FndLkpsTypes.CrmLeadsPersonsRating.ToString()'));
+
+    $('#CountryLkpId').select2(ReturnSelect2ObjectForLkpsTypes('@ERP.Front.Helpers.Enums.Common.FndLkpsTypes.Country.ToString()'));
+    $('#OtherCountryLkpId').select2(ReturnSelect2ObjectForLkpsTypes('@ERP.Front.Helpers.Enums.Common.FndLkpsTypes.Country.ToString()'));
+    $('#CrmProductId').select2((ReturnSelect2ObjectDefault(`${baseUrl}/CrmProducts/GetCrmProductsSelect2`)));
+    $('#CrmServiceId').select2((ReturnSelect2ObjectDefault(`${baseUrl}/CrmServices/GetCrmServicesSelect2`)));
+    $('#UserId').select2(ReturnSelect2ObjectDefault(`${baseUrl}/User/GetUsersSelect2`));
+    $('#CallResultLkpId').select2(ReturnSelect2ObjectForLkpsTypes('ActivityCallCallResult'));
+
+
+     const formValidator = function () {
+
+
+         if (!$('#FirstName').val()) {
+            toastr.warning('@ERP.ResourcePack.CRM.Leads.crmLeadsPersons.FirstName ' + ' : ' + '@ERP.ResourcePack.Common.Settings.Required')
+            return false;
+         }
+
+         if (!$('#LastName').val()) {
+            toastr.warning('@ERP.ResourcePack.CRM.Leads.crmLeadsPersons.LastName  ' + ' : ' + '@ERP.ResourcePack.Common.Settings.Required')
+            return false;
+        }
+
+        @*if (!$('#CrmLeadsPersonsId1').find(':selected').val()) {
+            toastr.warning('@activityMeeting.CrmLeadsPersonsId' + ' : ' + '@ERP.ResourcePack.Common.Settings.Required')
+            return false;
+        }*@
+        return true;
+    };
+    var totalLengthOfRecords = 0;
+    function printExc() {
+        _tblLoader.show();
+        $('.page-loader-wrapper').show();
+        $('#tblCrmContactPrint_wrapper').parent().addClass('d-none');
+        const parmss = {
+            FullName: $('#FullName').val(),
+            Phone: $('#Phone').val(),
+            City: $('#City').val(),
+            Company: $('#Company').val(),
+            RatingLkpId: $('#searchBox #RatingLkpId').find(':selected').val(),
+            CountryLkpId: $('#searchBox #CountryLkpId').find(':selected').val(),
+            LeadSourceLkpId: $('#searchBox #LeadSourceLkpId').find(':selected').val(),
+            IndustryLkpId: $('#searchBox #IndustryLkpId').find(':selected').val(),
+            State: $('#State').val(),
+            CrmProductId: $('#CrmProductId').find(':selected').val(),
+            CrmServiceId: $('#CrmServiceId').find(':selected').val(),
+              Email: $('#Email').val(),
+            AssistantPhone: $('#AssistantPhone').val(),
+            FromDate: $('#FromDateSearch').val(),
+            ToDate: $('#ToDateSearch').val(),
+            length: 100000,
+        };
+
+        const columns = [
+            {
+                "data": "result.data.id",
+                'render': function (data, type, row, meta) {
+                    return meta.row + meta.settings._iDisplayStart + 1;
+                }
+            },
+                        {
+                "data": "FullName",
+                "name": "FullName",
+                "autoWidth": true
+            },
+            {
+                "data": "Company",
+                "name": "Company",
+                "autoWidth": true
+            },
+            {
+                "data": "Street",
+                "name": "Street",
+                "autoWidth": true
+            },
+            {
+                "data": "CountryVal",
+                "name": "CountryVal",
+                "autoWidth": true
+            },
+             {
+                "data": "State",
+                "name": "State",
+                "autoWidth": true
+            },
+            {
+                "data": "City",
+                "name": "City",
+                "autoWidth": true
+            },
+            {
+                "data": "Mobile",
+                "name": "Mobile",
+                "autoWidth": true
+            },
+            {
+                "data": "Phone",
+                "name": "Phone",
+                "autoWidth": true
+            },
+            
+
+            {
+                "data": "Email",
+                "name": "Email",
+                "autoWidth": true
+            },
+           
+            
+            {
+                "data": "Department",
+                "name": "Department",
+                "autoWidth": true
+            },
+            {
+                "data": "Assistant",
+                "name": "Assistant",
+                "autoWidth": true
+            },
+            {
+                "data": "AssistantPhone",
+                "name": "AssistantPhone",
+                "autoWidth": true
+            },
+            {
+                "data": "CallResultLkpVal",
+                "name": "CallResultLkpVal",
+                "autoWidth": true
+            },
+            {
+                "data": "CreatedBy",
+                "name": "CreatedBy",
+                "autoWidth": true
+            },
+           
+        ];
+
+        const dtObj = {
+            "language": dataTableLang,
+            "dom": 'Bfrtip',
+            "buttons": [
+                {
+                    extend: 'excel',
+                    messageTop: `
+     ${$('#FullName').siblings().text()}: ${(parmss.FullName) ? $('#FullName').val() : '--'}, 
+     ${$('#Phone').siblings().text()}: ${(parmss.Phone) ? $('#Phone').val(): '--'}, 
+     ${$('#City').siblings().text()}: ${(parmss.City) ? $('#City').val() : '--'},
+     ${$('[for="CountryLkpId"]').text()}: ${(parmss.CountryLkpId) ? $('#searchBox #CountryLkpId').find(':selected').text(): '--'}, 
+     ${$('#State').siblings().text()}: ${(parmss.State) ? $('#State').val() : '--'},
+     ${$('#FromDateSearch').siblings().text()}: ${(parmss.FromDate) ? $('#FromDateSearch').val() : '--'},
+     ${$('#ToDateSearch').siblings().text()}: ${(parmss.ToDate) ? $('#ToDateSearch').val() : '--'}`
+                   
+                },
+
+            ],
+            "ajax": {
+                "url": _loadDataUrl,
+                "type": "POST",
+                "datatype": "json",
+                "data": parmss,
+                "complete": function (d) {
+                  
+                    _tblLoader.hide();
+                    $('.page-loader-wrapper').hide();
+                }
+            },
+            "columns": columns,
+
+            "initComplete": function () {
+                $('#tblCrmContactPrint_wrapper button.dt-button').click();
+                $('#tblCrmContactPrint_wrapper').parent().addClass('d-none');
+
+            }
+        };
+
+        $('#tblCrmContactPrint').dataTable().fnDestroy();
+        $('#tblCrmContactPrint').DataTable(dtObj).on('buttons-processing', function (e, indicator) { if (!indicator) { $('.page-loader-wrapper').hide() } });
+
+
+    }
+
+
+</script>

@@ -1,0 +1,685 @@
+﻿@using ERP.ResourcePack.Warehouses
+@using ERP.Web.UI.Controllers.Warehouses
+@using ERP.Authorization;
+@{
+    string permissionsStr = TempData["Permissions"].ToString();
+    string encUpdateTrigger = ERP.Front.Helpers.Enums.Common.EncUpdate;
+    string encInsertTrigger = ERP.Front.Helpers.Enums.Common.EncInsert;
+    string encShowTrigger = ERP.Front.Helpers.Enums.Common.EncShow;
+}
+
+<script>
+    const _mainController = "IvInventorySetting"
+    const _newStatus = @Convert.ToInt64(ERP.Front.Helpers.Enums.Common.HrPersonsDeductionHd.New);
+
+    $(function () {
+        debugger;
+        LoadDataGrid();
+        $('#tblIvInventorySettingPrint thead').html($('#tblIvInventorySetting thead').html());
+        $('#tblIvInventorySettingPrint thead tr :last-child').remove();
+        $('#IvInventorySetting').addClass('active');
+
+        $('#UserId').parent('.form-line').addClass('focused');
+        //$('#Amount').parent('.form-line').addClass('focused');
+    });
+
+    const _loadDataUrl = `${$PrefixHostName}/${_mainController}/@nameof(IvInventorySettingController.LoadDataGrid)`;
+    const _tblSelector = $('#tblIvInventorySetting');
+
+    const _permissions = '@permissionsStr';
+    const _updatePermission = '@PermissionNames.Pages_IvInventorySetting_Update';
+    const _deletePermission = '@PermissionNames.Pages_IvInventorySetting_Delete';
+    const _postPermission = '@PermissionNames.Pages_IvInventorySetting_Post';
+
+    var OnBegin = function (response) {
+        fireBtnLoader();
+    };
+
+    var OnSuccess = function (response) {
+        debugger;
+        $('#btnSubmition').prop('disabled', false);
+
+        if (response.success) {
+
+            if (response.customRestResult.trigger === '@ERP.Front.Helpers.Enums.Common.FormTriggers.Insert') {
+
+                toastr.success(response.customRestResult.message);
+
+                setTimeout(function () {
+                    window.location.href = $PrefixHostName + '/IvInventorySetting';
+                }, 200);
+
+            }
+            else if (response.customRestResult.trigger === '@ERP.Front.Helpers.Enums.Common.FormTriggers.Update') {
+
+                toastr.success(response.customRestResult.message);
+
+                setTimeout(function () {
+                    window.location.href = $PrefixHostName + '/IvInventorySetting';
+                }, 200);
+
+            }
+            else {
+                toastr.error(response.customRestResult.message);
+            }
+
+        } else {
+            toastr.error(response.error.message);
+        }
+
+    };
+
+    var OnComplete = function (response) {
+        downBtnLoader();
+    };
+
+    var OnFailure = function (response) {
+        toastr.error(response);
+        downBtnLoader();
+    };
+
+    const LoadDataGrid = function () {
+        debugger;
+        const params = {
+            SettingNumber: $('#searchBox #SettingNumber').val(),
+            UserId: $('#searchBox #UserId').val()
+        };
+
+        const columns = [
+            {
+                "data": "result.data.id",
+                'render': function (data, type, row, meta) {
+                    return meta.row + meta.settings._iDisplayStart + 1;
+                }
+            },
+            {
+                "data": "SettingNumber",
+                "name": "SettingNumber",
+                "autoWidth": true
+            },
+            {
+                "data": "UserName",
+                "name": "UserName",
+                "autoWidth": true
+            },
+            {
+                "data": null,
+                "sortable": false,
+                "render": function (data, type, row) {
+                    let formAction = `${$PrefixHostName}/${_mainController}/@nameof(IvInventorySettingController.IvInventorySettingForm)`;
+                    let DeleteAction = `${$PrefixHostName}/${_mainController}/@nameof(IvInventorySettingController.Delete)`;
+
+                    let formTitle = '@ERP.ResourcePack.Warehouses.IvInventorySetting.Title';
+                    let btns = '';
+
+                    @*if (_permissions.includes(_updatePermission) ) {
+                        btns += `<a href="javascript:void(0)" onclick="PostAjax(${row.Id})" title="@ERP.ResourcePack.Common.Settings.Post"><i class="mx-2 fas fa-check-circle text-info"></i></a>`;
+                    }*@
+
+                    if (_permissions.includes(_updatePermission)) {
+                        btns += `<a href="${$PrefixHostName}/IvInventorySetting/FormView?id=${row.EncId}&t=@encUpdateTrigger" title="@ERP.ResourcePack.Common.Settings.Edit"><i class="mx-2 fas fa-edit text-info"></i></a>`;
+                    }
+
+                    btns += `<a href="${$PrefixHostName}/IvInventorySetting/FormView?id=${row.EncId}&t=@encShowTrigger" title="@ERP.ResourcePack.Common.Settings.Show"><i class="mx-2 fas fa-eye text-info"></i></a>`;
+
+                    if (_permissions.includes(_deletePermission)) {
+                        btns += `<a href="javascript:void(0)" onclick="AjaxController.DeleteMainTableRow(${row.Id},'${DeleteAction}');" title="@ERP.ResourcePack.Common.Settings.Delete"><i class="mx-2 fas fa-trash-alt text-danger"></i></a>`;
+                    }
+
+                    const _auditedPermission = '@PermissionNames.Pages_IvInventorySetting_Audit';
+
+                    if (_permissions.includes(_auditedPermission)) {
+
+                        row.permission = _auditedPermission;
+
+                        btns += GetAuditedButton(row);
+                    }
+
+                    return btns;
+                }
+            }
+        ];
+
+        const dtObj = {
+            "processing": true,
+            "serverSide": true,
+            "filter": false,
+            "orderMulti": false,
+            "language": dataTableLang,
+            "ajax": {
+                "url": _loadDataUrl,
+                "type": "POST",
+                "datatype": "json",
+                "data": params,
+                "complete": function () {}
+            },
+            "columns": columns,
+            "initComplete": function () {
+                $('[data-toggle="tooltip"]').tooltip();
+            }
+
+        };
+
+        _tblSelector.dataTable().fnDestroy();
+        _tblSelector.DataTable(dtObj).on('draw', function () { $('[data-toggle="tooltip"]').tooltip(); });
+
+        setTimeout(function () {
+            $(".sorting_1").removeAttr('colspan');
+        }, 500);
+    };
+
+    $('#btnSubmition').on('click', function () {
+
+        if ($('#mainForm').valid()) {
+
+            $(this).prop('disabled', true);
+
+            $('#submitLoader').show();
+
+            $('#mainForm').submit();
+
+        } else {
+            $(this).prop('disabled', false);
+
+            $('#submitLoader').hide();
+        }
+
+    });
+
+
+    $('#IvPriceListHdId').select2(ReturnSelect2ObjectDefault(`${baseUrl}/IvPriceListHd/GetSelect2`));
+    $('#UserId').select2(ReturnSelect2ObjectDefault(`${baseUrl}/IvInventorySetting/GetUsersNotInpriceListSelect2`));
+    $('#searchBox #UserId').select2(ReturnSelect2ObjectDefault(`${baseUrl}/User/GetUsersSelect2`));
+
+    $('#IvPriceListHdId').change(function () {
+
+        var PriceListName = $('#IvPriceListHdId').find(':selected').text();
+        $('#PriceListName').val(PriceListName);
+        $('#PriceListName').parent('.form-line').addClass('focused ');
+
+    });
+</script>
+
+<script name="detailsss">
+
+    const _tblDetailSelector = $('#tblDetails'), _listDetail = $('#IvInventorySettingPriceListDetailsListStr');
+
+    let _InventorySettingDetails = [], updatedDetailsRow, tblCounterIndex = 0 ;
+
+    const fillDetail = function () {
+        debugger;
+        if (validator($('#IvPriceListHdId').find(':selected').val()) === false) return;
+        const current = {
+            index: ++tblCounterIndex,
+            ivPriceListHdId: $('#IvPriceListHdId').find(':selected').val(),
+            priceListName: $('#IvPriceListHdId').find(':selected').text(),
+            rowStatus: NewStatus,
+            id: 0
+        };
+
+        return current;
+
+
+    };
+
+
+
+    const AddDetails = function () {
+        debugger;
+        const current = fillDetail();
+
+        if (current === undefined) return;
+
+        if (CheckItemExist(current.ivPriceListHdId) === false) {
+            return;
+        }
+        _InventorySettingDetails.push(current);
+
+        _listDetail.val(JSON.stringify(_InventorySettingDetails));
+
+        bindDetailTable();
+
+        clearFormAdding();
+    };
+
+    const bindDetailTable = function () {
+        debugger;
+        const detailArr = _InventorySettingDetails.filter(z => z.rowStatus !== DeletedStatus);
+        const columns = [
+            { 'data': 'index' },
+            { 'data': 'ivPriceListHdId' },
+            { 'data':'priceListName' },
+            {
+                'data': null,
+                'searchable': false,
+                'ordering': false,
+                'sorting': false,
+                'render': function (d, t, row) {
+
+                    let rows = '';
+
+                    if (primaryEntityKeyId === 0 || trigger !== '@ERP.Front.Helpers.Enums.Common.FormTriggers.Show.ToString()') {
+
+                        rows += `<td><a href="javascript:void(0)" onclick="return DeleteDetail(${row.index})"><i class="mx-2 fas fa-trash-alt text-danger"></i></a>`;
+                        rows += `<a href="javascript:void(0)" onclick="return GetDetailRow(${row.index})"><i class="mx-2 fas fa-edit text-success"></i></a></td>`;
+                    }
+                    else {
+                        rows += '<td></td>';
+                    }
+
+                    return rows;
+                }
+            }
+        ];
+
+        const dtObj = {
+            data: detailArr,
+            retrieve: true,
+            language: dataTableLang,
+            columns: columns,
+            drawCallback: function (c, v, b) {}
+        };
+
+        setTimeout(function () {
+
+            _tblDetailSelector.dataTable().fnDestroy();
+            _tblDetailSelector.DataTable(dtObj).on('draw', function () { $('[data-toggle="tooltip"]').tooltip(); });
+
+        }, 100);
+    };
+
+    const DeleteDetail = function (index)  {
+        debugger;
+        const current = _InventorySettingDetails.find(z => z.index === index);
+
+        const indexOfCurrent = _InventorySettingDetails.indexOf(current);
+
+        if (!current.id) {
+
+            _InventorySettingDetails.splice(indexOfCurrent, 1);
+
+        } else {
+
+            current.rowStatus = DeletedStatus;
+
+            _InventorySettingDetails.splice(indexOfCurrent, 1,current);
+        }
+
+        bindDetailTable();
+
+        _listDetail.val(_InventorySettingDetails.length === 0 ? '' : JSON.stringify(_InventorySettingDetails));
+
+    };
+
+    const LoadDetailData = function () {
+        debugger;
+        $.ajax({
+            url: `${baseUrl}/IvInventorySetting/GetAllInventorySettingPricelistDetails`,
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${$_token}`
+            },
+            data: {
+                id: primaryEntityKeyId
+            }
+        }).done(function (data) {
+
+            _InventorySettingDetails = [...data.result];
+
+            tblCounterIndex = 0;
+
+            $.each(_InventorySettingDetails, function (i, item) {
+                item.index = ++tblCounterIndex;
+            });
+
+            bindDetailTable();
+
+            _listDetail.val(JSON.stringify(_InventorySettingDetails));
+
+        });
+
+    };
+    const GetDetailRow = function (tblIndex) {
+        debugger;
+        clearFormAdding();
+
+        $('#btnAddDetailRow').hide();
+        $('#btnUpdateDetailRow').show();
+        $('#btnCancelDetailRow').show();
+
+        const current = _InventorySettingDetails.find(z => z.index === tblIndex);
+
+        $(`#IvPriceListHdId`).append($("<option selected='selected'></option>")
+            .val(current.ivPriceListHdId).text(current.priceListName)).trigger('change');
+        $('#PriceListName').val(current.priceListName);
+        $('#PriceListName').parent('.form-line').addClass('focused');
+        updatedDetailsRow = current;
+    };
+
+    const UpdateDetailsRow = function () {
+        debugger;
+        let current = _InventorySettingDetails.find(z => z.index === updatedDetailsRow.index);
+
+        let indexOfCurrent = _InventorySettingDetails.indexOf(_InventorySettingDetails.find(z => z.index === updatedDetailsRow.index));
+
+        const newRow = fillDetail();
+        if (newRow === undefined) return;
+        if (_InventorySettingDetails.find(z => z.index === updatedDetailsRow.index).ivPriceListHdId == newRow.ivPriceListHdId) {
+
+        }
+        else {
+            if (CheckItemExist(newRow.ivPriceListHdId, newRow.rowStatus) === false) {
+                return;
+            }
+        }
+
+
+        newRow.index = current.index;
+        newRow.id = updatedDetailsRow.id;
+        newRow.rowStatus =  !updatedDetailsRow.id ? NewStatus : UpdatedStatus;
+
+        _InventorySettingDetails.splice(indexOfCurrent, 1,newRow);
+
+        $('#btnAddDetailRow').show();
+        $('#btnUpdateDetailRow').hide();
+        $('#btnCancelDetailRow').hide();
+
+        clearFormAdding();
+
+        _listDetail.val(JSON.stringify(_InventorySettingDetails));
+
+        setTimeout(function () {
+            bindDetailTable();
+        }, 100);
+    };
+
+    const clearFormAdding = function () {
+        $('#details .card:first input,textarea').val('');
+        $('#details .card:first select').val('').trigger('change');
+    };
+
+    const validator = function () {
+
+        if (!$('#IvPriceListHdId').find(':selected').val()) {
+            toastr.warning('@IvInventorySetting.PriclistCode' + ' : ' + '@ERP.ResourcePack.Common.Settings.Required');
+            return false;
+        }
+
+    };
+    const CheckItemExist = function (itemid, rowStatus) {
+        debugger;
+        var s = _InventorySettingDetails
+        const found = _InventorySettingDetails.some(el => el.ivPriceListHdId == itemid && el.rowStatus != "Deleted");
+        if (!found) {
+            return true;
+        }
+        else {
+            toastr.warning('There is already exsiting data');
+            console.log(false);
+            return false;
+
+        }
+    };
+
+
+
+</script>
+
+
+
+<script name="WarehousesPrivileges">
+    $('#IvWarehouseId').select2(ReturnSelect2ObjectDefault(`${baseUrl}/IvWarehouses/GetIvWarehousesSelect2`));
+    const _tblWarehousePrivilageDetailSelector = $('#tblUserWarehousePrivilageDetails'), _WarehousePrivilagelistDetail = $('#UserWarehousesPrivilegesListStr');
+
+    let _WarehousePrivilageDetails = [], updatedWarehousesPrivilegesDetailsRow, tblWarehousesCounterIndex = 0 ;
+
+    const fillWarehousesDetail = function () {
+        debugger;
+        if (Warehousevalidator($('#IvWarehouseId').find(':selected').val()) === false) return;
+        const current = {
+            index: ++tblWarehousesCounterIndex,
+            ivWarehouseId: $('#IvWarehouseId').find(':selected').val(),
+            warehouseName: $('#IvWarehouseId').find(':selected').text(),
+            hasIssue: $('#HasIssue').is(':checked'),
+            hasReceive: $('#HasReceive').is(':checked'),
+            rowStatus: NewStatus,
+            id: 0
+        };
+
+        return current;
+    };
+    const AddUserWharehousePrivilageDetails = function () {
+        debugger;
+        const current = fillWarehousesDetail();
+
+        if (current === undefined) return;
+
+        if (CheckWarehouseItemExist(current.ivWarehouseId) === false) {
+            return;
+        }
+        debugger;
+        _WarehousePrivilageDetails.push(current);
+
+        _WarehousePrivilagelistDetail.val(JSON.stringify(_WarehousePrivilageDetails));
+
+        bindWarehousesDetailTable();
+
+        clearWharehouseFormAdding();
+    };
+
+    const bindWarehousesDetailTable = function () {
+        debugger;
+        const detailWarehousesArr = _WarehousePrivilageDetails.filter(z => z.rowStatus !== DeletedStatus);
+         const columns = [
+            {
+                "data": "result.data.id",
+                'render': function (data, type, row, meta) {
+                    return meta.row + meta.settings._iDisplayStart + 1;
+                }
+            },
+           /*  { 'data': 'ivWarehouseId' },*/
+             { 'data': 'warehouseName' },
+             {
+                 "data": "hasIssue",
+                 "name": "hasIssue",
+                "autoWidth": true,
+                 "render": function (hasIssue) {
+
+                     if (hasIssue) return '<i class="text-success fas fa-check"></i>';
+
+                    return '<i class="text-danger fas fa-times"></i>';
+                }
+            }, {
+                 "data": "hasReceive",
+                 "name": "hasReceive",
+                "autoWidth": true,
+                 "render": function (hasReceive) {
+
+                    if (hasReceive) return '<i class="text-success fas fa-check"></i>';
+
+                    return '<i class="text-danger fas fa-times"></i>';
+                }
+             },
+                 {
+                'data': null,
+                'searchable': false,
+                'ordering': false,
+                'sorting': false,
+                'render': function (d, t, row) {
+
+                    let rows = '';
+
+                    if (primaryEntityKeyId === 0 || trigger !== '@ERP.Front.Helpers.Enums.Common.FormTriggers.Show.ToString()') {
+
+                        rows += `<td><a href="javascript:void(0)" onclick="return DeleteWarehousesDetail(${row.index})"><i class="mx-2 fas fa-trash-alt text-danger"></i></a>`;
+                        rows += `<a href="javascript:void(0)" onclick="return GetWarehousesDetailRow(${row.index})"><i class="mx-2 fas fa-edit text-success"></i></a></td>`;
+                    }
+                    else {
+                        rows += '<td></td>';
+                    }
+
+                    return rows;
+                }
+            }
+
+        ];
+
+        const dtObj = {
+            data: detailWarehousesArr,
+            retrieve: true,
+            language: dataTableLang,
+            columns: columns,
+            drawCallback: function (c, v, b) {}
+        };
+
+        setTimeout(function () {
+
+            _tblWarehousePrivilageDetailSelector.dataTable().fnDestroy();
+            _tblWarehousePrivilageDetailSelector.DataTable(dtObj).on('draw', function () { $('[data-toggle="tooltip"]').tooltip(); });
+
+        }, 100);
+    };
+
+    const DeleteWarehousesDetail = function (index)  {
+        debugger;
+        const current = _WarehousePrivilageDetails.find(z => z.index === index);
+
+        const indexOfCurrent = _WarehousePrivilageDetails.indexOf(current);
+
+        if (!current.id) {
+
+            _WarehousePrivilageDetails.splice(indexOfCurrent, 1);
+
+        } else {
+
+            current.rowStatus = DeletedStatus;
+
+            _WarehousePrivilageDetails.splice(indexOfCurrent, 1,current);
+        }
+
+        bindWarehousesDetailTable();
+
+        _WarehousePrivilagelistDetail.val(_WarehousePrivilageDetails.length === 0 ? '' : JSON.stringify(_WarehousePrivilageDetails));
+
+    };
+
+    const LoadWarehousesDetailData = function () {
+        debugger;
+        $.ajax({
+            url: `${baseUrl}/IvInventorySetting/GetAllWarehousePrivilageDetails`,
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${$_token}`
+            },
+            data: {
+                id: primaryEntityKeyId
+            }
+        }).done(function (data) {
+            debugger;
+            _WarehousePrivilageDetails = [...data.result];
+
+            tblWarehousesCounterIndex = 0;
+
+            $.each(_WarehousePrivilageDetails, function (i, item) {
+                item.index = ++tblWarehousesCounterIndex;
+            });
+
+            bindWarehousesDetailTable();
+
+            _WarehousePrivilagelistDetail.val(JSON.stringify(_WarehousePrivilageDetails));
+
+        });
+
+    };
+    const GetWarehousesDetailRow = function (tblIndex) {
+        debugger;
+        clearWharehouseFormAdding();
+
+        $('#btnAddUserWharehousePrivilageDetailRow').hide();
+        $('#btnUpdateUserWharehousePrivilageDetailsRow').show();
+        $('#btnCancelUserWharehousePrivilageDetailRow').show();
+
+        const current = _WarehousePrivilageDetails.find(z => z.index === tblIndex);
+
+        $(`#IvWarehouseId`).append($("<option selected='selected'></option>")
+            .val(current.ivWarehouseId).text(current.warehouseName)).trigger('change');
+       // $('#IvWarehouseId').val(current.warehouseName);
+        $('#IvWarehouseId').parent('.form-line').addClass('focused');
+       //$('#HasIssue').val(current.HasIssue);
+       // $('#HasReceive').val(current.HasReceive);
+        $("#HasIssue").prop("checked", current.hasIssue);
+        $("#HasReceive").prop("checked", current.hasReceive);
+        updatedWarehousesPrivilegesDetailsRow = current;
+    };
+
+    const UpdateUserWharehousePrivilageDetailsRow = function () {
+        debugger;
+        let current = _WarehousePrivilageDetails.find(z => z.index === updatedWarehousesPrivilegesDetailsRow.index);
+
+        let indexOfCurrent = _WarehousePrivilageDetails.indexOf(_WarehousePrivilageDetails.find(z => z.index === updatedWarehousesPrivilegesDetailsRow.index));
+
+        const newRow = fillWarehousesDetail();
+        if (newRow === undefined) return;
+        if (_WarehousePrivilageDetails.find(z => z.index === updatedWarehousesPrivilegesDetailsRow.index).ivWarehouseId == newRow.ivWarehouseId) {
+
+        }
+        else {
+            if (CheckWarehouseItemExist(newRow.ivWarehouseId, newRow.rowStatus) === false) {
+                return;
+            }
+        }
+
+
+        newRow.index = current.index;
+        newRow.id = updatedWarehousesPrivilegesDetailsRow.id;
+        newRow.rowStatus = !updatedWarehousesPrivilegesDetailsRow.id ? NewStatus : UpdatedStatus;
+
+        _WarehousePrivilageDetails.splice(indexOfCurrent, 1,newRow);
+
+        $('#btnAddUserWharehousePrivilageDetailRow').show();
+        $('#btnUpdateUserWharehousePrivilageDetailsRow').hide();
+        $('#btnCancelUserWharehousePrivilageDetailRow').hide();
+
+        clearWharehouseFormAdding();
+
+        _WarehousePrivilagelistDetail.val(JSON.stringify(_WarehousePrivilageDetails));
+
+        setTimeout(function () {
+            bindWarehousesDetailTable();
+        }, 100);
+    };
+
+    const clearWharehouseFormAdding = function () {
+        $('#WarehousesPrivileges .card:first input,textarea').val('');
+        $('#WarehousesPrivileges .card:first select').val('').trigger('change');
+        $('#WarehousesPrivileges .card input:checkbox').val('false');
+        $("#WarehousesPrivileges .card input:checkbox").prop("checked", false);
+       /* $("#HasReceive").prop("checked", current.hasReceive);*/
+    };
+
+    const Warehousevalidator = function () {
+
+        if (!$('#IvWarehouseId').find(':selected').val()) {
+            toastr.warning('@IvInventorySetting.IvWarehouseId' + ' : ' + '@ERP.ResourcePack.Common.Settings.Required');
+            return false;
+        }
+
+    };
+    const CheckWarehouseItemExist = function (itemid, rowStatus) {
+        debugger;
+        var s = _WarehousePrivilageDetails
+        const found = _WarehousePrivilageDetails.some(el => el.ivWarehouseId == itemid && el.rowStatus != "Deleted");
+        if (!found) {
+            return true;
+        }
+        else {
+            toastr.warning('There is already exsiting data');
+            console.log(false);
+            return false;
+
+        }
+    };
+
+
+
+</script>

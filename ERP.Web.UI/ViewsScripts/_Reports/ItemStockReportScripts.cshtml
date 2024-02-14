@@ -1,0 +1,218 @@
+﻿@using ERP.Web.UI.Controllers.Warehouses
+@using ERP.Authorization;
+@{
+//string permissionsStr = TempData["Permissions"].ToString();
+}
+<script>
+    const _mainController = "Reports"
+
+    $(function () {
+        $('#ItemStockReport').addClass('active'); 
+        $('#ShowZero').select2();
+        
+        $('#ShowZero').parent('.form-line').addClass('focused');
+        
+    });
+
+    $('#IvWarehouseId').select2(ReturnSelect2ObjectDefault(`${baseUrl}/IvUserWarehousesPrivileges/GetIvUserWarehousesPrivilegesSelect2`));
+    $('#IvItemId').select2(ReturnSelect2ObjectDefault(`${baseUrl}/IvItems/GetSelect2`));
+
+    const _loadDataUrl = `${$PrefixHostName}/${_mainController}/@nameof(ERP.Web.UI.Controllers.Reports.ReportsController.ItemStockSearch)`;
+    const _tblSelector = $('#tblDetails');
+
+    const _salehdDetails = `${$PrefixHostName}/ivsalehd/@nameof(ERP.Web.UI.Controllers.Sales.IvSaleHdController.FormView)`;
+    const _receivehdDetails = `${$PrefixHostName}/IvReceiveHd/@nameof(ERP.Web.UI.Controllers.Warehouses.IvReceiveHdController.FormView)`;
+    const _adjhdDetails = `${$PrefixHostName}/IvAdjustmentHd/@nameof(ERP.Web.UI.Controllers.Warehouses.IvAdjustmentHdController.FormView)`;
+    
+
+    var OnBegin = function (response) {
+        fireBtnLoader();
+    };
+
+    var OnSuccess = function (response) {
+
+        if (response.success) {
+
+            if (response.customRestResult.trigger === '@ERP.Front.Helpers.Enums.Common.FormTriggers.Insert') {
+
+                toastr.success(response.customRestResult.message);
+
+                LoadDataGrid();
+
+                _mainModal.modal('hide');
+
+            } else if (response.customRestResult.trigger === '@ERP.Front.Helpers.Enums.Common.FormTriggers.Update') {
+
+                LoadDataGrid();
+
+                _mainModal.modal('hide');
+
+                toastr.success(response.customRestResult.message);
+            }
+
+        } else {
+               toastr.error(response.customRestResult.message);
+        }
+    };
+
+    var OnComplete = function (response) {
+        downBtnLoader();
+    };
+
+    var OnFailure = function (response) {
+        toastr.error(response);
+        downBtnLoader();
+    };
+
+    const LoadDataGrid = function () {
+
+        const parms = {
+
+            ItemId: $('#IvItemId').val(),
+            IvWarehouseId: $('#IvWarehouseId').val(),
+            ShowZero: $('#ShowZero').val(),            
+        };
+
+        const columns = [
+
+            {
+                "data": "ItemNumber",
+                "name": "ItemNumber",
+                "autoWidth": true
+            },
+            {
+                "data": "ItemName",
+                "name": "ItemName",
+                "autoWidth": true
+            },
+            {
+                "data": "ItemQtys",
+                "name": "ItemQtys",
+                "autoWidth": true
+            },
+            {
+                "data": "WhQty",
+                "name": "WhQty",
+                "autoWidth": true
+            }
+           
+        ];
+
+        const dtObj = {
+            "processing": true,
+            "serverSide": true,
+            "filter": false,
+            "orderMulti": false,
+            "language": dataTableLang,
+            "ajax": {
+                "url": _loadDataUrl,
+                "type": "POST",
+                "datatype": "json",
+                "data": parms,
+                "complete": function () { }
+            },
+            "columns": columns,
+            "initComplete": function () {
+                $('[data-toggle="tooltip"]').tooltip();
+            }
+
+        };
+
+        _tblSelector.dataTable().fnDestroy();
+        _tblSelector.DataTable(dtObj).on('draw', function () { $('[data-toggle="tooltip"]').tooltip(); });
+
+
+    };
+
+    function getFilteredData() {
+
+
+    }
+
+    $('#IvItemsTypesConfigureIdSearch').select2(ReturnSelect2ObjectDefault(`${baseUrl}/IvItemsTypesConfigure/GetIvItemsTypesConfigureWithParentSelect2`));
+    $('#IvUnitIdSearch').select2(ReturnSelect2ObjectDefault(`${baseUrl}/IvUnits/GetIvUnitsSelect2`));
+
+
+
+    function printExc() {
+        $('.page-loader-wrapper').show();
+        $('#tblDetails').parent().addClass('d-none');
+        //const parmss = {
+        //    IvItemsTypesConfigureId: $('#IvItemsTypesConfigureIdSearch').val(),
+        //    IvUnitId: $('#IvUnitIdSearch').val(),
+        //    length: 1000000
+        //};
+        const parmss = {
+
+            ItemId: $('#IvItemId').val(),
+            IvWarehouseId: $('#IvWarehouseId').val(),
+            ShowZero: $('#ShowZero').val(),  
+            length: 1000000
+        };
+        const columns = [
+
+            {
+                "data": "ItemNumber",
+                "name": "ItemNumber",
+                "autoWidth": true
+            },
+            {
+                "data": "ItemName",
+                "name": "ItemName",
+                "autoWidth": true
+            },
+            {
+                "data": "ItemQtys",
+                "name": "ItemQtys",
+                "autoWidth": true
+            },
+            {
+                "data": "WhQty",
+                "name": "WhQty",
+                "autoWidth": true
+            }
+
+        ];
+
+       
+
+        const dtObj = {
+            "language": dataTableLang,
+            "dom": 'Bfrtip',
+            "buttons": [
+                {
+                    extend: 'excel'
+                   
+                },
+
+            ],
+            "ajax": {
+                "url": _loadDataUrl,
+                "type": "POST",
+                "datatype": "json",
+                "data": parmss,
+                "complete": function (d) {
+                    $('.page-loader-wrapper').hide()
+                }
+            },
+            "columns": columns,
+
+            "initComplete": function () {
+               // $('#tblDetailsPrint button.dt-button').click();
+                $('button.buttons-excel').hide();
+                $('button.buttons-excel').click();
+                $('#tblDetailsPrint').parent().addClass('d-none');
+
+            }
+        };
+        
+        //$('#tblDetailsPrint').dataTable().fnDestroy();
+        //$('#tblDetailsPrint').DataTable(dtObj).on('buttons-processing', function (e, indicator) { if (!indicator) { $('.page-loader-wrapper').hide() } });
+
+        _tblSelector.dataTable().fnDestroy();
+        _tblSelector.DataTable(dtObj).on('buttons-processing', function (e, indicator) { if (!indicator) { $('.page-loader-wrapper').hide() } });
+
+
+    }
+
+</script>

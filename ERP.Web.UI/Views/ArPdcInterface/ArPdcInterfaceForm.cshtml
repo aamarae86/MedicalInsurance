@@ -1,0 +1,223 @@
+﻿@using ERP.Web.UI.Models.ViewModels.Accounts
+@model ArPdcInterfaceVM
+@{
+    string formTrigger = ViewBag.trigger;
+    string lang = Request.Cookies["Lang"] == null ? "ar-EG" : Request.Cookies["Lang"].Value.ToString();
+    string lkpKeyDdl = lang == "ar-EG" ? nameof(ERP.Web.UI.Models.ViewModels.General.FndLookupValuesVM.NameAr) : nameof(ERP.Web.UI.Models.ViewModels.General.FndLookupValuesVM.NameEn);
+}
+<div class="card">
+    <div class="body">
+        @using (Ajax.BeginForm(nameof(ERP.Web.UI.Controllers.Accounts.ArPdcInterfaceController.PostArPdcInterface), "ArPdcInterface",
+            new AjaxOptions { HttpMethod = "POST", OnBegin = "OnBegin", OnSuccess = "OnSuccess", OnComplete = "OnComplete", OnFailure = "OnFailure" }, new { @id = "mainForm" }))
+        {
+            @Html.HiddenFor(z => z.Id)
+            <div class="row clearfix">
+                <div class="col-sm-6">
+                    <div class="form-group form-float">
+                        <div class="form-line">
+                            @{
+                                if (lang == "ar-EG")
+                                {
+                                    @Html.TextBoxFor(z => z.FndLookupValuesSourceCodeLkp.NameAr, new
+                                    {
+                                        @class = "form-control",
+                                        @disabled = true
+                                    })
+                                    @Html.LabelFor(z => z.SourceCodeLkpId, new { @class = "form-label" })
+                                }
+                                else
+                                {
+                                    @Html.TextBoxFor(z => z.FndLookupValuesSourceCodeLkp.NameEn, new
+                                     {
+                                         @class = "form-control",
+                                         @disabled = true
+                                     })
+                                    @Html.LabelFor(z => z.SourceCodeLkpId, new { @class = "form-label" })
+                                }
+                            }
+                        </div>
+                    </div>
+                </div>
+                <div class="col-sm-6">
+                    <div class="form-group form-float">
+                        <div class="form-line">
+                            @Html.TextBoxFor(z => z.MaturityDate, new { @class = "form-control datepicker" })
+                            @Html.LabelFor(z => z.MaturityDate, new { @class = "form-label" })
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row clearfix">
+                <div class="col-sm-6">
+                    <div class="form-group form-float">
+                        <div class="form-line">
+                            @{
+                                if (lang == "ar-EG")
+                                {
+                                    @Html.TextBoxFor(z => z.FndLookupValuesStatusLkp.NameAr, new
+                                    {
+                                         @class = "form-control",
+                                        @disabled = true
+                                    })
+                                    @Html.LabelFor(z => z.StatusLkpId, new { @class = "form-label" })
+                                }
+                                else
+                                {
+                                    @Html.TextBoxFor(z => z.FndLookupValuesStatusLkp.NameEn, new
+                                     {
+                                        @class = "form-control",
+                                        @disabled = true
+                                     })
+                                    @Html.LabelFor(z => z.StatusLkpId, new { @class = "form-label" })
+                                }
+                            }
+                        </div>
+                    </div>
+                </div>
+                <div class="col-sm-6">
+                    <div class="form-group form-float">
+                        <div class="form-line">
+                            @Html.TextBoxFor(z => z.SourceNumber, new { @class = "form-control", @disabled = true })
+                            @Html.LabelFor(z => z.SourceNumber, new { @class = "form-label" })
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row clearfix">
+                <div class="col-sm-6">
+                    <div class="form-group form-float">
+                        <div class="form-line">
+                            @Html.TextBoxFor(z => z.Amount, new { @class = "form-control currency", @disabled = true })
+                            @Html.LabelFor(z => z.Amount, new { @class = "form-label" })
+                        </div>
+                    </div>
+                </div>
+                <div class="col-sm-6">
+                    <div class="form-group form-float">
+                        <div class="form-line">
+                            @Html.TextBoxFor(z => z.CheckNumber, new { @class = "form-control", @disabled = true })
+                            @Html.LabelFor(z => z.CheckNumber, new { @class = "form-label" })
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row clearfix">
+                <div class="col-sm-6">
+                    <div class="form-group form-float">
+                        <div class="form-line">
+                            @{
+                                if (lang == "ar-EG")
+                                {
+                                    @Html.TextBoxFor(z => z.ArCustomers.CustomerNameAr, new { @class = "form-control", @disabled = true })
+                                    @Html.LabelFor(z => z.CustomerId, new { @class = "form-label" })
+                                }
+                                else
+                                {
+                                    @Html.TextBoxFor(z => z.ArCustomers.CustomerNameEn, new { @class = "form-control", @disabled = true })
+                                    @Html.LabelFor(z => z.CustomerId, new { @class = "form-label" })
+                                }
+                            }
+
+                        </div>
+                    </div>
+                </div>
+                <div class="col-sm-6">
+                    <div class="form-group form-float">
+                        <div class="form-line">
+                            @{
+                                if (lang == "ar-EG")
+                                {
+                                    @Html.TextBoxFor(z => z.ApBankAccounts.BankAccountNameAr, new { @class = "form-control", @disabled = true })
+                                    @Html.LabelFor(z => z.BankAccountId, new { @class = "form-label" })
+                                }
+                                else
+                                {
+                                    @Html.TextBoxFor(z => z.ApBankAccounts.BankAccountNameEn, new { @class = "form-control", @disabled = true })
+                                    @Html.LabelFor(z => z.BankAccountId, new { @class = "form-label" })
+                                }
+                            }
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row clearfix">
+                <div class="col-sm-6">
+                    <div class="form-group form-float">
+                        <div class="form-line">
+                            @Html.TextBoxFor(z => z.FndLookupValuesBankLkp.NameAr, new { @class = "form-control", @disabled = true })
+                            @Html.LabelFor(z => z.BankLkpId, new { @class = "form-label" })
+                        </div>
+                    </div>
+                </div>
+                <div class="col-sm-6">
+                    @Html.LabelFor(z => z.DepositBankAccountId, new { @class = "form-label" })
+                    <div class="form-group form-float">
+                        <div>
+                            @{
+                                var list = new List<ERP.Web.UI.Models.ViewModels.General.FndLookupValuesVM> {
+                                    new ERP.Web.UI.Models.ViewModels.General.FndLookupValuesVM  {
+                                        Id = Model.DepositBankAccountId ?? 0, NameAr = Model.DepositApBankAccounts == null ? string.Empty : Model.DepositApBankAccounts.BankAccountNameAr,
+                                                                         NameEn = Model.DepositApBankAccounts == null ? string.Empty : Model.DepositApBankAccounts.BankAccountNameEn } };
+
+                                var selectList = new SelectList(list, "Id", lkpKeyDdl, Model.DepositBankAccountId);
+                                @Html.DropDownListFor(z => z.DepositBankAccountId, selectList, new { @class = "form-control" })
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row clearfix">
+                <div class="col-sm-6">
+                    <div class="form-group form-float">
+                        <div class="form-line">
+                            @Html.TextBoxFor(z => z.Notes, new { @class = "form-control" })
+                            @Html.LabelFor(z => z.Notes, new { @class = "form-label" })
+                        </div>
+                    </div>
+                </div>
+                <div class="col-sm-6">
+                    <div class="form-group form-float" style="display:none;">
+                        <div class="form-line">
+                            @Html.TextBoxFor(z => z.SourceId, new { @class = "form-control", @disabled = true })
+                            @Html.LabelFor(z => z.SourceId, new { @class = "form-label" })
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row clearfix">
+                <div class="form-group text-center form-float">
+                    <button type="submit" class="btn btn-info btn-lg m-l-15 waves-effect">@(Model == null ? ERP.ResourcePack.Common.Settings.BtnSave : ERP.ResourcePack.Common.Settings.BtnUpdate)</button>
+                    <div id="submitLoader" style="display:none">
+                        <div class="lds-roller"><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div></div>
+                    </div>
+                </div>
+            </div>
+        }
+
+    </div>
+</div>
+<script src="~/Scripts/jquery.validate.min.js"></script>
+<script src="~/Scripts/jquery.validate.unobtrusive.min.js"></script>
+<script src="~/AssetsPack/assets/js/pages/forms/basic-form-elements.js"></script>
+
+
+<script>
+    $('#DepositBankAccountId').select2(ReturnSelect2ObjectCustomParams(`${baseUrl}/ApBankAccounts/GetUserAccessedApBankAccountsSelect2`, { bankLkpId: @Convert.ToInt64(ERP.Front.Helpers.Enums.Common.FndBankLkpsTypes.Bank) }));
+
+    $(function () {
+
+        $(".currency").inputmask(
+            {
+                alias: "currency",
+                prefix: '',
+                removeMaskOnSubmit: true,
+                autoUnmask: true,
+                oncleared: function (e) {
+                    $numeric.val('');
+                }
+            }
+
+        );
+    });
+</script>

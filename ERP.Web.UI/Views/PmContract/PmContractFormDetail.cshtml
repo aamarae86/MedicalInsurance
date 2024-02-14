@@ -1,0 +1,51 @@
+﻿@using ERP.Web.UI.Models.ViewModels.PmPropertiesModule
+@model PmContractUnitDetailsVM
+@{ string formTrigger = ViewBag.trigger; }
+
+<div class="card" style="display:@(formTrigger == ERP.Front.Helpers.Enums.Common.FormTriggers.Show.ToString() ? "none":"block" ) ">
+    <div class="body">
+        <div class="row clearfix">
+            <div class="col-sm-3">
+                @Html.LabelFor(z => z.PropertiesUnitId, new { @class = "form-label" })
+                <div class="form-group form-float">
+                    <div class="form-group">
+                        @Html.DropDownListFor(z => z.PropertiesUnitId, Enumerable.Empty<SelectListItem>(), new { @class = "form-control" })
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="form-group form-float">
+                    <div class="form-line">
+                        @Html.TextBoxFor(z => z.Amount, new { @class = "form-control currency", @readonly = "readonly" })
+                        @Html.LabelFor(z => z.Amount, new { @class = "form-label" })
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="form-group form-float">
+                    <div class="form-line">
+                        @Html.TextBoxFor(z => z.AreaSize, new { @class = "form-control", @type = "number", @min = 0, @readonly = "readonly" })
+                        @Html.LabelFor(z => z.AreaSize, new { @class = "form-label" })
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="form-group form-float">
+                    <div class="form-line">
+                        @Html.TextAreaFor(z => z.Notes2, new { @class = "form-control" })
+                        @Html.LabelFor(z => z.Notes2, new { @class = "form-label" })
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row clearfix">
+            <div class="col-sm-12 text-center">
+                <div class="form-group">
+                    <button id="btnAddUnitRow" onclick="return AddUnits()" class="btn btn-success">@ERP.ResourcePack.Common.Settings.BtnAddNew</button>
+                    <button style="display:none;" id="btnUpdateUnitRow" onclick="return UpdateUnitsRow()" class="btn btn-info">@ERP.ResourcePack.Common.Settings.BtnUpdate</button>
+                    <button style="display:none;" id="btnCancelUnitRow" onclick="clearFormUnits(); $('#btnCancelUnitRow').hide();$('#btnUpdateUnitRow').hide();$('#btnAddUnitRow').show();" class="btn btn-danger">@ERP.ResourcePack.Common.Settings.BtnCancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

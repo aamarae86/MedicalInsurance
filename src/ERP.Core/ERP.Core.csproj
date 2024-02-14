@@ -1,0 +1,51 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <VersionPrefix>1.0.0.0</VersionPrefix>
+    <TargetFrameworks>netcoreapp2.2;net472</TargetFrameworks>
+    <AssetTargetFallback>$(AssetTargetFallback);portable-net45+win8+wp8+wpa81;</AssetTargetFallback>
+    <AssemblyName>ERP.Core</AssemblyName>
+    <PackageId>ERP.Core</PackageId>
+    <GenerateAssemblyConfigurationAttribute>false</GenerateAssemblyConfigurationAttribute>
+    <GenerateAssemblyCompanyAttribute>false</GenerateAssemblyCompanyAttribute>
+    <GenerateAssemblyProductAttribute>false</GenerateAssemblyProductAttribute>
+    <UserSecretsId>AbpCompanyName-ERP-56C2EF2F-ABD6-4EFC-AAF2-2E81C34E8FB1</UserSecretsId>
+    <RootNamespace>ERP</RootNamespace>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <Optimize>false</Optimize>
+    <DebugType>full</DebugType>
+    <DebugSymbols>true</DebugSymbols>
+  </PropertyGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Localization\SourceFiles\*.xml" Exclude="bin\**;obj\**;**\*.xproj;packages\**;@(EmbeddedResource)" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Remove="_System\__AidModule\_FndUserRelatives\**" />
+    <Compile Remove="_System\__AidModule\_FndUsers\**" />
+    <Compile Remove="_System\__SpGuarantees\_SpBeneficent\ProcDto\**" />
+    <Compile Remove="_System\__SpGuarantees\_SpBeneficent\Proc\**" />
+    <EmbeddedResource Remove="_System\__AidModule\_FndUserRelatives\**" />
+    <EmbeddedResource Remove="_System\__AidModule\_FndUsers\**" />
+    <EmbeddedResource Remove="_System\__SpGuarantees\_SpBeneficent\ProcDto\**" />
+    <EmbeddedResource Remove="_System\__SpGuarantees\_SpBeneficent\Proc\**" />
+    <None Remove="_System\__AidModule\_FndUserRelatives\**" />
+    <None Remove="_System\__AidModule\_FndUsers\**" />
+    <None Remove="_System\__SpGuarantees\_SpBeneficent\ProcDto\**" />
+    <None Remove="_System\__SpGuarantees\_SpBeneficent\Proc\**" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Abp.AspNetCore.SignalR" Version="4.9.0" />
+    <PackageReference Include="Abp.AutoMapper" Version="4.9.0" />
+    <PackageReference Include="Abp.ZeroCore.EntityFrameworkCore" Version="4.9.0" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="2.2.4" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="2.2.0" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" Version="2.2.0" />
+    <PackageReference Include="Castle.Windsor.MsDependencyInjection" Version="3.3.1" />
+    <PackageReference Include="Stripe.net" Version="39.41.0" />
+    <PackageReference Include="System.Drawing.Common" Version="4.7.0" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="_System\__AidModule\_ScCampainsDetail\ProcDto\" />
+    <Folder Include="_System\__Warehouses\NewFolder\" />
+  </ItemGroup>
+</Project>

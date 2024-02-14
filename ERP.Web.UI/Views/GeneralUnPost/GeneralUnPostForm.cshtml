@@ -1,0 +1,195 @@
+﻿@using ERP.Web.UI.Models.ViewModels.Accounts
+@model GeneralUnPostVM
+@{
+    string formTrigger = ViewBag.trigger;
+    string lang = Request.Cookies["Lang"] == null ? "ar-EG" : Request.Cookies["Lang"].Value.ToString();
+    string lkpKeyDdl = lang == "ar-EG" ? nameof(ERP.Web.UI.Models.ViewModels.General.FndLookupValuesVM.NameAr) : nameof(ERP.Web.UI.Models.ViewModels.General.FndLookupValuesVM.NameEn);
+}
+
+<div class="card">
+    <div class="body">
+        @using (Ajax.BeginForm(nameof(ERP.Web.UI.Controllers.Accounts.GeneralUnPostController.PostGeneralUnPost), "GeneralUnPost",
+            new AjaxOptions { HttpMethod = "POST", OnBegin = "OnBegin", OnSuccess = "OnSuccess", OnComplete = "OnComplete", OnFailure = "OnFailure" }, new { @id = "mainForm" }))
+        {
+            @Html.HiddenFor(z => z.Id)
+            @Html.HiddenFor(z => z.SourceNo)
+            @Html.HiddenFor(z => z.Lang, new { Value = lang })
+            <div class="row clearfix">
+                <div class="col-sm-3">
+                    <div class="form-group form-float">
+                        <div class="form-line">
+                            @Html.TextBoxFor(z => z.UnPostNo, new { @class = "form-control", @disabled = true })
+                            @Html.LabelFor(z => z.UnPostNo, new { @class = "form-label" })
+                        </div>
+                    </div>
+                </div>
+                <div class="col-sm-3">
+                    <div class="form-group form-float">
+                        <div class="form-line">
+                            @Html.TextBoxFor(z => z.UnPostDate, new { @class = "form-control ", Value = Model == null ? DateTime.Now.ToString(ERP.Helpers.Core.Formatters.DateFormat) : Model.UnPostDate, @disabled = true })
+                            @Html.LabelFor(z => z.UnPostDate, new { @class = "form-label" })
+                        </div>
+                    </div>
+                </div>
+                <div class="col-sm-3">
+                    @Html.LabelFor(z => z.SourceLkpId, new { @class = "form-label" })
+                    <div class="form-group form-float">
+                        <div class="form-line">
+                            @if (Model != null && Model.FndLookupGeneralUnPostSourceLkp != null)
+                            {
+                                var list = new List<ERP.Web.UI.Models.ViewModels.General.FndLookupValuesVM> { new ERP.Web.UI.Models.ViewModels.General.FndLookupValuesVM { Id = Model.SourceLkpId, NameAr = Model.FndLookupGeneralUnPostSourceLkp.NameAr, NameEn = Model.FndLookupGeneralUnPostSourceLkp.NameEn } };
+
+                                var selectList = new SelectList(list, "Id", lkpKeyDdl, Model.SourceLkpId);
+
+                                @Html.DropDownListFor(z => z.SourceLkpId, selectList, new { @class = "form-control" })
+                            }
+                            else
+                            {
+                                @Html.DropDownListFor(z => z.SourceLkpId, Enumerable.Empty<SelectListItem>(), new { @class = "form-control" })
+                            }
+
+                            @Html.ValidationMessageFor(z => z.SourceLkpId)
+                        </div>
+                    </div>
+                </div>
+                <div class="col-sm-3">
+                    @Html.LabelFor(z => z.ApMiscPaymentHeadersId, new { @class = "form-label" })
+                    <div class="form-group form-float">
+                        <div class="form-line">
+                            @if (Model != null)
+                            {
+                                long? currentVal = Model.ArJobCardHdId ?? (Model.ApMiscPaymentHeadersId ?? (Model.ArMiscReceiptHeadersId ?? (Model.PmContractId ?? (Model.ScCommitteesId ?? ( Model.ScPortalRequestMgrDecisionId)))));
+
+                                var list = new List<ERP.Web.UI.Models.ViewModels.General.FndLookupValuesVM> { new ERP.Web.UI.Models.ViewModels.General.FndLookupValuesVM { Id = (long)currentVal, NameAr = Model.SourceNo, NameEn = Model.SourceNo } };
+
+                                var selectList = new SelectList(list, "Id", lkpKeyDdl, Model.SourceLkpId);
+
+                                @Html.DropDownListFor(z => z.Select2Temp, selectList, new { @class = "form-control" })
+                            }
+                            else
+                            {
+                                @Html.DropDownListFor(z => z.Select2Temp, Enumerable.Empty<SelectListItem>(), new { @class = "form-control" })
+                            }
+                        </div>
+                        @Html.ValidationMessageFor(z => z.Select2Temp)
+                    </div>
+                </div>
+                <div class="col-sm-12">
+                    <div class="form-group form-float">
+                        <div class="form-line">
+                            @Html.TextAreaFor(z => z.RefuseReason, new { @class = "form-control", @cols = 3, @rows = 3 })
+                            @Html.LabelFor(z => z.RefuseReason, new { @class = "form-label" })
+                        </div>
+                        @Html.ValidationMessageFor(z => z.RefuseReason)
+                    </div>
+                </div>
+                <div class="col-sm-12">
+                    <div class="form-group form-float">
+                        <div class="form-line">
+                            @Html.TextAreaFor(z => z.Notes, new { @class = "form-control", @readonly = true, @cols = 3, @rows = 3 })
+                            @Html.LabelFor(z => z.Notes, new { @class = "form-label" })
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row clearfix">
+                <div class="form-group text-center form-float">
+                    <button type="submit" class="btn btn-info btn-lg m-l-15 waves-effect">@(Model == null ? ERP.ResourcePack.Common.Settings.UnPost : ERP.ResourcePack.Common.Settings.BtnUpdate)</button>
+                    <div id="submitLoader" style="display:none">
+                        <div class="lds-roller"><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div></div>
+                    </div>
+                </div>
+            </div>
+        }
+
+    </div>
+</div>
+<script src="~/Scripts/jquery.validate.min.js"></script>
+<script src="~/Scripts/jquery.validate.unobtrusive.min.js"></script>
+<script src="~/AssetsPack/assets/js/pages/forms/basic-form-elements.js"></script>
+<script>
+    $(function () {
+        $('#main-modal #UnPostNo').parent('.form-line').addClass('focused');
+        $('#main-modal #Notes').parent('.form-line').addClass('focused');
+        $('#main-modal #RefuseReason').parent('.form-line').addClass('focused');
+    });
+    $('#main-modal #SourceLkpId').select2(ReturnSelect2ObjectForLkpsTypes('GeneralUnPostSourceType'))
+
+    $('#Select2Temp').select2({
+        ajax: {
+            url: `${baseUrl}/GeneralUnPost/GetGeneralUnPostSelect2`,
+            dataType: 'json',
+            headers: {
+                'Authorization': `Bearer ${$_token}`
+            },
+            data: function (params) {
+                params.page = params.page || 1;
+                return {
+                    TableCode: $('#SourceLkpId').find(':selected').val(),
+                    pageSize: pageSize,
+                    pageNumber: params.page,
+                    searchTerm: params.term,
+                    lang: lang
+                };
+            },
+            processResults: function (data, params) {
+              
+                params.page = params.page || 1;
+
+                return {
+                    results: data.result.results,
+                    pagination: {
+                        more: (params.page * pageSize) < data.result.total
+                    }
+                };
+            }
+        },
+        placeholder: select2Placeholder,
+        minimumInputLength: 0,
+        allowClear: true,
+        language: select2Lang
+    });
+
+    $('#Select2Temp').on('change', function (e) {
+      
+        const currency = $(this);
+        const rateTxt = $('#Notes');
+
+        $('#SourceNo').val(currency.find(':selected').text());
+
+        if (!currency || !$('#main-modal #SourceLkpId').find(':selected').val()) {
+            $('#Notes').val('');
+        } else {
+            $.ajax({
+                url: `${baseUrl}/GeneralUnPost/GetGeneralPostNotes`,
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${$_token}`
+                },
+                data: {
+                    SourceLkpId: $('#main-modal #SourceLkpId').find(':selected').val(),
+                    SourceId: currency.find(':selected').val()
+                }
+            }).done(function (data) {
+
+                let _inputSelector = $('#Notes');
+
+                _inputSelector.parent('.form-line').addClass('focused');
+
+                rateTxt.val(data.result.notes);
+            }).fail(function (response) {
+                toastr.error(response);
+            });
+        }
+    });
+    $('#main-modal #SourceLkpId').on('change', function (e) {
+        $(`#Select2Temp`).append($("<option selected='selected'></option>")
+            .val('')
+            .text('')
+            .trigger('change'));
+        $('#Notes').val('').trigger('change');
+    });
+
+    $('#main-modal #UnPostDate').parent('.form-line').addClass('focused');
+
+</script>

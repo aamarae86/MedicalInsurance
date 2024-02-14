@@ -1,0 +1,472 @@
+﻿@using ERP.Web.UI.Controllers.AidModule
+@using ERP.Authorization;
+@{
+    string permissionsStr = TempData["Permissions"].ToString();
+    string encUpdateTrigger = ERP.Front.Helpers.Enums.Common.EncUpdate;
+    string encShowTrigger = ERP.Front.Helpers.Enums.Common.EncShow;
+}
+
+@if (permissionsStr.Contains(PermissionNames.Pages_ScMaintenancePayments_Post))
+{
+    <script>
+        const PostAjax = function (id) {
+
+            bootbox.confirm({
+                message: _booBoxMessagePosting,
+                buttons: bootBoxDefaultBtns,
+                callback: function (result) {
+
+                    if (result) {
+
+                        const data = {
+                            id: id,
+                            lang: lang,
+                            userId: 0
+                        };
+
+                        $.ajax({
+                            url: `${baseUrl}/ScMaintenancePayments/PostScMaintenancePayments`,
+                            type: 'POST',
+                            data: JSON.stringify(data),
+                            headers:
+                            {
+                                'Content-Type': 'application/json',
+                                'Authorization': `Bearer ${$_token}`
+                            },
+                        }).done(function (response) {
+
+                            if (response.result.finalStatues == 'F') {
+                                toastr.warning(response.result.reason);
+                            }
+                            else {
+                                toastr.success(response.result.reason);
+
+                                if (formView) {
+
+                                    setTimeout(function () {
+                                        window.location.href = $PrefixHostName + '/ScMaintenancePayments';
+                                    }, 100);
+
+                                } else {
+                                    LoadDataGrid();
+                                }
+                            }
+                        }).fail(function (response) {
+                            toastr.error(response);
+                        });
+                    }
+                }
+            });
+        };
+    </script>
+}
+else
+{
+    <script>
+        const PostAjax = function (id) { };
+    </script>
+}
+
+<script>
+    $(function () {
+
+        $('.datepicker').on('change', function (e, date) {
+            $(this).siblings('label').focus();
+        });
+
+        $('#ScMaintenancePayments').addClass('active');
+
+        $('#Amount').addClass('currency');
+        $('#AchievementRate').attr('type', 'number').attr('min', '0');
+
+        LoadDataGrid();
+    });
+
+    const _mainController = "ScMaintenancePayments", _apiAppService = "ScMaintenancePayments";
+    const _loadDataUrl = `${$PrefixHostName}/${_mainController}/@nameof(ScMaintenancePaymentsController.LoadDataGrid)`;
+    const _tblSelector = $('#tblScMaintenancePayments');
+    const _mainForm = $('#mainForm');
+
+    const _permissions = '@permissionsStr';
+    const _updatePermission = '@PermissionNames.Pages_ScMaintenancePayments_Update';
+    const _deletePermission = '@PermissionNames.Pages_ScMaintenancePayments_Delete';
+    const _postPermission = '@PermissionNames.Pages_ScMaintenancePayments_Post';
+    const _PostStatus = @Convert.ToInt64(ERP.Front.Helpers.Enums.Common.MaintenancePaymentStatus.Posted);
+
+    $('#btnSubmition').on('click', function () {
+
+        _mainForm.submit();
+
+        if (_mainForm.valid()) {
+
+            $(this).prop('disabled',true);
+
+        } else {
+
+            $(this).prop('disabled', false);
+        }
+
+    });
+
+    var OnBegin = function (response) {
+        fireBtnLoader();
+    };
+
+    var OnSuccess = function (response) {
+
+        if (response.success) {
+
+            if (response.customRestResult.trigger === '@ERP.Front.Helpers.Enums.Common.FormTriggers.Insert') {
+
+                toastr.success(response.customRestResult.message);
+
+                setTimeout(function () {
+                    window.location.href = $PrefixHostName + '/ScMaintenancePayments';
+                }, 200);
+
+
+            } else if (response.customRestResult.trigger === '@ERP.Front.Helpers.Enums.Common.FormTriggers.Update') {
+
+
+                toastr.success(response.customRestResult.message);
+
+                setTimeout(function () {
+                    window.location.href = $PrefixHostName + '/ScMaintenancePayments';
+                }, 200);
+            }
+
+        } else {
+            toastr.error(response.customRestResult.message);
+        }
+
+        $('#btnSubmition').prop('disabled', false);
+    };
+
+    var OnComplete = function (response) {
+        downBtnLoader();
+        $('#btnSubmition').prop('disabled', false);
+    };
+
+    var OnFailure = function (response) {
+        toastr.error(response);
+        $('#btnSubmition').prop('disabled', false);
+    };
+
+   const LoadDataGrid = function () {
+
+        const parms = {
+            MaintenancePaymentDate: $('#searchBox #MaintenancePaymentDate').val(),
+            MaturityDate: $('#searchBox #MaturityDate').val(),
+            MaintenancePaymentNumber: $('#searchBox #MaintenancePaymentNumber').val(),
+            MaintenanceContractNumber: $('#searchBox #MaintenanceContractNumber').val(),
+            StatusLkpId: $('#searchBox #StatusLkpId').find(':selected').val(),
+            VendorId: $('#searchBox #VendorId').find(':selected').val(),
+            ScMaintenanceContractPaymentId: $('#searchBox #ScMaintenanceContractPaymentId').find(':selected').val()
+        };
+
+        const columns = [
+           {
+               "data": "result.data.id",
+               'render': function (data, type, row, meta) {
+                   return meta.row + meta.settings._iDisplayStart + 1;
+               }
+           },
+           {
+               "data": "MaintenancePaymentNumber",
+               "name": "MaintenancePaymentNumber",
+               "autoWidth": true
+           },
+           {
+               "data": "MaintenancePaymentDate",
+               "name": "MaintenancePaymentDate",
+               "autoWidth": true
+           },
+           {
+               "data": "MaturityDate",
+               "name": "MaturityDate",
+               "autoWidth": true
+           },
+           {
+               "data": null,
+               "autoWidth": true,
+               "render": function (data, type, row) {
+                   return row.MaintenanceContractPaymentsNumber;
+               }
+           },
+           {
+               "data": null,
+               "autoWidth": true,
+               "render": function (data, type, row) {
+                   return lang === 'ar-EG' ? row.FndStatusLkp.NameAr : row.FndStatusLkp.NameEn
+               }
+           },
+           {
+               "data": "Vendor",
+               "autoWidth": true
+           },
+           {
+               "data": null,
+               "sortable": false,
+               "render": function (data, type, row) {
+
+                   let formAction = `${$PrefixHostName}/${_mainController}/@nameof(ScMaintenancePaymentsController.ScMaintenancePaymentsForm)`;
+                   let DeleteAction = `${$PrefixHostName}/${_mainController}/@nameof(ScMaintenancePaymentsController.Delete)`;
+
+                   let btns = '';
+
+                   if (_permissions.includes(_postPermission) & row.StatusLkpId != _PostStatus) {
+                       btns += `<a href="javascript:void(0)" onclick="PostAjax(${row.Id})" title="@ERP.ResourcePack.Common.Settings.Post"><i class="mx-2 fas fa-check-circle text-info"></i></a>`;
+                   }
+
+                   if (_permissions.includes(_updatePermission) && row.StatusLkpId != _PostStatus) {
+                       btns += `<a href="${$PrefixHostName}/ScMaintenancePayments/FormView?id=${row.EncId}&t=@encUpdateTrigger" title="@ERP.ResourcePack.Common.Settings.Edit"><i class="mx-2 fas fa-edit text-info"></i></a>`;
+                   }
+
+                   btns += `<a href="${$PrefixHostName}/ScMaintenancePayments/FormView?id=${row.EncId}&t=@encShowTrigger" title="@ERP.ResourcePack.Common.Settings.Show"><i class="mx-2 fas fa-eye text-info"></i></a>`;
+
+                   if (_permissions.includes(_updatePermission) && row.StatusLkpId != _PostStatus) {
+                       btns += `<a href="javascript:void(0)" onclick="AjaxController.DeleteMainTableRow(${row.Id},'${DeleteAction}');" title="@ERP.ResourcePack.Common.Settings.Delete"><i class="mx-2 fas fa-trash-alt text-danger"></i></a>`;
+                   }
+
+                   const _auditedPermission = '@PermissionNames.Pages_ScMaintenancePayments_Audit';
+
+                   if (_permissions.includes(_auditedPermission)) {
+
+                       row.permission = _auditedPermission;
+
+                       btns += GetAuditedButton(row);
+                   }
+
+                   return btns;
+               }
+           }
+       ];
+
+        const dtObj = {
+            "processing": true,
+            "serverSide": true,
+            "filter": false,
+            "orderMulti": false,
+            "language": dataTableLang,
+            "ajax": {
+                "url": _loadDataUrl,
+                "type": "POST",
+                "datatype": "json",
+                "data": parms,
+                "complete": function () { }
+            },
+            "columns": columns,
+            "initComplete": function () {
+                $('[data-toggle="tooltip"]').tooltip();
+            }
+        };
+
+        _tblSelector.dataTable().fnDestroy();
+        _tblSelector.DataTable(dtObj).on('draw', function () { $('[data-toggle="tooltip"]').tooltip(); });
+
+        setTimeout(function () {
+            $(".sorting_1").removeAttr('colspan');
+        }, 500);
+
+    };
+
+    $('#searchBox #StatusLkpId').select2(ReturnSelect2ObjectForLkpsTypes('@ERP.Front.Helpers.Enums.Common.FndLkpsTypes.MaintenancePaymentStatus.ToString()'));
+    $('#searchBox #VendorId').select2(ReturnSelect2ObjectDefault(`${baseUrl}/ApVendors/GetVendorsSelect2`));
+    $('#ScMaintenanceContractId').select2({
+        ajax: {
+            url: `${baseUrl}/ScMaintenanceContract/GetScMaintenanceContractSelect2`,
+            dataType: 'json',
+            headers: {
+                'Authorization': `Bearer ${$_token}`
+            },
+            data: function (params) {
+                params.page = params.page || 1;
+                return {
+                    pageSize: pageSize,
+                    pageNumber: params.page,
+                    searchTerm: params.term,
+                    lang: lang
+                };
+            },
+            processResults: function (data, params) {
+
+                params.page = params.page || 1;
+                return {
+                    results: data.result.results,
+                    pagination: {
+                        more: (params.page * pageSize) < data.result.total
+                    }
+                };
+            }
+        },
+        placeholder: select2Placeholder,
+        minimumInputLength: 0,
+        allowClear: true,
+        language: select2Lang,
+        templateSelection: function (data, container) {
+
+            if (data.altText) {
+
+                const vendor = lang === 'ar-EG' ? data.altText.split('-')[2].split('.')[0] : data.altText.split('-')[2].split('.')[1];
+
+                $('#PortalRequestNumber').val(data.altText.split('-')[0]);
+                $('#PortalUserName').val(data.altText.split('-')[1]);
+
+                $('#Vendor').val(vendor);
+
+                $('#PortalRequestNumber').parent('.form-line').addClass('focused');
+                $('#PortalUserName').parent('.form-line').addClass('focused');
+                $('#Vendor').parent('.form-line').addClass('focused');
+            }
+
+            return data.text;
+        }
+    });
+
+    $('#mainForm #ScMaintenanceContractPaymentId').select2({
+        ajax: {
+            url: `${baseUrl}/ScMaintenanceContract/GetScMaintenanceContractPaymentsSelect2`,
+            dataType: 'json',
+            headers: {
+                'Authorization': `Bearer ${$_token}`
+            },
+            data: function (params) {
+                params.page = params.page || 1;
+                return {
+                    contractId: $('#ScMaintenanceContractId').find(':selected').val(),
+                    pageSize: pageSize,
+                    pageNumber: params.page,
+                    searchTerm: params.term,
+                    lang: lang
+                };
+            },
+            processResults: function (data, params) {
+
+                params.page = params.page || 1;
+                return {
+                    results: data.result.results,
+                    pagination: {
+                        more: (params.page * pageSize) < data.result.total
+                    }
+                };
+            }
+        },
+        placeholder: select2Placeholder,
+        minimumInputLength: 0,
+        allowClear: true,
+        language: select2Lang,
+        templateSelection: function (data, container) {
+
+            if (data.altText) {
+
+                const amount = +data.altText.split('-')[0];
+
+                $('#Amount').val(amount.toFixed(1));
+                $('#MaturityDate').val(data.altText.split('-')[1]);
+
+                $('#Amount').parent('.form-line').addClass('focused');
+                $('#MaturityDate').parent('.form-line').addClass('focused');
+            }
+
+            return data.text;
+        }
+    });
+
+    $('#searchBox #ScMaintenanceContractPaymentId').select2({
+        ajax: {
+            url: `${baseUrl}/ScMaintenanceContract/GetScMaintenanceContractPaymentsByContractNumberSelect2`,
+            dataType: 'json',
+            headers: {
+                'Authorization': `Bearer ${$_token}`
+            },
+            data: function (params) {
+                params.page = params.page || 1;
+                return {
+                    contractNumber: $('#searchBox #MaintenanceContractNumber').val(),
+                    pageSize: pageSize,
+                    pageNumber: params.page,
+                    searchTerm: params.term,
+                    lang: lang
+                };
+            },
+            processResults: function (data, params) {
+
+                params.page = params.page || 1;
+                return {
+                    results: data.result.results,
+                    pagination: {
+                        more: (params.page * pageSize) < data.result.total
+                    }
+                };
+            }
+        },
+        placeholder: select2Placeholder,
+        minimumInputLength: 0,
+        allowClear: true,
+        language: select2Lang
+    });
+
+    $('#ScMaintenanceContractId').on('change', function () {
+        LoadPaymentData($(this).find(':selected').val());
+    });
+
+</script>
+
+<script name="payments">
+
+    const BindPaymentsTable = function (detailArr) {
+
+        const columns = [
+            { 'data': 'index' },
+            { 'data': 'payemtNo' },
+            { 'data': 'maturityDate' },
+            { 'data': 'amount' }
+        ];
+
+        const dtObj = {
+            data: detailArr,
+            retrieve: true,
+            language: dataTableLang,
+            columns: columns,
+            drawCallback: function (c, v, b) {
+                if (detailArr.length > 0) {
+                    $('#tblPayments tfoot th:eq(3)').html(detailArr.map(item => +item.amount).reduce((x, y) => x + y, 0));
+                } else {
+                    $('#tblPayments tfoot th:eq(3)').html(0);
+                }
+            }
+        };
+
+        setTimeout(function () {
+
+            $('#tblPayments').dataTable().fnDestroy();
+            $('#tblPayments').DataTable(dtObj).on('draw', function () { $('[data-toggle="tooltip"]').tooltip(); });
+
+        }, 100);
+
+    };
+
+    const LoadPaymentData = function (id) {
+
+        $.ajax({
+            url: `${baseUrl}/ScMaintenancePayments/GetAllPaymentsData`,
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${$_token}`
+            },
+            data: {
+                id: id
+            }
+        }).done(function (data) {
+
+            if (data.result) {
+                $.each(data.result, function (index, item) {
+                    item.index = ++index;
+                });
+                BindPaymentsTable(data.result);
+            }
+        });
+
+    };
+
+</script>

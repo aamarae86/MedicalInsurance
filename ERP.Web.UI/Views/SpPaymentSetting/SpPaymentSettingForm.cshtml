@@ -1,0 +1,94 @@
+﻿@using ERP.Web.UI.Models.ViewModels.SpGuarantees
+@using ERP.Web.UI.Models.ViewModels.General
+@model SpPaymentSettingVM
+@{
+    string formTrigger = ViewBag.trigger;
+    string lang = Request.Cookies["Lang"] == null ? "ar-EG" : Request.Cookies["Lang"].Value.ToString();
+    bool isFormDetail = Model != null && formTrigger == ERP.Front.Helpers.Enums.Common.FormTriggers.Show.ToString();
+}
+<div class="card">
+    <div class="body  show">
+        @using (Ajax.BeginForm(nameof(ERP.Web.UI.Controllers.SpGuarantees.SpPaymentSettingController.PostSpPaymentSetting), "SpPaymentSetting", new AjaxOptions { HttpMethod = "POST", OnBegin = "OnBegin", OnSuccess = "OnSuccess", OnComplete = "OnComplete", OnFailure = "OnFailure" }, new { @id = "mainForm" }))
+        {
+            @Html.HiddenFor(z => z.Id)
+            <div class="row clearfix">
+                <div class="col-md-6">
+                    @Html.LabelFor(z => z.SponsorCategoryLkpId, new { @class = "form-label label-required" })
+                    <div class="form-group form-float">
+                        <div class="">
+                            @if (Model != null && Model.FndSponsorCategoryLkp != null)
+                            {
+                                var list = new List<FndLookupValuesVM> { new FndLookupValuesVM { Id = (long)Model.SponsorCategoryLkpId, NameAr = Model.FndSponsorCategoryLkp.NameAr, NameEn = Model.FndSponsorCategoryLkp.NameEn } };
+                                var selectList = new SelectList(list, "Id", lang == "ar-EG" ? nameof(FndLookupValuesVM.NameAr) : nameof(FndLookupValuesVM.NameEn), Model.SponsorCategoryLkpId);
+
+                                @Html.DropDownListFor(z => z.SponsorCategoryLkpId, selectList, getHtmlAttributes(isFormDetail, "form-control", string.Empty))
+                            }
+                            else
+                            {
+                                @Html.DropDownListFor(z => z.SponsorCategoryLkpId, Enumerable.Empty<SelectListItem>(), getHtmlAttributes(isFormDetail, "form-control", string.Empty))
+                            }
+                        </div>
+                        @Html.ValidationMessageFor(z => z.SponsorCategoryLkpId)
+
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group form-float">
+                        <div class="form-line">
+                            @Html.TextBoxFor(z => z.ManagementPercentage, getHtmlAttributes(isFormDetail, "form-control", string.Empty))
+                            @Html.LabelFor(z => z.ManagementPercentage, new { @class = "form-label label-required" })
+                        </div>
+                        @Html.ValidationMessageFor(z => z.ManagementPercentage)
+                    </div>
+                </div>
+            </div>
+            <div class="row clearfix">
+                <div class="col-md-6">
+                    <div class="form-group form-float">
+                        <div class="form-line">
+                            @Html.TextBoxFor(z => z.FromDate, getHtmlAttributes(isFormDetail, "form-control", "datepicker"))
+                            @Html.LabelFor(z => z.FromDate, new { @class = "form-label label-required" })
+                        </div>
+                        @Html.ValidationMessageFor(z => z.FromDate)
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group form-float">
+                        <div class="form-line">
+                            @Html.TextBoxFor(z => z.ToDate, getHtmlAttributes(isFormDetail, "form-control", "datepicker"))
+                            @Html.LabelFor(z => z.ToDate, new { @class = "form-label" })
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row clearfix">
+                <div class="form-group text-center form-float">
+                    <button type="submit" class="btn btn-info btn-lg m-l-15 waves-effect">@(Model == null ? ERP.ResourcePack.Common.Settings.BtnSave : ERP.ResourcePack.Common.Settings.BtnUpdate)</button>
+                    <div id="submitLoader" style="display:none">
+                        <div class="lds-roller"><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div></div>
+                    </div>
+                </div>
+            </div>
+        }
+
+    </div>
+</div>
+
+@functions {
+    object getHtmlAttributes(bool Disabled, string CssClass, string CssClass2)
+    {
+        if (Disabled)
+        {
+            return new { @class = CssClass, Disabled = Disabled };
+        }
+        return new { @class = $"{CssClass} {CssClass2}" };
+    }
+}
+<script src="~/Scripts/jquery.validate.min.js"></script>
+<script src="~/Scripts/jquery.validate.unobtrusive.min.js"></script>
+<script src="~/AssetsPack/assets/js/pages/forms/basic-form-elements.js"></script>
+<script>
+    $('#ManagementPercentage').prop('type', 'number').prop('min', '0');
+    $('<b class="text-danger"> * </b>').appendTo('.label-required');
+    $('#main-modal #SponsorCategoryLkpId').select2(ReturnSelect2ObjectForLkpsTypes('@ERP.Front.Helpers.Enums.Common.FndLkpsTypes.SponsorCategory.ToString()'));
+</script>

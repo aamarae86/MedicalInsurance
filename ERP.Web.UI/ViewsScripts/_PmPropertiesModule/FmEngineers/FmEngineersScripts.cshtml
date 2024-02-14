@@ -1,0 +1,249 @@
+﻿@using ERP.Authorization;
+@using ERP.Web.UI.Controllers.PmPropertiesModule
+@using ERP.ResourcePack.PmPropertiesModule
+@{
+    string permissionsStr = TempData["Permissions"].ToString();
+}
+<script>
+    const _mainController = "FmEngineers"
+
+    $(function () {
+
+        LoadDataGrid();
+        $('#tblFmEngineersPrint thead').html($('#tblFmEngineers thead').html());
+        $('#tblFmEngineersPrint thead tr :last-child').remove();
+        $('#FmEngineers').addClass('active');
+    });
+
+    const _loadDataUrl = `${$PrefixHostName}/${_mainController}/@nameof(FmEngineersController.LoadDataGrid)`;
+    const _tblSelector = $('#tblFmEngineers');
+
+    const _permissions = '@permissionsStr';
+    const _updatePermission = '@PermissionNames.Pages_FmEngineers_Update';
+    const _deletePermission = '@PermissionNames.Pages_FmEngineers_Delete';
+
+    var OnBegin = function (response) {
+      fireBtnLoader();
+    };
+
+    var OnSuccess = function (response) {
+
+        if (response.success) {
+
+            if (response.customRestResult.trigger === '@ERP.Front.Helpers.Enums.Common.FormTriggers.Insert') {
+
+                toastr.success(response.customRestResult.message);
+
+                LoadDataGrid();
+
+                _mainModal.modal('hide');
+
+            } else if (response.customRestResult.trigger === '@ERP.Front.Helpers.Enums.Common.FormTriggers.Update') {
+
+                LoadDataGrid();
+
+                _mainModal.modal('hide');
+
+                toastr.success(response.customRestResult.message);
+            }
+
+        } else {
+            toastr.error(response.customRestResult.message);
+        }
+
+    };
+
+    var OnComplete = function (response) {
+        downBtnLoader();
+    };
+
+    var OnFailure = function (response) {
+        downBtnLoader();
+    };
+
+    const LoadDataGrid = function () {
+
+        const parms = {
+            StatusLkpId: $('#searchBox #StatusLkpIdSearch').find(':selected').val(),
+            EngineerNumber: $('#searchBox #EngineerNumberSearch').val(),
+            EngineerName: $('#searchBox #EngineerNameSearch').val(),
+            Mobile1: $('#searchBox #Mobile1Search').val()
+        };
+
+        const columns = [
+            {
+                "data": "result.data.id",
+                'render': function (data, type, row, meta) {
+                    return meta.row + meta.settings._iDisplayStart + 1;
+                }
+            },
+            {
+                "data": "EngineerNumber",
+                "name": "EngineerNumber",
+                "autoWidth": true
+            },
+            {
+                "data": "EngineerName",
+                "name": "EngineerName",
+                "autoWidth": true
+            },
+            {
+                "data": "HireDate",
+                "name": "HireDate",
+                "autoWidth": true
+            },
+            {
+                "data": "Mobile1",
+                "name": "Mobile1",
+                "autoWidth": true
+            },
+            {
+                "data": "StatusLkpId",
+                "name": "StatusLkpId",
+                "autoWidth": true,
+                "render": function (d, t, row) {
+                    return lang === 'ar-EG' ? row.FndStatusLkp.NameAr : row.FndStatusLkp.NameEn;
+                }
+            },
+            {
+                "data": null,
+                "sortable": false,
+                "render": function (data, type, row) {
+
+                    let formAction = `${$PrefixHostName}/${_mainController}/@nameof(FmEngineersController.FmEngineersForm)`;
+                    let DeleteAction = `${$PrefixHostName}/${_mainController}/@nameof(FmEngineersController.Delete)`;
+
+                    let formTitle = '@FmEngineers.Title', btns = '';
+
+                    if (_permissions.includes(_updatePermission)) {
+                        btns += `<a href="javascript:void(0)" onclick="AjaxController.GetFormModal(${row.Id},'@ERP.Front.Helpers.Enums.Common.FormTriggers.Update','${formAction}','${formTitle}');" title="@ERP.ResourcePack.Common.Settings.Edit"><i class="mx-2 fas fa-edit text-info"></i></a>`;
+                    }
+
+                    btns += `<a href="javascript:void(0)" onclick="AjaxController.GetFormModal(${row.Id},'@ERP.Front.Helpers.Enums.Common.FormTriggers.Show','${formAction}','${formTitle}');" title="@ERP.ResourcePack.Common.Settings.Show"><i class="mx-2 fas fa-eye text-info"></i></a>`;
+
+                    if (_permissions.includes(_deletePermission)) {
+                        btns += `<a href="javascript:void(0)" onclick="AjaxController.DeleteMainTableRow(${row.Id},'${DeleteAction}');" title="@ERP.ResourcePack.Common.Settings.Delete"><i class="mx-2 fas fa-trash-alt text-danger"></i></a>`;
+                    }
+
+                    const _auditedPermission = '@PermissionNames.Pages_FmEngineers_Audit';
+
+                    if (_permissions.includes(_auditedPermission)) {
+
+                        row.permission = _auditedPermission;
+
+                        btns += GetAuditedButton(row);
+                    }
+
+                    return btns;
+                }
+            }
+        ];
+
+        const dtObj = {
+            "processing": true,
+            "serverSide": true,
+            "filter": false,
+            "orderMulti": false,
+            "language": dataTableLang,
+            "ajax": {
+                "url": _loadDataUrl,
+                "type": "POST",
+                "datatype": "json",
+                "data": parms,
+                "complete": function () { }
+            },
+            "columns": columns,
+            "initComplete": function () {
+                $('[data-toggle="tooltip"]').tooltip();
+            }
+        };
+
+        _tblSelector.dataTable().fnDestroy();
+        _tblSelector.DataTable(dtObj).on('draw', function () { $('[data-toggle="tooltip"]').tooltip(); });
+
+    };
+
+    $('#searchBox #StatusLkpIdSearch').select2(ReturnSelect2ObjectForLkpsTypes('@ERP.Front.Helpers.Enums.Common.FndLkpsTypes.FmEngineersStatues.ToString()'));
+
+
+    function printExc() {
+        $('.page-loader-wrapper').show();
+
+        const parmss = {
+            StatusLkpId: $('#searchBox #StatusLkpIdSearch').find(':selected').val(),
+            EngineerNumber: $('#searchBox #EngineerNumberSearch').val(),
+            EngineerName: $('#searchBox #EngineerNameSearch').val(),
+            Mobile1: $('#searchBox #Mobile1Search').val(),
+            length: 1000000
+        };
+
+        const columns = [
+            {
+                "data": "result.data.id",
+                'render': function (data, type, row, meta) {
+                    return meta.row + meta.settings._iDisplayStart + 1;
+                }
+            },
+            {
+                "data": "EngineerNumber",
+                "name": "EngineerNumber",
+                "autoWidth": true
+            },
+            {
+                "data": "EngineerName",
+                "name": "EngineerName",
+                "autoWidth": true
+            },
+            {
+                "data": "HireDate",
+                "name": "HireDate",
+                "autoWidth": true
+            },
+            {
+                "data": "Mobile1",
+                "name": "Mobile1",
+                "autoWidth": true
+            },
+            {
+                "data": "StatusLkpId",
+                "name": "StatusLkpId",
+                "autoWidth": true,
+                "render": function (d, t, row) {
+                    return lang === 'ar-EG' ? row.FndStatusLkp.NameAr : row.FndStatusLkp.NameEn;
+                }
+            }
+        ];
+
+        const dtObj = {
+            "language": dataTableLang,
+            "dom": 'Bfrtip',
+            "buttons": [
+                {
+                    extend: 'excel',
+                    messageTop: `${$('[for="StatusLkpId"]').text()}: ${(parmss.Code) ? parmss.Code : '--'}, ${$('#EngineerNumberSearch').siblings().text()}: ${(parmss.EngineerNumber) ? parmss.EngineerNumber : '--'}, ${$('#EngineerNameSearch').siblings().text()}: ${(parmss.EngineerName) ? parmss.EngineerName : '--'}, ${$('#Mobile1Search').siblings().text()}: ${(parmss.Mobile1) ? parmss.Mobile1 : '--'}`
+                },
+
+            ],
+            "ajax": {
+                "url": _loadDataUrl,
+                "type": "POST",
+                "datatype": "json",
+                "data": parmss,
+                "complete": function (d) {
+                    _tblLoader.hide();
+                }
+            },
+            "columns": columns,
+
+            "initComplete": function () {
+                $('#tblFmEngineersPrint_wrapper button.dt-button').click();
+            }
+        };
+
+        $('#tblFmEngineersPrint').dataTable().fnDestroy();
+        $('#tblFmEngineersPrint').DataTable(dtObj).on('buttons-processing', function (e, indicator) { if (!indicator) { $('.page-loader-wrapper').hide() } });
+
+
+    }
+
+</script>

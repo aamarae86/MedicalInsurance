@@ -1,0 +1,98 @@
+﻿@using ERP.Web.UI.Models.ViewModels.Warehouses
+@using ERP.Web.UI.Models.ViewModels.General
+@model IvPriceListHdVM
+@{
+    ViewBag.Title = ERP.ResourcePack.Warehouses.IvPriceListHd.Title;
+    string formTrigger = ViewBag.trigger;
+    string lang = Request.Cookies["Lang"] == null ? "ar-EG" : Request.Cookies["Lang"].Value.ToString();
+    string lkpKeyDdl = lang == "ar-EG" ? nameof(FndLookupValuesVM.NameAr) : nameof(FndLookupValuesVM.NameEn);
+    bool isFormDetail = Model != null && formTrigger == ERP.Front.Helpers.Enums.Common.FormTriggers.Show.ToString();
+}
+
+<div class="card">
+    <div class="body">
+        <div class="header">
+            <h2><strong>@ERP.ResourcePack.Accounts.GlJeHeaders.MasterData</strong></h2>
+        </div>
+        @using (Ajax.BeginForm(nameof(ERP.Web.UI.Controllers.Warehouses.IvPriceListHdController.PostIvPriceListHd), "IvPriceListHd", new AjaxOptions { HttpMethod = "POST", OnBegin = "OnBegin", OnSuccess = "OnSuccess", OnComplete = "OnComplete", OnFailure = "OnFailure" }, new { @id = "mainForm" }))
+        {
+            @Html.HiddenFor(z => z.Id)
+            @Html.HiddenFor(z => z.PriceListDetailsListStr)
+
+            <div class="row clearfix">
+                <div class="col-sm-3">
+                    <div class="form-group form-float">
+                        <div class="form-line">
+                            @Html.TextBoxFor(z => z.PriceListNumber, getHtmlAttributes(true, "form-control", string.Empty))
+                            @Html.LabelFor(z => z.PriceListNumber, new { @class = "form-label" })
+                        </div>
+                    </div>
+                    @Html.ValidationMessageFor(z => z.PriceListNumber)
+                </div>
+                <div class="col-sm-3">
+                    <div class="form-group form-float">
+                        <div class="form-line">
+                            @Html.TextBoxFor(z => z.PriceListName, getHtmlAttributes(isFormDetail, "form-control", string.Empty))
+                            @Html.LabelFor(z => z.PriceListName, new { @class = "form-label" })
+                        </div>
+                    </div>
+                    @Html.ValidationMessageFor(z => z.PriceListName)
+                </div>
+
+            </div>
+        }
+
+        @*//filter*@
+        @if (formTrigger != ERP.Front.Helpers.Enums.Common.FormTriggers.Show.ToString())
+        {
+           
+    <div class="containfilter">
+        <div class="header">
+            <h2><strong>@ERP.ResourcePack.Warehouses.IvPriceListHd.PriceListCriteria</strong></h2>
+        </div>
+
+        <div class="col-sm-4">
+            <input type="checkbox" style=" position: relative; opacity: initial; pointer-events: inherit;" id="AllOrganization" name="AllOrganization" value="AllOrganization"><label>@ERP.ResourcePack.Warehouses.IvPriceListHd.AllOrganization</label>
+
+        </div> 
+        <div class="row clearfix">
+            <div class="col-sm-4">
+                @Html.LabelFor(z => z.IvItemsTypesConfigureId, new { @class = "form-label" })
+                <div class="form-group form-line">
+                    <div class="form-group">
+                        @Html.DropDownListFor(z => z.IvItemsTypesConfigureId, Enumerable.Empty<SelectListItem>(), new { @class = "form-control" })
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-3">
+                <div class="form-group">
+                    <div class="form-line">
+                        @Html.TextBoxFor(z => z.Percentage, new { @class = "form-control currency " })
+                        @Html.LabelFor(z => z.Percentage, new { @class = "form-label" })
+                    </div>
+                </div>
+            </div>
+            </div>
+                <div class="col-sm-4">
+                    <button id="btnAllOrganizationDetailRow" onclick="return LoadAllOrganization()" class="btn btn-success">@ERP.ResourcePack.Warehouses.IvPriceListHd.GeneratePrices</button>
+
+                </div>
+            </div>
+
+            }
+
+
+        </div>
+        </div>
+
+@functions {
+    object getHtmlAttributes(bool Disabled, string CssClass, string CssClass2)
+    {
+        if (Disabled)
+        {
+            return new { @class = CssClass, Disabled = Disabled };
+        }
+        return new { @class = $"{CssClass} {CssClass2}" };
+    }
+}
+

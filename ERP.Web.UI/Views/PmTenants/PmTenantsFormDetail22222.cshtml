@@ -1,0 +1,51 @@
+﻿@using ERP.Web.UI.Models.ViewModels.PmPropertiesModule
+@model PmTenantsVM
+@{
+    string formTrigger = ViewBag.trigger;
+    string lang = Request.Cookies["Lang"] == null ? "ar-EG" : Request.Cookies["Lang"].Value.ToString();
+    bool isFormDetail = Model?.Id > 0 && formTrigger == ERP.Front.Helpers.Enums.Common.FormTriggers.Show.ToString();
+}
+
+<div class="card" style="display:@(formTrigger == ERP.Front.Helpers.Enums.Common.FormTriggers.Show.ToString() ? "none":"block" ) ">
+    <div class="body">
+        @*<div class="row clearfix">
+            <div class="col-sm-6">
+                <div class="form-group form-float">
+                    <div class="form-line">
+                        @Html.DropDownListFor(z => z.PmActivityTypeLkpId, Enumerable.Empty<SelectListItem>(), new { @class = "form-control" })
+                        @Html.LabelFor(z => z.PmActivityTypeLkpId, new { @class = "form-label" })
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-6">
+                <div class="form-group form-float">
+                    <div class="form-line">
+                        @Html.TextBoxFor(z => z.TaxPercentage, new { @class = "form-control" })
+                        @Html.LabelFor(z => z.TaxPercentage, new { @class = "form-label" })
+                    </div>
+                </div>
+            </div>
+        </div>*@
+        <div class="row clearfix">
+            <div class="col-sm-12">
+                <div class="form-group m-2">
+                    <button id="btnAddPmTenantsDetailRow" onclick="return AddPmTenantsDetail()" class="btn btn-success">@ERP.ResourcePack.Common.Settings.BtnAddNew</button>
+                    <button style="display:none;" id="btnUpdatePmTenantsDetailRow" onclick="return UpdatePmTenantsDetailRow()" class="btn btn-info">@ERP.ResourcePack.Common.Settings.BtnUpdate</button>
+                    <button style="display:none;" id="btnCancelPmTenantsDetailRow" onclick="CancelEditPmTenantsDetailRow()" class="btn btn-danger">@ERP.ResourcePack.Common.Settings.BtnCancel</button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+@functions {
+    object getHtmlAttributes(bool Disabled, string CssClass, string CssClass2)
+    {
+        if (Disabled)
+        {
+            return new { @class = CssClass, Disabled = Disabled };
+        }
+        return new { @class = $"{CssClass} {CssClass2}" };
+    }
+}

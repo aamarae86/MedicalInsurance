@@ -1,0 +1,276 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="ArCustomerId" xml:space="preserve">
+    <value>العميل</value>
+  </data>
+  <data name="ArCustomers" xml:space="preserve">
+    <value>العميل</value>
+  </data>
+  <data name="ArJobCardAttachments" xml:space="preserve">
+    <value>المرفقات</value>
+  </data>
+  <data name="ClaimNo" xml:space="preserve">
+    <value>رقم المطالبة</value>
+  </data>
+  <data name="CloseReason" xml:space="preserve">
+    <value>Close Reason</value>
+  </data>
+  <data name="CloseReasonTitle" xml:space="preserve">
+    <value>Please enter the reason to close!</value>
+  </data>
+  <data name="ContactName" xml:space="preserve">
+    <value>اسم جهة الاتصال</value>
+  </data>
+  <data name="ContactNo" xml:space="preserve">
+    <value>رقم جهة الاتصال</value>
+  </data>
+  <data name="CreditNote" xml:space="preserve">
+    <value>ملاحظات رصيد العميل</value>
+  </data>
+  <data name="CustomerInfo" xml:space="preserve">
+    <value>معلومات العميل</value>
+  </data>
+  <data name="CustomerInvoice" xml:space="preserve">
+    <value>رقم فاتورة العميل</value>
+  </data>
+  <data name="CustomerVatAmount" xml:space="preserve">
+    <value>مبلغ ضريبة القيمة المضافة للعميل</value>
+  </data>
+  <data name="CustomerVatPercentage" xml:space="preserve">
+    <value>نسبة ضريبة القيمة المضافة للعميل</value>
+  </data>
+  <data name="DiscountAmount" xml:space="preserve">
+    <value>الخصم</value>
+  </data>
+  <data name="EndDate" xml:space="preserve">
+    <value>الريخ الانتهاء </value>
+  </data>
+  <data name="EstimatedAmount" xml:space="preserve">
+    <value> المبلغ المقدرة</value>
+  </data>
+  <data name="ExcessAmount" xml:space="preserve">
+    <value>المبلغ الاضافي</value>
+  </data>
+  <data name="excessInfo" xml:space="preserve">
+    <value>معلومات اضافية</value>
+  </data>
+  <data name="ExcessInvoice" xml:space="preserve">
+    <value>رقم الفاتورة الاضافية</value>
+  </data>
+  <data name="ExcessStatusLkpId" xml:space="preserve">
+    <value>VehicleMakeLkpId</value>
+  </data>
+  <data name="ExcessVatAmount" xml:space="preserve">
+    <value>VehicleMakeLkpId</value>
+  </data>
+  <data name="ExcessVatPercentage" xml:space="preserve">
+    <value>VehicleMakeLkpId</value>
+  </data>
+  <data name="FndExcessStatusLkp" xml:space="preserve">
+    <value>VehicleMakeLkpId</value>
+  </data>
+  <data name="FndJobTypeLkp" xml:space="preserve">
+    <value>نوع العمل</value>
+  </data>
+  <data name="FndSalesMen" xml:space="preserve">
+    <value>مندوب المبيعات</value>
+  </data>
+  <data name="FndSalesMenId" xml:space="preserve">
+    <value>مندوب المبيعات</value>
+  </data>
+  <data name="FndVehicleColorLkp" xml:space="preserve">
+    <value>لون المركبة</value>
+  </data>
+  <data name="FndVehicleEmirateLkp" xml:space="preserve">
+    <value>الامارة</value>
+  </data>
+  <data name="FndVehicleMakeLkp" xml:space="preserve">
+    <value>بلد صناعة المركبة</value>
+  </data>
+  <data name="FndVehicleModelLkp" xml:space="preserve">
+    <value>سنة صناعة المركبة</value>
+  </data>
+  <data name="InvoiceDate" xml:space="preserve">
+    <value>Invoice Date</value>
+  </data>
+  <data name="JobCardInfo" xml:space="preserve">
+    <value>معلومات بطاقة العمل</value>
+  </data>
+  <data name="JobDate" xml:space="preserve">
+    <value>تاريخ بطاقة العمل</value>
+  </data>
+  <data name="JobNumber" xml:space="preserve">
+    <value>رقم بطاقة العمل </value>
+  </data>
+  <data name="JobNumberError" xml:space="preserve">
+    <value>رقم البطقة مستخدم ب الفعل </value>
+  </data>
+  <data name="JobTypeLkpId" xml:space="preserve">
+    <value>نوع العمل</value>
+  </data>
+  <data name="LpoNo" xml:space="preserve">
+    <value>رقم امر الشراء</value>
+  </data>
+  <data name="OriginalAmount" xml:space="preserve">
+    <value>المبلغ الحقيقي</value>
+  </data>
+  <data name="PaymentTitle" xml:space="preserve">
+    <value>Payments </value>
+  </data>
+  <data name="PoliceReportNo" xml:space="preserve">
+    <value>رقم  تقرير المحضر</value>
+  </data>
+  <data name="PoliceReportSourceLkpId" xml:space="preserve">
+    <value>مصدر تقرير المحضر</value>
+  </data>
+  <data name="SearchForm" xml:space="preserve">
+    <value>بحث</value>
+  </data>
+  <data name="StartDate" xml:space="preserve">
+    <value>تاريخ البدا</value>
+  </data>
+  <data name="StatusLkpId" xml:space="preserve">
+    <value>الحالة</value>
+  </data>
+  <data name="Title" xml:space="preserve">
+    <value>بطاقة العمل </value>
+  </data>
+  <data name="VehicleColorLkpId" xml:space="preserve">
+    <value>لون المركبة</value>
+  </data>
+  <data name="VehicleEmirateLkpId" xml:space="preserve">
+    <value>الامارة</value>
+  </data>
+  <data name="VehicleInfo" xml:space="preserve">
+    <value>معلومات المركبة</value>
+  </data>
+  <data name="VehicleMakeLkpId" xml:space="preserve">
+    <value>بلد صناعة المركبة </value>
+  </data>
+  <data name="VehicleModelLkpId" xml:space="preserve">
+    <value>سنة صناعة المركبة</value>
+  </data>
+  <data name="VehiclePlateNo" xml:space="preserve">
+    <value>رقم لوحة المركبة</value>
+  </data>
+  <data name="VehicleType" xml:space="preserve">
+    <value>نوع الركبة</value>
+  </data>
+</root>

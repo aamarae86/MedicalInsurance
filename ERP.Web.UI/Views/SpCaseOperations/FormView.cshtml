@@ -1,0 +1,25 @@
+﻿@using ERP.Web.UI.Controllers.SpGuarantees
+@model ERP.Web.UI.Models.ViewModels.SpGuarantees.SpCaseOperationsVM
+@{
+    ViewBag.Title = ERP.ResourcePack.SpGuarantees.SpCaseOperations.Title;
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+@if (TempData["Exc"] != null && TempData["Exc"].ToString() != string.Empty)
+{
+    <p class="alert alert-danger text-center">
+        @TempData["Exc"].ToString()
+    </p>
+}
+<div>
+    @Html.Action(nameof(SpCaseOperationsController.ReplaceForm), new { vM = Model })
+</div>
+
+@section scripts{
+    <script>
+        let formView = true;
+    </script>
+    <script src="~/Scripts/jquery.validate.min.js"></script>
+    <script src="~/Scripts/jquery.validate.unobtrusive.min.js"></script>
+    @Html.Partial("~/ViewsScripts/_SpGuarantees/SpCaseOperations/ReplaceOperationScripts.cshtml")
+}
+

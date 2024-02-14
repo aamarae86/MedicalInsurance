@@ -1,0 +1,144 @@
+﻿@using ERP.ResourcePack.CRM.Leads
+@using ERP.Web.UI.Models.ViewModels.CRM.Leads
+@model CrmLeadsPersonsVM
+<div class="card" id="searchBox">
+    <div class="header d-flex justify-content-start align-items-center">
+        <i class="fas fa-2x fa-chevron-down down-arr mr-2" data-toggle="collapse" data-target="#searchCollapse"></i>
+        <h2><strong>@ERP.ResourcePack.Common.Menu.CRM_Contacts</strong> -  @ERP.ResourcePack.Accounts.ArReceipts.SearchForm</h2>
+    </div>
+    <div class="body collapse show" id="searchCollapse">
+        <div class="row clearfix">
+            <div class="col-sm-3">
+                <div class="form-group form-float">
+                    <div class="form-line">
+                        @Html.TextBoxFor(z => z.FullName, new { @class = "form-control" })
+                        @Html.LabelFor(z => z.FullName, new { @class = "form-label" })
+                    </div>
+                </div>
+            </div>
+
+
+
+            <div class="col-sm-3">
+                <div class="form-group form-float">
+                    <div class="form-line">
+                        @Html.TextBoxFor(z => z.Phone, new { @class = "form-control" })
+                        @Html.LabelFor(z => z.Phone, new { @class = "form-label" })
+                    </div>
+                </div>
+            </div>
+
+
+
+            <div class="col-sm-3">
+                <div class="form-group form-float">
+                    <div class="form-line">
+                        @Html.TextBoxFor(z => z.City, new { @class = "form-control" })
+                        @Html.LabelFor(z => z.City, new { @class = "form-label" })
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-sm-3">
+                @Html.LabelFor(z => z.CountryLkpId, new { @class = "form-label" })
+                <div class="form-group form-float">
+                    <div class="form-group">
+                        @Html.DropDownListFor(z => z.CountryLkpId, Enumerable.Empty<SelectListItem>(), new { @class = "form-control" })
+                    </div>
+                </div>
+            </div>
+
+
+
+
+
+            <div class="col-sm-3">
+                <div class="form-group form-float">
+                    <div class="form-line">
+                        @Html.TextBoxFor(z => z.State, new { @class = "form-control" })
+                        @Html.LabelFor(z => z.State, new { @class = "form-label" })
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-sm-3">
+                <div class="form-group form-float">
+                    <div class="form-line">
+                        @Html.TextBoxFor(z => z.Company, new { @class = "form-control" })
+                        @Html.LabelFor(z => z.Company, new { @class = "form-label" })
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-sm-3">
+                @Html.LabelFor(z => z.CrmProductId, new { @class = "form-label" })
+                <div class="form-group form-float">
+                    <div class="form-group">
+                        @Html.DropDownListFor(z => z.CrmProductId, Enumerable.Empty<SelectListItem>(), new { @class = "form-control" })
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-sm-3">
+                @Html.LabelFor(z => z.CrmServiceId, new { @class = "form-label" })
+                <div class="form-group form-float">
+                    <div class="form-group">
+                        @Html.DropDownListFor(z => z.CrmServiceId, Enumerable.Empty<SelectListItem>(), new { @class = "form-control" })
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-sm-3">
+                @Html.LabelFor(z => z.UserId, new { @class = "form-label" })
+                <div class="form-group form-float">
+                    <div class="form-group">
+                        @Html.DropDownListFor(z => z.UserId, Enumerable.Empty<SelectListItem>(), new { @class = "form-control" })
+                    </div>
+                </div>
+            </div>
+
+
+            <div class="col-sm-3">
+                <div class="form-group form-float">
+                    <div class="form-line">
+                        @Html.TextBoxFor(z => z.CreatedDate, new { @class = "form-control datepicker", @Id = "SearchCreatedDate" })
+                        @Html.LabelFor(z => z.CreatedDate, new { @class = "form-label" })
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-3">
+                @Html.LabelFor(z => z.CallResultLkpId, new { @class = "form-label" })
+                <div class="form-group form-float">
+                    <div class="form-group">
+                        @Html.DropDownListFor(z => z.CallResultLkpId, Enumerable.Empty<SelectListItem>(), new { @class = "form-control" })
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-3">
+                <div class="form-group form-float">
+                    <div class="form-line">
+                        @Html.TextBoxFor(z => z.FromDate, new { @class = "form-control datepicker", @id = "FromDateSearch" })
+                        @Html.LabelFor(z => z.FromDate, new { @class = "form-label" })
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-3">
+                <div class="form-group form-float">
+                    <div class="form-line">
+                        @Html.TextBoxFor(z => z.ToDate, new { @class = "form-control datepicker", @id = "ToDateSearch" })
+                        @Html.LabelFor(z => z.ToDate, new { @class = "form-label" })
+                    </div>
+                </div>
+            </div>
+
+        </div>
+        <div class="d-flex justify-content-end mb-3">
+            <button type="button" class="btn btn-success btn-border-radius mx-2 waves-effect" onclick="return LoadDataGrid()">
+                @ERP.ResourcePack.Common.Settings.BtnSearch
+            </button>
+            <a href="javascript:void(0)" class="btn btn-danger btn-border-radius" onclick="return clearSearchForm()" role="button" aria-haspopup="true" aria-expanded="false">
+                @ERP.ResourcePack.Common.Settings.BtnClear
+            </a>
+        </div>
+    </div>
+</div>

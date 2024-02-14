@@ -1,0 +1,15 @@
+﻿@{
+    ViewBag.Title = ERP.ResourcePack.SpGuarantees.SpCases.Title;
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@Html.Action(nameof(ERP.Web.UI.Controllers.SpGuarantees.SpCasesController.SpCasesSearch))
+@Html.Action(nameof(ERP.Web.UI.Controllers.SpGuarantees.SpCasesController.SpCasesData))
+<div style="display:none" id="tbl_Container">
+    @Html.Partial("~/Views/SpCases/SpCaseHistory.cshtml")
+</div>
+
+@section scripts{
+    <script>let formView = false;</script>
+    @Html.Partial("~/ViewsScripts/_SpGuarantees/SpCases/SpCasesScripts.cshtml")
+}

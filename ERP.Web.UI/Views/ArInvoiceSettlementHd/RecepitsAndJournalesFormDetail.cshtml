@@ -1,0 +1,56 @@
+﻿@using ERP.Web.UI.Models.ViewModels.AccountsExtend
+@model ArInvoiceSettlementHdVM
+@{
+    string formTrigger = ViewBag.trigger;
+    string lang = Request.Cookies["Lang"] == null ? "ar-EG" : Request.Cookies["Lang"].Value.ToString();
+    bool isFormDetail = Model != null && formTrigger == ERP.Front.Helpers.Enums.Common.FormTriggers.Show.ToString();
+}
+<div class="card" style="display:@(formTrigger == ERP.Front.Helpers.Enums.Common.FormTriggers.Show.ToString() ? "none":"block" ) ">
+    <div class="body">
+        <div class="row clearfix">
+            <div class="col-sm-3">
+                @Html.LabelFor(z => z.CrSourceLkpId, new { @class = "form-label" })
+                <div class="form-group form-float">
+                    <div class="form-group">
+                        @Html.DropDownListFor(z => z.CrSourceLkpId, Enumerable.Empty<SelectListItem>(), new { @class = "form-control" })
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-3">
+                @Html.LabelFor(z => z.CrSourceId, new { @class = "form-label" })
+                <div class="form-group form-float">
+                    <div class="form-group">
+                        @Html.DropDownListFor(z => z.CrSourceId, Enumerable.Empty<SelectListItem>(), new { @class = "form-control" })
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-3">
+                <div class="form-group form-float">
+                    <div class="form-line focused">
+                        @Html.TextBox("CrDate", String.Empty, new { @class = "form-control ", @disabled = "disabled" })
+                        @Html.Label(@ERP.ResourcePack.AccountsExtend.ArInvoiceSettlementHd.Date, new { @class = "form-label" })
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-3">
+                <div class="form-group form-float">
+                    <div class="form-line focused">
+                        @Html.TextBox("CrAmount", 0.0, new { @class = "form-control currency ", @disabled = "disabled" })
+                        @Html.Label(@ERP.ResourcePack.AccountsExtend.ArInvoiceSettlementHd.Amount, new { @class = "form-label" })
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row clearfix text-center">
+            <div class="col-sm-4"></div>
+            <div class="col-sm-4">
+                <div class="form-group m-2">
+                    <button id="btnAddRecepitsAndJournalesDetailRow" onclick="return AddRecepitsAndJournalesDetails()" class="btn btn-success">@ERP.ResourcePack.Common.Settings.BtnAddNew</button>
+                    <button style="display:none;" id="btnUpdateRecepitsAndJournalesDetailRow" onclick="return UpdateRecepitsAndJournalesDetailsRow()" class="btn btn-info">@ERP.ResourcePack.Common.Settings.BtnUpdate</button>
+                    <button style="display:none;" id="btnCancelRecepitsAndJournalesDetailRow" onclick="clearFormRecepitsAndJournalesAdding(); $('#btnCancelRecepitsAndJournalesDetailRow').hide();$('#btnUpdateRecepitsAndJournalesDetailRow').hide();$('#btnAddRecepitsAndJournalesDetailRow').show();" class="btn btn-danger">@ERP.ResourcePack.Common.Settings.BtnCancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

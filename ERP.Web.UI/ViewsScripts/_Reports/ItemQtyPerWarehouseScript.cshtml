@@ -1,0 +1,272 @@
+﻿@using ERP.Web.UI.Controllers.Warehouses
+@using ERP.Authorization;
+@{
+//string permissionsStr = TempData["Permissions"].ToString();
+}
+<script>
+    const _mainController = "Reports"
+
+    $(function () {
+        //LoadDataGrid();
+        //$('#tblIvItemsPrint thead').html($('#tblIvItems thead').html());
+        //$('#tblIvItemsPrint thead tr :last-child').remove();
+        //$('#IvItems').addClass('active');
+        //$('#main-modal #TaxPercentageLkpId').parent('.form-line').addClass('focused');
+        
+        //$('#IvItemId').select2({
+        //    ajax: {
+        //        url: `${baseUrl}/IvItems/GetSelect2`,
+        //        dataType: 'json',
+        //        headers: {
+        //            'Authorization': `Bearer ${$_token}`
+        //        },
+        //        data: function (params) {
+        //            params.page = params.page || 1;
+        //            return {
+        //                IvWarehouseId: $('#IvWarehouseId').val(),
+        //                IvPriceListHdId: $('#IvPriceListHdId').val(),
+        //                pageSize: pageSize,
+        //                pageNumber: params.page,
+        //                searchTerm: params.term,
+        //                lang: lang
+        //            };
+        //        },
+        //        processResults: function (data, params) {
+
+        //            params.page = params.page || 1;
+
+        //            return {
+        //                results: data.result.results,
+        //                pagination: {
+        //                    more: (params.page * pageSize) < data.Total
+        //                }
+        //            };
+        //        }
+        //    },
+        //    placeholder: select2Placeholder,
+        //    minimumInputLength: 0,
+        //    allowClear: true,
+        //    language: select2Lang
+        //});
+    });
+
+    $('#IvWarehouseId').select2(ReturnSelect2ObjectDefault(`${baseUrl}/IvUserWarehousesPrivileges/GetIvUserWarehousesPrivilegesSelect2`));
+    $('#IvItemId').select2(ReturnSelect2ObjectDefault(`${baseUrl}/IvItems/GetSelect2`));
+
+    const _loadDataUrl = `${$PrefixHostName}/${_mainController}/@nameof(ERP.Web.UI.Controllers.Reports.ReportsController.Search)`;
+    const _tblSelector = $('#tblDetails');
+
+    @*const _permissions = '@permissionsStr';
+    const _updatePermission = '@PermissionNames.Pages_IvItems_Update';
+    const _deletePermission = '@PermissionNames.Pages_IvItems_Delete';*@
+
+    var OnBegin = function (response) {
+        fireBtnLoader();
+    };
+
+    var OnSuccess = function (response) {
+
+        if (response.success) {
+
+            if (response.customRestResult.trigger === '@ERP.Front.Helpers.Enums.Common.FormTriggers.Insert') {
+
+                toastr.success(response.customRestResult.message);
+
+                LoadDataGrid();
+
+                _mainModal.modal('hide');
+
+            } else if (response.customRestResult.trigger === '@ERP.Front.Helpers.Enums.Common.FormTriggers.Update') {
+
+                LoadDataGrid();
+
+                _mainModal.modal('hide');
+
+                toastr.success(response.customRestResult.message);
+            }
+
+        } else {
+               toastr.error(response.customRestResult.message);
+        }
+    };
+
+    var OnComplete = function (response) {
+        downBtnLoader();
+    };
+
+    var OnFailure = function (response) {
+        toastr.error(response);
+        downBtnLoader();
+    };
+
+    const LoadDataGrid = function () {
+        
+        const parms = {
+        
+            IvItemId: $('#IvItemId').val(),
+            IvWarehouseId: $('#IvWarehouseId').val(),
+            FromDate: $('#fromDate').val(),
+            ToDate: $('#toDate').val()
+        };
+
+        const columns = [
+            
+            {
+                "data": "Date",
+                "name": "Date",
+                "autoWidth": true
+            },
+            {
+                "data": "QtyIn",
+                "name": "QtyIn",
+                "autoWidth": true
+            },
+            {
+                "data": "QtyOut",
+                "name": "QtyOut",
+                "autoWidth": true
+            },
+            {
+                "data": "Balance",
+                "name": "Balance",
+                "autoWidth": true
+            },
+            {
+                "data": "TranType",
+                "name": "TranType",
+                "autoWidth": true
+            },
+            {
+                "data": "InvNo",
+                "name": "InvNo",
+                "autoWidth": true
+            },
+            {
+                "data": "Customer",
+                "name": "Customer",
+                "autoWidth": true
+            },
+           
+        ];
+       
+        const dtObj = {
+            "processing": true,
+            "serverSide": true,
+            "filter": false,
+            "orderMulti": false,
+            "language": dataTableLang,
+            "ajax": {
+                "url": _loadDataUrl,
+                "type": "POST",
+                "datatype": "json",
+                "data": parms,
+                "complete": function () { }
+            },
+            "columns": columns,
+            "initComplete": function () {
+                $('[data-toggle="tooltip"]').tooltip();
+            }
+
+        };
+
+        _tblSelector.dataTable().fnDestroy();
+        _tblSelector.DataTable(dtObj).on('draw', function () { $('[data-toggle="tooltip"]').tooltip(); });
+
+
+    };
+
+    function getFilteredData() {
+
+
+    }
+
+    $('#IvItemsTypesConfigureIdSearch').select2(ReturnSelect2ObjectDefault(`${baseUrl}/IvItemsTypesConfigure/GetIvItemsTypesConfigureWithParentSelect2`));
+    $('#IvUnitIdSearch').select2(ReturnSelect2ObjectDefault(`${baseUrl}/IvUnits/GetIvUnitsSelect2`));
+    
+    
+
+    function printExc() {
+        $('.page-loader-wrapper').show();
+        $('#tblIvItemsPrint_wrapper').parent().addClass('d-none');
+        const parmss = {
+            IvItemsTypesConfigureId: $('#IvItemsTypesConfigureIdSearch').val(),
+            IvUnitId: $('#IvUnitIdSearch').val(),
+            length: 1000000
+        };
+
+
+        const columns = [
+            {
+                "data": "result.data.id",
+                'render': function (data, type, row, meta) {
+                    return meta.row + meta.settings._iDisplayStart + 1;
+                }
+            },
+            {
+                "data": "ItemNumber",
+                "name": "ItemNumber",
+                "autoWidth": true
+            },
+            {
+                "data": "ItemName",
+                "name": "ItemName",
+                "autoWidth": true
+            },
+            {
+                "data": "ItemQtys",
+                "name": "ItemQtys",
+                "autoWidth": true
+            },
+            {
+                "data": null,
+                "name": "IvItemsTypesConfigureId",
+                "autoWidth": true,
+                "render": function (d, t, row) {
+                    return row.IvItemsTypesConfigure ? (lang === 'ar-EG' ? row.IvItemsTypesConfigure.NameAr : row.IvItemsTypesConfigure.NameEn) : '';
+                }
+            },
+            {
+                "data": null,
+                "name": "IvUnitId",
+                "autoWidth": true,
+                "render": function (d, t, row) {
+                    return row.IvUnits ? (lang === 'ar-EG' ? row.IvUnits.UnitName : row.IvUnits.UnitName) : '';
+                }
+            }
+        ];
+
+        const dtObj = {
+            "language": dataTableLang,
+            "dom": 'Bfrtip',
+            "buttons": [
+                {
+                    extend: 'excel',
+                    messageTop: `${$('[for="IvItemsTypesConfigureId"]').text()}: ${(parmss.IvItemsTypesConfigureId) ? parmss.IvItemsTypesConfigureId : '--'}, ${$('[for="IvUnitId"]').text()}: ${(parmss.IvUnitId) ? parmss.IvUnitId : '--'}`
+                },
+
+            ],
+            "ajax": {
+                "url": _loadDataUrl,
+                "type": "POST",
+                "datatype": "json",
+                "data": parmss,
+                "complete": function (d) {
+                    _tblLoader.hide();
+                }
+            },
+            "columns": columns,
+
+            "initComplete": function () {
+                $('#tblIvItemsPrint_wrapper button.dt-button').click();
+                $('#tblIvItemsPrint_wrapper').parent().addClass('d-none');
+
+            }
+        };
+
+        $('#tblIvItemsPrint').dataTable().fnDestroy();
+        $('#tblIvItemsPrint').DataTable(dtObj).on('buttons-processing', function (e, indicator) { if (!indicator) { $('.page-loader-wrapper').hide() } });
+
+
+    }
+
+</script>

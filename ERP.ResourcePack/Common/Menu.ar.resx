@@ -1,0 +1,999 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="Accounts" xml:space="preserve">
+    <value>المالية</value>
+  </data>
+  <data name="ApPdcInterface" xml:space="preserve">
+    <value>الشيكات الصادرة</value>
+  </data>
+  <data name="ApBanks" xml:space="preserve">
+    <value>تعريف البنوك والصندوق</value>
+  </data>
+  <data name="ArCustomers" xml:space="preserve">
+    <value>الزبائن</value>
+  </data>
+  <data name="ArPdcInterface" xml:space="preserve">
+    <value>الشيكات الواردة</value>
+  </data>
+  <data name="Currency" xml:space="preserve">
+    <value>العملات</value>
+  </data>
+  <data name="GlAccDetails" xml:space="preserve">
+    <value>مراكز التكلفة</value>
+  </data>
+  <data name="GlAccHeaders" xml:space="preserve">
+    <value>إدارة مراكز التكلفة</value>
+  </data>
+  <data name="GlJeHeaders" xml:space="preserve">
+    <value>القيود</value>
+  </data>
+  <data name="Home" xml:space="preserve">
+    <value>الرئيسية</value>
+  </data>
+  <data name="Roles" xml:space="preserve">
+    <value>الصلاحيات</value>
+  </data>
+  <data name="Users" xml:space="preserve">
+    <value>المستخدمين</value>
+  </data>
+  <data name="GlMainAccounts" xml:space="preserve">
+    <value>الحسابات الرئيسية</value>
+  </data>
+  <data name="AssistantProfessor" xml:space="preserve">
+    <value>الاستاذ العام</value>
+  </data>
+  <data name="Banks" xml:space="preserve">
+    <value>تعريف البنوك</value>
+  </data>
+  <data name="Receivables" xml:space="preserve">
+    <value>الذمم المدينة</value>
+  </data>
+  <data name="RolesMenu" xml:space="preserve">
+    <value>الإدارة</value>
+  </data>
+  <data name="Settings" xml:space="preserve">
+    <value>الاعدادات</value>
+  </data>
+  <data name="ApUserBankAccess" xml:space="preserve">
+    <value>صلاحيات البنوك</value>
+  </data>
+  <data name="FndCollectors" xml:space="preserve">
+    <value>المحصلين</value>
+  </data>
+  <data name="ArMiscReceiptHeaders" xml:space="preserve">
+    <value>سند قبض عام</value>
+  </data>
+  <data name="FixedAssets" xml:space="preserve">
+    <value>الاصول الثابتة</value>
+  </data>
+  <data name="Funding" xml:space="preserve">
+    <value>التمويل</value>
+  </data>
+  <data name="Guarantees" xml:space="preserve">
+    <value>الكفالات</value>
+  </data>
+  <data name="HR" xml:space="preserve">
+    <value>شؤون الموظفين</value>
+  </data>
+  <data name="RealEstateAndEnDowment" xml:space="preserve">
+    <value>العقارات</value>
+  </data>
+  <data name="SelfReceivables" xml:space="preserve">
+    <value>الذمم الدائنة</value>
+  </data>
+  <data name="SocialSituations" xml:space="preserve">
+    <value>الحالات الاجتماعية</value>
+  </data>
+  <data name="Stocks" xml:space="preserve">
+    <value>المخازن والمشتريات</value>
+  </data>
+  <data name="Currencies" xml:space="preserve">
+    <value>العملات</value>
+  </data>
+  <data name="Tenants" xml:space="preserve">
+    <value>الجمعيات</value>
+  </data>
+  <data name="GlAccounts" xml:space="preserve">
+    <value>شجرة الحسابات</value>
+  </data>
+  <data name="GlPeriods" xml:space="preserve">
+    <value>الفترات</value>
+  </data>
+  <data name="GlPeriodsYears" xml:space="preserve">
+    <value>الفترات المحاسبية</value>
+  </data>
+  <data name="ApMiscPaymentHeaders" xml:space="preserve">
+    <value>سند صرف عام</value>
+  </data>
+  <data name="AbBank" xml:space="preserve">
+    <value>النقد والبنوك</value>
+  </data>
+  <data name="ScFndAidRequestType" xml:space="preserve">
+    <value>أنواع المساعدات</value>
+  </data>
+  <data name="ScFndPortalIntervalSetting" xml:space="preserve">
+    <value>مواعيد تقديم الطلبات</value>
+  </data>
+  <data name="ScFndProtalAttachmentSetting" xml:space="preserve">
+    <value>مرفقات تقديم الطلبات</value>
+  </data>
+  <data name="ScComityMembers" xml:space="preserve">
+    <value>اعضاء لجنة المساعدات</value>
+  </data>
+  <data name="FndUsers" xml:space="preserve">
+    <value>الملف الموحد</value>
+  </data>
+  <data name="ScCampainsAid" xml:space="preserve">
+    <value>مساعدات الحملة</value>
+  </data>
+  <data name="ScCampains" xml:space="preserve">
+    <value>حملة المساعدات</value>
+  </data>
+  <data name="ScCampainsDetailDeliver" xml:space="preserve">
+    <value>تسليم مساعدات الحملة</value>
+  </data>
+  <data name="Operations" xml:space="preserve">
+    <value>العمليات</value>
+  </data>
+  <data name="ScPortalRequest" xml:space="preserve">
+    <value>تقديم الطلب</value>
+  </data>
+  <data name="ScPortalRequestStudy" xml:space="preserve">
+    <value>دراسة طلب المساعدة</value>
+  </data>
+  <data name="ScCommittee" xml:space="preserve">
+    <value>لجنة المساعدات</value>
+  </data>
+  <data name="ScPortalRequestMgrDecision" xml:space="preserve">
+    <value>قرار المدير</value>
+  </data>
+  <data name="ScCommitteesCheck" xml:space="preserve">
+    <value>صرف مساعدات</value>
+  </data>
+  <data name="PortalUser" xml:space="preserve">
+    <value>الملف الموحد</value>
+  </data>
+  <data name="ArDrCrHd" xml:space="preserve">
+    <value>إشعار دائن -مدين</value>
+  </data>
+  <data name="PmOwners" xml:space="preserve">
+    <value>المالكون</value>
+  </data>
+  <data name="PmProperties" xml:space="preserve">
+    <value>الوحدات</value>
+  </data>
+  <data name="AccountStatement" xml:space="preserve">
+    <value>كشف حساب</value>
+  </data>
+  <data name="ReportAccounts" xml:space="preserve">
+    <value>تقارير الحسابات</value>
+  </data>
+  <data name="PmOtherPaymentTypes" xml:space="preserve">
+    <value> الدفعات الاخري</value>
+  </data>
+  <data name="PmTenants" xml:space="preserve">
+    <value>المستأجرين</value>
+  </data>
+  <data name="PmContract" xml:space="preserve">
+    <value>العقود</value>
+  </data>
+  <data name="ArInvoiceHd" xml:space="preserve">
+    <value>الفواتير</value>
+  </data>
+  <data name="PmTerminateContracts" xml:space="preserve">
+    <value>انهاء العقود</value>
+  </data>
+  <data name="PmCancellationContracts" xml:space="preserve">
+    <value>الغاء العقود</value>
+  </data>
+  <data name="ArSecurityDepositInterface" xml:space="preserve">
+    <value>التأمينات</value>
+  </data>
+  <data name="ArReceipts" xml:space="preserve">
+    <value>سندات القبض</value>
+  </data>
+  <data name="TmCharityBoxesType" xml:space="preserve">
+    <value>انواع الحصالات</value>
+  </data>
+  <data name="TmRegions" xml:space="preserve">
+    <value>المناطق</value>
+  </data>
+  <data name="TmLocations" xml:space="preserve">
+    <value>المواقع</value>
+  </data>
+  <data name="GlAccSelection" xml:space="preserve">
+    <value>ميزان المراجعه</value>
+  </data>
+  <data name="TmSupervisors" xml:space="preserve">
+    <value>المشرفين</value>
+  </data>
+  <data name="TmCharityBoxReceive" xml:space="preserve">
+    <value>توريد الحصالات</value>
+  </data>
+  <data name="TmCharityBoxes" xml:space="preserve">
+    <value>الحصالات</value>
+  </data>
+  <data name="TmCharityBoxActions" xml:space="preserve">
+    <value>عمليات الحصالات</value>
+  </data>
+  <data name="ReportsAccounts" xml:space="preserve">
+    <value>كشف حساب</value>
+  </data>
+  <data name="TmCharityBoxCollectMembers" xml:space="preserve">
+    <value>أعضاء التحصيل</value>
+  </data>
+  <data name="TmCharityBoxCollect" xml:space="preserve">
+    <value>تحصيل الحصالات</value>
+  </data>
+  <data name="TmDamagedCharityBoxs" xml:space="preserve">
+    <value>إتلاف الحصالات</value>
+  </data>
+  <data name="SpFamilies" xml:space="preserve">
+    <value>ملف الاسرة</value>
+  </data>
+  <data name="SpContracts" xml:space="preserve">
+    <value>العقود</value>
+  </data>
+  <data name="SpCaseOperations" xml:space="preserve">
+    <value>الغاء وايقاف كفالة</value>
+  </data>
+  <data name="ApVendors" xml:space="preserve">
+    <value>الموردين</value>
+  </data>
+  <data name="ApInvoiceHd" xml:space="preserve">
+    <value>الفواتير</value>
+  </data>
+  <data name="ApPrepaid" xml:space="preserve">
+    <value>الدفعات المقدمة</value>
+  </data>
+  <data name="SpBeneficents" xml:space="preserve">
+    <value>ملف المحسنين</value>
+  </data>
+  <data name="ApPaymentsTransactions" xml:space="preserve">
+    <value>سندات الصرف</value>
+  </data>
+  <data name="SpCases" xml:space="preserve">
+    <value>ملف الحالة</value>
+  </data>
+  <data name="SpBeneficent" xml:space="preserve">
+    <value>ملف المحسنين</value>
+  </data>
+  <data name="SpCaseOperationsReplace" xml:space="preserve">
+    <value>إستبدال كفالة</value>
+  </data>
+  <data name="ReportsTms" xml:space="preserve">
+    <value>تقارير التمويل</value>
+  </data>
+  <data name="TmCharityBoxList" xml:space="preserve">
+    <value>قائمة الحصالات</value>
+  </data>
+  <data name="IvWarehouses" xml:space="preserve">
+    <value>المستودعات</value>
+  </data>
+  <data name="SpCaseEditData" xml:space="preserve">
+    <value>تعديل كفالة</value>
+  </data>
+  <data name="IvUnits" xml:space="preserve">
+    <value>الوحدات</value>
+  </data>
+  <data name="IvItemsTypesConfigure" xml:space="preserve">
+    <value>انواع المواد</value>
+  </data>
+  <data name="IvUserWarehousesPrivileges" xml:space="preserve">
+    <value>صلاحيات المستودعات</value>
+  </data>
+  <data name="SpecialPermissionsManagement" xml:space="preserve">
+    <value>صلاحيات اللجان</value>
+  </data>
+  <data name="ActionScCommittee" xml:space="preserve">
+    <value>صلاحيات اللجان</value>
+  </data>
+  <data name="IvItems" xml:space="preserve">
+    <value>بطاقة المادة</value>
+  </data>
+  <data name="PoPurchaseOrder" xml:space="preserve">
+    <value>طلب شراء</value>
+  </data>
+  <data name="IvReceiveHd" xml:space="preserve">
+    <value>إستلام مواد</value>
+  </data>
+  <data name="HrOrganizations" xml:space="preserve">
+    <value>الهيكل التنظيمي</value>
+  </data>
+  <data name="SpGuaranteesReports" xml:space="preserve">
+    <value>تقارير الكفالات</value>
+  </data>
+  <data name="SpCaseCancelOperationReport" xml:space="preserve">
+    <value>قائمة الأيتام الملغية</value>
+  </data>
+  <data name="SpCaseReplaceOperationReport" xml:space="preserve">
+    <value>قائمة الإستبدالات</value>
+  </data>
+  <data name="SpCaseTurnOffOperationReport" xml:space="preserve">
+    <value>قائمة الأيتام المتوقفة</value>
+  </data>
+  <data name="IvAdjustmentHd" xml:space="preserve">
+    <value>تعديل المواد</value>
+  </data>
+  <data name="PyPayrollTypes" xml:space="preserve">
+    <value>أنواع الرواتب</value>
+  </data>
+  <data name="SpCaseList" xml:space="preserve">
+    <value>قائمة المكفولين</value>
+  </data>
+  <data name="HrPersons" xml:space="preserve">
+    <value>الموظفين</value>
+  </data>
+  <data name="HrVacationsTypes" xml:space="preserve">
+    <value>انواع الاجازات</value>
+  </data>
+  <data name="IvStoreIssue" xml:space="preserve">
+    <value>صرف مواد</value>
+  </data>
+  <data name="HrPersonsDeductionHd" xml:space="preserve">
+    <value>الخصميات</value>
+  </data>
+  <data name="PyElements" xml:space="preserve">
+    <value>عناصر الرواتب</value>
+  </data>
+  <data name="HrPersonVacations" xml:space="preserve">
+    <value>الأجازات</value>
+  </data>
+  <data name="PyPayrollOperations" xml:space="preserve">
+    <value>تنفيذ الرواتب</value>
+  </data>
+  <data name="HrPersonsAdditionHd" xml:space="preserve">
+    <value>الاضافيات</value>
+  </data>
+  <data name="Modules" xml:space="preserve">
+    <value>الأقسام</value>
+  </data>
+  <data name="Pages" xml:space="preserve">
+    <value>الصفحات</value>
+  </data>
+  <data name="TenantData" xml:space="preserve">
+    <value>المؤسسة</value>
+  </data>
+  <data name="EmptyPms" xml:space="preserve">
+    <value>تقرير الوحدات الشاغرة</value>
+  </data>
+  <data name="ReportPms" xml:space="preserve">
+    <value>تقارير العقارات</value>
+  </data>
+  <data name="PmContractNotRenewed" xml:space="preserve">
+    <value>تقرير كشف العقود الغير مجددة</value>
+  </data>
+  <data name="PmContracts" xml:space="preserve">
+    <value>تقرير قائمة العقود</value>
+  </data>
+  <data name="FaAssetCategory" xml:space="preserve">
+    <value>فئات الأصول الثابتة</value>
+  </data>
+  <data name="Resources" xml:space="preserve">
+    <value>الأصول الثابتة</value>
+  </data>
+  <data name="BudgetPerformance" xml:space="preserve">
+    <value>قائمة المركز المالى</value>
+  </data>
+  <data name="GlAccMappingHd" xml:space="preserve">
+    <value>قائمة المركز المالى</value>
+  </data>
+  <data name="Sponsoredare18" xml:space="preserve">
+    <value>المكفولين عمر 18 سنة</value>
+  </data>
+  <data name="FaAsset" xml:space="preserve">
+    <value>الأصول</value>
+  </data>
+  <data name="TenantAccount" xml:space="preserve">
+    <value>كشف حساب عميل</value>
+  </data>
+  <data name="FaAssetDeprnHd" xml:space="preserve">
+    <value>الاستهلاكات</value>
+  </data>
+  <data name="PropertiesRevenue" xml:space="preserve">
+    <value>ايرادات الوحدات العقارية</value>
+  </data>
+  <data name="ReportsAids" xml:space="preserve">
+    <value>تقارير المساعدات</value>
+  </data>
+  <data name="RequestsPerNationality" xml:space="preserve">
+    <value>إحصائيات الطلبات حسب الجنسية</value>
+  </data>
+  <data name="ScCommitteesCheckReport" xml:space="preserve">
+    <value>تقرير صرف مساعدات</value>
+  </data>
+  <data name="FaAssetList" xml:space="preserve">
+    <value>قائمة الاصول</value>
+  </data>
+  <data name="HrReports" xml:space="preserve">
+    <value>تقارير الموارد البشرية</value>
+  </data>
+  <data name="RptPyPayrollOperationPersons" xml:space="preserve">
+    <value>تفاصيل الرواتب</value>
+  </data>
+  <data name="SCCasesListReport" xml:space="preserve">
+    <value>قائمة الحالات</value>
+  </data>
+  <data name="ScDeliveryOtherAids" xml:space="preserve">
+    <value>صرف الكوبونات الشهرية</value>
+  </data>
+  <data name="GlJeIntegrationHeaders" xml:space="preserve">
+    <value>القيود المركبة</value>
+  </data>
+  <data name="PortalUserData" xml:space="preserve">
+    <value>الملف الشخصي</value>
+  </data>
+  <data name="SecurityDetailsList" xml:space="preserve">
+    <value>تفاصيل التامينات</value>
+  </data>
+  <data name="GeneralUnPost" xml:space="preserve">
+    <value>الغاء ترحيل سند</value>
+  </data>
+  <data name="ScMaintenanceTechnicalReport" xml:space="preserve">
+    <value>التقرير الفني </value>
+  </data>
+  <data name="ScMaintenanceQuotations" xml:space="preserve">
+    <value>عروض الأسعار</value>
+  </data>
+  <data name="ScMaintenanceContract" xml:space="preserve">
+    <value>عقود الصيانة والبناء</value>
+  </data>
+  <data name="ScMaintenancePayments" xml:space="preserve">
+    <value>طلب صرف </value>
+  </data>
+  <data name="Maintenance" xml:space="preserve">
+    <value>الصيانة</value>
+  </data>
+  <data name="Attachments" xml:space="preserve">
+    <value>المرفقات</value>
+  </data>
+  <data name="SpPayments" xml:space="preserve">
+    <value>صرفية الكفالات</value>
+  </data>
+  <data name="SpPaymentSetting" xml:space="preserve">
+    <value>إعدادات الصرفية</value>
+  </data>
+  <data name="PortalUserReg" xml:space="preserve">
+    <value>تسجيل حالة</value>
+  </data>
+  <data name="CRM" xml:space="preserve">
+    <value>ادارة علاقات العملاء</value>
+  </data>
+  <data name="CRM_Agents" xml:space="preserve">
+    <value>المسوقين</value>
+  </data>
+  <data name="CRM_BDSetup" xml:space="preserve">
+    <value>بيانات الدليل</value>
+  </data>
+  <data name="CRM_Contacts" xml:space="preserve">
+    <value>العملاء</value>
+  </data>
+  <data name="CRM_Leads" xml:space="preserve">
+    <value>الفرص المتاحه</value>
+  </data>
+  <data name="CRM_Products" xml:space="preserve">
+    <value>المنتجات</value>
+  </data>
+  <data name="CRM_Projects" xml:space="preserve">
+    <value>المشاريع</value>
+  </data>
+  <data name="CRM_Services" xml:space="preserve">
+    <value>الخدمات</value>
+  </data>
+  <data name="PROJECTS" xml:space="preserve">
+    <value>المشاريع</value>
+  </data>
+  <data name="PROJECTS_Contracts" xml:space="preserve">
+    <value>عقود الباطن</value>
+  </data>
+  <data name="PROJECTS_Payments_Certificate" xml:space="preserve">
+    <value>شهادة الدفع</value>
+  </data>
+  <data name="PROJECTS_Payment_Ceriticate" xml:space="preserve">
+    <value>شهادة الدفع</value>
+  </data>
+  <data name="PROJECTS_Projects" xml:space="preserve">
+    <value>المشاريع</value>
+  </data>
+  <data name="PROJECTS_Projects_Bill_Of_Quantities" xml:space="preserve">
+    <value>عناصر المشروع</value>
+  </data>
+  <data name="PROJECTS_Projects_Estimation" xml:space="preserve">
+    <value>تقييم المشروع</value>
+  </data>
+  <data name="PROJECTS_Projects_Management" xml:space="preserve">
+    <value>ادارة المشاريع</value>
+  </data>
+  <data name="PROJECTS_Projects_Settings" xml:space="preserve">
+    <value>اعدادات المشاريع</value>
+  </data>
+  <data name="PROJECTS_Projects_Variations" xml:space="preserve">
+    <value>تغييرات المشروع</value>
+  </data>
+  <data name="PROJECTS_Subcontract_Management" xml:space="preserve">
+    <value>مقاولي الباطن</value>
+  </data>
+  <data name="PROJECTS_Variations" xml:space="preserve">
+    <value>تغييرات العقود</value>
+  </data>
+  <data name="User_Management" xml:space="preserve">
+    <value>إدارة المستخدمين</value>
+  </data>
+  <data name="Organization_Management" xml:space="preserve">
+    <value>إدارة المؤسسة</value>
+  </data>
+  <data name="Inventory" xml:space="preserve">
+    <value>المخازن</value>
+  </data>
+  <data name="Leasing" xml:space="preserve">
+    <value>التأجير</value>
+  </data>
+  <data name="Payroll" xml:space="preserve">
+    <value>الرواتب</value>
+  </data>
+  <data name="AccountsReconsilation" xml:space="preserve">
+    <value>مطابقة الحسابات</value>
+  </data>
+  <data name="Backup" xml:space="preserve">
+    <value>النسخ الاحتياطي</value>
+  </data>
+  <data name="Finance Data" xml:space="preserve">
+    <value>بيانات المالية</value>
+  </data>
+  <data name="HRData" xml:space="preserve">
+    <value>بيانات الموظفين</value>
+  </data>
+  <data name="InventoryData" xml:space="preserve">
+    <value>بيانات المخازن</value>
+  </data>
+  <data name="Lookups" xml:space="preserve">
+    <value>القوائم</value>
+  </data>
+  <data name="OrganizationSettings" xml:space="preserve">
+    <value>اعدادات المؤسسة</value>
+  </data>
+  <data name="ProjectsData" xml:space="preserve">
+    <value>بيانات المشاريع</value>
+  </data>
+  <data name="PropertyData" xml:space="preserve">
+    <value>بيانات العقارات</value>
+  </data>
+  <data name="AssetsDisposal" xml:space="preserve">
+    <value>اتلاف الأصول</value>
+  </data>
+  <data name="AssetsSales" xml:space="preserve">
+    <value>بيع الأصول</value>
+  </data>
+  <data name="AsssetsPurchase" xml:space="preserve">
+    <value>شراء الأصول</value>
+  </data>
+  <data name="BankReconsilation" xml:space="preserve">
+    <value>مطابقة البنوك</value>
+  </data>
+  <data name="CashInterface" xml:space="preserve">
+    <value>متابعة النقد</value>
+  </data>
+  <data name="ChequesDelays" xml:space="preserve">
+    <value>تأجيل الشيكات</value>
+  </data>
+  <data name="ChequesDeposits" xml:space="preserve">
+    <value>ايداع الشيكات</value>
+  </data>
+  <data name="ChequesReplacement" xml:space="preserve">
+    <value>استبدال الشيكات</value>
+  </data>
+  <data name="ChequesReturns" xml:space="preserve">
+    <value>الشيكات المرتجعة</value>
+  </data>
+  <data name="ChequesWithdrowals" xml:space="preserve">
+    <value>الشيكات المسحوبة</value>
+  </data>
+  <data name="ComplexUnits" xml:space="preserve">
+    <value>الوحدات التعاقدية</value>
+  </data>
+  <data name="ContractsSub" xml:space="preserve">
+    <value>عقود الباطن</value>
+  </data>
+  <data name="CreditCardInterface" xml:space="preserve">
+    <value>متابعة الفيزا</value>
+  </data>
+  <data name="DocumentRequest" xml:space="preserve">
+    <value>طلب وثيقة</value>
+  </data>
+  <data name="EmployeeProfile" xml:space="preserve">
+    <value>ملف الموظف</value>
+  </data>
+  <data name="Employees" xml:space="preserve">
+    <value>الموظفين</value>
+  </data>
+  <data name="Engineers" xml:space="preserve">
+    <value>مسؤولين الصيانة</value>
+  </data>
+  <data name="Grades" xml:space="preserve">
+    <value>الدرجات</value>
+  </data>
+  <data name="Holidays" xml:space="preserve">
+    <value>الاجازات</value>
+  </data>
+  <data name="HourlyLeave" xml:space="preserve">
+    <value>الاذونات</value>
+  </data>
+  <data name="HRMSSettings" xml:space="preserve">
+    <value>اعدادات الموارد البشرية</value>
+  </data>
+  <data name="InventorySettings" xml:space="preserve">
+    <value>اعدادات المخازن</value>
+  </data>
+  <data name="IssueTypes" xml:space="preserve">
+    <value>انواع الصرف</value>
+  </data>
+  <data name="JobExecution" xml:space="preserve">
+    <value>تنفيذ الصيانة</value>
+  </data>
+  <data name="JobOrder" xml:space="preserve">
+    <value>طلب صيانة</value>
+  </data>
+  <data name="LeaveRequst" xml:space="preserve">
+    <value>طلب اجازة</value>
+  </data>
+  <data name="Loans" xml:space="preserve">
+    <value>القروض</value>
+  </data>
+  <data name="Locations" xml:space="preserve">
+    <value>المواقع</value>
+  </data>
+  <data name="MaintenanceContracts" xml:space="preserve">
+    <value>عقود الصيانة</value>
+  </data>
+  <data name="PaymentsCertificate" xml:space="preserve">
+    <value>شهادة الدفع</value>
+  </data>
+  <data name="PaymentSchedule" xml:space="preserve">
+    <value>الدفعات</value>
+  </data>
+  <data name="Payslip" xml:space="preserve">
+    <value>قسيمة الراتب</value>
+  </data>
+  <data name="Pension" xml:space="preserve">
+    <value>التأمينات الاجتماعية</value>
+  </data>
+  <data name="PerformaInvoice" xml:space="preserve">
+    <value>عرض سعر</value>
+  </data>
+  <data name="PointofSales" xml:space="preserve">
+    <value>نقاط البيع</value>
+  </data>
+  <data name="Positions" xml:space="preserve">
+    <value>الوظائف</value>
+  </data>
+  <data name="PriceLists" xml:space="preserve">
+    <value>قوائم الاسعار</value>
+  </data>
+  <data name="PriceListsAccess" xml:space="preserve">
+    <value>صلاحيات قوائم الاسعار</value>
+  </data>
+  <data name="Promotions" xml:space="preserve">
+    <value>الترفيعات</value>
+  </data>
+  <data name="PurchaseRequesition" xml:space="preserve">
+    <value>طلب تزويد</value>
+  </data>
+  <data name="Purchasing" xml:space="preserve">
+    <value>المشتريات</value>
+  </data>
+  <data name="QuotationAnalysis" xml:space="preserve">
+    <value>مقارنة عروض اسعار</value>
+  </data>
+  <data name="Quotations" xml:space="preserve">
+    <value>عروض اسعار</value>
+  </data>
+  <data name="RenewalManagement" xml:space="preserve">
+    <value>تجديد العقود</value>
+  </data>
+  <data name="RequestForQuotation" xml:space="preserve">
+    <value>طلب عروض اسعار</value>
+  </data>
+  <data name="ReturnToVendor" xml:space="preserve">
+    <value>ارجاع مواد</value>
+  </data>
+  <data name="IvSaleHd" xml:space="preserve">
+    <value>المبيعات</value>
+  </data>
+  <data name="SalesmanProfile" xml:space="preserve">
+    <value>صلاحيات البائعين</value>
+  </data>
+  <data name="Salesmen" xml:space="preserve">
+    <value>البائعين</value>
+  </data>
+  <data name="SalesOrder" xml:space="preserve">
+    <value>طلب شراء</value>
+  </data>
+  <data name="SelfService" xml:space="preserve">
+    <value>الخدمات الذاتية</value>
+  </data>
+  <data name="StoreTransfer" xml:space="preserve">
+    <value>تحويل مواد</value>
+  </data>
+  <data name="SubcontractManagement" xml:space="preserve">
+    <value>مقاولي الباطن</value>
+  </data>
+  <data name="TemplateAssign" xml:space="preserve">
+    <value>جداول الحضور والانصراف</value>
+  </data>
+  <data name="TimeAttendance" xml:space="preserve">
+    <value>الحضور والانصراف</value>
+  </data>
+  <data name="TimeAttendanceTemplate" xml:space="preserve">
+    <value>نموذج الحضور والانصراف</value>
+  </data>
+  <data name="Transactions" xml:space="preserve">
+    <value>عمليات البيع</value>
+  </data>
+  <data name="Transfers" xml:space="preserve">
+    <value>التنقلات</value>
+  </data>
+  <data name="UnitsBooking" xml:space="preserve">
+    <value>حجز العقود</value>
+  </data>
+  <data name="UnitsConversion" xml:space="preserve">
+    <value>القياسات</value>
+  </data>
+  <data name="Variations" xml:space="preserve">
+    <value>تغييرات العقود</value>
+  </data>
+  <data name="WaitingList" xml:space="preserve">
+    <value>قوائم الانتظار</value>
+  </data>
+  <data name="WorkStructure" xml:space="preserve">
+    <value>هيكل العمل</value>
+  </data>
+  <data name="FmEngineers" xml:space="preserve">
+    <value>مسؤولين الصيانة</value>
+  </data>
+  <data name="FmMaintRequisitionsHdr" xml:space="preserve">
+    <value>طلب الصيانة</value>
+  </data>
+  <data name="FmMaintRequisitionsExe" xml:space="preserve">
+    <value>تنفيذ الصيانة</value>
+  </data>
+  <data name="CRM_Deals" xml:space="preserve">
+    <value>الصفقات</value>
+  </data>
+  <data name="ActivityCall" xml:space="preserve">
+    <value>الاتصال</value>
+  </data>
+  <data name="ActivityMeeting" xml:space="preserve">
+    <value>الاجتماعات</value>
+  </data>
+  <data name="ActivityTasks" xml:space="preserve">
+    <value>المهمه</value>
+  </data>
+  <data name="CrmDeals" xml:space="preserve">
+    <value>الصفقة</value>
+  </data>
+  <data name="CrmLeadsPersons" xml:space="preserve">
+    <value>مسئول الفرصة</value>
+  </data>
+  <data name="FmContracts" xml:space="preserve">
+    <value>العقود</value>
+  </data>
+  <data name="WebViews" xml:space="preserve">
+    <value>الصفحات</value>
+  </data>
+  <data name="WebViewsDocs" xml:space="preserve">
+    <value>الصفحات ملفات</value>
+  </data>
+  <data name="CrmContactUs" xml:space="preserve">
+    <value>اتصل بنا</value>
+  </data>
+  <data name="TenantModules" xml:space="preserve">
+    <value>الاشتراكات</value>
+  </data>
+  <data name="CrmAboutUs" xml:space="preserve">
+    <value>نبذة عنا </value>
+  </data>
+  <data name="CrmProducts" xml:space="preserve">
+    <value>المنتجات </value>
+  </data>
+  <data name="CrmProjects" xml:space="preserve">
+    <value>المشاريع </value>
+  </data>
+  <data name="CrmServices" xml:space="preserve">
+    <value>الخدمات</value>
+  </data>
+  <data name="FinanceData" xml:space="preserve">
+    <value>بيانات المالية</value>
+  </data>
+  <data name="OnBoarding" xml:space="preserve">
+    <value>تهيئة النظام</value>
+  </data>
+  <data name="CrmQueries" xml:space="preserve">
+    <value>الاستعلامات</value>
+  </data>
+  <data name="FndSalesMen" xml:space="preserve">
+    <value>Sales Men</value>
+  </data>
+  <data name="ArJobCardHd" xml:space="preserve">
+    <value>بطاقة عمل</value>
+  </data>
+  <data name="ArInvoiceSettlementHd" xml:space="preserve">
+    <value>تسويات الفواتير </value>
+  </data>
+  <data name="ArJobCardPaymentHd" xml:space="preserve">
+    <value>سند  صرف عام</value>
+  </data>
+  <data name="ArJobCard" xml:space="preserve">
+    <value>Ar JobCard</value>
+  </data>
+  <data name="ReportSales" xml:space="preserve">
+    <value>Report Sales</value>
+  </data>
+  <data name="ApDrCrHd" xml:space="preserve">
+    <value>إشعار دائن -مدين</value>
+  </data>
+  <data name="Jobs" xml:space="preserve">
+    <value>بطاقات العمل</value>
+  </data>
+  <data name="Reports" xml:space="preserve">
+    <value>التقارير</value>
+  </data>
+  <data name="ArJobCardDetails" xml:space="preserve">
+    <value>Ar JobCard Details</value>
+  </data>
+  <data name="IvPriceListHd" xml:space="preserve">
+    <value>سعر المبيعات</value>
+  </data>
+  <data name="IvInventorySetting" xml:space="preserve">
+    <value>صلاحيات المخازن</value>
+  </data>
+  <data name="IvSaleHdInQuery" xml:space="preserve">
+    <value>بحث المبيعات</value>
+  </data>
+  <data name="IvReturnSaleHd" xml:space="preserve">
+    <value>مرتجع مبيعات</value>
+  </data>
+  <data name="IvReturnReceiveHd" xml:space="preserve">
+    <value>مرتجع للبائع</value>
+  </data>
+  <data name="FndTaxType" xml:space="preserve">
+    <value>أنواع الضرائب</value>
+  </data>
+  <data name="HrPersonPermission" xml:space="preserve">
+    <value>الاذونات</value>
+  </data>
+  <data name="HrPersonRequestDocument" xml:space="preserve">
+    <value>طلب مستند</value>
+  </data>
+  <data name="HrPersonTimeSheet" xml:space="preserve">
+    <value>ساعات العمل</value>
+  </data>
+  <data name="HrPaperRequest" xml:space="preserve">
+    <value>الاوراق المطلوبة</value>
+  </data>
+  <data name="IvPosHd" xml:space="preserve">
+    <value>نقطة البيع</value>
+  </data>
+  <data name="ItemMovements" xml:space="preserve">
+    <value>حركة المواد</value>
+  </data>
+  <data name="VendorAccountStatement" xml:space="preserve">
+    <value>كشف حساب البائع</value>
+  </data>
+</root>

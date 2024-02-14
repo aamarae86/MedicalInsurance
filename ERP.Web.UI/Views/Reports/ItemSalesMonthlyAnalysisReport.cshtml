@@ -1,0 +1,191 @@
+﻿@{
+    ViewBag.Title = "Item Sales Monthly Analysis";
+}
+
+@{
+
+}
+<style>
+    .wedgit {
+        min-height: 80px;
+    }
+</style>
+
+<div class="card" id="searchBox">
+    <div class="header d-flex justify-content-start align-items-center">
+        <i class="fas fa-2x fa-chevron-down down-arr mr-2" data-toggle="collapse" data-target="#searchCollapse"></i>
+        <h2><strong>Item Sales Monthly Analysis </strong> -  Report</h2>
+    </div>
+    <div class="body collapse show" id="searchCollapse">
+        <div class="row clearfix">
+
+
+            <div class="col-sm-4">
+                <label for="IvItemId" class="form-label">Items</label>
+                <div class="form-group form-float">
+                    <div class="form-group">
+                        <select id="IvItemId" class="form-control"></select>
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-4">
+                <label for="IvItemsTypesConfigureId" class="form-label">Item Parts</label>
+
+                <div class="form-group form-float">
+                    <div class="form-group">
+                        <select id="IvItemsTypesConfigureId" class="form-control"></select>
+                        @*@Html.DropDownListFor(z => z.IvWarehouseId, Enumerable.Empty<SelectListItem>(), new { @class = "form-control" })*@
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-4">
+                <label for="IvItemsTypesConfigureId" class="form-label">Year</label>
+
+                <div class="form-group form-float">
+                    <div class="form-group">
+                        <select id="Year" class="form-control"></select>
+                    </div>
+                </div>
+            </div>
+
+
+
+        </div>
+        <div class="d-flex justify-content-end mb-3">
+            <button type="button" class="btn btn-success btn-border-radius mx-2 waves-effect" onclick="return LoadDataGrid()">
+                @ERP.ResourcePack.Common.Settings.BtnSearch
+            </button>
+            <a href="javascript:void(0)" class="btn btn-danger btn-border-radius" onclick=" clearSearchForm(); _tblSelector.empty();" role="button" aria-haspopup="true" aria-expanded="false">
+                @ERP.ResourcePack.Common.Settings.BtnClear
+            </a>
+
+            <button type="button" class="btn btn-info btn-border-radius mx-2 waves-effect" onclick="return printExc()">
+                @ERP.ResourcePack.Common.Settings.Print
+            </button>
+
+        </div>
+    </div>
+</div>
+
+
+<div class="row clearfix">
+    <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+        <div class="card">
+            <div class="header d-flex justify-content-start align-items-center">
+                <i class="fas fa-2x fa-chevron-down down-arr mr-2" data-toggle="collapse" data-target="#searchCollapse1"></i>
+                <h2><strong>Item Sales Monthly Analysis </strong> -  Data</h2>
+            </div>
+            <div class="body collapse show" id="searchCollapse1">
+
+                <div class="table-responsive">
+                    <table class="table table-bordered table-striped table-hover" id="tblDetails">
+                        <thead>
+                            <tr>
+                                <th style="text-align:center;" colspan="2">Items </th>
+                                <th style="text-align:center;" colspan="2">January</th>
+                                <th style="text-align:center;" colspan="2">February</th>
+                                <th style="text-align:center;" colspan="2">March</th>
+                                <th style="text-align:center;" colspan="2">April</th>
+                                <th style="text-align:center;" colspan="2">May</th>
+                                <th style="text-align:center;" colspan="2">Jun</th>
+                                <th style="text-align:center;" colspan="2">July</th>
+                                <th style="text-align:center;" colspan="2">August</th>
+                                <th style="text-align:center;" colspan="2">September</th>
+                                <th style="text-align:center;" colspan="2">October</th>
+                                <th style="text-align:center;" colspan="2">November</th>
+                                <th style="text-align:center;" colspan="2">December</th>
+                                <th style="text-align:center;">TotalValue </th>
+
+
+
+                            </tr>
+                            <tr>
+                                <th style="text-align:center;">Item Number</th>
+                                <th style="text-align:center;">Name</th>
+                                <th style="text-align:center;">Qty </th>
+                                <th style="text-align:center;">Value </th>
+                                <th style="text-align:center;">Qty </th>
+                                <th style="text-align:center;">Value </th>
+                                <th style="text-align:center;">Qty </th>
+                                <th style="text-align:center;">Value </th>
+                                <th style="text-align:center;">Qty </th>
+                                <th style="text-align:center;">Value </th>
+                                <th style="text-align:center;">Qty </th>
+                                <th style="text-align:center;">Value </th>
+                                <th style="text-align:center;">Qty </th>
+                                <th style="text-align:center;">Value </th>
+                                <th style="text-align:center;">Qty </th>
+                                <th style="text-align:center;">Value </th>
+                                <th style="text-align:center;">Qty </th>
+                                <th style="text-align:center;">Value </th>
+                                <th style="text-align:center;">Qty </th>
+                                <th style="text-align:center;">Value </th>
+                                <th style="text-align:center;">Qty </th>
+                                <th style="text-align:center;">Value </th>
+                                <th style="text-align:center;">Qty </th>
+                                <th style="text-align:center;">Value </th>
+                                <th style="text-align:center;">Qty </th>
+                                <th style="text-align:center;">Value </th>
+                                <th style="text-align:center;">TotalValue </th>
+
+
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                        <tfoot>
+                            <tr><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th></tr>
+
+                        </tfoot>
+                    </table>
+
+                    <div class="d-none">
+                        <table class="dataTable dt-responsive no-footer nowrap table table-bordered table-striped w-100 d-none" id="tblDetailsPrint">
+                            <thead>
+                                <tr>
+                                    <th style="text-align:center;">Item Number</th>
+                                    <th style="text-align:center;">Name</th>
+                                    <th style="text-align:center;">Jan Qty </th>
+                                    <th style="text-align:center;">Jan Value </th>
+                                    <th style="text-align:center;">Feb Qty </th>
+                                    <th style="text-align:center;">Feb Value </th>
+                                    <th style="text-align:center;">March Qty </th>
+                                    <th style="text-align:center;">March Value </th>
+                                    <th style="text-align:center;">April Qty </th>
+                                    <th style="text-align:center;">April Value </th>
+                                    <th style="text-align:center;">May Qty </th>
+                                    <th style="text-align:center;">May Value </th>
+                                    <th style="text-align:center;">Jun Qty </th>
+                                    <th style="text-align:center;">Jun Value </th>
+                                    <th style="text-align:center;">July Qty </th>
+                                    <th style="text-align:center;">July Value </th>
+                                    <th style="text-align:center;">Aug Qty </th>
+                                    <th style="text-align:center;">Aug Value </th>
+                                    <th style="text-align:center;">Sep Qty </th>
+                                    <th style="text-align:center;">Sep Value </th>
+                                    <th style="text-align:center;">Oct Qty </th>
+                                    <th style="text-align:center;">Oct Value </th>
+                                    <th style="text-align:center;">Nov Qty </th>
+                                    <th style="text-align:center;">Nov Value </th>
+                                    <th style="text-align:center;">Dec Qty </th>
+                                    <th style="text-align:center;">Dec Value </th>
+                                    <th style="text-align:center;">TotalValue </th>
+
+
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                            <tfoot>
+                                <tr><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th></tr>
+
+                            </tfoot>
+                        </table>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+@section scripts{
+    @Html.Partial("~/ViewsScripts/_Reports/ItemSalesMonthlyAnalysisReportScripts.cshtml")
+}

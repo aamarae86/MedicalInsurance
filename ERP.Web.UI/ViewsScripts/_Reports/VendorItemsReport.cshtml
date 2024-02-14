@@ -1,0 +1,325 @@
+﻿@using ERP.Web.UI.Controllers.Warehouses
+@using ERP.Authorization;
+@{
+    //string permissionsStr = TempData["Permissions"].ToString();
+    string encShowTrigger = ERP.Front.Helpers.Enums.Common.EncShow;
+}
+<script>
+    const _mainController = "Reports"
+
+    $(function () {
+
+        $('#tblDetailsPrint thead').html($('#tblDetails thead').html());
+        $('#tblDetailsPrint thead tr :last-child').remove();
+        $('#VendorItemsReport').addClass('active');
+
+
+    });
+    $('#searchBox #VendorId').select2(ReturnSelect2ObjectDefault(`${baseUrl}/ApVendors/GetVendorsSelect2`));
+    //$('#VendorId').select2({
+    //    ajax: {
+    //        url: `${baseUrl}/ArCustomers/GetArCustomersSelect2`,
+    //        dataType: 'json',
+    //        headers: {
+    //            'Authorization': `Bearer ${$_token}`
+    //        },
+    //        data: function (params) {
+    //            params.page = params.page || 1;
+    //            return {
+    //                pageSize: pageSize,
+    //                pageNumber: params.page,
+    //                searchTerm: params.term,
+    //                lang: lang
+    //            };
+    //        },
+    //        processResults: function (data, params) {
+
+    //            params.page = params.page || 1;
+
+    //            return {
+    //                results: data.result.results,
+    //                pagination: {
+    //                    more: (params.page * pageSize) < data.result.total
+    //                }
+    //            };
+    //        }
+    //    },
+    //    placeholder: select2Placeholder,
+    //    minimumInputLength: 0,
+    //    allowClear: true,
+    //    language: select2Lang,
+    //    templateSelection: function (data, container) {
+
+    //        if (data.altText)
+    //            $('#fromDate').val(data.altText);
+
+    //        return data.text;
+    //    }
+    //});
+
+
+    const _loadDataUrl = `${$PrefixHostName}/${_mainController}/@nameof(ERP.Web.UI.Controllers.Reports.ReportsController.VendorItemsFilters)`;
+    const _tblSelector = $('#tblDetails');
+
+    @*const _permissions = '@permissionsStr';
+    const _updatePermission = '@PermissionNames.Pages_IvItems_Update';
+    const _deletePermission = '@PermissionNames.Pages_IvItems_Delete';*@
+
+    var OnBegin = function (response) {
+        fireBtnLoader();
+    };
+
+    var OnSuccess = function (response) {
+
+        if (response.success) {
+
+            if (response.customRestResult.trigger === '@ERP.Front.Helpers.Enums.Common.FormTriggers.Insert') {
+
+                toastr.success(response.customRestResult.message);
+
+                LoadDataGrid();
+
+                _mainModal.modal('hide');
+
+            } else if (response.customRestResult.trigger === '@ERP.Front.Helpers.Enums.Common.FormTriggers.Update') {
+
+                LoadDataGrid();
+
+                _mainModal.modal('hide');
+
+                toastr.success(response.customRestResult.message);
+            }
+
+        } else {
+               toastr.error(response.customRestResult.message);
+        }
+    };
+
+    var OnComplete = function (response) {
+        downBtnLoader();
+    };
+
+    var OnFailure = function (response) {
+        toastr.error(response);
+        downBtnLoader();
+    };
+
+    const LoadDataGrid = function () {
+        const parms = {
+
+            VendorId: $('#VendorId').val(),
+            IsNotSettled: $('#IsNotSettled').val(),
+            FromDate: $('#fromDate').val(),
+            ToDate: $('#toDate').val()
+        };
+
+        const columns = [
+
+            {
+                "data": "DocDate",
+                "name": "DocDate",
+                "autoWidth": true
+            },
+            {
+
+                "data": null,
+                "autoWidth": true,
+                "render": function (d, t, row) {
+                    if (row.SourceType == 'ApInvoice') {
+
+                        return `<a  target="_blank" href="${$PrefixHostName}/ApInvoiceHd/FormView?id=${row.SourceId}&t=@encShowTrigger" title=@Html.Raw(Json.Encode(ERP.ResourcePack.Common.Settings.Show))>${row.Source}</a>`;
+                    }
+                    else if (row.SourceType == 'Integration') {
+
+                        return `<a  target="_blank" href="${$PrefixHostName}/GlJeIntegrationHeaders/FormView?id=${row.SourceId}&t=@encShowTrigger" title=@Html.Raw(Json.Encode(ERP.ResourcePack.Common.Settings.Show))>${row.Source}</a>`;
+                    }
+                    else if (row.SourceType == 'Payment') {
+
+                        return `<a  target="_blank" href="${$PrefixHostName}/ApPaymentsTransactions/FormView?id=${row.SourceId}&t=@encShowTrigger" title=@Html.Raw(Json.Encode(ERP.ResourcePack.Common.Settings.Show))>${row.Source}</a>`;
+                    }
+                    else if (row.SourceType == 'ApDrCr') {
+
+                        return `<a  target="_blank" href="${$PrefixHostName}/ApDrCrHd/FormView?id=${row.SourceId}&t=@encShowTrigger" title=@Html.Raw(Json.Encode(ERP.ResourcePack.Common.Settings.Show))>${row.Source}</a>`;
+                    }
+                    else if (row.SourceType == 'RecInvoice') {
+                        return `<a  target="_blank" href="${$PrefixHostName}/IvReceiveHd/FormView?id=${row.SourceId}&t=@encShowTrigger" title=@Html.Raw(Json.Encode(ERP.ResourcePack.Common.Settings.Show))>${row.Source}</a>`;
+                    }
+                    else if (row.SourceType == 'ApReturnToVender') {
+                        return `<a  target="_blank" href="${$PrefixHostName}/IvReturnReceiveHd/FormView?id=${row.SourceId}&t=@encShowTrigger" title=@Html.Raw(Json.Encode(ERP.ResourcePack.Common.Settings.Show))>${row.Source}</a>`;
+                    }
+                    else
+                        return '';
+
+                }
+            },
+            //{
+            //    "data": "Source",
+            //    "name": "Source",
+            //    "autoWidth": true
+            //},
+
+            {
+                "data": "Comments",
+                "name": "Comments",
+                "autoWidth": true
+            },
+            {
+
+                "data": null,
+                "autoWidth": true,
+                "render": function (d, t, row) {
+                    return fixNumberFormatting(row.DrAmount);
+                }
+            },
+            {
+
+
+                "data": null,
+                "autoWidth": true,
+                "render": function (d, t, row) {
+                    return fixNumberFormatting(row.CrAmount);
+                }
+            },
+            {
+                "data": null,
+                "autoWidth": true,
+                "render": function (d, t, row) {
+                    return fixNumberFormatting(row.Balance);
+                }
+            }
+
+
+        ];
+
+        const dtObj = {
+            "processing": true,
+            "serverSide": true,
+            "filter": false,
+            "pageLength":1000,
+            "orderMulti": false,
+            "language": dataTableLang,
+            "ajax": {
+                "url": _loadDataUrl,
+                "type": "POST",
+                "datatype": "json",
+                "data": parms,
+                "complete": function () { }
+            },
+            "columns": columns,
+            "initComplete": function () {
+                $('[data-toggle="tooltip"]').tooltip();
+            }
+
+        };
+
+        _tblSelector.dataTable().fnDestroy();
+        _tblSelector.DataTable(dtObj).on('draw', function () { $('[data-toggle="tooltip"]').tooltip(); });
+
+
+    };
+
+
+
+    function printExc() {
+        $('.page-loader-wrapper').show();
+        $('#tblDetails').parent().addClass('d-none');
+        const parmss = {
+            VendorId: $('#VendorId').val(),
+            IsNotSettled: $('#IsNotSettled').val(),
+            FromDate: $('#fromDate').val(),
+            ToDate: $('#toDate').val(),
+            length: 1000000
+        };
+
+
+        const columns = [
+
+            {
+                "data": "DocDate",
+                "name": "DocDate",
+                "autoWidth": true
+            },
+            {
+                "data": "Source",
+                "name": "Source",
+                "autoWidth": true
+            },
+            {
+                "data": "Comments",
+                "name": "Comments",
+                "autoWidth": true
+            },
+            {
+
+                "data": null,
+                "autoWidth": true,
+                "render": function (d, t, row) {
+                    return fixNumberFormatting(row.DrAmount);
+                }
+            },
+            {
+
+
+                "data": null,
+                "autoWidth": true,
+                "render": function (d, t, row) {
+                    return fixNumberFormatting(row.CrAmount);
+                }
+            },
+            {
+                "data": null,
+                "autoWidth": true,
+                "render": function (d, t, row) {
+                    return fixNumberFormatting(row.Balance);
+                }
+            }
+
+
+        ];
+
+        const dtObj = {
+            "language": dataTableLang,
+            "dom": 'Bfrtip',
+            "buttons": [
+                {
+                    extend: 'excel',
+                    messageTop: `${$('[for="IvItemsTypesConfigureId"]').text()}: ${(parmss.IvItemsTypesConfigureId) ? parmss.IvItemsTypesConfigureId : '--'}, ${$('[for="IvUnitId"]').text()}: ${(parmss.IvUnitId) ? parmss.IvUnitId : '--'}`
+                },
+
+                {
+                    extend: 'pdfHtml5',
+                    title: 'PDF',
+                    text: 'Export to PDF'
+                    //Columns to export
+                    //exportOptions: {
+                    //     columns: [0, 1, 2, 3, 4, 5, 6]
+                    //  }
+                }
+
+            ],
+            "ajax": {
+                "url": _loadDataUrl,
+                "type": "POST",
+                "datatype": "json",
+                "data": parmss,
+                "complete": function (d) {
+                    //_tblLoader.hide();
+                    $('.page-loader-wrapper').hide()
+                }
+            },
+            "columns": columns,
+
+            "initComplete": function () {
+                $('#tblDetailsPrint button.dt-button').click();
+                $('#tblDetailsPrint').parent().addClass('d-none');
+
+            }
+        };
+
+        _tblSelector.dataTable().fnDestroy();
+        _tblSelector.DataTable(dtObj).on('buttons-processing', function (e, indicator) { if (!indicator) { $('.page-loader-wrapper').hide() } });
+
+
+    }
+
+</script>

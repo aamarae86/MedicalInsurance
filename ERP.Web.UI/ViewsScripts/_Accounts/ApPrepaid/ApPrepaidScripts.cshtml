@@ -1,0 +1,358 @@
+﻿@using ERP.ResourcePack.AccountsExtend
+@using ERP.Web.UI.Controllers.AccountsExtend
+@using ERP.Authorization;
+@{
+    string permissionsStr = TempData["Permissions"].ToString();
+    string encUpdateTrigger = ERP.Front.Helpers.Enums.Common.EncUpdate;
+    string encInsertTrigger = ERP.Front.Helpers.Enums.Common.EncInsert;
+    string encShowTrigger = ERP.Front.Helpers.Enums.Common.EncShow;
+}
+
+@if (permissionsStr.Contains(PermissionNames.Pages_ApPrepaid_Post))
+{
+    <script>
+
+        const PostApPrepaid = function (id) {
+
+            bootbox.confirm({
+                message: _booBoxMessagePosting,
+                buttons: bootBoxDefaultBtns,
+                callback: function (result) {
+
+                    if (result) {
+
+                        const data = {
+                            id: id,
+                            lang: lang,
+                            userId: 0
+                        };
+
+                        $.ajax({
+                            url: `${baseUrl}/ApPrepaid/PostApPrepaid`,
+                            type: 'POST',
+                            data: JSON.stringify(data),
+                            headers:
+                            {
+                                'Content-Type': 'application/json',
+                                'Authorization': `Bearer ${$_token}`
+                            },
+                        }).done(function (response) {
+
+                            if (response.result.finalStatues == 'F') {
+                                toastr.warning(response.result.reason);
+                            }
+                            else {
+                                toastr.success(response.result.reason);
+
+                                setTimeout(function () {
+                                    if (formView) {
+                                        window.location.href = $PrefixHostName + '/ApPrepaid';
+                                    } else {
+                                        LoadDataGrid();
+                                    }
+                                }, 200);
+
+                            }
+                        }).fail(function (response) {
+                            toastr.error(response);
+                        });
+
+                    }
+                }
+            });
+        };
+
+    </script>
+}
+else
+{
+    <script>
+        const PostApPrepaid = function (id) { };
+    </script>
+}
+
+<script>
+    const _mainController = "ApPrepaid"
+
+    $(function () {
+        LoadDataGrid();
+        $('#tblApPrepaidPrint thead').html($('#tblApPrepaid thead').html());
+        $('#tblApPrepaidPrint thead tr :last-child').remove();
+        $('#ApPrepaid').addClass('active');
+
+        if (formView && primaryEntityKeyId) {
+            $('select').attr('disabled', true);
+
+            BindCodeComUtilitesDropDowns(dr__arrGlSelect2, 'drAccId', $('#codeComUtilityIds').val(), $('#codeComUtilityTexts').val());
+            BindCodeComUtilitesDropDowns(cr__arrGlSelect2, 'crAccId', $('#codeComUtilityIds_alt1').val(), $('#codeComUtilityTexts_alt1').val());
+        }
+    });
+
+    const _loadDataUrl = `${$PrefixHostName}/${_mainController}/@nameof(ApPrepaidController.LoadDataGrid)`;
+    const _tblSelector = $('#tblApPrepaid');
+    const _permissions = '@permissionsStr';
+    const _postPermission = '@PermissionNames.Pages_ApPrepaid_Post';
+    const _postStatus = @Convert.ToInt64(ERP.Front.Helpers.Enums.Common.ApPrepaid.Posted);
+    const _newStatus = @Convert.ToInt64(ERP.Front.Helpers.Enums.Common.ApPrepaid.New);
+
+    var OnBegin = function (response) {
+        fireBtnLoader();
+    };
+
+    var OnSuccess = function (response) {
+
+        if (response.success) {
+
+            if (response.customRestResult.trigger === '@ERP.Front.Helpers.Enums.Common.FormTriggers.Insert') {
+
+                toastr.success(response.customRestResult.message);
+
+                setTimeout(function () {
+                    window.location.href = $PrefixHostName + '/ApPrepaid';
+                }, 200);
+
+            }
+            else if (response.customRestResult.trigger === '@ERP.Front.Helpers.Enums.Common.FormTriggers.Update') {
+
+                toastr.success(response.customRestResult.message);
+
+                setTimeout(function () {
+                    window.location.href = $PrefixHostName + '/ApPrepaid';
+                }, 200);
+
+            }
+            else {
+                toastr.error(response.customRestResult.message);
+            }
+
+        } else {
+            toastr.error(response.error.message);
+        }
+
+    };
+
+    var OnComplete = function (response) {
+        downBtnLoader();
+    };
+
+    var OnFailure = function (response) {
+        toastr.error(response);
+        downBtnLoader();
+    };
+
+    const LoadDataGrid = function () {
+
+        $('#tblLoader').show();
+
+        const params = {
+            SourceNo: $('#searchBox #SourceNo').val(),
+            TransactionDate: $('#searchBox #TransactionDate').val(),
+            StatusLkpId: $('#searchBox #StatusLkpId').find(':selected').val(),
+            SourceCodeLkpId: $('#searchBox #SourceCodeLkpId').find(':selected').val(),
+        };
+
+        const columns = [
+            {
+                "data": "result.data.id",
+                'render': function (data, type, row, meta) {
+                    return meta.row + meta.settings._iDisplayStart + 1;
+                }
+            },
+            {
+                "data": "SourceNo",
+                "name": "SourceNo",
+                "autoWidth": true
+            },
+            {
+                "data": "TransactionDate",
+                "name": "TransactionDate",
+                "autoWidth": true
+            },
+            {
+                "data": "codeComUtilityTexts",
+                "name": "DrAccountId",
+                "autoWidth": true
+            },
+            {
+                "data": "Amount",
+                "name": "Amount",
+                "autoWidth": true
+            },
+            {
+                "data": "codeComUtilityTexts_alt1",
+                "name": "CrAccountId",
+                "autoWidth": true
+            },
+            {
+                "data": null,
+                "autoWidth": true,
+                "render": function (d, t, row) {
+                    if (row.FndStatusLkp == null) return '';
+
+                    return lang === 'ar-EG' ? row.FndStatusLkp.NameAr : row.FndStatusLkp.NameEn;
+                }
+            },
+            {
+                "data": null,
+                "autoWidth": true,
+                "render": function (d, t, row) {
+                    if (row.FndSourceCodeLkp == null) return '';
+
+                    return lang === 'ar-EG' ? row.FndSourceCodeLkp.NameAr : row.FndSourceCodeLkp.NameEn;
+                }
+            },
+            {
+                "data": null,
+                "sortable": false,
+                "render": function (data, type, row) {
+
+                    let btns = '';
+
+                    btns += `<a href="${$PrefixHostName}/ApPrepaid/FormView?id=${row.EncId}&t=@encShowTrigger" title="@ERP.ResourcePack.Common.Settings.Show"><i class="mx-2 fas fa-eye text-info"></i></a>`;
+
+                    if (_permissions.includes(_postPermission) & row.StatusLkpId == _newStatus) {
+                        btns += `<a href="javascript:void(0)" onclick="PostApPrepaid(${row.Id})" title="@ERP.ResourcePack.Common.Settings.Post"><i class="mx-2 fas fa-check-circle text-info"></i></a>`;
+                    }
+
+                    const _auditedPermission = '@PermissionNames.Pages_ApPrepaid_Audit';
+
+                    if (_permissions.includes(_auditedPermission)) {
+
+                        row.permission = _auditedPermission;
+
+                        btns += GetAuditedButton(row);
+                    }
+
+                    return btns;
+                }
+            }
+        ];
+
+        const dtObj = {
+            "processing": true,
+            "serverSide": true,
+            "filter": false,
+            "orderMulti": false,
+            "language": dataTableLang,
+            "ajax": {
+                "url": _loadDataUrl,
+                "type": "POST",
+                "datatype": "json",
+                "data": params,
+                "complete": function () { }
+            },
+            "columns": columns,
+            "initComplete": function () {
+                $('[data-toggle="tooltip"]').tooltip();
+            }
+
+        };
+
+        _tblSelector.dataTable().fnDestroy();
+        _tblSelector.DataTable(dtObj).on('draw', function () { $('[data-toggle="tooltip"]').tooltip(); });
+
+        setTimeout(function () {
+            $(".sorting_1").removeAttr('colspan');
+        }, 500);
+    };
+
+    $('#searchBox #StatusLkpId').select2(ReturnSelect2ObjectForLkpsTypes('@ERP.Front.Helpers.Enums.Common.FndLkpsTypes.ApPrepaidStaues.ToString()'));
+    $('#searchBox #SourceCodeLkpId').select2(ReturnSelect2ObjectForLkpsTypes('@ERP.Front.Helpers.Enums.Common.FndLkpsTypes.ApPrepaidSource.ToString()'));
+
+    function printExc() {
+        $('.page-loader-wrapper').show();
+
+        const parmss = {
+            SourceNo: $('#searchBox #SourceNo').val(),
+            TransactionDate: $('#searchBox #TransactionDate').val(),
+            StatusLkpId: $('#searchBox #StatusLkpId').find(':selected').val(),
+            SourceCodeLkpId: $('#searchBox #SourceCodeLkpId').find(':selected').val(),
+            length: 1000000
+        };
+
+        const columns = [
+            {
+                "data": "result.data.id",
+                'render': function (data, type, row, meta) {
+                    return meta.row + meta.settings._iDisplayStart + 1;
+                }
+            },
+            {
+                "data": "SourceNo",
+                "name": "SourceNo",
+                "autoWidth": true
+            },
+            {
+                "data": "TransactionDate",
+                "name": "TransactionDate",
+                "autoWidth": true
+            },
+            {
+                "data": "codeComUtilityTexts",
+                "name": "DrAccountId",
+                "autoWidth": true
+            },
+            {
+                "data": "Amount",
+                "name": "Amount",
+                "autoWidth": true
+            },
+            {
+                "data": "codeComUtilityTexts_alt1",
+                "name": "CrAccountId",
+                "autoWidth": true
+            },
+            {
+                "data": null,
+                "autoWidth": true,
+                "render": function (d, t, row) {
+                    if (row.FndStatusLkp == null) return '';
+
+                    return lang === 'ar-EG' ? row.FndStatusLkp.NameAr : row.FndStatusLkp.NameEn;
+                }
+            },
+            {
+                "data": null,
+                "autoWidth": true,
+                "render": function (d, t, row) {
+                    if (row.FndSourceCodeLkp == null) return '';
+
+                    return lang === 'ar-EG' ? row.FndSourceCodeLkp.NameAr : row.FndSourceCodeLkp.NameEn;
+                }
+            }
+        ];
+
+        const dtObj = {
+            "language": dataTableLang,
+            "dom": 'Bfrtip',
+            "buttons": [
+                {
+                    extend: 'excel',
+                    messageTop: `${$('#SourceNo').siblings().text()}: ${(parmss.SourceNo) ? parmss.SourceNo : '--'}, ${$('#TransactionDate').siblings().text()}: ${(parmss.TransactionDate) ? parmss.TransactionDate : '--'}, ${$('[for="StatusLkpId"]').text()}: ${(parmss.StatusLkpId) ? parmss.StatusLkpId : '--'}, ${$('[for="SourceId"]').text()}: ${(parmss.SourceCodeLkpId) ? parmss.SourceCodeLkpId : '--'}`
+                },
+
+            ],
+            "ajax": {
+                "url": _loadDataUrl,
+                "type": "POST",
+                "datatype": "json",
+                "data": parmss,
+                "complete": function (d) {
+                    _tblLoader.hide();
+                }
+            },
+            "columns": columns,
+
+            "initComplete": function () {
+                $('#tblApPrepaidPrint_wrapper button.dt-button').click();
+            }
+        };
+
+        $('#tblApPrepaidPrint').dataTable().fnDestroy();
+        $('#tblApPrepaidPrint').DataTable(dtObj).on('buttons-processing', function (e, indicator) { if (!indicator) { $('.page-loader-wrapper').hide() } });
+
+
+    }
+
+</script>
+

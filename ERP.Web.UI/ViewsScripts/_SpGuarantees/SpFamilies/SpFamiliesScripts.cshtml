@@ -1,0 +1,891 @@
+﻿@using ERP.ResourcePack.SpGuarantees
+@using ERP.Web.UI.Controllers.SpGuarantees
+@using ERP.Authorization;
+@{
+    string permissionsStr = TempData["Permissions"]?.ToString() ?? "";
+    string encUpdateTrigger = ERP.Front.Helpers.Enums.Common.EncUpdate;
+    string encInsertTrigger = ERP.Front.Helpers.Enums.Common.EncInsert;
+    string encShowTrigger = ERP.Front.Helpers.Enums.Common.EncShow;
+}
+
+    <script>
+
+    const _mainController = "SpFamilies"
+
+    $(function () {
+        LoadDataGrid();
+
+        $('#SpFamilies').addClass('active');
+
+    });
+
+    const _loadDataUrl = `${$PrefixHostName}/${_mainController}/@nameof(SpFamiliesController.LoadDataGrid)`;
+    const _tblSelector = $('#tblSpFamilies');
+    const _tblLoader = $('#tblLoader');
+
+    const _permissions = '@permissionsStr';
+    const _updatePermission = '@PermissionNames.Pages_SpFamilies_Update';
+    const _deletePermission = '@PermissionNames.Pages_SpFamilies_Delete';
+
+    var OnBegin = function (response) {
+        fireBtnLoader();
+    };
+
+    var OnSuccess = function (response) {
+
+        $('#btnSubmition').prop('disabled', false);
+
+        if (response.success) {
+
+            if (response.customRestResult.trigger === '@ERP.Front.Helpers.Enums.Common.FormTriggers.Insert') {
+
+
+                toastr.success(response.customRestResult.message);
+
+                setTimeout(function () {
+                    window.location.href = $PrefixHostName + '/SpFamilies';
+                }, 200);
+
+            }
+            else if (response.customRestResult.trigger === '@ERP.Front.Helpers.Enums.Common.FormTriggers.Update') {
+
+                toastr.success(response.customRestResult.message);
+
+                setTimeout(function () {
+                    window.location.href = $PrefixHostName + '/SpFamilies';
+                }, 200);
+
+            }
+            else {
+                toastr.error(response.customRestResult.message);
+            }
+        }
+        else {
+            toastr.error(response.error.message);
+        }
+    };
+
+    var OnComplete = function (response) {
+        downBtnLoader();
+    };
+
+    var OnFailure = function (response) {
+        toastr.error(response);
+        downBtnLoader();
+    };
+
+    const LoadDataGrid = function () {
+
+        $('#tblLoader').show();
+
+        const params = {
+            IdNumber: $('#searchBox #IdNumber').val(),
+            FamilyNumber: $('#searchBox #FamilyNumber').val(),
+            RegistrationDate: $('#searchBox #RegistrationDate').val(),
+            FamilyName: $('#searchBox #SpFamilyId').find(':selected').text(),
+            GuardianName: $('#searchBox #GuardianId').find(':selected').text()
+        };
+
+        const columns = [
+            {
+                "data": "result.data.id",
+                'render': function (data, type, row, meta) {
+                    return meta.row + meta.settings._iDisplayStart + 1;
+                }
+            },
+            {
+                "data": "FamilyNumber",
+                "name": "FamilyNumber",
+                "autoWidth": true
+            },
+            {
+                "data": "FamilyName",
+                "name": "FamilyName",
+                "autoWidth": true,
+                'render': function (d, t, row) {
+
+                    return `<a style="color:#3443434;text-decoration:underline" href="${$PrefixHostName}/SpFamilies/FormView?id=${row.EncId}&t=@encShowTrigger">${row.FamilyName == null ? '' : row.FamilyName}</a>`;
+                }
+            },
+            {
+                "data": "RegistrationDate",
+                "name": "RegistrationDate",
+                "autoWidth": true
+            },
+            {
+                "data": "IdNumber",
+                "name": "IdNumber",
+                "autoWidth": true
+            },
+            {
+                "data": "GuardianName",
+                "name": "GuardianName",
+                "autoWidth": true
+            },
+            {
+                "data": null,
+                "autoWidth": true,
+                "render": function (d, t, row) {
+                    if (row.FndRelativesTypeLkp == null) return '';
+
+                    return lang === 'ar-EG' ? row.FndRelativesTypeLkp.NameAr : row.FndRelativesTypeLkp.NameEn;
+                }
+            },
+            {
+                "data": null,
+                "autoWidth": true,
+                "render": function (d, t, row) {
+                    if (row.FndNationalityLkp == null) return '';
+
+                    return lang === 'ar-EG' ? row.FndNationalityLkp.NameAr : row.FndNationalityLkp.NameEn;
+                }
+            },
+            {
+                "data": null,
+                "sortable": false,
+                "render": function (data, type, row) {
+
+                    let formAction = `${$PrefixHostName}/${_mainController}/@nameof(SpFamiliesController.SpFamiliesForm)`;
+                    let DeleteAction = `${$PrefixHostName}/${_mainController}/@nameof(SpFamiliesController.Delete)`;
+
+                    let formTitle = '@ERP.ResourcePack.SpGuarantees.SpFamilies.Title', btns = '';
+
+                    if (_permissions.includes(_updatePermission)) {
+                        btns += `<a href="${$PrefixHostName}/SpFamilies/FormView?id=${row.EncId}&t=@encUpdateTrigger" title="@ERP.ResourcePack.Common.Settings.Edit"><i class="mx-2 fas fa-edit text-info"></i></a>`;
+                    }
+
+                    btns += `<a href="${$PrefixHostName}/SpFamilies/FormView?id=${row.EncId}&t=@encShowTrigger" title="@ERP.ResourcePack.Common.Settings.Show"><i class="mx-2 fas fa-eye text-info"></i></a>`;
+
+                    if (_permissions.includes(_deletePermission)) {
+                        btns += `<a href="javascript:void(0)" onclick="AjaxController.DeleteMainTableRow(${row.Id},'${DeleteAction}');" title="@ERP.ResourcePack.Common.Settings.Delete"><i class="mx-2 fas fa-trash-alt text-danger"></i></a>`;
+                    }
+
+                    const _auditedPermission = '@PermissionNames.Pages_SpFamilies_Audit';
+
+                    if (_permissions.includes(_auditedPermission)) {
+
+                        row.permission = _auditedPermission;
+
+                        btns += GetAuditedButton(row);
+                    }
+
+                    return btns;
+                }
+            }
+        ];
+
+        const dtObj = {
+            "processing": true,
+            "serverSide": true,
+            "filter": false,
+            "orderMulti": false,
+            "language": dataTableLang,
+            "ajax": {
+                "url": _loadDataUrl,
+                "type": "POST",
+                "datatype": "json",
+                "data": params,
+                "complete": function () {
+                      _tblLoader.hide();
+                }
+            },
+            "columns": columns,
+            "initComplete": function () {
+                $('[data-toggle="tooltip"]').tooltip();
+            }
+
+        };
+
+        _tblSelector.dataTable().fnDestroy();
+        _tblSelector.DataTable(dtObj).on('draw', function () { $('[data-toggle="tooltip"]').tooltip(); });
+
+        setTimeout(function () {
+            $(".sorting_1").removeAttr('colspan');
+        }, 500);
+    };
+
+    $('#btnSubmition').on('click', function () {
+
+        if ($('#IsFatherDiedAlt').is(':checked')) {
+            if (!$('#FatherDiedDate').val()) {
+                toastr.warning(`@SpFamilies.FatherDiedDate : @ERP.ResourcePack.Common.Settings.Required`);
+                return;
+            }
+
+            if (!$('#FatherDiedReason').val()) {
+                toastr.warning(`@SpFamilies.FatherDiedReason : @ERP.ResourcePack.Common.Settings.Required`);
+                return;
+            }
+        }
+
+        if ($('#IsMotherDiedAlt').is(':checked')) {
+            if (!$('#MotherDiedDate').val()) {
+                toastr.warning(`@SpFamilies.MotherDiedDate : @ERP.ResourcePack.Common.Settings.Required`);
+                return;
+            }
+
+            if (!$('#MotherDiedReason').val()) {
+                toastr.warning(`@SpFamilies.MotherDiedReason : @ERP.ResourcePack.Common.Settings.Required`);
+                return;
+            }
+        }
+
+        if ($('#mainForm').valid()) {
+
+            $(this).prop('disabled', true);
+
+            $('#submitLoader').show();
+
+            $('#mainForm').submit();
+
+        } else {
+            $(this).prop('disabled', false);
+
+            $('#submitLoader').hide();
+        }
+
+    });
+
+    $('#searchBox #SpFamilyId').select2(ReturnSelect2ObjectDefault(`${baseUrl}/SpFamilies/GetSelect2`));
+    $('#searchBox #GuardianId').select2(ReturnSelect2ObjectDefault(`${baseUrl}/SpFamilies/GetGaurdiantSelect2`));
+    $('#BankLkpId').select2(ReturnSelect2ObjectForLkpsTypes('@ERP.Front.Helpers.Enums.Common.FndLkpsTypes.Banks.ToString()'));
+    $('#CityLkpId').select2(ReturnSelect2ObjectForLkpsTypes('@ERP.Front.Helpers.Enums.Common.FndLkpsTypes.City.ToString()'));
+    $('#MaritalStatusLkpId').select2(ReturnSelect2ObjectForLkpsTypes('@ERP.Front.Helpers.Enums.Common.FndLkpsTypes.MaritalStatus.ToString()'));
+    $('#NationalityLkpId').select2(ReturnSelect2ObjectForLkpsTypes('@ERP.Front.Helpers.Enums.Common.FndLkpsTypes.Nationality.ToString()'));
+    $('#RelativesTypeLkpId').select2(ReturnSelect2ObjectForLkpsTypes('@ERP.Front.Helpers.Enums.Common.FndLkpsTypes.RelativesType.ToString()'));
+    $('#RelativesCaseTypeLkpId').select2(ReturnSelect2ObjectForLkpsTypes('@ERP.Front.Helpers.Enums.Common.FndLkpsTypes.RelativesType.ToString()'));
+    $('#HousingTypeLkpId').select2(ReturnSelect2ObjectForLkpsTypes('@ERP.Front.Helpers.Enums.Common.FndLkpsTypes.HousingType.ToString()'));
+    $('#HousingStatusLkpId').select2(ReturnSelect2ObjectForLkpsTypes('@ERP.Front.Helpers.Enums.Common.FndLkpsTypes.HousingStatus.ToString()'));
+    $('#SponsorCategoryLkpId').select2(ReturnSelect2ObjectForLkpsTypes('@ERP.Front.Helpers.Enums.Common.FndLkpsTypes.SponsorCategory.ToString()'));
+
+
+    const calcNetValue = function () {
+
+        let sumIncomes = 0,sumDuties = 0;
+
+        _IncomesArr.map(item => sumIncomes += parseFloat(item.monthlyIncomeAmount));
+
+        _DutiesArr.map(item => sumDuties += parseFloat(item.monthlyAmount));
+
+        const total = sumIncomes + sumDuties;
+
+        const netVal = sumIncomes - sumDuties;
+
+        $('#MonthlyIncomeAmountTotal').val(sumIncomes);
+
+        $('#MonthlyOutcomeAmountTotal').val(sumDuties);
+
+        $('#Total').val(total);
+
+        $('#NetValue').val(netVal);
+
+        $('#MonthlyIncomeAmountTotal').parent('.form-line').addClass('focused');
+
+        $('#MonthlyOutcomeAmountTotal').parent('.form-line').addClass('focused');
+
+        $('#Total').parent('.form-line').addClass('focused');
+
+        $('#NetValue').parent('.form-line').addClass('focused');
+
+    };
+
+    </script>
+
+<script name="Casesss">
+
+    const _tblCasesSelector = $('#tblCases');
+    const _tblCasesSelectorBody = $('#tblCases tbody');
+    const _listCases = $('#FamilyCasesListStr');
+
+    let _CasesArr = [], tblCasesCounterIndex = 0 , updatedCasesRow;
+
+    const fillCasesArr = function () {
+
+        if (validateCases() === false)  return;
+
+        const current = {
+            index: ++tblCasesCounterIndex,
+            caseName: $('#CaseName').val(),
+            birthDate: $('#BirthCaseDate').val(),
+            relativesTypeLkpId: $('#RelativesCaseTypeLkpId').find(':selected').val(),
+            relativesTypeLkp: $('#RelativesCaseTypeLkpId').find(':selected').text(),
+            sponsorCategoryLkpId: $('#SponsorCategoryLkpId').find(':selected').val(),
+            sponsorCategoryLkp: $('#SponsorCategoryLkpId').find(':selected').text(),
+            rowStatus: NewStatus,
+            id:0
+        };
+
+        return current;
+    };
+
+    const AddCasesDetail = function () {
+
+        const current = fillCasesArr();
+
+        if (current === undefined) return;
+
+        _CasesArr.push(current);
+
+        _listCases.val(JSON.stringify(_CasesArr));
+
+        bindCasesTable();
+
+        clearFormAddingCases();
+
+        calcNetValue();
+    };
+
+    const UpdateCasesDetailRow = function () {
+
+        let current = _CasesArr.find(z => z.index === updatedCasesRow.index);
+
+        let indexOfCurrent = _CasesArr.indexOf(current);
+
+        const newRow = fillCasesArr();
+
+        if (newRow === undefined) return;
+
+        newRow.id = updatedCasesRow.id;
+        newRow.rowStatus = !updatedCasesRow.id ? NewStatus : UpdatedStatus;
+
+        _CasesArr.splice(indexOfCurrent, 1,newRow);
+
+        $('#btnAddCaseRow').show();
+        $('#btnUpdateCaseRow').hide();
+        $('#btnCancelCaseRow').hide();
+
+        clearFormAddingCases();
+
+        _listCases.val(JSON.stringify(_CasesArr));
+
+        bindCasesTable();
+
+        calcNetValue();
+    };
+
+    const bindCasesTable = function () {
+
+        let rows = '';
+
+        const detailArr = _CasesArr.filter(z => z.rowStatus !== DeletedStatus);
+
+        $.each(detailArr, function (i, item) {
+
+            rows += '<tr>';
+            rows += `<td>${item.index}</td>`;
+            rows += `<td>${item.caseName}</td>`;
+            rows += `<td>${item.relativesTypeLkp}</td>`;
+            rows += `<td>${primaryEntityKeyId && item.rowStatus == NoActionStatus ? item.birthDate : item.birthDate}</td >`;
+            rows += `<td>${item.sponsorCategoryLkp}</td>`;
+
+            if (primaryEntityKeyId === 0 || trigger !== '@ERP.Front.Helpers.Enums.Common.FormTriggers.Show.ToString()') {
+                rows += `<td><a href="javascript:void(0)" onclick="return DeleteRowCases(${item.index})"><i class="mx-2 fas fa-trash-alt text-danger"></i></a>`;
+                rows += `<a href="javascript:void(0)" onclick="return GetCasesRow(${item.index})"><i class="mx-2 fas fa-edit text-success"></i></a></td>`;
+            } else {
+                rows += '<td></td>';
+            }
+
+            rows += '</tr>';
+        });
+
+        setTimeout(function () {
+            _tblCasesSelectorBody.html(rows);
+        }, 100);
+    };
+
+    const DeleteRowCases= function (index) {
+
+        const current = _CasesArr.find(z => z.index === index);
+
+        const indexOfCurrent = _CasesArr.indexOf(current);
+
+        if (!current.id) {
+
+           _CasesArr.splice(indexOfCurrent, 1);
+
+        } else {
+
+            current.rowStatus = DeletedStatus;
+
+           _CasesArr.splice(indexOfCurrent, 1,current);
+        }
+
+        bindCasesTable();
+
+        _listCases.val(_CasesArr.length === 0 ? '' : JSON.stringify(_CasesArr));
+
+        calcNetValue();
+    };
+
+    const LoadCasesData = function () {
+
+         $.ajax({
+            url: `${baseUrl}/SpFamilies/GetAllCasesDetails`,
+            method: 'GET',
+            headers: {  'Authorization': `Bearer ${$_token}`  },
+            data: { id: primaryEntityKeyId }
+        }).done(function (data) {
+
+            _CasesArr = [...data.result];
+
+            tblCasesCounterIndex = 0;
+
+            $.each(_CasesArr, function (i, item) {
+                item.index = ++tblCasesCounterIndex;
+            });
+
+            bindCasesTable();
+
+            _listCases.val(JSON.stringify(_CasesArr));
+
+            calcNetValue();
+         });
+
+    };
+
+    const GetCasesRow = function (tblIndex) {
+
+        clearFormAddingCases();
+
+        $('#btnAddCaseRow').hide();
+        $('#btnUpdateCaseRow').show();
+        $('#btnCancelCaseRow').show();
+
+        const current = _CasesArr.find(z => z.index === tblIndex);
+
+        $('#Cases #CaseName').val(current.caseName);
+        $('#Cases #BirthCaseDate').val(current.birthDate);
+
+        $(`#RelativesCaseTypeLkpId`).append($("<option selected='selected'></option>")
+            .val(current.relativesTypeLkpId).text(current.relativesTypeLkp)).trigger('change');
+
+        $(`#SponsorCategoryLkpId`).append($("<option selected='selected'></option>")
+            .val(current.sponsorCategoryLkpId).text(current.sponsorCategoryLkp)).trigger('change');
+
+        $('#Cases #CaseName').parent('.form-line').addClass('focused');
+        $('#Cases #BirthCaseDate').parent('.form-line').addClass('focused');
+
+        updatedCasesRow = current;
+    };
+
+    const clearFormAddingCases = function () {
+
+        $('#Cases .card select').val('').trigger('change');
+        $('#Cases .card input').val('');
+        $('#Cases .card textarea').val('');
+    };
+
+    const validateCases = function () {
+
+        if (!$('#Cases #CaseName').val()) {
+            toastr.warning('@SpFamilies.CaseName' + ' : ' + '@ERP.ResourcePack.Common.Settings.Required')
+            return false;
+        }
+
+        if (!$('#Cases #BirthCaseDate').val()) {
+            toastr.warning('@SpFamilies.BirthDate' + ' : ' + '@ERP.ResourcePack.Common.Settings.Required')
+            return false;
+        }
+
+        if (!$('#Cases #RelativesCaseTypeLkpId').find(':selected').val()) {
+            toastr.warning('@SpFamilies.RelativesTypeLkpId' + ' : ' + '@ERP.ResourcePack.Common.Settings.Required')
+            return false;
+        }
+
+        if (!$('#Cases #SponsorCategoryLkpId').find(':selected').val()) {
+            toastr.warning('@SpFamilies.SponsorCategoryLkpId' + ' : ' + '@ERP.ResourcePack.Common.Settings.Required')
+            return false;
+        }
+
+        return true;
+    };
+
+</script>
+
+<script name="Incomesss">
+
+    const _tblIncomesSelector = $('#tblIncomes');
+    const _tblIncomesSelectorBody = $('#tblIncomes tbody');
+    const _listIncomes = $('#FamilyIncomesListStr');
+
+    let _IncomesArr = [], tblIncomesCounterIndex = 0 , updatedIncomesRow;
+
+    const fillIncomesArr = function () {
+
+        if (validateIncomes() === false)  return;
+
+        const current = {
+            index: ++tblIncomesCounterIndex,
+            incomeSourceName: $('#IncomeSourceName').val(),
+            monthlyIncomeAmount:$('#MonthlyIncomeAmount').val(),
+            rowStatus: NewStatus,
+            id:0
+        };
+
+        return current;
+    };
+
+    const AddIncomesDetail = function () {
+
+        const current = fillIncomesArr();
+
+        if (current === undefined) return;
+
+        _IncomesArr.push(current);
+
+        _listIncomes.val(JSON.stringify(_IncomesArr));
+
+        bindIncomesTable();
+
+        clearFormAddingIncomes();
+
+        calcNetValue();
+    };
+
+    const UpdateIncomesDetailRow = function () {
+
+        let current = _IncomesArr.find(z => z.index === updatedIncomesRow.index);
+
+        let indexOfCurrent = _IncomesArr.indexOf(current);
+
+        const newRow = fillIncomesArr();
+
+        if (newRow === undefined) return;
+
+        newRow.id = updatedIncomesRow.id;
+        newRow.rowStatus = !updatedIncomesRow.id ? NewStatus : UpdatedStatus;
+
+        _IncomesArr.splice(indexOfCurrent, 1,newRow);
+
+        $('#btnAddIncomesRow').show();
+        $('#btnUpdateIncomesRow').hide();
+        $('#btnCancelIncomesRow').hide();
+
+        clearFormAddingIncomes();
+
+        _listIncomes.val(JSON.stringify(_IncomesArr));
+
+        bindIncomesTable();
+
+        calcNetValue();
+    };
+
+    const bindIncomesTable = function () {
+
+        let rows = '';
+
+        const detailArr = _IncomesArr.filter(z => z.rowStatus !== DeletedStatus);
+
+        $.each(detailArr, function (i, item) {
+
+            rows += '<tr>';
+            rows += `<td>${item.index}</td>`;
+            rows += `<td>${item.incomeSourceName}</td>`;
+            rows += `<td>${item.monthlyIncomeAmount}</td>`;
+
+            if (primaryEntityKeyId === 0 || trigger !== '@ERP.Front.Helpers.Enums.Common.FormTriggers.Show.ToString()') {
+                rows += `<td><a href="javascript:void(0)" onclick="return DeleteRowIncomes(${item.index})"><i class="mx-2 fas fa-trash-alt text-danger"></i></a>`;
+                rows += `<a href="javascript:void(0)" onclick="return GetIncomeRow(${item.index})"><i class="mx-2 fas fa-edit text-success"></i></a></td>`;
+            } else {
+                rows += '<td></td>';
+            }
+
+            rows += '</tr>';
+        });
+
+        setTimeout(function () {
+            _tblIncomesSelectorBody.html(rows);
+        }, 100);
+    };
+
+    const DeleteRowIncomes= function (index) {
+
+        const current = _IncomesArr.find(z => z.index === index);
+
+        const indexOfCurrent = _IncomesArr.indexOf(current);
+
+        if (!current.id) {
+
+           _IncomesArr.splice(indexOfCurrent, 1);
+
+        } else {
+
+            current.rowStatus = DeletedStatus;
+
+           _IncomesArr.splice(indexOfCurrent, 1,current);
+        }
+
+        bindIncomesTable();
+
+        _listIncomes.val(_IncomesArr.length === 0 ? '' : JSON.stringify(_IncomesArr));
+
+        calcNetValue();
+    };
+
+    const LoadIncomesData = function () {
+
+         $.ajax({
+            url: `${baseUrl}/SpFamilies/GetAllIncomesDetails`,
+            method: 'GET',
+            headers: {  'Authorization': `Bearer ${$_token}`  },
+            data: { id: primaryEntityKeyId }
+        }).done(function (data) {
+
+            _IncomesArr = [...data.result];
+
+            tblIncomesCounterIndex = 0;
+
+            $.each(_IncomesArr, function (i, item) {
+                item.index = ++tblIncomesCounterIndex;
+            });
+
+            bindIncomesTable();
+
+            _listIncomes.val(JSON.stringify(_IncomesArr));
+
+            calcNetValue();
+         });
+
+    };
+
+    const GetIncomeRow = function (tblIndex) {
+
+        clearFormAddingIncomes();
+
+        $('#btnAddIncomesRow').hide();
+        $('#btnUpdateIncomesRow').show();
+        $('#btnCancelIncomesRow').show();
+
+        const current = _IncomesArr.find(z => z.index === tblIndex);
+
+        $('#Incomes #IncomeSourceName').val(current.incomeSourceName);
+        $('#Incomes #MonthlyIncomeAmount').val(current.monthlyIncomeAmount);
+
+        $('#Incomes #IncomeSourceName').parent('.form-line').addClass('focused');
+        $('#Incomes #MonthlyIncomeAmount').parent('.form-line').addClass('focused');
+
+        updatedIncomesRow = current;
+    };
+
+    const clearFormAddingIncomes = function () {
+
+        $('#Incomes .card select').val('').trigger('change');
+        $('#Incomes .card input').val('');
+        $('#Incomes .card textarea').val('');
+    };
+
+    const validateIncomes = function () {
+
+        if ($('#Incomes #IncomeSourceName').val() === '') {
+            toastr.warning('@SpFamilies.IncomeSourceName' + ' : ' + '@ERP.ResourcePack.Common.Settings.Required')
+            return false;
+        }
+
+        if ($('#Incomes #MonthlyIncomeAmount').val() === '') {
+            toastr.warning('@SpFamilies.MonthlyIncomeAmount' + ' : ' + '@ERP.ResourcePack.Common.Settings.Required')
+            return false;
+        }
+
+        return true;
+    };
+
+</script>
+
+<script name="Dutiesss">
+
+    const _tblDutiesSelector = $('#tblDuties');
+    const _tblDutiesSelectorBody = $('#tblDuties tbody');
+    const _listDuties = $('#FamilyDutiesListStr');
+
+    let _DutiesArr = [], tblDutiesCounterIndex = 0 , updatedDutiesRow;
+
+    const fillDutiesArr = function () {
+
+        if (validateDuties() === false)  return;
+
+        const current = {
+            index: ++tblDutiesCounterIndex,
+            dutyType: $('#DutyType').val(),
+            dutyDescription:$('#DutyDescription').val(),
+            monthlyAmount: $('#MonthlyAmount').val(),
+            totalAmount:$('#TotalAmount').val(),
+            rowStatus: NewStatus,
+            id:0
+        };
+
+        return current;
+    };
+
+    const AddDutiesDetail = function () {
+
+        const current = fillDutiesArr();
+
+        if (current === undefined) return;
+
+        _DutiesArr.push(current);
+
+        _listDuties.val(JSON.stringify(_DutiesArr));
+
+        bindDutiesTable();
+
+        clearFormAddingDuties();
+
+        calcNetValue();
+    };
+
+    const UpdateDutiesDetailRow = function () {
+
+        let current = _DutiesArr.find(z => z.index === updatedDutiesRow.index);
+
+        let indexOfCurrent = _DutiesArr.indexOf(current);
+
+        const newRow = fillDutiesArr();
+
+        if (newRow === undefined) return;
+
+        newRow.id = updatedDutiesRow.id;
+        newRow.rowStatus = !updatedDutiesRow.id ? NewStatus : UpdatedStatus;
+
+        _DutiesArr.splice(indexOfCurrent, 1,newRow);
+
+        $('#btnAddDutiesRow').show();
+        $('#btnUpdateDutiesRow').hide();
+        $('#btnCancelDutiesRow').hide();
+
+        clearFormAddingDuties();
+
+        _listDuties.val(JSON.stringify(_DutiesArr));
+
+        bindDutiesTable();
+
+        calcNetValue();
+    };
+
+    const bindDutiesTable = function () {
+
+        let rows = '';
+
+        const detailArr = _DutiesArr.filter(z => z.rowStatus !== DeletedStatus);
+
+        $.each(detailArr, function (i, item) {
+
+            rows += '<tr>';
+            rows += `<td>${item.index}</td>`;
+            rows += `<td>${item.dutyType}</td>`;
+            rows += `<td>${item.dutyDescription}</td>`;
+            rows += `<td>${item.monthlyAmount}</td>`;
+            rows += `<td>${item.totalAmount}</td>`;
+
+            if (primaryEntityKeyId === 0 || trigger !== '@ERP.Front.Helpers.Enums.Common.FormTriggers.Show.ToString()') {
+                rows += `<td><a href="javascript:void(0)" onclick="return DeleteRowDuties(${item.index})"><i class="mx-2 fas fa-trash-alt text-danger"></i></a>`;
+                rows += `<a href="javascript:void(0)" onclick="return GetDutiesRow(${item.index})"><i class="mx-2 fas fa-edit text-success"></i></a></td>`;
+            } else {
+                rows += '<td></td>';
+            }
+
+            rows += '</tr>';
+        });
+
+        setTimeout(function () {
+            _tblDutiesSelectorBody.html(rows);
+        }, 100);
+    };
+
+    const DeleteRowDuties= function (index) {
+
+        const current = _DutiesArr.find(z => z.index === index);
+
+        const indexOfCurrent = _DutiesArr.indexOf(current);
+
+        if (!current.id) {
+
+           _DutiesArr.splice(indexOfCurrent, 1);
+
+        } else {
+
+            current.rowStatus = DeletedStatus;
+
+           _DutiesArr.splice(indexOfCurrent, 1,current);
+        }
+
+        bindDutiesTable();
+
+        _listDuties.val(_DutiesArr.length === 0 ? '' : JSON.stringify(_DutiesArr));
+
+        calcNetValue();
+    };
+
+    const LoadDutiesData = function () {
+
+         $.ajax({
+            url: `${baseUrl}/SpFamilies/GetAllDutiesDetails`,
+            method: 'GET',
+            headers: {  'Authorization': `Bearer ${$_token}`  },
+            data: { id: primaryEntityKeyId }
+        }).done(function (data) {
+
+            _DutiesArr = [...data.result];
+
+            tblDutiesCounterIndex = 0;
+
+            $.each(_DutiesArr, function (i, item) {
+                item.index = ++tblDutiesCounterIndex;
+            });
+
+            bindDutiesTable();
+
+            _listDuties.val(JSON.stringify(_DutiesArr));
+
+            calcNetValue();
+         });
+
+    };
+
+    const GetDutiesRow = function (tblIndex) {
+
+        clearFormAddingDuties();
+
+        $('#btnAddDutiesRow').hide();
+        $('#btnUpdateDutiesRow').show();
+        $('#btnCancelDutiesRow').show();
+
+        const current = _DutiesArr.find(z => z.index === tblIndex);
+
+        $('#Duties #DutyType').val(current.dutyType);
+        $('#Duties #DutyDescription').val(current.dutyDescription);
+        $('#Duties #MonthlyAmount').val(current.monthlyAmount);
+        $('#Duties #TotalAmount').val(current.totalAmount);
+
+        $('#Duties #TotalAmount').parent('.form-line').addClass('focused');
+        $('#Duties #DutyType').parent('.form-line').addClass('focused');
+        $('#Duties #MonthlyAmount').parent('.form-line').addClass('focused');
+        $('#Duties #DutyDescription').parent('.form-line').addClass('focused');
+
+        updatedDutiesRow = current;
+    };
+
+    const clearFormAddingDuties = function () {
+
+        $('#Duties .card select').val('').trigger('change');
+        $('#Duties .card input').val('');
+        $('#Duties .card textarea').val('');
+    };
+
+    const validateDuties = function () {
+
+        if ($('#Duties #DutyType').val() === '') {
+            toastr.warning('@SpFamilies.DutyType' + ' : ' + '@ERP.ResourcePack.Common.Settings.Required')
+            return false;
+        }
+
+
+        if ($('#Duties #MonthlyAmount').val() === '') {
+            toastr.warning('@SpFamilies.MonthlyAmount' + ' : ' + '@ERP.ResourcePack.Common.Settings.Required')
+            return false;
+        }
+
+        return true;
+    };
+
+</script>
+

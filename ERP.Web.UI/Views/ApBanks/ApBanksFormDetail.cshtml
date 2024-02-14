@@ -1,0 +1,133 @@
+﻿@using ERP.Web.UI.Models.ViewModels.Accounts
+@model ApBankAccountsVM
+@{
+    string formTrigger = ViewBag.trigger;
+    string lang = Request.Cookies["Lang"] == null ? "ar-EG" : Request.Cookies["Lang"].Value.ToString();
+    bool isFormDetail = Model != null && formTrigger ==ERP.Front.Helpers.Enums.Common.FormTriggers.Show.ToString();
+}
+
+<div class="card" style="display:@( formTrigger ==ERP.Front.Helpers.Enums.Common.FormTriggers.Show.ToString() ? "none":"block" ) ">
+    <div class="body">
+        <div class="border-apply" style="padding:0rem 1rem;margin:1rem">
+            <div class="header d-flex justify-content-start align-items-center p-0">
+                <i class="fas fa-2x fa-chevron-down down-arr mr-2" data-toggle="collapse" data-target="#name"></i>
+                <p class="m-0">@ERP.ResourcePack.Accounts.ApBanks.BankNameAr</p>
+                <hr />
+            </div>
+            <div class="collapse show" id="name">
+                <div class="row">
+                    <div class="col-md-3">
+                        <div class="form-group form-float">
+                            <div class="form-line">
+                                @Html.TextBoxFor(z => z.BankAccountNameAr, getHtmlAttributes(isFormDetail, "form-control", string.Empty))
+                                @Html.LabelFor(z => z.BankAccountNameAr, new { @class = "form-label" })
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="form-group form-float">
+                            <div class="form-line">
+                                @Html.TextBoxFor(z => z.BankAccountNameEn, getHtmlAttributes(isFormDetail, "form-control", string.Empty))
+                                @Html.LabelFor(z => z.BankAccountNameEn, new { @class = "form-label" })
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-2">
+                        @Html.LabelFor(z => z.CurrencyId, new { @class = "form-label" })
+                        <div class="form-group form-float">
+                            <div>
+                                @Html.DropDownListFor(z => z.CurrencyId, Enumerable.Empty<SelectListItem>(), new { @class = "form-control" })
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-2">
+                        <div class="form-group form-float">
+                            <div class="form-line">
+                                @Html.TextBoxFor(z => z.CurrencyRate, new { @class = "form-control", @readonly = "readonly", @tabindex = "-1", })
+                                @Html.LabelFor(z => z.CurrencyRate, new { @class = "form-label" })
+                            </div>
+                            @Html.ValidationMessageFor(z => z.CurrencyRate)
+                        </div>
+                    </div>
+                    <div class="col-md-2">
+                        <p class="my-3">
+                            <label>
+                                <input type="checkbox" id="@nameof(ApBankAccountsVM.IsAccountActive)" name="@nameof(ApBankAccountsVM.IsAccountActive)" checked />
+                                <span>@Html.LabelFor(z => z.IsAccountActive)</span>
+                            </label>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="border-apply" id="acc1" style="padding:0rem 1rem;margin:1rem">
+            <div class="header d-flex justify-content-start align-items-center p-0">
+                <i class="fas fa-2x fa-chevron-down down-arr mr-2" data-toggle="collapse" data-target="#account1"></i>
+                <p class="m-0">@ERP.ResourcePack.Accounts.ApBanks.Account</p>
+                <hr />
+            </div>
+            <div class="collapse show" id="account1">
+                <div class="row">
+                    @Html.Action(nameof(ERP.Web.UI.Controllers.Accounts.GlAccDetailsController.DrawGlAccController), "GlAccDetails",
+                             new { glAccHeadersVMs = ViewData["ListGlAccHeadersVM"] == null ? new List<GlAccHeadersVM>() : ViewData["ListGlAccHeadersVM"] as List<GlAccHeadersVM>, repeatTrigger = "acc1" })
+                </div>
+            </div>
+        </div>
+        <div class="border-apply" id="acc2" style="padding:0rem 1rem;margin:1rem">
+            <div class="header d-flex justify-content-start align-items-center p-0">
+                <i class="fas fa-2x fa-chevron-down down-arr mr-2" data-toggle="collapse" data-target="#account2"></i>
+                <p class="m-0">@ERP.ResourcePack.Accounts.ApBanks.cPdcAccount</p>
+                <hr />
+            </div>
+            <div class="collapse show" id="account2">
+                <div class="row">
+                    @Html.Action(nameof(ERP.Web.UI.Controllers.Accounts.GlAccDetailsController.DrawGlAccController), "GlAccDetails",
+                     new { glAccHeadersVMs = ViewData["ListGlAccHeadersVM"] == null ? new List<GlAccHeadersVM>() : ViewData["ListGlAccHeadersVM"] as List<GlAccHeadersVM>, repeatTrigger = "acc2" })
+                </div>
+            </div>
+        </div>
+        @*<div class="border-apply" id="acc3" style="padding:0rem 1rem;margin:1rem">
+            <div class="header d-flex justify-content-start align-items-center p-0">
+                <i class="fas fa-2x fa-chevron-down down-arr mr-2" data-toggle="collapse" data-target="#account3"></i>
+                <p class="m-0">@ERP.ResourcePack.Accounts.ApBanks.PdcCollAccount</p>
+                <hr />
+            </div>
+            <div class="collapse show" id="account3">
+                <div class="row">
+                    @Html.Action(nameof(ERP.Web.UI.Controllers.Accounts.GlAccDetailsController.DrawGlAccController), "GlAccDetails",
+                     new { glAccHeadersVMs = ViewData["ListGlAccHeadersVM"] == null ? new List<GlAccHeadersVM>() : ViewData["ListGlAccHeadersVM"] as List<GlAccHeadersVM>, repeatTrigger = "acc3" })
+                </div>
+            </div>
+        </div>*@
+        <div class="border-apply" id="acc4" style="padding:0rem 1rem;margin:1rem">
+            <div class="header d-flex justify-content-start align-items-center p-0">
+                <i class="fas fa-2x fa-chevron-down down-arr mr-2" data-toggle="collapse" data-target="#account4"></i>
+                <p class="m-0">@ERP.ResourcePack.Accounts.ApBanks.ApPdcCollAccount</p>
+                <hr />
+            </div>
+            <div class="collapse show" id="account4">
+                <div class="row">
+                    @Html.Action(nameof(ERP.Web.UI.Controllers.Accounts.GlAccDetailsController.DrawGlAccController), "GlAccDetails",
+                     new { glAccHeadersVMs = ViewData["ListGlAccHeadersVM"] == null ? new List<GlAccHeadersVM>() : ViewData["ListGlAccHeadersVM"] as List<GlAccHeadersVM>, repeatTrigger = "acc4" })
+                </div>
+            </div>
+        </div>
+        <div class="row clearfix">
+            <div class="col-sm-12 text-center">
+                <div class="form-group">
+                    <button id="btnAddDetailRow" onclick="return AddApBankAccounts()" class="btn btn-success">@ERP.ResourcePack.Common.Settings.BtnAddNew</button>
+                    <button style="display:none;" id="btnUpdateDetailRow" onclick="return UpdateApBankAccountsRow()" class="btn btn-info">@ERP.ResourcePack.Common.Settings.BtnUpdate</button>
+                    <button style="display:none;" id="btnCancelDetailRow" onclick="clearFormAdding(); $('#btnCancelDetailRow').hide();$('#btnUpdateDetailRow').hide();$('#btnAddDetailRow').show();" class="btn btn-danger">@ERP.ResourcePack.Common.Settings.BtnCancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@functions {
+    object getHtmlAttributes(bool Disabled, string CssClass, string CssClass2)
+    {
+        if (Disabled) return new { @class = CssClass, Disabled = Disabled };
+        return new { @class = $"{CssClass} {CssClass2}" };
+    }
+}

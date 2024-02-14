@@ -1,0 +1,1235 @@
+﻿@using ERP.ResourcePack.Common
+@{ 
+    string signalRApiUrl = System.Configuration.ConfigurationManager.AppSettings["ApiUrl"].ToString();
+
+    int Place = signalRApiUrl.LastIndexOf("api/");
+    signalRApiUrl = signalRApiUrl.Remove(Place, "api/".Length).Insert(Place, string.Empty);
+}
+@if (HttpContext.Current.Session["token"] != null)
+{
+    <script>
+      const $_token = '@HttpContext.Current.Session["token"].ToString()';
+    </script>
+}
+else
+{
+    <script>
+        const $_token = '';
+    </script>
+}
+
+<script>
+
+
+   const NewStatus = '@ERP.Web.UI.Models.RowStatusDetail.NewStatus';
+   const UpdatedStatus = '@ERP.Web.UI.Models.RowStatusDetail.UpdatedStatus';
+   const DeletedStatus = '@ERP.Web.UI.Models.RowStatusDetail.DeletedStatus';
+   const NoActionStatus = '@ERP.Web.UI.Models.RowStatusDetail.NoActionStatus';
+
+    toastr.options = {
+        "closeButton": false,
+        "debug": false,
+        "newestOnTop": true,
+        "progressBar": true,    
+        "positionClass": "toast-top-right",
+        "preventDuplicates": true,
+        "showDuration": "300",
+        "hideDuration": "1000",
+        "timeOut": "5000",
+        "extendedTimeOut": "1000",
+        "showEasing": "swing",
+        "hideEasing": "linear",
+        "showMethod": "fadeIn",
+        "hideMethod": "fadeOut"
+    };
+
+    const _mainModal = $('#main-modal');
+    const _mainModalTitle = $('#main-modal .modal-title');
+    const _mainModalBody = $('#main-modal .modal-body');
+
+    const $PrefixHostName = '@System.Configuration.ConfigurationManager.AppSettings["PrefixHostName"].ToString()';
+
+    const select2Placeholder = '@Settings.Select2PlaceHolder';
+    const baseUrl = '@System.Configuration.ConfigurationManager.AppSettings["ApiUrl_AJAX"].ToString()services/app';
+    const baseSignalrUrl = '@signalRApiUrl';
+    const lang = '@(Request.Cookies["Lang"] == null ? "ar-EG" : Request.Cookies["Lang"].Value.ToString())';
+    const pageSize = 20;  
+
+    const select2Lang = (lang == "ar-EG") ? select2ArabicLang : select2EnglishLang;
+    const dataTableLang = (lang == "ar-EG") ? dataTableArabicLang : dataTableEnglishLang;
+    const optionsNumFormat = { minimumFractionDigits: 2, maximumFractionDigits: 2 };
+    var $numeric = $(".numeric");
+    $(".datepicker").attr("autocomplete", "off");
+
+    const fireBtnLoader = function () {
+
+        _mainModal.find('button[type="submit"]').attr("disabled", true);
+        //$('#submitLoader').show();
+
+
+    };
+
+    const downBtnLoader = function () {
+
+        _mainModal.find('button[type="submit"]').attr("disabled", false);
+        //$('#submitLoader').hide();
+
+    };
+
+    const clearSearchForm = function () {
+        $('#searchBox').find('input,textarea').val('');
+        $('#searchBox').find('input.datepicker,input.datepicker2').val('').datepicker('update');
+        $('#searchBox').find('select').val('').trigger('change');
+        LoadDataGrid();
+    };
+
+    const _mainModalOprions = {
+        backdrop: 'static',
+        keyboard: false,
+        show: true
+    };
+
+    $(".down-arr").click(function(){
+        $(this).toggleClass("flip");
+    });
+
+
+    var idResize;
+    $(window).resize(function() {
+        clearTimeout(idResize);
+        idResize = setTimeout(doneResizing, 250);
+    });
+    function doneResizing() {
+        $(".sorting_1").removeAttr('colspan');
+    }
+
+    let notificationsMenuList = [];
+    $(document).ready(function () {
+
+
+        setTimeout(function () {
+            $('#leftsidebar .active').parents('.ml-menu').siblings('a').click();
+        }, 100);
+
+        if (localStorage.getItem("choose_skin")) {
+            //console.log('skin is in local storage')
+            $("body").addClass(localStorage.getItem("choose_skin"));
+        } else {
+            //console.log('skin is not in local storage')
+            $("body").addClass("theme-orange");
+            $("body").removeClass("theme-black");
+        }
+        const cssSelect2 = {
+            "position": "absolute",
+            "background-color": "#fff",
+            "font-size": "12px",
+            "margin": "0px 5px",
+            "padding": "0px 10px",
+            "font-weight": "bold",
+            "z-index": "2",
+            "top": "0px",
+        };
+        $('.select2-hidden-accessible').parent().siblings('label').css(cssSelect2);
+        $('.select2-hidden-accessible').parent().parent().siblings('label').css(cssSelect2);
+
+        //on Show _mainModal
+        $( ".modal" ).on('show.bs.modal', function(){
+            $('.select2-hidden-accessible').parent().siblings('label').css(cssSelect2);
+            $('.select2-hidden-accessible').parent().parent().siblings('label').css(cssSelect2);
+        });
+
+        //Mask
+        //$(".currency").inputmask({ alias: "currency", prefix: '' });
+
+        //Mask       
+        $(".currency").inputmask(
+            {
+                alias: "currency",
+                prefix: '',
+                removeMaskOnSubmit: true,
+                autoUnmask: true,
+                oncleared: function (e) {
+                    $numeric.val('');
+                }
+            }
+
+        );
+        
+
+        if ($(".phonenomsk") != null) {
+            $(".phonenomsk").inputmask({
+                mask: "099-9999999",
+                alias: "phoneno",
+                prefix: '',
+                removeMaskOnSubmit: true,
+                autoUnmask: true,
+                oncleared: function (e) {
+                    $numeric.val('');
+                }
+            });
+        }
+        //function getMaskValNum(val) {
+        //    if (typeof val == "string") {
+        //        return Number(val.replace(/,/g, ''));
+        //    } else {
+        //        return val;
+        //    }
+        //}
+
+
+        //Image View
+
+        //$(document).on("click", ".attach-img", function () {
+        //    $('.image-viewer img').attr('src', $(this).attr('src'));
+        //    $('.image-viewer').css('display', 'flex');
+        //});
+
+        //$(document).on("click", ".image-viewer", function () {
+        //    $('.image-viewer img').attr('src', '');
+        //    $('.image-viewer').css('display', 'none');
+        //});
+
+        //idNumberValidation
+        function isDelKey(key) {
+            if (key === 8 || key === 46) {
+                return true;
+            } else {
+                return false;
+            }
+        }
+
+        $(document).on("keypress", ".idNumber", function (evt) {
+            evt = (evt) ? evt : window.event;
+            let charCode = (evt.which) ? evt.which : evt.keyCode;
+            if ((charCode > 31 && (charCode < 48 || charCode > 57)) || $(this).val().length == 18) {
+                return false;
+            }
+
+            if ($(this).val().length == 3 && !isDelKey(charCode)) {
+                $(this).val($(this).val() + '-');
+            } else if ($(this).val().length == 8 && !isDelKey(charCode)) {
+                $(this).val($(this).val() + '-');
+            } else if ($(this).val().length == 16 && !isDelKey(charCode)) {
+                $(this).val($(this).val() + '-');
+            }
+
+        });
+
+    //=====================================================================================================================================================
+    //=================================================================== Notification Section ============================================================
+    //=====================================================================================================================================================
+        $('html').click();
+        let notificationsMenuList = [];
+
+
+        //Notification handler
+        //abp.event.on('abp.notifications.received', function (userNotification) {
+
+        //    changeNotificationCounter();
+        //    getNotificationsMenuList();
+        //    // abp.notifications.showUiNotifyForUserNotification(userNotification);
+
+        //    //Desktop notification
+        //    //Push.create("TESTNotes", {
+        //    //    body: userNotification.notification.data.message,
+        //    //    icon: abp.appPath + 'images/app-logo-small.png',
+        //    //    timeout: 6000,
+        //    //    onClick: function () {
+        //    //        window.focus();
+        //    //        this.close();
+        //    //    }
+        //    //});
+        //});
+
+
+        getNotificationsMenuList();
+
+        //Get Notification Count
+        $.ajax({
+            url: `${baseUrl}/User/GetNewNotificationsCount`,
+            cache: false,
+            type: "GET",
+            headers: {
+                'Authorization': `Bearer ${$_token}`
+            }
+        })
+        .done(function (data) {
+            $('.label-count').text(data.result);
+        })
+        .fail(function () {
+            console.log("error");
+        })
+
+
+        //changeNotificationCounter Funcion
+        function changeNotificationCounter() {
+            $.ajax({
+                url: `${baseUrl}/User/GetNewNotificationsCount`,
+                cache: false,
+                type: "GET",
+                headers: {
+                    'Authorization': `Bearer ${$_token}`
+                }
+            })
+            .done(function (data) {
+                if (!($('.label-count').text() == data.result)) {
+                    $('.label-count').text(data.result);
+                    $('html').trigger('click');
+                    setTimeout(function () {document.getElementById('NotificationSound').play();}, 100);
+                }
+                
+            })
+            .fail(function () {
+                console.log("error");
+            })
+        }
+
+        //Change Notification State Function
+        function changeNotificationState(id) {
+            
+            $.ajax({
+                url: `${baseUrl}/User/ChangeNotificationState?notificationId=${id}`,
+                cache: false,
+                type: "POST",
+                headers: {
+                    'Authorization': `Bearer ${$_token}`
+                },
+                data: JSON.stringify({})
+            })
+                .done(function (data) {
+
+            })
+            .fail(function () {
+                console.log("error");
+            })
+        }
+
+        //getNotificationsMenuList Function
+        function getNotificationsMenuList() {
+            let options = {
+                state: '',
+                skip: '',
+                take: 10
+            }
+            $.ajax({
+                url: `${baseUrl}/User/NotificationsList`,
+                cache: false,
+                type: "POST",
+                headers: {
+                    'Authorization': `Bearer ${$_token}`
+                },
+                data: JSON.stringify(options)
+            })
+            .done(function (data) {
+                notificationsMenuList = data.result;
+                let notfs = '';
+                data.result.forEach((item, i) => {
+                    let notf =
+                        `<li class="notification_link ${(item.state == 0) ? `alert-primary` : ``}" data-href="${item.notification.data.properties.link}" data-id="${item.id}">
+                            <a href="javascript:;">
+                                <span class="menu-info">
+                                    <span class="menu-desc notif">
+                                        <i class="material-icons">access_time</i>
+                                        <time class="timeago" datetime="${item.notification.creationTime}"></time>
+                                    </span>
+                                    <span class="menu-desc">${item.notification.data.message}</span>
+                                </span>
+                            </a>
+                        </li>`;
+
+                    notfs = notfs + notf;
+                });
+                $('#notificationsList').html(notfs);
+                $("time.timeago").timeago();
+                
+                if ($('#tblNotif').length > 0) {
+                    DrawHomeNotificationsTable();
+                };
+
+            })
+            .fail(function () {
+                console.log("error");
+            })
+        }
+
+        //Home Page Notification Table
+        function DrawHomeNotificationsTable() {
+            let notfs = '';
+            notificationsMenuList.forEach((item, i) => {
+                let notf =
+                    `<tr>
+                      <td>${new Date(item.notification.creationTime).toLocaleDateString()}</td>
+                      <td>${item.notification.data.message}</td>
+                      <td><a href="javascript:;"  class="notification_link" data-href="${item.notification.data.properties.link}" data-id="${item.id}">${(lang === 'ar-EG')? `اضغط هنا` : `Click here` }</a></td>
+                    </tr>`;
+
+                notfs = notfs + notf;
+            });
+            $('#tblNotif tbody').html(notfs);
+            $('#tblNotif').DataTable();
+        }
+        
+        $(document).on("click", ".notification_link", function (evt) {
+            let id = $(this).attr('data-id');
+            changeNotificationState(id);
+            window.location.href = $(this).attr('data-href');
+        });
+
+
+    //=====================================================================================================================================================
+    //=====================================================================================================================================================
+
+    });
+
+    function fixNumberFormatting(number) {
+        var nf = Intl.NumberFormat();       
+        return nf.format(number);
+    }
+
+    const toBase64 = file => new Promise((resolve, reject) => {
+
+        const reader = new FileReader();
+
+        reader.readAsDataURL(file);
+        reader.onload = () => resolve(reader.result);
+
+        reader.onerror = error => reject(error);
+    });
+
+    async function ConvertToBase64(idSelector) {
+
+        const file = document.querySelector(`#${idSelector}`).files[0];
+
+        return file === undefined ? '' : await toBase64(file);
+    };
+
+    const ReturnSelect2ObjectForLkpsTypes = function (type) {
+
+        return  {
+            ajax: {
+                url: `${baseUrl}/FndLookupValues/GetFndLookupValuesSelect2`,
+                dataType: 'json',
+                headers: {
+                    'Authorization': `Bearer ${$_token}`
+                },
+                data: function (params) {
+                    params.page = params.page || 1;
+                    return {
+                        type: type,
+                        pageSize: pageSize,
+                        pageNumber: params.page,
+                        searchTerm: params.term,
+                        lang: lang,
+                    };
+                },
+                processResults: function (data, params) {
+
+                    params.page = params.page || 1;
+
+                    return {
+                        results: data.result.results,
+                        pagination: {
+                            more: (params.page * pageSize) < data.result.total
+                        }
+                    };
+                }
+            },
+            placeholder: select2Placeholder,
+            minimumInputLength: 0,
+            allowClear: true,
+            language: select2Lang
+        };
+
+    };
+
+    const ReturnSelect2ObjectForLkpsTypesExcludingIds = function (type,ids) {
+
+        return  {
+            ajax: {
+                url: `${baseUrl}/FndLookupValues/GetFndLookupValuesExcludingIdsSelect2`,
+                dataType: 'json',
+                headers: {
+                    'Authorization': `Bearer ${$_token}`
+                },
+                data: function (params) {
+                    params.page = params.page || 1;
+                    return {
+                        type: type,
+                        ids:ids,
+                        pageSize: pageSize,
+                        pageNumber: params.page,
+                        searchTerm: params.term,
+                        lang: lang,
+                    };
+                },
+                processResults: function (data, params) {
+
+                    params.page = params.page || 1;
+
+                    return {
+                        results: data.result.results,
+                        pagination: {
+                            more: (params.page * pageSize) < data.result.total
+                        }
+                    };
+                }
+            },
+            placeholder: select2Placeholder,
+            minimumInputLength: 0,
+            allowClear: true,
+            language: select2Lang
+        };
+
+    };
+
+    const ReturnSelect2ObjectWithParentFromURL = function (url, selector) {
+
+        return  {
+            ajax: {
+                url: url,
+                dataType: 'json',
+                headers: {
+                    'Authorization': `Bearer ${$_token}`
+                },
+                data: function (params) {
+                    params.page = params.page || 1;
+                    return {
+                        parentId:$(`#${selector}`).find(':selected').val(),
+                        pageSize: pageSize,
+                        pageNumber: params.page,
+                        searchTerm: params.term,
+                        lang: lang
+                    };
+                },
+                processResults: function (data, params) {
+
+                    params.page = params.page || 1;
+
+                    return {
+                        results: data.result.results,
+                        pagination: {
+                            more: (params.page * pageSize) < data.result.total
+                        }
+                    };
+                }
+            },
+            placeholder: select2Placeholder,
+            minimumInputLength: 0,
+            allowClear: true,
+            language: select2Lang
+        };
+
+    };
+
+    const ReturnSelect2ObjectForLkpsTypesWithParent = function (type, selector) {
+
+        return  {
+            ajax: {
+                url: `${baseUrl}/FndLookupValues/GetFndLookupValuesWithParentIdSelect2`,
+                dataType: 'json',
+                headers: {
+                    'Authorization': `Bearer ${$_token}`
+                },
+                data: function (params) {
+                    params.page = params.page || 1;
+                    return {
+                        parentId:$(`#${selector}`).find(':selected').val(),
+                        type: type,
+                        pageSize: pageSize,
+                        pageNumber: params.page,
+                        searchTerm: params.term,
+                        lang: lang
+                    };
+                },
+                processResults: function (data, params) {
+
+                    params.page = params.page || 1;
+
+                    return {
+                        results: data.result.results,
+                        pagination: {
+                            more: (params.page * pageSize) < data.result.total
+                        }
+                    };
+                }
+            },
+            placeholder: select2Placeholder,
+            minimumInputLength: 0,
+            allowClear: true,
+            language: select2Lang
+        };
+
+    };
+
+    const ReturnSelect2ObjectWithParentExcludeIds = function (url,selector,ids) {
+
+        return  {
+            ajax: {
+                url: url,
+                dataType: 'json',
+                headers: {
+                    'Authorization': `Bearer ${$_token}`
+                },
+                data: function (params) {
+                    params.page = params.page || 1;
+                    return {
+                        categoryId: $(`#${selector}`).find(':selected').val(),
+                        ids:ids,
+                        pageSize: pageSize,
+                        pageNumber: params.page,
+                        searchTerm: params.term,
+                        lang: lang
+                    };
+                },
+                processResults: function (data, params) {
+
+                    params.page = params.page || 1;
+
+                    return {
+                        results: data.result.results,
+                        pagination: {
+                            more: (params.page * pageSize) < data.result.total
+                        }
+                    };
+                }
+            },
+            placeholder: select2Placeholder,
+            minimumInputLength: 0,
+            allowClear: true,
+            language: select2Lang
+        };
+
+    };
+
+    const ReturnSelect2ObjectCustomParams = function (url, prms, selectors) {
+
+        return  {
+            ajax: {
+                url: url,
+                dataType: 'json',
+                headers: {
+                    'Authorization': `Bearer ${$_token}`
+                },
+                data: function (params) {
+
+                    if (selectors) {
+
+                        for (var i = 0; i < selectors.length; i++) {
+
+                          const currentSelectorProp = selectors[i].replace(selectors[i].charAt(0), selectors[i].charAt(0).toLowerCase());
+
+                          prms[currentSelectorProp.toString()] = $(`#${selectors[i]}`).find(':selected').val();
+                        }
+
+                    }
+
+
+                    params.page = params.page || 1;
+
+                    const select2Parms = Object.assign(prms,{
+                                pageSize: pageSize,
+                                pageNumber: params.page,
+                                searchTerm: params.term,
+                                lang: lang
+                    });
+
+                    return select2Parms;
+                },
+                processResults: function (data, params) {
+
+                    params.page = params.page || 1;
+
+                    return {
+                        results: data.result.results,
+                        pagination: {
+                            more: (params.page * pageSize) < data.result.total
+                        }
+                    };
+                }
+            },
+            placeholder: select2Placeholder,
+            minimumInputLength: 0,
+            allowClear: true,
+            language: select2Lang,
+            templateSelection: function (data, container) {
+
+                if (selectors && selectors.includes('PmUnitTypeLkpId') && selectors.includes('PropertyId') && data.altText) {
+
+                    $('#units #Amount').val(data.altText.split('-')[1]);
+                    $('#units #AreaSize').val(data.altText.split('-')[0]);
+
+                    $('#units #Amount').parent('.form-line').addClass('focused');
+                    $('#units #AreaSize').parent('.form-line').addClass('focused');
+
+                }
+
+                return data.text;
+            }
+        };
+
+    };
+        
+    const ReturnSelect2ObjectDefault = function (url) {
+
+        return  {
+            ajax: {
+                url: url,
+                dataType: 'json',
+                headers: {
+                    'Authorization': `Bearer ${$_token}`
+                },
+                data: function (params) {
+                    params.page = params.page || 1;
+                    return {
+                            pageSize: pageSize,
+                            pageNumber: params.page,
+                            searchTerm: params.term,
+                            lang: lang
+                    };
+                },
+                processResults: function (data, params) {
+
+                    params.page = params.page || 1;
+
+                    return {
+                        results: data.result.results,
+                        pagination: {
+                            more: (params.page * pageSize) < data.result.total
+                        }
+                    };
+                }
+            },
+            placeholder: select2Placeholder,
+            minimumInputLength: 0,
+            allowClear: true,
+            language: select2Lang
+        };
+
+    };
+
+    const GetDateTimeNow = function () {
+
+        const date = new Date();
+        const month = date.getMonth() + 1;
+        const day = date.getDate();
+
+        return `${(day < 10 ? '0' : '') + day}/${(month < 10 ? '0' : '') + month}/${date.getFullYear()}`;
+    };
+
+    $('<b class="text-danger"> * </b>').appendTo('.label-required');
+    $('<b class="text-danger"> * </b>').appendTo('label[for="AttachmentName"]');
+
+    const loaderIconON = function () {
+
+        $('#icon-loader #fa-sync-alt').fadeIn(500);
+
+    };
+
+    const loaderIconOFF = function () {
+
+        $('#icon-loader #fa-sync-alt').hide();
+
+        $('#icon-loader #fa-check').fadeIn(1000);
+
+        setTimeout(function () {
+            $('#icon-loader #fa-check').fadeOut(1000);
+        }, 2000);
+
+    };
+
+    const GetSystemFormatedValidDate = function (date) {
+
+        let day = date.split('/')[0];
+        let month = date.split('/')[1];
+        const year = date.split('/')[2];
+
+        if (day.toString().length === 1) day = `0${day}`;
+        if (month.toString().length === 1) month = `0${month}`;
+
+        return {
+            date: new Date(`${month}/${day}/${year}`),
+            stringDate: `${day}/${month}/${year}`
+        };
+    };
+
+    const ConvertToSystemFormatedValidDate = function (date) {
+
+        const dateStr = `${date.getDate()}/${date.getMonth() + 1}/${date.getFullYear()}`;
+
+        return GetSystemFormatedValidDate(dateStr)
+    };
+
+    const ClearDetailForm = function (selector) {
+
+        $(`#${selector} input`).val('');
+        $(`#${selector} textarea`).val('');
+
+        $(`#${selector} #DebitAmount`).attr('disabled', false);
+        $(`#${selector} #CreditAmount`).attr('disabled', false);
+
+        $(`#${selector} select:not(.slct2gl)`).val('').trigger('change');
+    };
+
+
+
+    const SubtractDateAndGetDays = function (StartDate, EndDate) {
+        var start = StartDate.datepicker("getDate");
+        var end = EndDate.datepicker("getDate");
+        days = (end - start) / (1000 * 60 * 60 * 24);
+        //alert(Math.round(days));
+
+        return Math.round(days);
+    };
+
+
+
+</script>
+
+<script id="attachmentsDetails">
+
+    const __tblAttachmentsSelector = $('#tblAttachments');
+    const __tblAttachmentsSelectorBody = $('#tblAttachments tbody');
+    const __attachmentsListStr = $('#AttachmentsListStr');
+
+    let _attachments = [], upadatedAttachmentRow, tblAttachmentCounterIndex = 0;
+
+    const AddAttachmentRow = function (filePathSelector) {
+
+        if (validateAttachments(filePathSelector) === false) return;
+
+        const current = {
+            index: ++tblAttachmentCounterIndex,
+            attachmentName: $('#AttachmentName').val(),
+            filePath: $(`#${filePathSelector}`).val(),
+            rowStatus: NewStatus,
+            id: 0
+        };
+
+        _attachments.push(current);
+
+        __attachmentsListStr.val(JSON.stringify(_attachments));
+
+        bindAttachmentTable();
+
+        clearFormAttachment();
+
+        $('.page-loader-wrapper').hide();
+
+
+ 
+    };
+
+    const bindAttachmentTable = function () {
+
+
+        let rows = '';
+
+        const detailArr = _attachments.filter(z => z.rowStatus !== DeletedStatus);
+
+        $.each(detailArr, function (i, item) {
+            let ext = item.filePath.split('.')[item.filePath.split('.').length - 1].toLowerCase();
+            rows += '<tr>';
+
+            rows += `<td>${item.index}</td>`;
+            //debugger;
+
+            if (!window.location.pathname.includes('CrmAboutUs')) {
+                rows += `<td>${item.attachmentName}</td>`;
+            }
+
+            rows += `<td><a target="_blank" href="${item.filePath}" download=${item.attachmentName}><i class="fas fa-download"></i></a></td>`;
+
+            if (primaryEntityKeyId === 0 || trigger !== '@ERP.Front.Helpers.Enums.Common.FormTriggers.Show.ToString()') {
+                rows += `<td><a href="javascript:void(0)" onclick="return DeleteAttachment(${item.index})"><i class="mx-2 fas fa-trash-alt text-danger"></i></a>`;
+
+                rows += `<a class="js-edit-att-row" href="javascript:void(0)" onclick="return GetAttachmentRow(${item.index})"><i class="mx-2 fas fa-edit text-success"></i></a></td>`;
+
+            } else {
+                rows += '<td></td>';
+            }
+            rows += `<td>${(ext == 'png' || ext == 'jpg' || ext == 'jpeg') ? `<a class="attach-gal" href="${item.filePath}"><img class="attach-img" src="${item.filePath}" ></a>` : `<img class="attach-img" src="../AssetsPack/assets/images/file.png" >`}</td>`;
+
+            rows += '</tr>';
+        });
+
+        __tblAttachmentsSelectorBody.html(rows);
+
+        $('#tblAttachments_wrapper th').removeClass('sorting');
+
+        //Image View
+        $('.attach-gal').magnificPopup({
+            type: 'image',
+            gallery: {
+                enabled: true
+            }
+        });
+        //=========
+
+        //debugger;
+
+        if (window.location.pathname.includes('CrmAboutUs')) {
+            //$('#tblAttachments tr th:eq(1)').remove()
+            //$('#tblAttachments tr td:eq(1)').remove()
+        
+
+
+
+
+            //$('#tblAttachments tr th:nth-child(2)').remove()
+            //$('#tblAttachments tr td:nth-child(2)').remove()
+            $('#AttachmentName').parent().parent().parent().remove()
+            $('.js-edit-att-row').remove()
+            $('.js-th-att-name').remove()
+
+
+        }
+
+
+
+    };
+
+    const DeleteAttachment = function (index) {
+
+        const current = _attachments.find(z => z.index === index);
+
+        const indexOfCurrent = _attachments.indexOf(current);
+
+        if (current.id) {
+
+            current.rowStatus = DeletedStatus;
+
+            _attachments.splice(indexOfCurrent, 1, current);
+
+        } else {
+           _attachments.splice(indexOfCurrent, 1);
+        }
+
+        bindAttachmentTable();
+
+        __attachmentsListStr.val(_attachments.length === 0 ? '' : JSON.stringify(_attachments));
+    };
+
+    const LoadAttachments = function () {
+
+        $.ajax({
+            url: `${baseUrl}/${_apiAppService}/GetAllAttachments`,
+            method: 'GET',
+            headers: {  'Authorization': `Bearer ${$_token}`   },
+            data: {  id: primaryEntityKeyId   }
+        }).done(function (data) {
+
+            _attachments = [...data.result];
+
+             $.each(_attachments, function (i, item) {
+                item.index = ++tblAttachmentCounterIndex;
+             });
+
+            bindAttachmentTable();
+
+            __attachmentsListStr.val(JSON.stringify(_attachments));
+
+            //if (window.location.pathname.includes('CrmAboutUs')) {
+            //    $('#tblAttachments tr th:nth-child(2)').remove()
+            //    $('#tblAttachments tr td:nth-child(2)').remove()
+            //    $('#AttachmentName').parent().parent().parent().remove()
+            //    $('.js-edit-att-row').remove()
+            //}
+           
+
+        });
+
+    };
+
+    const validateAttachments = function (filePathSelector) {
+
+        if (!$('#AttachmentName').val() && !window.location.pathname.includes('CrmAboutUs')) {
+            toastr.warning('@ERP.ResourcePack.AidModule.ScPortalRequestStudy.AttachmentName' + ' : ' + '@ERP.ResourcePack.Common.Settings.Required')
+
+            return false;
+        }
+
+        if (!$(`#${filePathSelector}`).val()) {
+
+            toastr.warning('@ERP.ResourcePack.AidModule.ScPortalRequestStudy.PleaseUploadAttachment' + ' : ' + '@ERP.ResourcePack.Common.Settings.Required')
+
+            return false;
+        }
+
+
+    };
+
+    const clearFormAttachment = function () {
+        $('#AttachmentName').val('');
+        $('.file-path').val('');
+        $('#img-container-0').attr('src','../AssetsPack/assets/images/img-previewer.png');
+    };
+
+    const GetAttachmentRow = function (tblIndex) {
+
+        clearFormAttachment();
+
+        const current = _attachments.find(z => z.index === tblIndex);
+
+        $('#btnAddAttachmentRow').hide();
+        $('#btnUpdateAttachmentRow').show();
+        $('#btnCancelAttachmentRow').show();
+        $("#FilePathAttachment").val(current.filePath);
+        $('#AttachmentName').val(current.attachmentName);
+        $('#AttachmentName').parent('.form-line').addClass('focused');
+
+        upadatedAttachmentRow = current;
+    };
+
+    const UpdateAttachmentRow = function (filePathSelector) {
+
+        let current = _attachments.find(z => z.index === upadatedAttachmentRow.index);
+
+        let indexOfCurrent = _attachments.indexOf(_attachments.find(z => z.index === upadatedAttachmentRow.index));
+       
+        if (validateAttachments(filePathSelector) === false) return;
+
+        $('.page-loader-wrapper').show();
+
+        const newRow = {
+            index: current.index,
+            attachmentName: $('#AttachmentName').val(),
+            filePath: $(`#${filePathSelector}`).val(),
+            rowStatus: (upadatedAttachmentRow.id ? UpdatedStatus : NewStatus),
+            id: upadatedAttachmentRow.id
+        };
+
+        upadatedAttachmentRow = undefined;
+
+        _attachments.splice(indexOfCurrent, 1, newRow);
+
+        $('#btnAddAttachmentRow').show();
+        $('#btnUpdateAttachmentRow').hide();
+        $('#btnCancelAttachmentRow').hide();
+
+        clearFormAttachment();
+
+        __attachmentsListStr.val(JSON.stringify(_attachments));
+
+        bindAttachmentTable();
+
+        $('.page-loader-wrapper').hide();
+
+    };
+
+</script>
+
+<script id="GenericAttachmentComponent">
+   
+    async function AJAXAttachmentComponentSubmit(hidenFilePathId, imgId, fileUploaderId,fName ) {
+        debugger;
+        const fileUploaderSelector = $(`#${fileUploaderId}`)[0];
+  
+
+
+        if (fileUploaderSelector.files.length === 0) {
+
+            toastr.warning('@ERP.ResourcePack.AidModule.ScPortalRequestStudy.PleaseUploadAttachment : @ERP.ResourcePack.Common.Settings.Required');
+            return false;
+        }
+
+        $('.page-loader-wrapper').show();
+
+        const formData = new FormData();
+
+        formData.append('file', fileUploaderSelector.files[0]);
+
+        if (fName) {
+            //debugger;
+        $(`#${fName}`).text(fileUploaderSelector.files.item(0).name)
+
+            $(`#${fName}`).show();
+
+        }
+
+
+        try {
+
+            await fetch(`${baseUrl}/${_apiAppService}/UploadAttach`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${$_token}`
+                },
+                body: formData
+            }).then(response => response.json()).then(data => {
+
+                if (hidenFilePathId) {
+                    $(`#${hidenFilePathId}`).val(data.result);
+                }
+
+                if (imgId) {
+                    $(`#${imgId}`).attr('src', data.result);
+                }
+
+                $('.page-loader-wrapper').hide();
+
+                $(`#${fileUploaderId}`).val('');
+            });
+
+        } catch (error) {
+
+            console.error('Error:', error);
+            $('.page-loader-wrapper').hide();
+        }
+    };
+
+
+    const ConfirmAttachmentUpload = function (hidenFilePathId, imgId, fileUploaderId, fName = '') {
+
+        AJAXAttachmentComponentSubmit(hidenFilePathId, imgId, fileUploaderId, fName);
+    };
+
+</script>
+
+<script>
+
+    $(function () {
+        IsFavPage();
+        GetFileVideoPage();
+    });
+
+    const IsFavPage = function () {
+        FavPageController(`${baseUrl}/Home/IsPageFavorite`);
+    };
+
+    const ToggleFavPage = function () {
+        FavPageController(`${baseUrl}/Home/ToggleFavoritePage`);
+    };
+
+    const FavPageController = function (url) {
+
+        const pageName = GetPageName();
+
+        $.ajax({
+            url: url,
+            method: 'GET',
+            headers: {
+                Authorization: `bearer ${$_token}`
+            },
+            data: {
+                pageName: pageName === '' ? 'home' : pageName
+            }
+        }).done(function (response) {
+
+            if (response.result === true) {
+                $('#btnFavPage').find('span').removeClass('far').addClass('fas');
+            } else {
+                $('#btnFavPage').find('span').removeClass('fas').addClass('far');
+            }
+
+        }).fail(function (error) { });
+    };
+
+    const GetFileVideoPage = function () {
+        
+        const pageName = GetPageName();
+
+        $.ajax({
+            url: `${baseUrl}/Home/GetFileVideoPage`,
+            method: 'GET',
+            headers: {
+                Authorization: `bearer ${$_token}`
+            },
+            data: {
+                pageName: pageName === '' ? 'home' : pageName
+            }
+        }).done(function (response) {
+
+            console.log(response);
+
+            if (response.result) {
+
+                const data = response.result;
+                const _btnPageFile = $('#btnPageFile'), _btnPageFileVideo = $('#btnPageFileVideo');
+
+                if (lang === 'ar-EG') {
+
+                    if (data.docPathAr) {
+                        _btnPageFile.find('span').removeClass('far').addClass('fas');
+                        _btnPageFile.attr('href', data.docPathAr);
+                    }
+
+                    if (data.videoUrlAr) {
+                        _btnPageFileVideo.find('span').removeClass('far').addClass('fas');
+                        _btnPageFileVideo.attr('href', data.videoUrlAr);
+                    }
+                }
+                else {
+                    if (data.docPathEn) {
+                        _btnPageFile.find('span').removeClass('far').addClass('fas');
+                        _btnPageFile.attr('href', data.docPathEn);
+                    }
+
+                    if (data.videoUrlEn) {
+                        _btnPageFileVideo.find('span').removeClass('far').addClass('fas');
+                        _btnPageFileVideo.attr('href', data.videoUrlEn);
+                    }
+                }
+            } else {
+                $('#btnPageFileVideo').find('span').removeClass('fas').addClass('far');
+                $('#btnPageFile').find('span').removeClass('fas').addClass('far');
+            }
+
+        }).fail(function (error) { });
+
+    };
+
+    const GetPageName = function () {
+
+        const arrPath = window.location.pathname.split('/').filter(item => item.toLowerCase() != 'index');
+
+        return arrPath[arrPath.length - 1];
+    };
+
+</script>
+
+<script id="Custom_Functions_Created_By_Amr">
+     
+    var getUrlParameter = function getUrlParameter(sParam) {
+        var sPageURL = window.location.search.substring(1),
+            sURLVariables = sPageURL.split('&'),
+            sParameterName,
+            i;
+
+        for (i = 0; i < sURLVariables.length; i++) {
+            sParameterName = sURLVariables[i].split('=');
+
+            if (sParameterName[0] === sParam) {
+                return sParameterName[1] === undefined ? true : decodeURIComponent(sParameterName[1]);
+            }
+        }
+    };
+
+    function GetDetailsFormModal(trigger, IdSelsctor, title) {
+            $('.page-loader-wrapper').css("display", "block");
+            $(IdSelsctor).show();
+              $('.page-loader-wrapper').css("display", "none");
+                _mainModalTitle.text(`${title}`);
+                _mainModalBody.html($(IdSelsctor).html());
+
+                if (trigger === '@ERP.Front.Helpers.Enums.Common.FormTriggers.Update' || trigger === '@ERP.Front.Helpers.Enums.Common.FormTriggers.Show') {
+
+                    let _inputSelector = $('#main-modal input.form-control');
+
+                    _inputSelector.parent('.form-line').addClass('focused');
+                    $('#main-modal textarea.form-control').parent('.form-line').addClass('focused');
+
+                    if (trigger === '@ERP.Front.Helpers.Enums.Common.FormTriggers.Show') {
+                        _mainModal.find('input,select,textarea').prop('disabled', true);
+                        _mainModal.find('button[type="submit"]').remove();
+                    }
+                }
+
+                _mainModal.modal(_mainModalOprions);
+        }
+
+
+    function SetSelect2value(selector, Id, Text) {
+        var $newOption = $("<option selected='selected'></option>").val(Id).text(Text)
+        $(`#${selector}`).append($newOption).trigger('change');
+    }
+</script>

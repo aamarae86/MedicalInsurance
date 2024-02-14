@@ -1,0 +1,785 @@
+﻿@using ERP.ResourcePack.AidModule
+@using ERP.Web.UI.Controllers.AidModule
+@using ERP.Authorization;
+@{
+    string permissionsStr = TempData["Permissions"].ToString();
+    string encUpdateTrigger = ERP.Front.Helpers.Enums.Common.EncUpdate;
+    string encInsertTrigger = ERP.Front.Helpers.Enums.Common.EncInsert;
+    string encShowTrigger = ERP.Front.Helpers.Enums.Common.EncShow;
+}
+
+
+@if (permissionsStr.Contains(PermissionNames.Pages_ScPortalRequestMgrDecision_Post))
+{
+    <script>
+        const PostAjax = function (id) {
+
+            bootbox.confirm({
+                 message: _booBoxMessagePosting,
+                 buttons: bootBoxDefaultBtns,
+                 callback: function (result) {
+
+                     if (result) {
+
+                     $('.page-loader-wrapper').show();
+
+                        const data = {
+                            id: id,
+                            lang: lang
+                        };
+
+                        $.ajax({
+                            url: `${baseUrl}/ScPortalRequestMgrDecision/ScScPortalRequestMgrDecisionPost`,
+                            type: 'POST',
+                            data: JSON.stringify(data),
+                            headers:
+                            {
+                                'Content-Type': 'application/json',
+                                'Authorization': `Bearer ${$_token}`
+                            },
+                        }).done(function (response) {
+                            $('.page-loader-wrapper').hide();
+
+                            if (response.result.finalStatues == 'F') {
+                                toastr.warning(response.result.reason);
+                            }
+                            else {
+                                toastr.success(response.result.reason);
+
+                                if (formView) {
+
+                                    setTimeout(function () {
+                                        window.location.href = $PrefixHostName + '/ScPortalRequestMgrDecision';
+                                    }, 100);
+
+                                } else {
+                                    LoadDataGrid();
+                                }
+                            }
+
+                        }).fail(function (response) {
+                            toastr.error(response);
+                            $('.page-loader-wrapper').hide();
+                        });
+
+                    }
+
+                 }
+            });
+
+
+        };
+
+        const RefuseAjax = function (id) {
+
+            if ($('#RefuseReason').val() && $('#RefuseReasonDesc').val()) {
+
+                bootbox.confirm({
+                    message: _booBoxMessageRefusing,
+                    buttons: bootBoxDefaultBtns,
+                    callback: function (result) {
+
+                        if (result) {
+
+                            const data = {
+                                Id: id,
+                                RefuseLkpId: $('#RefuseReason').val(),
+                                RefuseDescription: $('#RefuseReasonDesc').val()
+                            };
+
+                            $.ajax({
+                                url: `${baseUrl}/ScPortalRequestMgrDecision/PostRefuse`,
+                                type: 'POST',
+                                data: JSON.stringify(data),
+                                headers:
+                                {
+                                    'Content-Type': 'application/json',
+                                    'Authorization': `Bearer ${$_token}`
+                                },
+                            }).done(function (response) {
+                                $('#RefuseReason').val('').trigger('change');
+                                $('#RefuseReasonDesc').val('')
+                                console.log(response);
+
+                                if (response.result.finalStatues == 'F') {
+                                    toastr.warning(response.result.reason);
+                                }
+                                else {
+                                    toastr.success(response.result.reason);
+
+                                    if (formView) {
+
+                                        setTimeout(function () {
+                                            window.location.href = $PrefixHostName + '/ScPortalRequestMgrDecision';
+                                        }, 100);
+
+                                    } else {
+                                        LoadDataGrid();
+                                    }
+                                }
+                            }).fail(function (response) {
+                                console.log(response);
+                                toastr.error(response.error.message);
+                            });
+                        }
+
+                    }
+                });
+
+            } else {
+                toastr.warning('@ERP.ResourcePack.Accounts.ArCustomers.SelectRefuse');
+            }
+        };
+
+        const ManagerRefuseResaon = function (id) {
+
+            if (!$('#managerRefuseReason').val()) {
+                toastr.warning('@ERP.ResourcePack.Accounts.ArCustomers.RefuseReason');
+                return;
+            }
+
+            bootbox.confirm({
+                message: _booBoxMessageForEdit,
+                buttons: bootBoxDefaultBtns,
+                callback: function (result) {
+
+                    if (result) {
+
+                        const data = {
+                            Id: $('#ScPortalRequestMgrDecisionId').val(),
+                            ManagerRefuseResaon: $('#managerRefuseReason').val()
+                        };
+
+                        $.ajax({
+                            url: `${baseUrl}/ScPortalRequestMgrDecision/PostManagerRefuseReason`,
+                            type: 'POST',
+                            data: JSON.stringify(data),
+                            headers:
+                            {
+                                'Content-Type': 'application/json',
+                                'Authorization': `Bearer ${$_token}`
+                            },
+                        }).done(function (response) {
+
+                            $('#managerRefuseResaon').val('')
+
+                            if (response.result.finalStatues == 'F') {
+                                toastr.warning(response.result.reason);
+                            }
+                            else {
+                                toastr.success(response.result.reason);
+
+                                if (formView) {
+
+                                    setTimeout(function () {
+                                        window.location.href = $PrefixHostName + '/ScPortalRequestMgrDecision';
+                                    }, 100);
+
+                                } else {
+                                    LoadDataGrid();
+                                }
+                            }
+                        }).fail(function (response) {
+                            toastr.error(response.error.message);
+                        });
+                    }
+
+                }
+            });
+        };
+
+    </script>
+}
+else
+{
+    <script>
+        const PostAjax = function (id) { };
+        const RefuseAjax = function (id) { };
+        const ManagerRefuseResaon = function (id) { };
+    </script>
+}
+<script>
+    const _mainController = "ScPortalRequestMgrDecision"
+
+    $(function () {
+        $('#searchBox #StatusLkpIdSearch').append($("<option selected='selected'></option>").val(172)
+            .text(lang === 'ar-EG' ? 'جديد' :'New' )).trigger('change'),
+
+            LoadDataGrid();
+
+        $('#ScPortalRequestMgrDecision').addClass('active');
+
+    });
+
+    const _loadDataUrl = `${$PrefixHostName}/${_mainController}/@nameof(ScCampainsController.LoadDataGrid)`;
+    const _tblSelector = $('#tblScPortalRequestMgrDecision');
+    const _tblLoader = $('#tblLoader');
+
+    const _permissions = '@permissionsStr';
+    const _updatePermission = '@PermissionNames.Pages_ScPortalRequestMgrDecision_Update';
+    const _deletePermission = '@PermissionNames.Pages_ScPortalRequestMgrDecision_Delete';
+    const _postPermission = '@PermissionNames.Pages_ScPortalRequestMgrDecision_Post';
+    const _postStatus = @Convert.ToInt64(ERP.Front.Helpers.Enums.Common.ScCampains.Posted);
+    const _postDetailStatus = @Convert.ToInt64(ERP.Front.Helpers.Enums.Common.ScCampainsDetail.Posted);
+    const _deliveredDetailStatus = @Convert.ToInt64(ERP.Front.Helpers.Enums.Common.ScCampainsDetail.Delivered);
+    const _newDetailStatus = @Convert.ToInt64(ERP.Front.Helpers.Enums.Common.ScCampainsDetail.New);
+    const _NewStatus = @Convert.ToInt64(ERP.Front.Helpers.Enums.Common.ScPortalRequestMgrDecision.New);
+
+    var OnBegin = function (response) {
+        fireBtnLoader();
+    };
+
+    var OnSuccess = function (response) {
+
+        $('#btnSubmition').prop('disabled', false);
+
+        if (response.success) {
+
+            if (response.customRestResult.trigger === '@ERP.Front.Helpers.Enums.Common.FormTriggers.Insert') {
+
+                toastr.success(response.customRestResult.message);
+
+                setTimeout(function () {
+                    window.location.href = $PrefixHostName + '/ScPortalRequestMgrDecision';
+                }, 200);
+
+            }
+            else if (response.customRestResult.trigger === '@ERP.Front.Helpers.Enums.Common.FormTriggers.Update') {
+
+                toastr.success(response.customRestResult.message);
+
+                setTimeout(function () {
+                    window.location.href = $PrefixHostName + '/ScPortalRequestMgrDecision';
+                }, 200);
+
+            }
+            else {
+                toastr.error(response.customRestResult.message);
+            }
+
+        } else {
+                toastr.error(response.error.message);
+        }
+
+    };
+
+    var OnComplete = function (response) {
+        downBtnLoader();
+    };
+
+    var OnFailure = function (response) {
+        downBtnLoader();
+    };
+
+    const hrefOnClickEvent = function (ReqId, StudyId) {
+        window.open(`${$PrefixHostName}/ScPortalRequests/FormView?id=${ReqId}&t=@encShowTrigger`, '_blank');
+        //window.open(`${$PrefixHostName}/ScPortalRequestStudy/FormView?id=${StudyId}&t=@encShowTrigger`, '_blank');
+    };
+
+    const hrefOnClickEventUser = function (ReqId, StudyId) {
+        window.open(`${$PrefixHostName}/PortalUserData/FormView?id=${ReqId}&t=@encShowTrigger`, '_blank');
+        //window.open(`${$PrefixHostName}/ScPortalRequestStudy/FormView?id=${StudyId}&t=@encShowTrigger`, '_blank');
+    };
+
+
+    const LoadDataGrid = function () {
+
+        $('#tblLoader').show();
+
+        const params = {
+            DecisionNumer: $('#searchBox #DecisionNumer').val(),
+            FromDecisionDate: $('#searchBox #FromStudyDate').val(),
+            ToDecisionDate: $('#searchBox #ToStudyDate').val(),
+            StatusLkpId: $('#searchBox #StatusLkpIdSearch').find(':selected').val(),
+            PortalRequestStudyId: $('#searchBox #PortalRequestIdSearch').find(':selected').val(),
+            CaseNameId: $('#searchBox #CaseNameIdSearch').find(':selected').val(),
+        };
+
+        const columns = [
+            {
+                "data": "result.data.id",
+                'render': function (data, type, row, meta) {
+                    return meta.row + meta.settings._iDisplayStart + 1;
+                }
+            },
+            {
+                "data": "DecisionNumer",
+                "name": "DecisionNumer",
+                "autoWidth": true
+            },
+             {
+                "data": "DecisionDate",
+                "name": "DecisionDate",
+                "autoWidth": true
+            },
+            {
+                "data": null,
+                "autoWidth": true,
+                "render": function (d, t, row) {
+
+                    if (row.ScPortalRequestStudy && row.ScPortalRequestStudy.ScPortalRequest)
+                        return `<a style="color:#3443434;text-decoration:underline" href="javascript:void(0);" onclick="hrefOnClickEvent('${row.ScPortalRequestStudy.ScPortalRequest.EncId}','${row.requestStudyEncId}')">${row.ScPortalRequestStudy.ScPortalRequest.PortalRequestNumber == null ? '' : row.ScPortalRequestStudy.ScPortalRequest.PortalRequestNumber}</a>`;
+
+                    return '';
+                }
+            },
+            {
+                "data": null,
+                "autoWidth": true,
+                "render": function (d, t, row) {
+                    if (row.ScPortalRequestStudy && row.ScPortalRequestStudy.ScPortalRequest && row.ScPortalRequestStudy.ScPortalRequest.PortalUser)
+                        return `<a style="color:#3443434;text-decoration:underline" href="javascript:void(0);" onclick="hrefOnClickEventUser('${row.ScPortalRequestStudy.ScPortalRequest.PortalUser.EncPortalUserDataId}','${row.requestStudyEncId}')">${row.ScPortalRequestStudy.ScPortalRequest.PortalRequestNumber == null ? '' : row.ScPortalRequestStudy.ScPortalRequest.Name}</a>`;
+                    if (row.ScPortalRequestStudy && row.ScPortalRequestStudy.ScPortalRequest) return lang === 'ar-EG' ? row.ScPortalRequestStudy.ScPortalRequest.Name : row.ScPortalRequestStudy.ScPortalRequest.Name;
+
+                    return '';
+                }
+            },
+            {
+                "data": null,
+                "autoWidth": true,
+                "render": function (d, t, row) {
+                    if (row.FndLookupValuesStatusLkpId)   return lang === 'ar-EG' ? row.FndLookupValuesStatusLkpId.NameAr : row.FndLookupValuesStatusLkpId.NameEn;
+
+                    return '';
+                }
+            },
+            {
+                "data": null,
+                "sortable": false,
+                "render": function (data, type, row) {
+
+                    let formAction = `${$PrefixHostName}/${_mainController}/@nameof(ScPortalRequestMgrDecisionController.ScPortalRequestMgrDecisionForm)`;
+
+                    let formTitle = '@ERP.ResourcePack.Accounts.ArCustomers.ScPortalRequestMgrDecision';
+                    let btns = '';
+
+                    if (_permissions.includes(_postPermission) & row.StatusLkpId == _NewStatus) {
+                        btns += `<a href="javascript:void(0)" onclick="PostAjax(${row.Id})" title="@ERP.ResourcePack.Common.Settings.Post"><i class="mx-2 fas fa-check-circle text-info"></i></a>`;
+                    }
+
+                    if (_permissions.includes(_postPermission) & row.StatusLkpId == _NewStatus) {
+                        btns += `<a href="javascript:void(0)" onclick="Refuse(${row.Id})" data-toggle="modal" data-target="#myModal" title="@ERP.ResourcePack.Common.Settings.Refuse"><i class="mx-2 fas fa-minus-circle text-danger"></i></a>`;
+                    }
+
+                    if (_permissions.includes(_postPermission) & row.StatusLkpId == _NewStatus) {
+                        btns += `<a href="javascript:void(0)" onclick="$('#ScPortalRequestMgrDecisionId').val(${row.Id})"  data-toggle="modal" data-target="#myModal-forEdit" title="@ERP.ResourcePack.Common.Settings.RefuseForEdit"><i class="mx-2 fas fa-minus text-danger"></i></a>`;
+                    }
+
+                    if (_permissions.includes(_updatePermission) && row.StatusLkpId != _postStatus && row.StatusLkpId == _NewStatus) {
+                        btns += `<a href="${$PrefixHostName}/ScPortalRequestMgrDecision/FormView?id=${row.EncId}&t=@encUpdateTrigger"><i class="mx-2 fas fa-edit text-info"></i></a>`;
+                    }
+
+                    btns += `<a href="${$PrefixHostName}/ScPortalRequestMgrDecision/FormView?id=${row.EncId}&t=@encShowTrigger"><i class="mx-2 fas fa-eye text-info"></i></a>`;
+
+                    btns += `<a href="javascript:void(0);" onclick="return print1('${$PrefixHostName}/PortalUserData/PrintFndUsersScreen','${row.ScPortalRequestStudy.ScPortalRequest.EncId}','${lang}')" title="@ERP.ResourcePack.Common.Settings.Print"><i class="mx-2 fas fa-print text-success"></i></a>`;
+
+                    const _auditedPermission = '@PermissionNames.Pages_ScPortalRequestMgrDecision_Audit';
+
+                    if (_permissions.includes(_auditedPermission)) {
+
+                        row.permission = _auditedPermission;
+
+                        btns += GetAuditedButton(row);
+                    }
+
+                    return btns;
+                }
+            }
+        ];
+
+        const dtObj = {
+            "processing": true,
+            "serverSide": true,
+            "filter": false,
+            "orderMulti": false,
+            "language": dataTableLang,
+            "ajax": {
+                "url": _loadDataUrl,
+                "type": "POST",
+                "datatype": "json",
+                "data": params,
+                "complete": function () {
+                      _tblLoader.hide();
+                }
+            },
+            "columns": columns,
+            "initComplete": function () {
+                $('[data-toggle="tooltip"]').tooltip();
+            }
+
+        };
+
+        _tblSelector.dataTable().fnDestroy();
+        _tblSelector.DataTable(dtObj).on('draw', function () { $('[data-toggle="tooltip"]').tooltip(); });
+
+        setTimeout(function () {
+            $(".sorting_1").removeAttr('colspan');
+        }, 500);
+    };
+
+    $('#btnSubmition').on('click', function () {
+
+        if ($('#mainForm').valid()) {
+
+            $(this).prop('disabled', true);
+
+            $('.page-loader-wrapper').show();
+
+            $('#mainForm').submit();
+
+        } else {
+            $(this).prop('disabled', false);
+
+            $('.page-loader-wrapper').hide();
+        }
+
+    });
+
+    $('#searchBox #StatusLkpIdSearch').select2(ReturnSelect2ObjectForLkpsTypes('@ERP.Front.Helpers.Enums.Common.FndLkpsTypes.ScPortalRequestMgrDecisionStatues.ToString()'))
+    $('#OtherAidLkpId').select2(ReturnSelect2ObjectForLkpsTypes('@ERP.Front.Helpers.Enums.Common.FndLkpsTypes.ScOtherAid.ToString()'));
+    $('#ElectronicTypeLkpId').select2(ReturnSelect2ObjectForLkpsTypes('@ERP.Front.Helpers.Enums.Common.FndLkpsTypes.ScPRMgrDecisionElectronicAidType.ToString()'));
+
+    $('#PortalRequestIdSearch').select2({
+        ajax: {
+            url: `${baseUrl}/ScPortalRequest/GetScPortalRequestForMgrSelect2`,
+            dataType: 'json',
+            headers: {
+                'Authorization': `Bearer ${$_token}`
+            },
+            data: function (params) {
+                params.page = params.page || 1;
+                return {
+                    pageSize: pageSize,
+                    pageNumber: params.page,
+                    searchTerm: params.term,
+                    lang: lang
+                };
+            },
+            processResults: function (data, params) {
+
+                params.page = params.page || 1;
+                return {
+                    results: data.result.results,
+                    pagination: {
+                        more: (params.page * pageSize) < data.result.total
+                    }
+                };
+            }
+        },
+        placeholder: select2Placeholder,
+        minimumInputLength: 0,
+        allowClear: true,
+        language: select2Lang,
+        templateSelection: function (data, container) {
+
+          $(data.element).attr('data-relatives-count', data.altText);
+
+          return data.text;
+        }
+    });
+
+    $('#CaseNameIdSearch').select2(ReturnSelect2ObjectDefault(`${baseUrl}/PortalUserData/GetUnifiedPortalUsersFromPortalUsersDataSelect2`));
+
+    var RefuseId;
+    function Refuse(Id) {
+        RefuseId = Id;
+    };
+
+    const print1 = function (url, id, lang) {
+        const data = { id: id, lang: lang, type: "c" };
+        openModal(data, url);
+    };
+
+</script>
+
+<div id="myModal" class="modal fade" role="dialog">
+    <div class="modal-dialog" style="max-width:65%">
+
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">@ERP.ResourcePack.Accounts.ArCustomers.ScPortalRequestMgrDecision</h4>
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="col-sm-6">
+                    <label class="form-label">@ERP.ResourcePack.Accounts.ArCustomers.RefuseReason</label>
+                    <div class="form-group form-float">
+                        <div class="form-group">
+                            @Html.DropDownList("RefuseReason", Enumerable.Empty<SelectListItem>(), new { @id = "RefuseReason", @class = "form-control" })
+                        </div>
+                    </div>
+                </div>
+                <div class="col-sm-6">
+                    <label class="form-label">@ERP.ResourcePack.Accounts.ArCustomers.Desc</label>
+                    <div class="form-group form-float">
+                        <div class="form-group">
+                            @Html.TextBox("RefuseReasonDesc", "", new { @id = "RefuseReasonDesc", @class = "form-control" })
+                        </div>
+                    </div>
+                </div>
+                <div class="col-sm-6">
+                    <button type="button" id="BtnRefus" onclick="RefuseAjax(RefuseId)" class="btn btn-success mt-4" data-dismiss="modal">Refuse</button>
+                </div>
+
+                <script>
+
+                  $('#RefuseReason').select2(ReturnSelect2ObjectForLkpsTypes('@ERP.Front.Helpers.Enums.Common.FndLkpsTypes.ScPortalRequestMgrDecisionRefuseReason.ToString()'))
+
+                </script>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-danger" data-dismiss="modal">@ERP.ResourcePack.Common.Settings.BtnClose</button>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<script name="ScPRMgrDecisionElectronicAid">
+
+    const _ScPRMgrDecisionElectronicAidelector = $('#tblScPRMgrDecisionElectronicAid'), _listElectronicAid = $('#MgrDecisionElectronicAidsListStr');
+
+    let _electronicAidArr = [], updatedScPRMgrDecisionElectronicAidRow, tblCounterVisaIndex = 0 ;
+
+    const fillElectronicAid = function () {
+
+        if (validatorElectronicAid() === false) return;
+
+        const current = {
+            index: ++tblCounterVisaIndex,
+            electronicTypeLkpId: $('#ElectronicTypeLkpId').find(':selected').val(),
+            electronicTypeLkpNameAr: $('#ElectronicTypeLkpId').find(':selected').text(),
+            electronicTypeLkpNameEn: $('#ElectronicTypeLkpId').find(':selected').text(),
+            amount: $('#ElectronicAmount').val(),
+            rowStatus: NewStatus,
+            id: 0
+        };
+
+        return current;
+    };
+
+    const AddScPRMgrDecisionElectronicAid = function () {
+
+        const current = fillElectronicAid();
+
+        if (current === undefined) return;
+
+        _electronicAidArr.push(current);
+
+        _listElectronicAid.val(JSON.stringify(_electronicAidArr));
+
+        BindElectronicAidTable();
+
+        clearFormVisaAdding();
+
+        CalcElcAmount();
+
+        ValidateElectronicInputs();
+    };
+
+    const BindElectronicAidTable = function () {
+
+        const detailArr = _electronicAidArr.filter(z => z.rowStatus !== DeletedStatus);
+
+        const columns = [
+            { 'data': 'index' },
+            { 'data': lang === 'ar-EG' ? 'electronicTypeLkpNameAr' : 'electronicTypeLkpNameEn' },
+            { 'data': 'amount' },
+            {
+                'data': null,
+                'searchable': false,
+                'ordering': false,
+                'sorting': false,
+                'render': function (d, t, row) {
+
+                    let rows = '';
+
+                    if (primaryEntityKeyId === 0 || trigger !== '@ERP.Front.Helpers.Enums.Common.FormTriggers.Show.ToString()') {
+
+                        rows += `<td><a href="javascript:void(0)" onclick="return DeleteElectronicAid(${row.index})"><i class="mx-2 fas fa-trash-alt text-danger"></i></a>`;
+                        rows += `<a href="javascript:void(0)" onclick="return GetElectronicAidRow(${row.index})"><i class="mx-2 fas fa-edit text-success"></i></a></td>`;
+                    }
+                    else {
+                        rows += '<td></td>';
+                    }
+
+                    return rows;
+                }
+            }
+        ];
+
+        const dtObj = {
+            data: detailArr,
+            retrieve: true,
+            language: dataTableLang,
+            columns: columns,
+            drawCallback: function (c, v, b) {}
+        };
+
+        setTimeout(function () {
+
+            _ScPRMgrDecisionElectronicAidelector.dataTable().fnDestroy();
+            _ScPRMgrDecisionElectronicAidelector.DataTable(dtObj).on('draw', function () { $('[data-toggle="tooltip"]').tooltip(); });
+
+        }, 100);
+    };
+
+    const DeleteElectronicAid = function (index)  {
+
+        const current = _electronicAidArr.find(z => z.index === index);
+
+        const indexOfCurrent = _electronicAidArr.indexOf(current);
+
+        if (!current.id) {
+
+           _electronicAidArr.splice(indexOfCurrent, 1);
+
+        } else {
+
+            current.rowStatus = DeletedStatus;
+
+           _electronicAidArr.splice(indexOfCurrent, 1,current);
+        }
+
+        BindElectronicAidTable();
+
+        _listElectronicAid.val(_electronicAidArr.length === 0 ? '' : JSON.stringify(_electronicAidArr));
+
+        CalcElcAmount();
+        ValidateElectronicInputs();
+    };
+
+    const LoadElectronicAid = function () {
+
+        $.ajax({
+            url: `${baseUrl}/ScPortalRequestMgrDecision/GetAllScPRMgrDecisionElectronicAid`,
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${$_token}`
+            },
+            data: {
+                id: primaryEntityKeyId
+            }
+        }).done(function (data) {
+
+            _electronicAidArr = [...data.result];
+
+            tblCounterVisaIndex = 0;
+
+            $.each(_electronicAidArr, function (i, item) {
+                item.index = ++tblCounterVisaIndex;
+            });
+
+            BindElectronicAidTable();
+
+            _listElectronicAid.val(JSON.stringify(_electronicAidArr));
+
+            ValidateElectronicInputs();
+        });
+
+    };
+
+    const GetElectronicAidRow = function (tblIndex) {
+
+        clearFormVisaAdding();
+
+        $('#btnAddScPRMgrDecisionElectronicAidRow').hide();
+        $('#btnUpdateScPRMgrDecisionElectronicAidRow').show();
+        $('#btnCancelScPRMgrDecisionElectronicAidRow').show();
+
+        const current = _electronicAidArr.find(z => z.index === tblIndex);
+
+        $(`#ElectronicTypeLkpId`).append($("<option selected='selected'></option>")
+            .val(current.electronicTypeLkpId).text(lang === 'ar-EG' ? current.electronicTypeLkpNameAr : current.electronicTypeLkpNameEn)).trigger('change');
+
+        $('#ElectronicAmount').val(current.amount);
+        $('#ElectronicAmount').parent('.form-line').addClass('focused');
+
+        updatedScPRMgrDecisionElectronicAidRow = current;
+    };
+
+    const UpdateScPRMgrDecisionElectronicAidRow = function () {
+
+        let current = _electronicAidArr.find(z => z.index === updatedScPRMgrDecisionElectronicAidRow.index);
+
+        let indexOfCurrent = _electronicAidArr.indexOf(_electronicAidArr.find(z => z.index === updatedScPRMgrDecisionElectronicAidRow.index));
+
+        const newRow = fillElectronicAid();
+
+        if (newRow === undefined) return;
+
+        newRow.index = current.index;
+        newRow.id = updatedScPRMgrDecisionElectronicAidRow.id;
+        newRow.rowStatus =  !updatedScPRMgrDecisionElectronicAidRow.id ? NewStatus : UpdatedStatus;
+
+        _electronicAidArr.splice(indexOfCurrent, 1,newRow);
+
+        $('#btnAddScPRMgrDecisionElectronicAidRow').show();
+        $('#btnUpdateScPRMgrDecisionElectronicAidRow').hide();
+        $('#btnCancelScPRMgrDecisionElectronicAidRow').hide();
+
+        clearFormVisaAdding();
+
+        _listElectronicAid.val(JSON.stringify(_electronicAidArr));
+
+        CalcElcAmount();
+        ValidateElectronicInputs();
+
+        setTimeout(function () {
+            BindElectronicAidTable();
+        }, 100);
+    };
+
+    const clearFormVisaAdding = function () {
+        $('#MgrDecisionElectronicAids input').val('');
+        $('#MgrDecisionElectronicAids select').val('').trigger('change');
+    };
+
+    const validatorElectronicAid = function () {
+
+        if (!$('#ElectronicTypeLkpId').find(':selected').val()) {
+            toastr.warning('@ERP.ResourcePack.AidModule.ScCommittee.ElectronicTypeLkpId' + ' : ' + '@ERP.ResourcePack.Common.Settings.Required');
+            return false;
+        }
+
+        if (!$('#ElectronicAmount').val()) {
+            toastr.warning('@ERP.ResourcePack.Accounts.ArCustomers.Account' + ' : ' + '@ERP.ResourcePack.Common.Settings.Required');
+            return false;
+        }
+
+    };
+
+    const CalcElcAmount = function () {
+
+        const val = _electronicAidArr.filter(z => z.rowStatus != DeletedStatus).map(item => +item.amount).reduce((x, y) => x + y, 0);
+
+        $('#Amount').val(val);
+    };
+
+    const ValidateElectronicInputs = function () {
+
+        if (_electronicAidArr.filter(z => z.rowStatus != DeletedStatus).length > 0) {
+
+            CalcElcAmount();
+
+            $('#NumberOfMonths').val(1);
+
+            $('#OtherAidLkpId').val('').trigger('change');
+            $('#OtherAidLkpId').prop('disabled', true);
+            $('#OtherMonthNo').prop('disabled', true);
+            $('#Amount').prop('disabled', true);
+            $('#NumberOfMonths').prop('disabled', true);
+            $('#IsMedicineAlt').prop('disabled', true);
+            $('#OtherMonthNo').val('');
+        } else {
+
+            $('#OtherAidLkpId').prop('disabled', false);
+            $('#OtherMonthNo').prop('disabled', false);
+            $('#Amount').prop('disabled', false);
+            $('#NumberOfMonths').prop('disabled', false);
+            $('#IsMedicineAlt').prop('disabled', false);
+        }
+
+    };
+
+</script>

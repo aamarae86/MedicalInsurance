@@ -1,0 +1,18 @@
+﻿@{
+    ViewBag.Title = "Index";
+    Layout = "~/Views/Shared/_LoginLayout.cshtml";
+    var registerPath = "http://register.tenxerp.com/home/registration";
+}
+
+<div class="card w-100" style="background-color: #ffffff5e;border-radius: 10px;">
+    <div class="card-body">
+        <h2 class="card-title" style="text-align: center; padding: 20px 0px 30px; color: #6c757d;">
+            <img src="~/AssetsPack/SystemLogos/logofinalfavicon.ico" /> Welcome!
+        </h2>
+        <p class="card-text">To explore the Tenx features, please register using below link.</p>
+        <div style="justify-content: center;display: flex;">
+            <a href="@registerPath" class="btn btn-primary">Register</a>
+        </div>
+
+    </div>
+</div>

@@ -1,0 +1,117 @@
+﻿@using ERP.Web.UI.Models.ViewModels.Warehouses
+@using ERP.Web.UI.Models.ViewModels.General
+@model IvAdjustmentHdVM
+@{
+    string formTrigger = ViewBag.trigger;
+    string lang = Request.Cookies["Lang"] == null ? "ar-EG" : Request.Cookies["Lang"].Value.ToString();
+    string lkpKeyDdl = lang == "ar-EG" ? nameof(FndLookupValuesVM.NameAr) : nameof(FndLookupValuesVM.NameEn);
+    string bankAccKeyDdl = lang == "ar-EG" ? nameof(ERP.Web.UI.Models.ViewModels.Accounts.ApBankAccountsVM.BankAccountNameAr) : nameof(ERP.Web.UI.Models.ViewModels.Accounts.ApBankAccountsVM.BankAccountNameEn);
+    bool isFormDetail = Model != null && formTrigger == ERP.Front.Helpers.Enums.Common.FormTriggers.Show.ToString();
+}
+<div class="card">
+    <div class="header d-flex justify-content-start align-items-center">
+        <i class="fas fa-2x fa-chevron-down down-arr mr-2" data-toggle="collapse" data-target="#masterData"></i>
+        <h2><strong>@ERP.ResourcePack.Warehouses.IvAdjustmentHd.Title</strong></h2>
+    </div>
+    <div class="body collapse show" id="masterData">
+        @using (Ajax.BeginForm(nameof(ERP.Web.UI.Controllers.Warehouses.IvAdjustmentHdController.CreateIvAdjustmentHd), "IvAdjustmentHd",
+            new AjaxOptions { HttpMethod = "POST", OnBegin = "OnBegin", OnSuccess = "OnSuccess", OnComplete = "OnComplete", OnFailure = "OnFailure" }, new { @id = "mainForm" }))
+        {
+            @Html.HiddenFor(z => z.Id)
+            @Html.HiddenFor(z => z.AdjustmentTrStr)
+            @Html.HiddenFor(z => z.StatusLkpId)
+
+            <div class="row clearfix">
+                <div class="col-md-4">
+                    <div class="form-group form-float">
+                        <div class="form-line">
+                            @Html.TextBoxFor(z => z.AdjustmentNumber, new { @readOnly = "readonly", @class = "from-control" })
+                            @Html.LabelFor(z => z.AdjustmentNumber, new { @class = "form-label" })
+                        </div>
+                    </div>
+                </div>
+                @if (Model != null && Model.Id > 0)
+                { 
+                <div class="col-md-4">
+                    <div class="form-group form-float">
+                        <div class="form-line">
+                            @Html.TextBoxFor(z => z.FndLookupValuesStatusLkpIvAdjustmentHd.NameAr, new { @readOnly = "readonly", @id = "StatusLkpId", @class = "from-control" })
+                            @Html.LabelFor(z => z.StatusLkpId, new { @class = "form-label" })
+                        </div>
+                    </div>
+                </div>
+                }
+                
+                <div class="col-md-4">
+                    <div class="form-group form-float">
+                        <div class="form-line">
+                            @Html.TextBoxFor(z => z.AdjustmentDate, getHtmlAttributes(isFormDetail, "form-control", "datepicker"))
+                            @Html.LabelFor(z => z.AdjustmentDate, new { @class = "form-label" })
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row clearfix">
+                <div class="col-md-4">
+                    @Html.LabelFor(z => z.IvWarehouseId, new { @class = "form-label label-required" })
+                    <div class="form-group form-float">
+                        <div class="">
+                            @if (Model != null && Model.IvWarehouses != null)
+                            {
+                                var list = new List<FndLookupValuesVM> { new FndLookupValuesVM { Id = (long)Model.IvWarehouseId, NameAr = Model.IvWarehouses.WarehouseName, NameEn = Model.IvWarehouses.WarehouseName } };
+                                var selectList = new SelectList(list, "Id", lkpKeyDdl, Model.IvWarehouseId);
+
+                                @Html.DropDownListFor(z => z.IvWarehouseId, selectList, getHtmlAttributes(isFormDetail, "form-control", string.Empty))
+                            }
+                            else
+                            {
+                                @Html.DropDownListFor(z => z.IvWarehouseId, Enumerable.Empty<SelectListItem>(), getHtmlAttributes(isFormDetail, "form-control", string.Empty))
+                            }
+                        </div>
+                        @Html.ValidationMessageFor(z => z.IvWarehouseId)
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    @Html.LabelFor(z => z.AdjustmentTypeLkpId, new { @class = "form-label label-required" })
+                    <div class="form-group form-float">
+                        <div class="">
+                            @if (Model != null && Model.FndLookupValuesAdjustmentTypeLkp != null)
+                            {
+                                var list = new List<FndLookupValuesVM> { new FndLookupValuesVM { Id = (long)Model.AdjustmentTypeLkpId, NameAr = Model.FndLookupValuesAdjustmentTypeLkp.NameAr, NameEn = Model.FndLookupValuesAdjustmentTypeLkp.NameEn } };
+                                var selectList = new SelectList(list, "Id", lkpKeyDdl, Model.AdjustmentTypeLkpId);
+
+                                @Html.DropDownListFor(z => z.AdjustmentTypeLkpId, selectList, getHtmlAttributes(isFormDetail, "form-control", string.Empty))
+                            }
+                            else
+                            {
+                                @Html.DropDownListFor(z => z.AdjustmentTypeLkpId, Enumerable.Empty<SelectListItem>(), getHtmlAttributes(isFormDetail, "form-control", string.Empty))
+                            }
+                        </div>
+                        @Html.ValidationMessageFor(z => z.AdjustmentTypeLkpId)
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="form-group form-float">
+                        <div class="form-line">
+                            @Html.TextAreaFor(z => z.Notes, getHtmlAttributes(isFormDetail, "form-control", string.Empty))
+                            @Html.LabelFor(z => z.Notes, new { @class = "form-label" })
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+
+    </div>
+</div>
+
+@functions {
+    object getHtmlAttributes(bool Disabled, string CssClass, string CssClass2)
+    {
+        if (Disabled)
+        {
+            return new { @class = CssClass, Disabled = Disabled };
+        }
+        return new { @class = $"{CssClass} {CssClass2}" };
+    }
+}
+

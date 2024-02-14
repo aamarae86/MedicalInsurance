@@ -1,0 +1,586 @@
+﻿@using ERP.ResourcePack.HR
+@using ERP.Web.UI.Controllers.HR
+@using ERP.Authorization;
+@{
+    string permissionsStr = TempData["Permissions"].ToString();
+    string encUpdateTrigger = ERP.Front.Helpers.Enums.Common.EncUpdate;
+    string encInsertTrigger = ERP.Front.Helpers.Enums.Common.EncInsert;
+    string encShowTrigger = ERP.Front.Helpers.Enums.Common.EncShow;
+}
+
+@if (permissionsStr.Contains(PermissionNames.Pages_HrPersonsDeductionHd_Post))
+{
+    <script>
+        const PostAjax = function (id) {
+
+            bootbox.confirm({
+                message: _booBoxMessagePosting,
+                buttons: bootBoxDefaultBtns,
+                callback: function (result) {
+
+                    if (result) {
+
+                        const data = {
+                            id: id,
+                            lang: lang,
+                            userId: 0
+                        };
+
+                        $.ajax({
+                            url: `${baseUrl}/HrPersonsDeductionHd/PostHrPersonsDeduction`,
+                            type: 'POST',
+                            data: JSON.stringify(data),
+                            headers:
+                            {
+                                'Content-Type': 'application/json',
+                                'Authorization': `Bearer ${$_token}`
+                            },
+                        }).done(function (response) {
+
+                            if (response.result.finalStatues == 'F') {
+                                toastr.warning(response.result.reason);
+                            }
+                            else {
+                                toastr.success(response.result.reason);
+
+                                if (formView) {
+
+                                    setTimeout(function () {
+                                        window.location.href = $PrefixHostName + '/HrPersonsDeductionHd';
+                                    }, 100);
+
+                                } else {
+                                    LoadDataGrid();
+                                }
+                            }
+
+                        }).fail(function (response) {
+                            toastr.error(response.responseText);
+                        });
+
+                    }
+
+                }
+            });
+
+
+        };
+    </script>
+}
+else
+{
+    <script>
+        const PostAjax = function (id) { };
+    </script>
+}
+
+<script>
+    const _mainController = "HrPersonsDeductionHd"
+    const _newStatus = @Convert.ToInt64(ERP.Front.Helpers.Enums.Common.HrPersonsDeductionHd.New);
+
+    $(function () {
+
+        LoadDataGrid();
+        $('#tblHrPersonsDeductionHdPrint thead').html($('#tblHrPersonsDeductionHd thead').html());
+        $('#tblHrPersonsDeductionHdPrint thead tr :last-child').remove();
+        $('#HrPersonsDeductionHd').addClass('active');
+
+        $('#Notes').parent('.form-line').addClass('focused');
+        $('#Amount').parent('.form-line').addClass('focused');
+    });
+
+    const _loadDataUrl = `${$PrefixHostName}/${_mainController}/@nameof(HrPersonsDeductionHdController.LoadDataGrid)`;
+    const _tblSelector = $('#tblHrPersonsDeductionHd');
+
+    const _permissions = '@permissionsStr';
+    const _updatePermission = '@PermissionNames.Pages_HrPersonsDeductionHd_Update';
+    const _deletePermission = '@PermissionNames.Pages_HrPersonsDeductionHd_Delete';
+    const _postPermission = '@PermissionNames.Pages_HrPersonsDeductionHd_Post';
+
+    var OnBegin = function (response) {
+        fireBtnLoader();
+    };
+
+    var OnSuccess = function (response) {
+
+        $('#btnSubmition').prop('disabled', false);
+
+        if (response.success) {
+
+            if (response.customRestResult.trigger === '@ERP.Front.Helpers.Enums.Common.FormTriggers.Insert') {
+
+                toastr.success(response.customRestResult.message);
+
+                setTimeout(function () {
+                    window.location.href = $PrefixHostName + '/HrPersonsDeductionHd';
+                }, 200);
+
+            }
+            else if (response.customRestResult.trigger === '@ERP.Front.Helpers.Enums.Common.FormTriggers.Update') {
+
+                toastr.success(response.customRestResult.message);
+
+                setTimeout(function () {
+                    window.location.href = $PrefixHostName + '/HrPersonsDeductionHd';
+                }, 200);
+
+            }
+            else {
+                toastr.error(response.customRestResult.message);
+            }
+
+        } else {
+            toastr.error(response.error.message);
+        }
+
+    };
+
+    var OnComplete = function (response) {
+        downBtnLoader();
+    };
+
+    var OnFailure = function (response) {
+        toastr.error(response);
+        downBtnLoader();
+    };
+
+    const LoadDataGrid = function () {
+
+        const params = {
+            DeductionName: $('#searchBox #DeductionName').val(),
+            DeductionNumber: $('#searchBox #DeductionNumber').val(),
+            PeriodId: $('#searchBox #PeriodId').find(':selected').val(),
+            StatusLkpId: $('#searchBox #StatusLkpId').find(':selected').val()
+        };
+
+        const columns = [
+            {
+                "data": "result.data.id",
+                'render': function (data, type, row, meta) {
+                    return meta.row + meta.settings._iDisplayStart + 1;
+                }
+            },
+            {
+                "data": "DeductionNumber",
+                "name": "DeductionNumber",
+                "autoWidth": true
+            },
+            {
+                "data": "DeductionName",
+                "name": "DeductionName",
+                "autoWidth": true
+            },
+            {
+                "data": null,
+                "autoWidth": true,
+                "render": function (d, t, row) {
+                    return row.Periods ? (lang === 'ar-EG' ? row.Periods.periodNameAr : row.Periods.periodNameEn) : '';
+                }
+            },
+            {
+                "data": null,
+                "autoWidth": true,
+                "render": function (d, t, row) {
+                    return row.FndStatusLkp ? (lang === 'ar-EG' ? row.FndStatusLkp.NameAr : row.FndStatusLkp.NameEn) : '' ;
+                }
+            },
+            {
+                "data": null,
+                "sortable": false,
+                "render": function (data, type, row) {
+
+                    let formAction = `${$PrefixHostName}/${_mainController}/@nameof(HrPersonsDeductionHdController.HrPersonsDeductionHdForm)`;
+                    let DeleteAction = `${$PrefixHostName}/${_mainController}/@nameof(HrPersonsDeductionHdController.Delete)`;
+
+                    let formTitle = '@ERP.ResourcePack.HR.HrPersonsDeductionHd.Title';
+                    let btns = '';
+
+                    if (_permissions.includes(_postPermission) && row.StatusLkpId == _newStatus) {
+                        btns += `<a href="javascript:void(0)" onclick="PostAjax(${row.Id})" title="@ERP.ResourcePack.Common.Settings.Post"><i class="mx-2 fas fa-check-circle text-info"></i></a>`;
+                    }
+
+                    if (_permissions.includes(_updatePermission) && row.StatusLkpId == _newStatus) {
+                        btns += `<a href="${$PrefixHostName}/HrPersonsDeductionHd/FormView?id=${row.EncId}&t=@encUpdateTrigger" title="@ERP.ResourcePack.Common.Settings.Edit"><i class="mx-2 fas fa-edit text-info"></i></a>`;
+                    }
+
+                    btns += `<a href="${$PrefixHostName}/HrPersonsDeductionHd/FormView?id=${row.EncId}&t=@encShowTrigger" title="@ERP.ResourcePack.Common.Settings.Show"><i class="mx-2 fas fa-eye text-info"></i></a>`;
+
+                    if (_permissions.includes(_deletePermission) && row.StatusLkpId == _newStatus) {
+                        btns += `<a href="javascript:void(0)" onclick="AjaxController.DeleteMainTableRow(${row.Id},'${DeleteAction}');" title="@ERP.ResourcePack.Common.Settings.Delete"><i class="mx-2 fas fa-trash-alt text-danger"></i></a>`;
+                    }
+
+                    const _auditedPermission = '@PermissionNames.Pages_HrPersonsDeductionHd_Audit';
+
+                    if (_permissions.includes(_auditedPermission)) {
+
+                        row.permission = _auditedPermission;
+
+                        btns += GetAuditedButton(row);
+                    }
+
+                    return btns;
+                }
+            }
+        ];
+
+        const dtObj = {
+            "processing": true,
+            "serverSide": true,
+            "filter": false,
+            "orderMulti": false,
+            "language": dataTableLang,
+            "ajax": {
+                "url": _loadDataUrl,
+                "type": "POST",
+                "datatype": "json",
+                "data": params,
+                "complete": function () {}
+            },
+            "columns": columns,
+            "initComplete": function () {
+                $('[data-toggle="tooltip"]').tooltip();
+            }
+
+        };
+
+        _tblSelector.dataTable().fnDestroy();
+        _tblSelector.DataTable(dtObj).on('draw', function () { $('[data-toggle="tooltip"]').tooltip(); });
+
+        setTimeout(function () {
+            $(".sorting_1").removeAttr('colspan');
+        }, 500);
+    };
+
+    $('#btnSubmition').on('click', function () {
+
+        if ($('#mainForm').valid()) {
+
+            $(this).prop('disabled', true);
+
+            $('#submitLoader').show();
+
+            $('#mainForm').submit();
+
+        } else {
+            $(this).prop('disabled', false);
+
+            $('#submitLoader').hide();
+        }
+
+    });
+
+    $('#searchBox #StatusLkpId').select2(ReturnSelect2ObjectForLkpsTypes('@ERP.Front.Helpers.Enums.Common.FndLkpsTypes.HrPersonsDeductionStatus.ToString()'));
+    $('#searchBox #PeriodId').select2(ReturnSelect2ObjectDefault(`${baseUrl}/GlPeriodsDetails/GetGlPeriodsSelect2`));
+    $('#DeductionTypeLkpId').select2(ReturnSelect2ObjectForLkpsTypes('@ERP.Front.Helpers.Enums.Common.FndLkpsTypes.HrDeductionType.ToString()'));
+    $('#HrPersonId').select2(ReturnSelect2ObjectDefault(`${baseUrl}/HrPersons/GetPersonsSelect2`));
+    $('#PeriodId').select2(ReturnSelect2ObjectDefault(`${baseUrl}/GlPeriodsDetails/GetGlPeriodsSelect2`));
+
+</script>
+
+<script name="detailsss">
+
+    const _tblDetailSelector = $('#tblDetails'), _listDetail = $('#PersonsDeductionDetailsListStr');
+
+    let _hrDetails = [], updatedDetailsRow, tblCounterIndex = 0 ;
+
+    const fillDetail = function () {
+
+        if (validator() === false) return;
+
+        const current = {
+            index: ++tblCounterIndex,
+            hrPersonId: $('#HrPersonId').find(':selected').val(),
+            personName: $('#HrPersonId').find(':selected').text(),
+            deductionTypeLkpId: $('#DeductionTypeLkpId').find(':selected').val(),
+            deductionTypeLkpNameAr: $('#DeductionTypeLkpId').find(':selected').text(),
+            deductionTypeLkpNameEn: $('#DeductionTypeLkpId').find(':selected').text(),
+            amount: $('#Amount').val(),
+            notes:$('#Notes').val(),
+            rowStatus: NewStatus,
+            id: 0
+        };
+
+        return current;
+    };
+
+    const AddDetails = function () {
+
+        const current = fillDetail();
+
+        if (current === undefined) return;
+
+        _hrDetails.push(current);
+
+        _listDetail.val(JSON.stringify(_hrDetails));
+
+        bindDetailTable();
+
+        clearFormAdding();
+    };
+
+    const bindDetailTable = function () {
+
+        const detailArr = _hrDetails.filter(z => z.rowStatus !== DeletedStatus);
+
+        const columns = [
+            { 'data': 'index' },
+            { 'data': 'personName' },
+            { 'data': lang === 'ar-EG' ? 'deductionTypeLkpNameAr' : 'deductionTypeLkpNameEn' },
+            {
+                'data': 'amount',
+                "render": $.fn.dataTable.render.number(',', '.', 2)
+
+            },
+            { 'data': 'notes' },
+            {
+                'data': null,
+                'searchable': false,
+                'ordering': false,
+                'sorting': false,
+                'render': function (d, t, row) {
+
+                    let rows = '';
+
+                    if (primaryEntityKeyId === 0 || trigger !== '@ERP.Front.Helpers.Enums.Common.FormTriggers.Show.ToString()') {
+
+                        rows += `<td><a href="javascript:void(0)" onclick="return DeleteDetail(${row.index})"><i class="mx-2 fas fa-trash-alt text-danger"></i></a>`;
+                        rows += `<a href="javascript:void(0)" onclick="return GetDetailRow(${row.index})"><i class="mx-2 fas fa-edit text-success"></i></a></td>`;
+                    }
+                    else {
+                        rows += '<td></td>';
+                    }
+
+                    return rows;
+                }
+            }
+        ];
+
+        const dtObj = {
+            data: detailArr,
+            retrieve: true,
+            language: dataTableLang,
+            columns: columns,
+            drawCallback: function (c, v, b) {}
+        };
+
+        setTimeout(function () {
+
+            _tblDetailSelector.dataTable().fnDestroy();
+            _tblDetailSelector.DataTable(dtObj).on('draw', function () { $('[data-toggle="tooltip"]').tooltip(); });
+
+        }, 100);
+    };
+
+    const DeleteDetail = function (index)  {
+
+        const current = _hrDetails.find(z => z.index === index);
+
+        const indexOfCurrent = _hrDetails.indexOf(current);
+
+        if (!current.id) {
+
+           _hrDetails.splice(indexOfCurrent, 1);
+
+        } else {
+
+            current.rowStatus = DeletedStatus;
+
+           _hrDetails.splice(indexOfCurrent, 1,current);
+        }
+
+        bindDetailTable();
+
+        _listDetail.val(_hrDetails.length === 0 ? '' : JSON.stringify(_hrDetails));
+
+    };
+
+    const LoadDetailData = function () {
+
+        $.ajax({
+            url: `${baseUrl}/HrPersonsDeductionHd/GetAllDeductionDetails`,
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${$_token}`
+            },
+            data: {
+                id: primaryEntityKeyId
+            }
+        }).done(function (data) {
+
+            _hrDetails = [...data.result];
+
+            tblCounterIndex = 0;
+
+            $.each(_hrDetails, function (i, item) {
+                item.index = ++tblCounterIndex;
+            });
+
+            bindDetailTable();
+
+            _listDetail.val(JSON.stringify(_hrDetails));
+
+        });
+
+    };
+
+    const GetDetailRow = function (tblIndex) {
+
+        clearFormAdding();
+
+        $('#btnAddDetailRow').hide();
+        $('#btnUpdateDetailRow').show();
+        $('#btnCancelDetailRow').show();
+
+        const current = _hrDetails.find(z => z.index === tblIndex);
+
+        $(`#HrPersonId`).append($("<option selected='selected'></option>")
+            .val(current.hrPersonId).text(current.personName)).trigger('change');
+
+        $(`#DeductionTypeLkpId`).append($("<option selected='selected'></option>")
+            .val(current.deductionTypeLkpId)
+            .text(lang === 'ar-EG' ? current.deductionTypeLkpNameAr : current.deductionTypeLkpNameEn))
+            .trigger('change');
+
+        $('#Amount').val(current.amount);
+        $('#Notes').val(current.notes);
+
+        updatedDetailsRow = current;
+    };
+
+    const UpdateDetailsRow = function () {
+
+        let current = _hrDetails.find(z => z.index === updatedDetailsRow.index);
+
+        let indexOfCurrent = _hrDetails.indexOf(_hrDetails.find(z => z.index === updatedDetailsRow.index));
+
+        const newRow = fillDetail();
+
+        if (newRow === undefined) return;
+
+        newRow.index = current.index;
+        newRow.id = updatedDetailsRow.id;
+        newRow.rowStatus =  !updatedDetailsRow.id ? NewStatus : UpdatedStatus;
+
+        _hrDetails.splice(indexOfCurrent, 1,newRow);
+
+        $('#btnAddDetailRow').show();
+        $('#btnUpdateDetailRow').hide();
+        $('#btnCancelDetailRow').hide();
+
+        clearFormAdding();
+
+        _listDetail.val(JSON.stringify(_hrDetails));
+
+        setTimeout(function () {
+            bindDetailTable();
+        }, 100);
+    };
+
+    const clearFormAdding = function () {
+        $('#details .card:first input,textarea').val('');
+        $('#details .card:first select').val('').trigger('change');
+    };
+
+    const validator = function () {
+
+        if (!$('#HrPersonId').find(':selected').val()) {
+            toastr.warning('@HrPersonsDeductionHd.HrPersonId' + ' : ' + '@ERP.ResourcePack.Common.Settings.Required');
+            return false;
+        }
+
+        if (!$('#DeductionTypeLkpId').find(':selected').val()) {
+            toastr.warning('@HrPersonsDeductionHd.DeductionTypeLkpId' + ' : ' + '@ERP.ResourcePack.Common.Settings.Required');
+            return false;
+        }
+
+        if (!$('#Amount').val()) {
+            toastr.warning('@HrPersonsDeductionHd.Amount' + ' : ' + '@ERP.ResourcePack.Common.Settings.Required');
+            return false;
+        }
+
+    };
+
+    function printExc() {
+        $('.page-loader-wrapper').show();
+        $('#tblHrPersonsDeductionHdPrint_wrapper').parent().addClass('d-none');
+        const parmss = {
+            DeductionName: $('#searchBox #DeductionName').val(),
+            DeductionNumber: $('#searchBox #DeductionNumber').val(),
+            PeriodId: $('#searchBox #PeriodId').find(':selected').val(),
+            StatusLkpId: $('#searchBox #StatusLkpId').find(':selected').val(),
+            length: 1000000
+        };
+
+        const columns = [
+            {
+                "data": "result.data.id",
+                'render': function (data, type, row, meta) {
+                    return meta.row + meta.settings._iDisplayStart + 1;
+                }
+            },
+            {
+                "data": "DeductionNumber",
+                "name": "DeductionNumber",
+                "autoWidth": true
+            },
+            {
+                "data": "DeductionName",
+                "name": "DeductionName",
+                "autoWidth": true
+            },
+            {
+                "data": null,
+                "autoWidth": true,
+                "render": function (d, t, row) {
+                    return row.Periods ? (lang === 'ar-EG' ? row.Periods.periodNameAr : row.Periods.periodNameEn) : '';
+                }
+            },
+            {
+                "data": null,
+                "autoWidth": true,
+                "render": function (d, t, row) {
+                    return row.FndStatusLkp ? (lang === 'ar-EG' ? row.FndStatusLkp.NameAr : row.FndStatusLkp.NameEn) : '' ;
+                }
+            }
+        ];
+
+        const dtObj = {
+            "language": dataTableLang,
+            "dom": 'Bfrtip',
+            "buttons": [
+                {
+                    extend: 'excel',
+                    messageTop: `${$('#DeductionName').siblings().text()}: ${(parmss.DeductionName) ? parmss.DeductionName : '--'}, ${$('#DeductionNumber').siblings().text()}: ${(parmss.DeductionNumber) ? parmss.DeductionNumber : '--'}, ${$('[for="PeriodId"]').text()}: ${(parmss.PeriodId) ? parmss.PeriodId : '--'}, ${$('[for="StatusLkpId"]').text()}: ${(parmss.StatusLkpId) ? parmss.StatusLkpId : '--'}`
+                },
+
+            ],
+            "ajax": {
+                "url": _loadDataUrl,
+                "type": "POST",
+                "datatype": "json",
+                "data": parmss,
+                "complete": function (d) {
+                    _tblLoader.hide();
+                }
+            },
+            "columns": columns,
+
+            "initComplete": function () {
+                $('#tblHrPersonsDeductionHdPrint_wrapper button.dt-button').click();
+                $('#tblHrPersonsDeductionHdPrint_wrapper').parent().addClass('d-none');
+
+            }
+        };
+
+        $('#tblHrPersonsDeductionHdPrint').dataTable().fnDestroy();
+        $('#tblHrPersonsDeductionHdPrint').DataTable(dtObj).on('buttons-processing', function (e, indicator) { if (!indicator) { $('.page-loader-wrapper').hide() } });
+
+
+    }
+
+</script>
+
+
+
+
+

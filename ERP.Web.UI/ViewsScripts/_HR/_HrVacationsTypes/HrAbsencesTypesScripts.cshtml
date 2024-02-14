@@ -1,0 +1,247 @@
+﻿@using ERP.Web.UI.Controllers.HR
+@using ERP.Authorization;
+@{
+    string permissionsStr = TempData["Permissions"].ToString();
+}
+<script>
+    const _mainController = "HrVacationsTypes"
+
+    $(function () {
+        LoadDataGrid();
+        $('#tblHrAbsencesTypesPrint thead').html($('#tblHrAbsencesTypes thead').html());
+        $('#tblHrAbsencesTypesPrint thead tr :last-child').remove();
+        $('#HrVacationsTypes').addClass('active');
+    });
+
+    const _loadDataUrl = `${$PrefixHostName}/${_mainController}/@nameof(HrVacationsTypesController.LoadDataGrid)`;
+    const _tblSelector = $('#tblHrAbsencesTypes');
+
+    const _permissions = '@permissionsStr';
+    const _updatePermission = '@PermissionNames.Pages_HrVacationsTypes_Update';
+    const _deletePermission = '@PermissionNames.Pages_HrVacationsTypes_Delete';
+
+    var OnBegin = function (response) {
+        fireBtnLoader();
+    };
+
+    var OnSuccess = function (response) {
+        if (response.success) {
+
+            if (response.customRestResult.trigger === '@ERP.Front.Helpers.Enums.Common.FormTriggers.Insert') {
+
+                toastr.success(response.customRestResult.message);
+
+                LoadDataGrid();
+
+                _mainModal.modal('hide');
+
+            } else if (response.customRestResult.trigger === '@ERP.Front.Helpers.Enums.Common.FormTriggers.Update') {
+
+                LoadDataGrid();
+
+                _mainModal.modal('hide');
+
+                toastr.success(response.customRestResult.message);
+            }
+
+        } else {
+               toastr.error(response.customRestResult.message);
+        }
+    };
+
+    var OnComplete = function (response) {
+        debugger;
+        downBtnLoader();
+    };
+
+    var OnFailure = function (response) {
+        debugger;
+        toastr.error(response);
+        downBtnLoader();
+    };
+
+    const LoadDataGrid = function () {
+        debugger;
+        const parms = {
+            VacationsTypeNumber: $('#searchBox #VacationsTypeNumber').val(),
+            VacationsTypeName: $('#searchBox #VacationsTypeName').val()
+        };
+
+        const columns = [
+            {
+                "data": "result.data.id",
+                'render': function (data, type, row, meta) {
+                    return meta.row + meta.settings._iDisplayStart + 1;
+                }
+            },
+            {
+                "data": "VacationsTypeNumber",
+                "name": "VacationsTypeNumber",
+                "autoWidth": true
+            },
+            {
+                "data": "VacationsTypeName",
+                "name": "VacationsTypeName",
+                "autoWidth": true
+            },
+            {
+                "data": "VacationsTypeDesc",
+                "name": "VacationsTypeDesc",
+                "autoWidth": true
+            },
+            {
+                "data": "MaximumDaysPerYear",
+                "name": "MaximumDaysPerYear",
+                "autoWidth": true
+            },
+            {
+                "data": "MaximumDays",
+                "name": "MaximumDays",
+                "autoWidth": true
+            },
+            {
+                "data": null,
+                "sortable": false,
+                "render": function (data, type, row) {
+                    debugger;
+                    let formAction = `${$PrefixHostName}/${_mainController}/@nameof(HrVacationsTypesController.HrAbsencesTypesForm)`;
+                    let DeleteAction = `${$PrefixHostName}/${_mainController}/@nameof(HrVacationsTypesController.Delete)`;
+
+                    let formTitle = '@ERP.ResourcePack.HR.HrAbsencesTypes.Title', btns = '';
+
+                    if (_permissions.includes(_updatePermission))
+                    {
+                        btns += `<a href="javascript:void(0)" onclick="AjaxController.GetFormModal(${row.Id},'@ERP.Front.Helpers.Enums.Common.FormTriggers.Update','${formAction}','${formTitle}');GetItemsTree(${row.Id})" title="@ERP.ResourcePack.Common.Settings.Edit"><i class="mx-2 fas fa-edit text-info"></i></a>`;
+                    }
+
+                    btns += `<a href="javascript:void(0)" onclick="AjaxController.GetFormModal(${row.Id},'@ERP.Front.Helpers.Enums.Common.FormTriggers.Show','${formAction}','${formTitle}');GetItemsTree(${row.Id})" title="@ERP.ResourcePack.Common.Settings.Show"><i class="mx-2 fas fa-eye text-info"></i></a>`;
+
+                    if (_permissions.includes(_deletePermission))
+                    {
+                        btns += `<a href="javascript:void(0)" onclick="AjaxController.DeleteMainTableRow(${row.Id},'${DeleteAction}');" title="@ERP.ResourcePack.Common.Settings.Delete"><i class="mx-2 fas fa-trash-alt text-danger"></i></a>`;
+                    }
+
+                   const _auditedPermission = '@PermissionNames.Pages_HrVacationsTypes_Audit';
+
+                   if (_permissions.includes(_auditedPermission)){
+
+                       row.permission = _auditedPermission;
+
+                       btns += GetAuditedButton(row);
+                   }
+
+                    return btns;
+                }
+            }
+        ];
+
+        const dtObj = {
+            "processing": true,
+            "serverSide": true,
+            "filter": false,
+            "orderMulti": false,
+            "language": dataTableLang,
+            "ajax": {
+                "url": _loadDataUrl,
+                "type": "POST",
+                "datatype": "json",
+                "data": parms,
+                "complete": function () { }
+            },
+            "columns": columns,
+            "initComplete": function () {
+                $('[data-toggle="tooltip"]').tooltip();
+            }
+
+        };
+
+        _tblSelector.dataTable().fnDestroy();
+        _tblSelector.DataTable(dtObj).on('draw', function () { $('[data-toggle="tooltip"]').tooltip(); });
+
+
+        };
+
+    function printExc() {
+            debugger;
+            $('.page-loader-wrapper').show();
+
+            const parmss = {
+                VacationsTypeNumber: $('#searchBox #VacationsTypeNumber').val(),
+                VacationsTypeName: $('#searchBox #VacationsTypeName').val(),
+                length: 1000000
+            };
+
+            const parms = {
+            VacationsTypeNumber: $('#searchBox #VacationsTypeNumber').val(),
+            VacationsTypeName: $('#searchBox #VacationsTypeName').val()
+        };
+
+        const columns = [
+            {
+                "data": "result.data.id",
+                'render': function (data, type, row, meta) {
+                    return meta.row + meta.settings._iDisplayStart + 1;
+                }
+            },
+            {
+                "data": "VacationsTypeNumber",
+                "name": "VacationsTypeNumber",
+                "autoWidth": true
+            },
+            {
+                "data": "VacationsTypeName",
+                "name": "VacationsTypeName",
+                "autoWidth": true
+            },
+            {
+                "data": "VacationsTypeDesc",
+                "name": "VacationsTypeDesc",
+                "autoWidth": true
+            },
+            {
+                "data": "MaximumDaysPerYear",
+                "name": "MaximumDaysPerYear",
+                "autoWidth": true
+            },
+            {
+                "data": "MaximumDays",
+                "name": "MaximumDays",
+                "autoWidth": true
+            }
+        ];
+
+            const dtObj = {
+                "language": dataTableLang,
+                "dom": 'Bfrtip',
+                "buttons": [
+                    {
+                        extend: 'excel',
+                        messageTop: `${$('#VacationsTypeNumber').siblings().text()}: ${(parmss.VacationsTypeNumber) ? parmss.VacationsTypeNumber : '--'}, ${$('#VacationsTypeName').siblings().text()}: ${(parmss.DescriptionAr) ? parmss.Description : '--'}`
+                    },
+
+                ],
+                "ajax": {
+                    "url": _loadDataUrl,
+                    "type": "POST",
+                    "datatype": "json",
+                    "data": parmss,
+                    "complete": function (d) {
+                        _tblLoader.hide();
+                    }
+                },
+                "columns": columns,
+
+                "initComplete": function () {
+                    $('#tblHrAbsencesTypesPrint_wrapper button.dt-button').click();
+                    $('#tblHrAbsencesTypesPrint_wrapper').parent().addClass('d-none');
+
+                }
+            };
+
+            $('#tblHrAbsencesTypesPrint').dataTable().fnDestroy();
+            $('#tblHrAbsencesTypesPrint').DataTable(dtObj).on('buttons-processing', function (e, indicator) { if (!indicator) { $('.page-loader-wrapper').hide() } });
+
+
+        }
+
+</script>

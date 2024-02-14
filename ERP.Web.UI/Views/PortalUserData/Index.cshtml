@@ -1,0 +1,14 @@
+﻿@{
+    ViewBag.Title = ERP.ResourcePack.AidModule.FndUsers.PortalUserData;
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@Html.Action(nameof(ERP.Web.UI.Controllers.AidModule.UnifiedUsersController.UnifiedUsersSearch), "UnifiedUsers")
+@Html.Action(nameof(ERP.Web.UI.Controllers.AidModule.PortalUserDataController.PortalUsersData))
+
+@section scripts{
+    <script>
+        $('h2 strong').text('@ViewBag.Title');
+    </script>
+    @Html.Partial("~/ViewsScripts/_AidModule/FndUsers/PortalUsersDataScripts.cshtml")
+}

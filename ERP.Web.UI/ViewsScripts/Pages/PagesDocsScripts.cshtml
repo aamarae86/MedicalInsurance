@@ -1,0 +1,193 @@
+﻿@using ERP.Authorization;
+@using ERP.Web.UI.Controllers
+@using ERP.ResourcePack.Common
+@{
+    string permissionsStr = TempData["Permissions"].ToString();
+}
+<script>
+    const _mainController = "WebViewsDocs", _apiAppService = "WebViewsDocs";
+
+    $(function () {
+
+        LoadDataGrid();
+
+        $('#WebViewsDocs').addClass('active');
+        $('#PagesDocs').addClass('active');
+    });
+
+    const _loadDataUrl = `${$PrefixHostName}/${_mainController}/@nameof(WebViewsDocsController.LoadDataGrid)`;
+    const _tblSelector = $('#tblPages');
+    const _tblSelectorbody = $('#tblPages tbody');
+
+    const _permissions = '@permissionsStr';
+    const _updatePermission = '@PermissionNames.Pages_PagesDocs_Update';
+
+    var OnBegin = function (response) {
+        fireBtnLoader();
+    };
+
+    var OnSuccess = function (response) {
+
+        if (response.success) {
+
+            if (response.customRestResult.trigger === '@ERP.Front.Helpers.Enums.Common.FormTriggers.Insert') {
+
+                toastr.success(response.customRestResult.message);
+
+                LoadDataGrid();
+
+                _mainModal.modal('hide');
+
+            } else if (response.customRestResult.trigger === '@ERP.Front.Helpers.Enums.Common.FormTriggers.Update') {
+
+                LoadDataGrid();
+
+                _mainModal.modal('hide');
+
+                toastr.success(response.customRestResult.message);
+            }
+
+        } else {
+            toastr.error(response.customRestResult.message);
+        }
+
+    };
+
+    var OnComplete = function (response) {
+        downBtnLoader();
+    };
+
+    var OnFailure = function (response) {
+        toastr.error(response);
+        downBtnLoader();
+    };
+
+    const LoadDataGrid = function () {
+
+        const parms = {
+            ModuleId: $('#searchBox #ModuleId').find(':selected').val()
+        };
+
+        $('#dataCollapse').show();
+
+        const columns = [
+            {
+                "data": "result.data.id",
+                'render': function (data, type, row, meta) {
+                    return meta.row + meta.settings._iDisplayStart + 1;
+                }
+            },
+            {
+                "data": "NameAr",
+                "name": "NameAr",
+                "autoWidth": true
+            },
+            {
+                "data": "NameEn",
+                "name": "NameEn",
+                "autoWidth": true
+            },
+            {
+                'data': "Icon",
+                "autoWidth": true,
+                "render": function (data, type, row) {
+                    if (!row.Icon) return '';
+
+                    return `<img src="${$PrefixHostName}${row.Icon}" class="img-thumbnail" width="50px" height="50px" />`;
+                }
+            },
+            {
+                'data': null,
+                "autoWidth": true,
+                "render": function (data, type, row) {
+                    return lang === 'ar-EG' ? row.ModuleAr : row.ModuleEn;
+                }
+            },
+            {
+                'data': null,
+                "autoWidth": true,
+                "render": function (data, type, row) {
+                    return `<a href="${row.Link}" target="_blank">@Pages.Link</a>`;
+                }
+            },
+            {
+                'data': null,
+                "autoWidth": true,
+                "render": function (data, type, row) {
+                    if (!row.DocPathAr) return ''; 
+
+                    return `<a href="${row.DocPathAr}" target="_blank" download><i class="fas fa-download"></i></a>`;
+                }
+            },
+            {
+                'data': null,
+                "autoWidth": true,
+                "render": function (data, type, row) {
+                    if (!row.DocPathEn) return ''; 
+
+                    return `<a href="${row.DocPathEn}" target="_blank" download><i class="fas fa-download"></i></a>`;
+                }
+            },
+            {
+                'data': null,
+                "autoWidth": true,
+                "render": function (data, type, row) {
+                    const link = row.VideoUrlAr;
+
+                    return `<a href="${link}" target="_blank">${link ?? ''}</a>`;
+                }
+            },
+            {
+                'data': null,
+                "autoWidth": true,
+                "render": function (data, type, row) {
+                    const link = row.VideoUrlEn;
+
+                    return `<a href="${link}" target="_blank">${link ?? ''}</a>`;
+                }
+            },
+            {
+                "data": null,
+                "sortable": false,
+                "render": function (data, type, row) {
+
+                    let formAction = `${$PrefixHostName}/${_mainController}/@nameof(WebViewsDocsController.PagesForm)`;
+
+                    let formTitle = '@Pages.Title', btns = '';
+
+                    if (_permissions.includes(_updatePermission)) {
+                        btns += `<a href="javascript:void(0)" onclick="AjaxController.GetFormModal(${row.Id},'@ERP.Front.Helpers.Enums.Common.FormTriggers.Update','${formAction}','${formTitle}');" title="@ERP.ResourcePack.Common.Settings.Edit"><i class="mx-2 fas fa-edit text-info"></i></a>`;
+                    }
+
+                    btns += `<a href="javascript:void(0)" onclick="AjaxController.GetFormModal(${row.Id},'@ERP.Front.Helpers.Enums.Common.FormTriggers.Show','${formAction}','${formTitle}');" title="@ERP.ResourcePack.Common.Settings.Show"><i class="mx-2 fas fa-eye text-info"></i></a>`;
+
+                    return btns;
+                }
+            }
+        ];
+
+        const dtObj = {
+            "processing": true,
+            "serverSide": true,
+            "filter": false,
+            "orderMulti": false,
+            "language": dataTableLang,
+            "ajax": {
+                "url": _loadDataUrl,
+                "type": "POST",
+                "datatype": "json",
+                "data": parms,
+            },
+            "columns": columns,
+            "initComplete": function () {
+                $('[data-toggle="tooltip"]').tooltip();
+            }
+        };
+
+        _tblSelector.dataTable().fnDestroy();
+        _tblSelector.DataTable(dtObj).on('draw', function () { $('[data-toggle="tooltip"]').tooltip(); });
+    };
+
+    $('#searchBox #ModuleId').select2(ReturnSelect2ObjectDefault(`${baseUrl}/Modules/GetSelect2`))
+
+</script>

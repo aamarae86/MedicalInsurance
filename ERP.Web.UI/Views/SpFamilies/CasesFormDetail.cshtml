@@ -1,0 +1,64 @@
+﻿@using ERP.Web.UI.Models.ViewModels.SpGuarantees
+@model SpFamiliesVM
+@{
+    string formTrigger = ViewBag.trigger;
+    string lang = Request.Cookies["Lang"] == null ? "ar-EG" : Request.Cookies["Lang"].Value.ToString();
+    bool isFormDetail = Model != null && formTrigger == ERP.Front.Helpers.Enums.Common.FormTriggers.Show.ToString();
+}
+<div class="card" style="display:@(formTrigger == ERP.Front.Helpers.Enums.Common.FormTriggers.Show.ToString() ? "none":"block" ) ">
+    <div class="body">
+        <div class="row clearfix">
+            <div class="col-sm-3">
+                <div class="form-group form-float">
+                    <div class="form-line">
+                        @Html.TextBoxFor(z => z.CaseName, getHtmlAttributes(isFormDetail, "form-control", string.Empty))
+                        @Html.LabelFor(z => z.CaseName, new { @class = "form-label" })
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-3">
+                <div class="form-group form-float">
+                    <div class="form-line">
+                        @Html.TextBoxFor(z => z.BirthCaseDate, getHtmlAttributes(isFormDetail, "form-control", "datepicker"))
+                        @Html.LabelFor(z => z.BirthCaseDate, new { @class = "form-label" })
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-3">
+                @Html.LabelFor(z => z.RelativesCaseTypeLkpId, new { @class = "form-label" })
+                <div class="form-group form-float">
+                    <div class="form-group">
+                        @Html.DropDownListFor(z => z.RelativesCaseTypeLkpId, Enumerable.Empty<SelectListItem>(), new { @class = "form-control" })
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-3">
+                @Html.LabelFor(z => z.SponsorCategoryLkpId, new { @class = "form-label" })
+                <div class="form-group form-float">
+                    <div class="form-group">
+                        @Html.DropDownListFor(z => z.SponsorCategoryLkpId, Enumerable.Empty<SelectListItem>(), new { @class = "form-control" })
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row clearfix">
+            <div class="col-sm-2">
+                <div class="form-group m-2">
+                    <button id="btnAddCaseDetailRow" onclick="return AddCasesDetail()" class="btn btn-success">@ERP.ResourcePack.Common.Settings.BtnAddNew</button>
+                    <button style="display:none;" id="btnUpdateCaseDetailRow" onclick="return UpdateCasesDetailRow()" class="btn btn-info">@ERP.ResourcePack.Common.Settings.BtnUpdate</button>
+                    <button style="display:none;" id="btnCancelCaseDetailRow" onclick="clearFormAddingCases(); $('#btnCancelCaseDetailRow').hide();$('#btnUpdateCaseDetailRow').hide();$('#btnAddCaseDetailRow').show();" class="btn btn-danger">@ERP.ResourcePack.Common.Settings.BtnCancel</button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+
+@functions {
+    object getHtmlAttributes(bool Disabled, string CssClass, string CssClass2)
+    {
+        if (Disabled) return new { @class = CssClass, Disabled = Disabled };
+        return new { @class = $"{CssClass} {CssClass2}" };
+    }
+}

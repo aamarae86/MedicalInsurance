@@ -1,0 +1,83 @@
+﻿@using ERP.Web.UI.Models.ViewModels.Sales
+@model IvSaleHdVM
+@{
+    string formTrigger = ViewBag.trigger;
+    string lang = Request.Cookies["Lang"] == null ? "ar-EG" : Request.Cookies["Lang"].Value.ToString();
+    bool isFormDetail = Model != null && formTrigger == ERP.Front.Helpers.Enums.Common.FormTriggers.Show.ToString();
+}
+<div class="card" style="display:@(formTrigger == ERP.Front.Helpers.Enums.Common.FormTriggers.Show.ToString() ? "none":"block" ) ">
+    <div class="body">
+        @Html.HiddenFor(z => z.FndTaxtypeId)
+        <div class="row clearfix">
+            <div class="col-sm-3">
+                @Html.LabelFor(z => z.IvItemId, new { @class = "form-label" })
+                <div class="form-group form-float">
+                    <div class="form-group">
+                        @Html.DropDownListFor(z => z.IvItemId, Enumerable.Empty<SelectListItem>(), new { @class = "form-control" })
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-3">
+                <div class="form-group form-float">
+                    <div class="form-line">
+                        @Html.TextBoxFor(z => z.Avilablequantity, getHtmlAttributes(true, "form-control", string.Empty))
+                        @Html.LabelFor(z => z.Avilablequantity, new { @class = "form-label" })
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-3">
+                <div class="form-group form-float">
+                    <div class="form-line">
+                        @Html.TextBoxFor(z => z.Qty, new { @class = "form-control" })
+                        @Html.LabelFor(z => z.Qty, new { @class = "form-label" })
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-3">
+                <div class="form-group form-float">
+                    <div class="form-line">
+                        @Html.TextBoxFor(z => z.UnitPrice, getHtmlAttributes(isFormDetail, "form-control currency", string.Empty))
+                        @Html.LabelFor(z => z.UnitPrice, new { @class = "form-label" })
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row clearfix">
+            <div class="col-sm-3">
+                <div class="form-group form-float">
+                    <div class="form-line">
+                        @Html.TextBoxFor(z => z.Totbeforetax, getHtmlAttributes(true, "form-control currency", string.Empty))
+                        @Html.LabelFor(z => z.Totbeforetax, new { @class = "form-label" })
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-3">
+                <div class="form-group form-float">
+                    <div class="form-line">
+                        @Html.TextBoxFor(z => z.TaxAmount, getHtmlAttributes(true, "form-control currency", string.Empty))
+                        @Html.LabelFor(z => z.TaxAmount, new { @class = "form-label" })
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-3">
+                <div class="form-group form-float">
+                    <div class="form-line">
+                        @Html.TextBoxFor(z => z.TrCost, getHtmlAttributes(true, "form-control currency", string.Empty))
+                        @Html.LabelFor(z => z.TrCost, new { @class = "form-label" })
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+@functions {
+    object getHtmlAttributes(bool Disabled, string CssClass, string CssClass2)
+    {
+        if (Disabled)
+        {
+            return new { @class = CssClass, Disabled = Disabled };
+        }
+        return new { @class = $"{CssClass} {CssClass2}" };
+    }
+}

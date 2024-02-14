@@ -1,0 +1,261 @@
+﻿@using ERP.ResourcePack.SpGuarantees
+@using ERP.Authorization;
+@{
+    string permissionsStr = TempData["Permissions"].ToString();
+}
+    <script>
+
+    $('#searchBox #BeneficentId').select2(ReturnSelect2ObjectDefault(`${baseUrl}/SpBeneficent/GetSpBeneficentSelect2`));
+    $('#searchBox #CaseId').select2(ReturnSelect2ObjectDefault(`${baseUrl}/SpCases/GetSpCasesGrantedSelect2`));
+    $('#ReasonLkpId').select2(ReturnSelect2ObjectForLkpsTypes('@ERP.Front.Helpers.Enums.Common.FndLkpsTypes.SpCaseOperationsReason.ToString()'));
+
+    $('#SpCaseOperations_Replace').addClass('active');
+
+    setTimeout(function () {
+            $('#SpCaseOperations_Replace').children('a').removeClass('toggled');
+    }, 100);
+
+    $('#ddlCaseName').select2({
+        ajax: {
+            url: `${baseUrl}/SpCases/GetSpCasesForReplaceNamesSelect2`,
+            dataType: 'json',
+            headers: {
+                'Authorization': `Bearer ${$_token}`
+            },
+            data: function (params) {
+                params.page = params.page || 1;
+                return {
+                    pageSize: pageSize,
+                    pageNumber: params.page,
+                    searchTerm: params.term,
+                    lang: lang
+                };
+            },
+            processResults: function (data, params) {
+
+                params.page = params.page || 1;
+
+                return {
+                    results: data.result.results,
+                    pagination: {
+                        more: (params.page * pageSize) < data.result.total
+                    }
+                };
+            }
+        },
+        placeholder: select2Placeholder,
+        minimumInputLength: 0,
+        allowClear: true,
+        language: select2Lang,
+        templateSelection: function (data, contrinaer) {
+
+            if (data.altText) {
+                $(`#ddlCaseNumber`).append($("<option selected='selected'></option>")
+                    .val(data.id).text(data.altText)).trigger('change');
+            }
+
+            return data.text;
+        }
+    });
+
+    $('#ddlCaseNumber').select2({
+        ajax: {
+            url: `${baseUrl}/SpCases/GetSpCasesForReplaceNumbersSelect2`,
+            dataType: 'json',
+            headers: {
+                'Authorization': `Bearer ${$_token}`
+            },
+            data: function (params) {
+                params.page = params.page || 1;
+                return {
+                    pageSize: pageSize,
+                    pageNumber: params.page,
+                    searchTerm: params.term,
+                    lang: lang
+                };
+            },
+            processResults: function (data, params) {
+
+                params.page = params.page || 1;
+
+                return {
+                    results: data.result.results,
+                    pagination: {
+                        more: (params.page * pageSize) < data.result.total
+                    }
+                };
+            }
+        },
+        placeholder: select2Placeholder,
+        minimumInputLength: 0,
+        allowClear: true,
+        language: select2Lang,
+        templateSelection: function (data, contrinaer) {
+
+            if (data.altText) {
+                $(`#ddlCaseName`).append($("<option selected='selected'></option>")
+                    .val(data.id).text(data.altText)).trigger('change');
+            }
+
+            return data.text;
+        }
+    });
+
+    const _permissions = '@permissionsStr';
+    const _replacePerm = '@PermissionNames.Pages_SpCaseOperationsReplace_Post';
+
+    const LoadDataGrid = function () {
+
+        if (!validator()) return;
+
+        $.ajax({
+            url: `${baseUrl}/SpCaseOperations/GetSpCasesContractDetails`,
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${$_token}`
+            },
+            data: {
+                CaseId: $('#CaseId').find(':selected').val(),
+                BeneficentId: $('#BeneficentId').find(':selected').val(),
+                BeneficentNumber: $('#BeneficentNumber').val(),
+                CaseNumber: $('#CaseNumber').val()
+            }
+        }).done(function (data) {
+
+            if (data.result) {
+                bindDataTable(data.result);
+            }
+
+        });
+    };
+
+    const bindDataTable = function (data) {
+        const columns = [
+            {
+                "data": "result.data.id",
+                'render': function (data, type, row, meta) {
+                    return meta.row + meta.settings._iDisplayStart + 1;
+                }
+            },
+            { 'data': 'contractNumber' },
+            { 'data': 'beneficentNumber' },
+            { 'data': 'beneficentName' },
+            { 'data': 'caseName' },
+            { 'data': 'caseNumber' },
+            { 'data': (lang === 'ar-EG' ? 'sponsorLkpNameAr' : 'sponsorLkpNameEn')  },
+            { 'data': 'contractDate' },
+            {
+                'data': null,
+                'searchable': false,
+                'ordering': false,
+                'sorting': false,
+                'render': function (d, t, row) {
+                    let btns = '';
+
+                    if (_permissions.includes(_replacePerm)) {
+                        btns += `<a href="${$PrefixHostName}/SpCaseOperations/FormView?id=${row.encId}" title="@SpCaseOperations.BtnReplaceCase"><i class="mx-2 fas fa-edit text-info"></i></a>`;
+                    }
+
+                    return btns;
+                }
+            }
+        ];
+
+        const dtObj = {
+            data: data,
+            retrieve: true,
+            language: dataTableLang,
+            columns: columns,
+            drawCallback: function (c, v, b) { }
+        };
+
+        $('#tblSpCaseOperations').dataTable().fnDestroy();
+        $('#tblSpCaseOperations').DataTable(dtObj).on('draw', function () { $('[data-toggle="tooltip"]').tooltip(); });
+
+    };
+
+    const validator = function () {
+
+        let valid = false;
+
+        if ($('#BeneficentId').find(':selected').val()) valid = true;
+        if ($('#CaseId').find(':selected').val()) valid = true;
+
+        if (!$('#BeneficentId').find(':selected').val() && !valid) {
+            toastr.warning(`@SpCaseOperations.MustChooseCaseOrBenf`);
+            return false;
+        }
+        else if (!$('#CaseId').find(':selected').val() && !valid) {
+            toastr.warning(`@SpCaseOperations.MustChooseCaseOrBenf`);
+            return false;
+        }
+
+        return true;
+    };
+
+    const OperateCase = function () {
+
+        if (!$('#OperationDateStr').val()) {
+            toastr.warning(`@SpCaseOperations.OperationDate : @ERP.ResourcePack.Common.Settings.Required`);
+            return;
+        }
+
+        if (!$('#ReasonLkpId').find(':selected').val()) {
+            toastr.warning(`@SpCaseOperations.ReasonLkpId : @ERP.ResourcePack.Common.Settings.Required`);
+            return;
+        }
+
+        if (!$('#ddlCaseName').find(':selected').val() && !$('#ddlCaseNumber').find(':selected').val()) {
+            toastr.warning(`@SpCaseOperations.CaseName : @ERP.ResourcePack.Common.Settings.Required`);
+            return;
+        }
+
+        bootbox.confirm({
+            message: _booBoxMessageReplace,
+            buttons: bootBoxDefaultBtns,
+            callback: function (result) {
+
+                if (result) {
+
+                    const data = {
+                        operationDate: $('#OperationDateStr').val(),
+                        reasonLkpId: $('#ReasonLkpId').find(':selected').val(),
+                        newCaseId: $('#ddlCaseName').find(':selected').val() ? $('#ddlCaseName').find(':selected').val() : $('#ddlCaseNumber').find(':selected').val(),
+                        spContractDetailId: $('#Id').val(),
+                        lang: lang,
+                        tenantId: 0,
+                        userId: 0
+                    };
+
+                    $.ajax({
+                        url: `${baseUrl}/SpCaseOperations/OperateReplaceCase`,
+                        type: 'POST',
+                        data: JSON.stringify(data),
+                        headers:
+                        {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${$_token}`
+                        },
+                    }).done(function (response) {
+
+                        if (response.result.finalStatues == 'F') {
+                            toastr.warning(response.result.reason);
+                        }
+                        else {
+
+                            toastr.success(response.result.reason);
+
+                            setTimeout(function () {
+                                window.location.href = `${$PrefixHostName}/SpCaseOperations/Replace`;
+                            }, 10);
+                        }
+
+                    }).fail(function (response) {
+                        toastr.error(response.responseText);
+                    });
+                }
+            }
+        });
+    };
+
+    </script>

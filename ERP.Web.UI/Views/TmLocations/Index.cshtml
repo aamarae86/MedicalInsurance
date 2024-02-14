@@ -1,0 +1,16 @@
+﻿@{
+    ViewBag.Title = ERP.ResourcePack.CharityBoxes.TmLocations.Title;
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@Html.Action(nameof(ERP.Web.UI.Controllers.CharityBoxes.TmLocationsController.TmLocationsSearch))
+@Html.Action(nameof(ERP.Web.UI.Controllers.CharityBoxes.TmLocationsController.TmLocationsData))
+@Html.Partial("_ReportModal")
+
+@section scripts{
+    <script>
+        let formView = false;   
+    </script>
+    @Html.Partial("~/ViewsScripts/_CharityBoxes/TmLocations/TmLocationsScripts.cshtml")
+}
+

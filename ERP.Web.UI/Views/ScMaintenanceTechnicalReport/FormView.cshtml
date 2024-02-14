@@ -1,0 +1,116 @@
+﻿@using ERP.Web.UI.Controllers.AidModule
+@using ERP.Web.UI.Models.ViewModels.AidModule
+@using ERP.Web.UI.Models.ViewModels.Accounts
+@{
+    ViewBag.Title = ERP.ResourcePack.AidModule.ScMaintenanceTechnicalReport.Title;
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    string formTrigger = ViewBag.trigger;
+    long? id = ViewData["Id"] == null ? null : (long?)Convert.ToInt32(ViewData["Id"]);
+
+    var detailObj = ViewData["DetailAsync"] == null ? null : ViewData["DetailAsync"] as ScMaintenanceTechnicalReportVM;
+}
+
+<div class="row clearfix">
+    <div class="col-12">
+        @Html.Action(nameof(ScMaintenanceTechnicalReportController.ScMaintenanceTechnicalReportForm), new { id = id, trigger = formTrigger, ScMaintenanceTechnicalReportVM = detailObj })
+    </div>
+    <div class="col-12">
+        <div class="card">
+            <div class="body">
+                <ul class="mt-2 nav nav-tabs tab-nav-right" role="tablist">
+                    <li role="presentation">
+                        <a href="#accounts-lines" data-toggle="tab" class="show active">@ERP.ResourcePack.AidModule.ScMaintenanceTechnicalReport.DetailData</a>
+                    </li>
+                    @if (detailObj != null)
+                    {
+                        <li role="presentation">
+                            <a href="#MaintenanceQuotations" data-toggle="tab" class="show ">@ERP.ResourcePack.AidModule.ScMaintenanceQuotations.Title</a>
+                        </li>
+                    }
+                    <li role="presentation">
+                        <a href="#customers-lines" data-toggle="tab" class="show ">@ERP.ResourcePack.AidModule.ScMaintenanceTechnicalReport.Title3</a>
+                    </li>
+                </ul>
+                <div class="tab-content">
+                    <div role="tabpanel" class="tab-pane fade in active show" id="accounts-lines">
+                        @Html.Action(nameof(ScMaintenanceTechnicalReportController.AccountsLinesFormDetail), new { id = id, trigger = formTrigger })
+                        @Html.Action(nameof(ScMaintenanceTechnicalReportController.AccountsLinesDataDetail))
+                    </div>
+                    @if (detailObj != null)
+                    {
+                        <div role="tabpanel" class="tab-pane fade in  show" id="MaintenanceQuotations">
+                            @Html.Action(nameof(ScMaintenanceTechnicalReportController.ScMaintenanceTechnicalReportQuotationsData))
+                        </div>
+                    }
+                    <div role="tabpanel" class="tab-pane fade in  show" id="customers-lines">
+                        @if (formTrigger != ERP.Front.Helpers.Enums.Common.FormTriggers.Show.ToString())
+                        {
+                            @Html.Partial("_AttachmentForm");
+                        }
+                        @Html.Partial("_AttachmentsData");
+                    </div>
+                </div>
+                <div class="row clearfix"> <div class="col-md-12 text-center" id="btnContainer"></div></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body">
+                <div class="text-center">
+                    @if (formTrigger != ERP.Front.Helpers.Enums.Common.FormTriggers.Show.ToString())
+                    {
+                        <button type="submit" id="btnSubmition" class="btn btn-info btn-lg m-l-15 waves-effect">
+                            @(formTrigger == ERP.Front.Helpers.Enums.Common.FormTriggers.Insert.ToString() ?
+                                ERP.ResourcePack.Common.Settings.BtnSave : ERP.ResourcePack.Common.Settings.BtnUpdate)
+                        </button>
+                        <div id="submitLoader" style="display:none">
+                            <div class="lds-roller"><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div></div>
+                        </div>
+                    }
+                    <a href="~/ScMaintenanceTechnicalReport" class="btn btn-danger btn-lg m-l-15 waves-effect">@(ERP.ResourcePack.Common.Settings.BtnClose)</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+@section scripts{
+    <script>
+
+        const primaryEntityKeyId =  @(id ?? 0);
+        const trigger = '@formTrigger';
+        let formView = true;
+
+    </script>
+    <script src="~/Scripts/jquery.validate.min.js"></script>
+    <script src="~/Scripts/jquery.validate.unobtrusive.min.js"></script>
+    @Html.Partial("~/ViewsScripts/_AidModule/ScMaintenanceTechnicalReport/ScMaintenanceTechnicalReportScripts.cshtml")
+    @if (id != null)
+    {
+        <script>
+            $(function () {
+
+                LoadAccountLineData();
+                LoadAttachments();
+                LoadScMaintenanceQuotationDetailsData(@id);
+
+                if (primaryEntityKeyId && trigger === '@ERP.Front.Helpers.Enums.Common.FormTriggers.Show.ToString()' && @detailObj.StatusLkpId == @Convert.ToInt64(ERP.Front.Helpers.Enums.Common.ScMaintenanceTechnicalReport.New)) {
+
+                    let btns = `<a href="javascript:void(0)" onclick="return PostInvoice(@id)" class="btn btn-success">${'@ERP.ResourcePack.Common.Settings.Post'}</a>`;
+
+                    $('#btnContainer').html(btns);
+                };
+            });
+        </script>
+    }
+    else
+    {
+        <script>
+            $('#TechnicalReportDate').val('@DateTime.Now.ToString(ERP.Helpers.Core.Formatters.DateFormat)');
+        </script>
+    }
+}
+

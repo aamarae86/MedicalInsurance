@@ -1,0 +1,44 @@
+﻿@{
+    ViewBag.Title = ERP.ResourcePack.Common.Menu.SecurityDetailsList;
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="card">
+    <div class="header d-flex justify-content-start align-items-center">
+        <i class="fas fa-2x fa-chevron-down down-arr mr-2" data-toggle="collapse" data-target="#searchCollapse"></i>
+        <h2><strong>@ERP.ResourcePack.Common.Menu.SecurityDetailsList</strong></h2>
+    </div>
+    <div class="body  collapse show" id="searchCollapse">
+        <div class="row clearfix">
+            <div class="col-md-6">
+                <label class="form-label" for="FromPeriod">@ERP.ResourcePack.Accounts.ArSecurityDepositInterface.ArCustomerId</label>
+                <div class="form-group form-float">
+                    <div class="form-group">
+                        <select class="form-control" name="ArCustomerId" id="ArCustomerId"></select>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <label class="form-label" for="ToPeriod">@ERP.ResourcePack.Accounts.ArSecurityDepositInterface.StatusLkpId</label>
+                <div class="form-group form-float">
+                    <div class="form-group">
+                        <select class="form-control" name="StatusLkpId" id="StatusLkpId"></select>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row clearfix">
+            <div class="col-sm-12 text-center">
+                <div class="form-group">
+                    <button id="btnPrint" onclick="return PrintAccountStatementReport()" class="btn btn-success">@ERP.ResourcePack.Common.Settings.Print</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+@section scripts{
+    @Html.Partial("~/ViewsScripts/_ReportsAccounts/SecurityDetailsListScripts.cshtml")
+    @Html.Partial("_ReportModal")
+}

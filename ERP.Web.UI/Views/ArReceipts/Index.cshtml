@@ -1,0 +1,16 @@
+﻿@{
+    ViewBag.Title = ERP.ResourcePack.Accounts.ArReceipts.Title;
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@Html.Action(nameof(ERP.Web.UI.Controllers.Accounts.ArReceiptsController.ArReceiptsSearch))
+@Html.Action(nameof(ERP.Web.UI.Controllers.Accounts.ArReceiptsController.ArReceiptsData))
+@Html.Partial("_ReportModal")
+
+@section scripts{
+    <script>
+        let formView = false;   
+    </script>
+    @Html.Partial("~/ViewsScripts/ArReceipts/ArReceiptsScripts.cshtml")
+}
+

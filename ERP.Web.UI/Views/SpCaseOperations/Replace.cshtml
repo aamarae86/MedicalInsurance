@@ -1,0 +1,13 @@
+﻿@{
+    ViewBag.Title = ERP.ResourcePack.SpGuarantees.SpCaseOperations.ReplaceOperation;
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@Html.Action(nameof(ERP.Web.UI.Controllers.SpGuarantees.SpCaseOperationsController.ReplaceSearch))
+@Html.Action(nameof(ERP.Web.UI.Controllers.SpGuarantees.SpCaseOperationsController.ReplaceData))
+
+@section scripts{
+    @Html.Partial("~/ViewsScripts/_SpGuarantees/SpCaseOperations/ReplaceOperationScripts.cshtml")
+}
+
+

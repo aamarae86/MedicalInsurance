@@ -1,0 +1,104 @@
+﻿<script name="drawer-controller">
+
+    const @ViewData["repeatTrigger"].ToString()__arrGlSelect2 = [];
+
+        $('select[data-select2-GL="@ViewData["repeatTrigger"].ToString()GL-Acc-Dtl"]').each(function (index, item) {
+
+            const currentItemSelector = $(`#${item.id}`);
+            const seqAttr = 'data-sequence';
+
+            @ViewData["repeatTrigger"].ToString()__arrGlSelect2.push(item.id);
+
+            const currentSquece =   currentItemSelector.attr(seqAttr) ;
+            const currentSqueceSelector = $(`select[${seqAttr}="${currentSquece}"]`);
+
+            const previousSquece = `${currentSquece.split('-')[0]}-${parseInt(currentSquece.split('-')[1]) - 1}`
+            const previousSqueceSelector = $(`select[${seqAttr}="${previousSquece}"]`);
+
+            const nextSquece = `${currentSquece.split('-')[0]}-${parseInt(currentSquece.split('-')[1]) + 1}`
+            const nextSqueceSelector = $(`select[${seqAttr}="${nextSquece}"]`);
+
+            const currentParentId = currentItemSelector.attr('data-parent-id');
+            const prevParentId = previousSqueceSelector.attr('data-parent-id');
+
+            const glHeaderId = currentItemSelector.attr('data-header-GL-id');
+
+            currentItemSelector.select2({
+                ajax: {
+                    url: `${baseUrl}/GlAccDetails/GetGlAccDetailsSelect2`,
+                    dataType: 'json',
+                    headers: {
+                        'Authorization': `Bearer ${$_token}`
+                    },
+                    data: function (params) {
+
+                        if (nextSqueceSelector !== undefined) {
+                            $(`#${nextSqueceSelector.attr("id")}`).val('').trigger('change');
+                        }
+
+                        let parentId = $(`#${previousSqueceSelector.attr("id")}`).find(':selected').val();
+
+                        params.page = params.page || 1;
+                        return {
+                            glheaderId: glHeaderId,
+                            parentId: parentId === undefined || currentParentId === '' ? '' : parentId,
+                            pageSize: pageSize,
+                            pageNumber: params.page,
+                            searchTerm: params.term,
+                            lang: lang
+                        };
+                    },
+                    processResults: function (data, params) {
+                        params.page = params.page || 1;
+                        return {
+                            results: data.result.results,
+                            pagination: {
+                                more: (params.page * pageSize) < data.result.total
+                            }
+                        };
+                    }
+                },
+                placeholder: select2Placeholder,
+                minimumInputLength: 0,
+                allowClear: true,
+                language: select2Lang
+            });
+
+        });
+
+        $('#@ViewData["repeatTrigger"].ToString()AccId').select2({
+            ajax: {
+                url: `${baseUrl}/GlAccounts/GetGlAccountsSelect2`,
+                dataType: 'json',
+                headers: {
+                    'Authorization': `Bearer ${$_token}`
+                },
+                data: function (params) {
+
+                    params.page = params.page || 1;
+                    return {
+                        pageSize: pageSize,
+                        pageNumber: params.page,
+                        searchTerm: params.term,
+                        lang: lang,
+                        filterTrigger:window.location.href.includes('ScPortalRequestStudy') ?  'PORTAL_STUDY' : ''
+                    };
+                },
+                processResults: function (data, params) {
+                    params.page = params.page || 1;
+                    return {
+                        results: data.result.results,
+                        pagination: {
+                            more: (params.page * pageSize) < data.result.total
+                        }
+                    };
+                }
+            },
+            placeholder: select2Placeholder,
+            minimumInputLength: 0,
+            allowClear: true,
+            language: select2Lang
+        });
+
+</script>
+

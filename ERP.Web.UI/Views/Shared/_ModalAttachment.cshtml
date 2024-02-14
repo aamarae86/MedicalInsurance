@@ -1,0 +1,57 @@
+﻿<div class="modal fade" id="modal-attachment" data-backdrop="static" data-keyboard="false" role="basic" aria-hidden="true" style="display:none;">
+    <div class="modal-dialog modal-lg" style="max-width:95%">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"></h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div id="formAttachmets">
+                    <input type="hidden"  id="FilePathAttachment1" />
+                    <div class="row">
+                        <div class="col-sm-2">
+                            <img src="~/AssetsPack/assets/images/img-previewer.png" width="80px" height="80px" class="img-thumbnail" id="img-container" />
+                        </div>
+                        <div class="col-sm-6">
+                            @Html.Partial("_AttachmentComponent", new ERP.Web.UI.Models.ViewModels.AttachmentComponentModelVM { HidenFilePathId = "FilePathAttachment1", ImgId = "img-container", FileUploaderId = "UnitsAttachmentUploader" })
+                        </div>
+                        <div class="col-sm-4">
+                            <div class="form-group m-2" style="margin-top:15px !important">
+                                <button id="btnAddAttachmentModalRow" onclick="return AddUnitAttachmentRow('FilePathAttachment1')" class="btn btn-success">@ERP.ResourcePack.Common.Settings.BtnAddNew</button>
+                                <button style="display:none;" onclick="return UpdateUnitAttachmentRow('FilePathAttachment1')" id="btnUpdateAttachmentModalRow" class="btn btn-info">@ERP.ResourcePack.Common.Settings.BtnUpdate</button>
+                                <button style="display:none;" id="btnCancelAttachmentModalRow" onclick="clearFormUnitAttachment(); $('#btnCancelAttachmentModalRow').hide();$('#btnUpdateAttachmentModalRow').hide();$('#btnAddAttachmentModalRow').show();" class="btn btn-danger">@ERP.ResourcePack.Common.Settings.BtnCancel</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <hr />
+                <div class="row clearfix">
+                    <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+                        <div>
+                            <div>
+                                <div class="table-responsive">
+                                    <table class="table table-bordered table-striped table-hover dataTable" id="tblModalAttachments" style="width:100%">
+                                        <thead>
+                                            <tr>
+                                                <th><i class="fas fa-hashtag"></i></th>
+                                                <th><i class="fas fa-download"></i></th>
+                                                <th><i class="fas fa-image"></i></th>
+                                                <th><i class="fas fa-cog"></i></th>
+                                            </tr>
+                                        </thead>
+                                        <tbody></tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-danger" data-dismiss="modal">@ERP.ResourcePack.Common.Settings.BtnClose</button>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,243 @@
+﻿@using ERP.Authorization;
+@using ERP.Web.UI.Controllers.CharityBoxes
+@using ERP.ResourcePack.CharityBoxes
+@{
+    string permissionsStr = TempData["Permissions"].ToString();
+}
+
+@if (permissionsStr.Contains(PermissionNames.Pages_TmCharityBoxReceive_Post))
+{
+    <script>
+        const PostAjax = function (id) {
+
+            const data = {
+                id: id,
+                lang: lang
+            };
+
+            $.ajax({
+                url: `${baseUrl}/TmCharityBoxReceive/PostTmCharityBoxReceive`,
+                type: 'POST',
+                data: JSON.stringify(data),
+                headers:
+                {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${$_token}`
+                },
+            }).done(function (response) {
+                console.log(response);
+                if (response.result.finalStatues == 'F') {
+                    toastr.warning(response.result.reason);
+                }
+                else {
+                    toastr.success(response.result.reason);
+                    _mainModal.modal('hide');
+                    LoadDataGrid();
+                }
+            }).fail(function (response) {
+                toastr.error(response);
+            });
+        };
+    </script>
+}
+else
+{
+    <script>
+        const PostAjax = function (id) { };
+    </script>
+}
+
+<script>
+    const _mainController = "TmCharityBoxReceive"
+
+    $(function () {
+        LoadDataGrid();
+
+        $('#TmCharityBoxReceive').addClass('active');
+    });
+
+    const _loadDataUrl = `${$PrefixHostName}/${_mainController}/@nameof(TmCharityBoxReceiveController.LoadDataGrid)`;
+    const _tblSelector = $('#tblTmCharityBoxReceive');
+    const _tblLoader = $('#tblLoader');
+    const _txtStatusLkpId = $('#searchBox #StatusLkpIdSearch');
+    const _txtCharityTypeId = $('#searchBox #CharityTypeIdSearch');
+    const _txtReceiveDateFrom = $('#searchBox #ReceiveDateFrom');
+    const _txtReceiveDateTo = $('#searchBox #ReceiveDateTo');
+    const _txtReceiveNumber = $('#searchBox #ReceiveNumber');
+
+    const _PostStatus = @Convert.ToInt64(ERP.Front.Helpers.Enums.Common.TmCharityBoxReceive.Posted);
+
+    const _permissions = '@permissionsStr';
+    const _updatePermission = '@PermissionNames.Pages_TmCharityBoxReceive_Update';
+    const _deletePermission = '@PermissionNames.Pages_TmCharityBoxReceive_Delete';
+    const _postPermission = '@PermissionNames.Pages_TmCharityBoxReceive_Post';
+
+    var OnBegin = function (response) {
+        fireBtnLoader();
+    };
+
+    var OnSuccess = function (response) {
+
+        if (response.success) {
+
+            if (response.customRestResult.trigger === '@ERP.Front.Helpers.Enums.Common.FormTriggers.Insert') {
+
+                toastr.success(response.customRestResult.message);
+
+                LoadDataGrid();
+
+                _mainModal.modal('hide');
+
+            } else if (response.customRestResult.trigger === '@ERP.Front.Helpers.Enums.Common.FormTriggers.Update') {
+
+                LoadDataGrid();
+
+                _mainModal.modal('hide');
+
+                toastr.success(response.customRestResult.message);
+            }
+
+        } else {
+            toastr.error(response.customRestResult.message);
+        }
+
+    };
+
+    var OnComplete = function (response) {
+
+        downBtnLoader();
+    };
+
+    var OnFailure = function (response) {
+        toastr.error(response);
+        console.log(response);
+        downBtnLoader();
+    };
+
+    const LoadDataGrid = function () {
+
+        $('#tblLoader').show();
+
+        const parms = {
+            ReceiveDateFrom: _txtReceiveDateFrom.val(),
+            ReceiveDateTo: _txtReceiveDateTo.val(),
+            ReceiveNumber: _txtReceiveNumber.val(),
+            StatusLkpIdSearch: _txtStatusLkpId.val(),
+            CharityTypeId: _txtCharityTypeId.val()
+        };
+
+        const columns = [
+            {
+                "data": "result.data.id",
+                'render': function (data, type, row, meta) {
+                    return meta.row + meta.settings._iDisplayStart + 1;
+                }
+            },
+            {
+                "data": "@nameof(TmCharityBoxReceive.ReceiveNumber)",
+                "name": "Id",
+                "autoWidth": true
+            },
+            {
+                "data": "ReceiveDate",
+                "name": "@nameof(TmCharityBoxReceive.ReceiveDate)",
+                "autoWidth": true
+            },
+            {
+                "data": null,
+                "name":"@nameof(TmCharityBoxReceive.StatusLkpId)",
+                "autoWidth": true,
+                "render": function (data, type, row) {
+                    if (!row.FndLookupValues) {
+                        return "";
+                    }
+                    if (lang === 'ar-EG')
+                        return row.FndLookupValues.NameAr;
+                    return row.FndLookupValues.NameEn;
+                }
+            },
+            {
+                "data": null,
+                "name": "@nameof(TmCharityBoxReceive.CharityTypeId)",
+                "autoWidth": true,
+                "render": function (data, type, row) {
+                    if (!row.CharityBoxesType) {
+                        return "";
+                    }
+                    return row.CharityBoxesType.CharityBoxTypeName;
+                }
+            },
+            {
+                "data": "@nameof(TmCharityBoxReceive.NoOfCharityBox)",
+                "name": "@nameof(TmCharityBoxReceive.NoOfCharityBox)",
+                "autoWidth": true
+            },
+            {
+                "data": null,
+                "sortable": false,
+                "render": function (data, type, row) {
+
+                    let formAction = `${$PrefixHostName}/${_mainController}/@nameof(TmCharityBoxReceiveController.TmCharityBoxReceiveForm)`;
+                    let DeleteAction = `${$PrefixHostName}/${_mainController}/@nameof(TmCharityBoxReceiveController.Delete)`;
+
+                    let formTitle = '@TmCharityBoxReceive.Title';
+                    let btns = '';
+
+                    if (_permissions.includes(_postPermission) & row.StatusLkpId != _PostStatus) {
+                         btns += `<a href="javascript:void(0)" onclick="PostAjax(${row.Id})" title="@ERP.ResourcePack.Common.Settings.Post"><i class="mx-2 fas fa-check-circle text-info"></i></a>`;
+                    }
+
+                    if (_permissions.includes(_updatePermission) & row.StatusLkpId != _PostStatus) {
+                        btns += `<a href="javascript:void(0)" onclick="AjaxController.GetFormModal(${row.Id},'@ERP.Front.Helpers.Enums.Common.FormTriggers.Update','${formAction}','${formTitle}');" title="@ERP.ResourcePack.Common.Settings.Edit"><i class="mx-2 fas fa-edit text-info"></i></a>`;
+                    }
+
+                    btns += `<a href="javascript:void(0)" onclick="AjaxController.GetFormModal(${row.Id},'@ERP.Front.Helpers.Enums.Common.FormTriggers.Show','${formAction}','${formTitle}');" title="@ERP.ResourcePack.Common.Settings.Show"><i class="mx-2 fas fa-eye text-info"></i></a>`;
+
+                    if (_permissions.includes(_deletePermission) & row.StatusLkpId != _PostStatus) {
+                        btns += `<a href="javascript:void(0)" onclick="AjaxController.DeleteMainTableRow(${row.Id},'${DeleteAction}');" title="@ERP.ResourcePack.Common.Settings.Delete"><i class="mx-2 fas fa-trash-alt text-danger"></i></a>`;
+                    }
+
+                    const _auditedPermission = '@PermissionNames.Pages_TmCharityBoxReceive_Audit';
+
+                    if (_permissions.includes(_auditedPermission)) {
+
+                        row.permission = _auditedPermission;
+
+                        btns += GetAuditedButton(row);
+                    }
+
+                    return btns;
+                }
+            }
+        ];
+
+        const dtObj = {
+            "processing": true,
+            "serverSide": true,
+            "filter": false,
+            "orderMulti": false,
+            "language": dataTableLang,
+            "ajax": {
+                "url": _loadDataUrl,
+                "type": "POST",
+                "datatype": "json",
+                "data": parms,
+                "complete": function () {
+                    _tblLoader.hide();
+                }
+            },
+            "columns": columns,
+            "initComplete": function () {
+                $('[data-toggle="tooltip"]').tooltip();
+            }
+        };
+
+        _tblSelector.dataTable().fnDestroy();
+        _tblSelector.DataTable(dtObj).on('draw', function () { $('[data-toggle="tooltip"]').tooltip(); });
+
+    };
+
+
+    $('#searchBox #CharityTypeIdSearch').select2(ReturnSelect2ObjectDefault(`${baseUrl}/TmCharityBoxesType/GetSelect2`));
+    $('#searchBox #StatusLkpIdSearch').select2(ReturnSelect2ObjectForLkpsTypes('@ERP.Front.Helpers.Enums.Common.FndLkpsTypes.TmCharityBoxReceiveStatues.ToString()'));
+</script>

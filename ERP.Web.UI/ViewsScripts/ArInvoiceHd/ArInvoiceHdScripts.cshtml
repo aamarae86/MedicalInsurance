@@ -1,0 +1,739 @@
+﻿@using ERP.ResourcePack.Accounts
+@using ERP.Web.UI.Controllers.Accounts
+@using ERP.Authorization;
+@{
+    string permissionsStr = TempData["Permissions"].ToString();
+    string encUpdateTrigger = ERP.Front.Helpers.Enums.Common.EncUpdate;
+    string encInsertTrigger = ERP.Front.Helpers.Enums.Common.EncInsert;
+    string encShowTrigger = ERP.Front.Helpers.Enums.Common.EncShow;
+}
+
+@if (permissionsStr.Contains(PermissionNames.Pages_ArInvoiceHd_Post))
+{
+    <script>
+
+        const PostInvoice = function (id) {
+
+            bootbox.confirm({
+                message: _booBoxMessagePosting,
+                buttons: bootBoxDefaultBtns,
+                callback: function (result) {
+
+                    if (result) {
+
+                        const data = {
+                            id: id,
+                            lang: lang
+                        };
+
+                        $.ajax({
+                            url: `${baseUrl}/ArInvoiceHd/PostArInvoice`,
+                            type: 'POST',
+                            data: JSON.stringify(data),
+                            headers:
+                            {
+                                'Content-Type': 'application/json',
+                                'Authorization': `Bearer ${$_token}`
+                            },
+                        }).done(function (response) {
+
+                            if (response.result.finalStatues == 'F') {
+                                toastr.warning(response.result.reason);
+                            }
+                            else {
+                                toastr.success(response.result.reason);
+                                LoadScCampainsDetailData();
+                            }
+                        }).fail(function (response) {
+                            toastr.error(response);
+                        });
+
+                    }
+                }
+            });
+        };
+
+    </script>
+}
+else
+{
+    <script>
+        const PostInvoice = function (id) { };
+    </script>
+}
+
+<script>
+    const _mainController = "ArInvoiceHd"
+
+    $(function () {
+        LoadDataGrid();
+        $('#tblArInvoiceHdPrint thead').html($('#tblArInvoiceHd thead').html());
+        $('#tblArInvoiceHdPrint thead tr :last-child').remove();
+        $('#ArInvoiceHd').addClass('active');
+
+        $('#HdDate').parent('.form-line').addClass('focused');
+
+    });
+
+    const _loadDataUrl = `${$PrefixHostName}/${_mainController}/@nameof(ArInvoiceHdController.LoadDataGrid)`;
+    const _tblSelector = $('#tblArInvoiceHd');
+    const _tblLoader = $('#tblLoader');
+
+    const _permissions = '@permissionsStr';
+    const _updatePermission = '@PermissionNames.Pages_ArInvoiceHd_Update';
+    const _deletePermission = '@PermissionNames.Pages_ArInvoiceHd_Delete';
+    const _postPermission = '@PermissionNames.Pages_ArInvoiceHd_Post';
+    const _postStatus = @Convert.ToInt64(ERP.Front.Helpers.Enums.Common.ArInvoiceHd.Posted);
+    const _newStatus = @Convert.ToInt64(ERP.Front.Helpers.Enums.Common.ArInvoiceHd.New);
+
+    var OnBegin = function (response) {
+        fireBtnLoader();
+    };
+
+    var OnSuccess = function (response) {
+
+        $('#btnSubmition').prop('disabled', false);
+
+        if (response.success) {
+
+            if (response.customRestResult.trigger === '@ERP.Front.Helpers.Enums.Common.FormTriggers.Insert') {
+
+                toastr.success(response.customRestResult.message);
+
+                setTimeout(function () {
+                    window.location.href = $PrefixHostName + '/ArInvoiceHd';
+                }, 200);
+
+            }
+            else if (response.customRestResult.trigger === '@ERP.Front.Helpers.Enums.Common.FormTriggers.Update') {
+
+                toastr.success(response.customRestResult.message);
+
+                setTimeout(function () {
+                    window.location.href = $PrefixHostName + '/ArInvoiceHd';
+                }, 200);
+
+            }
+            else {
+                toastr.error(response.customRestResult.message);
+            }
+
+        } else {
+                toastr.error(response.error.message);
+        }
+
+    };
+
+    var OnComplete = function (response) {
+        downBtnLoader();
+    };
+
+    var OnFailure = function (response) {
+        toastr.error(response);
+        downBtnLoader();
+    };
+
+    const LoadDataGrid = function () {
+
+        $('#tblLoader').show();
+
+        const params = {
+            HdInvoiceNo: $('#searchBox #HdInvoiceNo').val(),
+            HdDate: $('#searchBox #HdDate').val(),
+            StatusLkpId: $('#searchBox #StatusLkpId').find(':selected').val(),
+            ArCustomerId: $('#searchBox #ArCustomerId').find(':selected').val()
+        };
+
+        const columns = [
+            {
+                "data": "result.data.id",
+                'render': function (data, type, row, meta) {
+                    return meta.row + meta.settings._iDisplayStart + 1;
+                }
+            },
+            {
+                "data": "HdInvoiceNo",
+                "name": "HdInvoiceNo",
+                "autoWidth": true
+            },
+            {
+                "data": "HdDate",
+                "name": "HdDate",
+                "autoWidth": true
+            },
+            {
+                "data": null,
+                "autoWidth": true,
+                "render": function (d, t, row) {
+                    if (row.ArCustomers == null) return '';
+
+                    return lang === 'ar-EG' ? row.ArCustomers.CustomerNumber : row.ArCustomers.CustomerNumber;
+                }
+            },
+            {
+                "data": null,
+                "autoWidth": true,
+                "render": function (d, t, row) {
+                    if (row.ArCustomers == null) return '';
+
+                    return lang === 'ar-EG' ? row.ArCustomers.CustomerNameAr : row.ArCustomers.CustomerNameEn;
+                }
+            },
+            {
+                "data": "TotalAmount",
+                "name": "TotalAmount",
+                "render": $.fn.dataTable.render.number(',', '.', 2),
+                "autoWidth": true
+            },
+            {
+                "data": null,
+                "autoWidth": true,
+                "render": function (d, t, row) {
+                    if (row.FndLookupValuesArInvoiceHdStatusLkp == null) return '';
+
+                    return lang === 'ar-EG' ? row.FndLookupValuesArInvoiceHdStatusLkp.NameAr : row.FndLookupValuesArInvoiceHdStatusLkp.NameEn;
+                }
+            },
+            {
+                "data": null,
+                "sortable": false,
+                "render": function (data, type, row) {
+
+                    let formAction = `${$PrefixHostName}/${_mainController}/@nameof(ArInvoiceHdController.ArInvoiceHdForm)`;
+                    let DeleteAction = `${$PrefixHostName}/${_mainController}/@nameof(ArInvoiceHdController.Delete)`;
+
+                    let formTitle = '@ERP.ResourcePack.Accounts.ArCustomers.ArInvoiceHd';
+                    let btns = '';
+
+                    if (_permissions.includes(_updatePermission) && row.StatusLkpId == _newStatus) {
+                        btns += `<a href="${$PrefixHostName}/ArInvoiceHd/FormView?id=${row.EncId}&t=@encUpdateTrigger" title="@ERP.ResourcePack.Common.Settings.Edit"><i class="mx-2 fas fa-edit text-info"></i></a>`;
+                    }
+
+                    btns += `<a href="${$PrefixHostName}/ArInvoiceHd/FormView?id=${row.EncId}&t=@encShowTrigger" title="@ERP.ResourcePack.Common.Settings.Show"><i class="mx-2 fas fa-eye text-info"></i></a>`;
+
+                    if (_permissions.includes(_deletePermission) && row.StatusLkpId == _newStatus) {
+                        btns += `<a href="javascript:void(0)" onclick="AjaxController.DeleteMainTableRow(${row.Id},'${DeleteAction}');" title="@ERP.ResourcePack.Common.Settings.Delete"><i class="mx-2 fas fa-trash-alt text-danger"></i></a>`;
+                    }
+
+                    if (_permissions.includes(_postPermission) & row.StatusLkpId == _newStatus) {
+                        btns += `<a href="javascript:void(0)" onclick="PostInvoice(${row.Id})"  title="@ERP.ResourcePack.Common.Settings.Post"><i class="mx-2 fas fa-check-circle text-info"></i></a>`;
+                    }
+
+                    btns += `<a href="javascript:void(0);" onclick="return print('${$PrefixHostName}/ArInvoiceHd/PrintArInvoiceHdScreen','${row.EncId}','${lang}')" title="@ERP.ResourcePack.Common.Settings.Print"><i class="mx-2 fas fa-print text-success"></i></a>`;
+
+                    const _auditedPermission = '@PermissionNames.Pages_ArInvoiceHd_Audit';
+
+                    if (_permissions.includes(_auditedPermission)) {
+
+                        row.permission = _auditedPermission;
+
+                        btns += GetAuditedButton(row);
+                    }
+
+                    return btns;
+                }
+            }
+        ];
+
+        const dtObj = {
+            "processing": true,
+            "serverSide": true,
+            "filter": false,
+            "orderMulti": false,
+            "language": dataTableLang,
+            "ajax": {
+                "url": _loadDataUrl,
+                "type": "POST",
+                "datatype": "json",
+                "data": params,
+                "complete": function () {
+                      _tblLoader.hide();
+                }
+            },
+            "columns": columns,
+            "initComplete": function () {
+                $('[data-toggle="tooltip"]').tooltip();
+            }
+
+        };
+
+        _tblSelector.dataTable().fnDestroy();
+        _tblSelector.DataTable(dtObj).on('draw', function () { $('[data-toggle="tooltip"]').tooltip(); });
+
+        setTimeout(function () {
+            $(".sorting_1").removeAttr('colspan');
+        }, 500);
+    };
+
+    $('#btnSubmition').on('click', function () {
+
+        if ($('#mainForm').valid()) {
+
+            $(this).prop('disabled', true);
+
+            $('#submitLoader').show();
+
+            $('#mainForm').submit();
+
+        } else {
+            $(this).prop('disabled', false);
+
+            $('#submitLoader').hide();
+        }
+
+    });
+
+    $('#searchBox #StatusLkpId').select2(ReturnSelect2ObjectForLkpsTypes('@ERP.Front.Helpers.Enums.Common.FndLkpsTypes.ArInvoiceHdPost.ToString()'));
+    $('#searchBox #ArCustomerId').select2(ReturnSelect2ObjectDefault(`${baseUrl}/ArCustomers/GetArCustomersSelect2`));
+    $('#ArCustomerId').select2(ReturnSelect2ObjectDefault(`${baseUrl}/ArCustomers/GetArCustomersSelect2`));
+    $('#CurrancyId').select2(ReturnSelect2ObjectDefault(`${baseUrl}/Currency/GetCurrenciesSelect2`));
+
+    $('#CurrancyId').on('change', function (e) {
+
+        const currency = $(this);
+        const rateTxt = $('#CurrancyRate');
+
+       if (currency === undefined || currency.find(':selected').val() === undefined) {
+           $('#CurrancyRate').val('');
+       } else {
+            $.ajax({
+                url: `${baseUrl}/Currency/GetRate`,
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${$_token}`
+                },
+                data: {
+                    Id: currency.find(':selected').val(),
+                    date: ''
+                }
+            }).done(function (rate) {
+
+                let _inputSelector = $('#CurrancyRate');
+
+                _inputSelector.parent('.form-line').addClass('focused');
+
+                rateTxt.val(rate.result);
+
+            }).fail(function (response) {
+                toastr.error(response);
+            });
+        }
+   });
+
+</script>
+
+<script>
+
+    const _tblGlHeaderDetailSelector = $('#tblArInvoiceHdDetail');
+    const _tblGlHeaderDetailSelectorBody = $('#tblArInvoiceHdDetail tbody');
+    const _listGljeLinesDetails = $('#ListArInvoiceTr');
+
+    let _glHeaderDetails = [], updatedRow, sumDebit = 0, sumCredit = 0, tblCounterIndex = 0;
+
+    const fillGlDetail = function () {
+
+        const resultCodeComUtility = GetCodeComUtilites(__arrGlSelect2, 'AccId');
+
+        if (resultCodeComUtility === null || !$('#Description').val() || !$('#Amount').val()) {
+            toastr.warning('@GlJeHeaders.FormDetailNotValid');
+            return;
+        }
+
+        const current = {
+            index: ++tblCounterIndex,
+            codeComUtilityIds: resultCodeComUtility.idsStr,
+            codeComUtilityTexts: resultCodeComUtility.textsStr,
+            description: $('#Description').val(),
+            amount: $('#Amount').val(),
+            taxPercent: $('#TaxPercent').val(),
+            taxAmount: $('#TaxAmount').val(),
+            total: $('#Total').val(),
+            rowStatus: NewStatus
+        };
+
+        return current;
+    };
+
+    const AddArInvoiceHdDetail = function () {
+
+        const current = fillGlDetail();
+
+        if (current === undefined) {
+             toastr.warning('@GlJeHeaders.FormDetailNotValid');
+             return;
+        }
+
+        _glHeaderDetails.push(current);
+
+        _listGljeLinesDetails.val(JSON.stringify(_glHeaderDetails));
+
+        bindglHeaderDetailsTable();
+
+        clearFormAdding();
+    };
+
+    const bindglHeaderDetailsTable = function () {
+
+        sumDebit = 0; sumCredit = 0, sumTotal = 0;
+
+        let rows = '';
+
+        const detailArr = _glHeaderDetails.filter(z => z.rowStatus !== DeletedStatus);
+
+        $.each(detailArr, function (i, item) {
+            var amountVal = +item.amount;
+            var taxPercentVal = +item.taxPercent / 100;
+            var taxAmountVal = amountVal * taxPercentVal;
+            var totalVal = +amountVal + +taxAmountVal;
+            rows += '<tr>';
+
+            rows += `<td>${item.index}</td>`;
+            rows += `<td>${item.codeComUtilityTexts}</td>`;
+            rows += `<td>${item.description}</td>`;
+            rows += `<td>${Number(item.amount).toLocaleString(undefined, optionsNumFormat)}</td>`;
+            rows += `<td>${item.taxPercent ? item.taxPercent : ''} ${item.taxPercent ? '%' :''}</td>`;
+            rows += `<td>${Number(taxAmountVal).toLocaleString(undefined, optionsNumFormat)}</td>`;
+            rows += `<td>${Number(totalVal).toLocaleString(undefined, optionsNumFormat)}</td>`;
+
+            if (primaryEntityKeyId === 0 || trigger !== '@ERP.Front.Helpers.Enums.Common.FormTriggers.Show.ToString()') {
+                rows += `<td><a href="javascript:void(0)" onclick="return DeleteGlJeLineDetail(${item.index})"><i class="mx-2 fas fa-trash-alt text-danger"></i></a>`;
+                rows += `<a href="javascript:void(0)" onclick="return GetGlJeRow(${item.index})"><i class="mx-2 fas fa-edit text-success"></i></a></td>`;
+            } else {
+                rows += '<td></td>';
+            }
+
+            rows += '</tr>';
+        });
+
+        rows += '<tr>';
+        rows += `<td>#</td>`;
+        rows += `<td>--</td>`;
+
+
+        detailArr.map(z => sumCredit += +z.amount);
+        detailArr.map(z => sumTotal += +z.total);
+
+        if (sumDebit === sumCredit) {
+            rows += `<td class="text-success">@ERP.ResourcePack.AccountsExtend.ApInvoiceHd.Total</td>`;
+            rows += `<td class="text-success">${(sumCredit).toLocaleString(undefined, optionsNumFormat)}</td>`;
+            rows += `<td></td><td></td><td class="text-success>${(sumTotal).toLocaleString(undefined, optionsNumFormat)}</td>`;
+        } else {
+
+            if (sumCredit > sumDebit) {
+                rows += `<td class="text-success"> <b class="text-success"> @ERP.ResourcePack.AccountsExtend.ApInvoiceHd.Total </b> </td>`;
+                rows += `<td class="text-success">${(sumCredit).toLocaleString(undefined, optionsNumFormat)}</td>`;
+                rows += `< td ></td ><td></td><td class="text-danger>${(sumTotal).toLocaleString(undefined, optionsNumFormat )}</td>`;
+
+            } else if (sumDebit > sumCredit) {
+
+                rows += `<td class="text-success"> @ERP.ResourcePack.AccountsExtend.ApInvoiceHd.Total </td>`;
+                rows += `<td class="text-success">${(sumCredit).toLocaleString(undefined, optionsNumFormat)} <b class="text-success"></b> </td>`;
+                rows += `<td></td><td></td><td class="text-danger>${(sumTotal).toLocaleString(undefined, optionsNumFormat)}</td>`;
+
+            } else {
+                rows += `<td class="text-success">@ERP.ResourcePack.AccountsExtend.ApInvoiceHd.Total </td>`;
+                rows += `< td class="text-success" > ${ (sumCredit).toLocaleString(undefined, optionsNumFormat)}</td>`;
+                rows += `< td ></td ><td></td><td class="text-danger>${(sumTotal).toLocaleString(undefined, optionsNumFormat )}</td>`;
+            }
+
+        }
+
+        rows += '</tr>';
+
+        _tblGlHeaderDetailSelectorBody.html(rows);
+    };
+
+    const DeleteGlJeLineDetail = function (index) {
+
+        const current = _glHeaderDetails.find(z => z.index === index);
+
+        const indexOfCurrent = _glHeaderDetails.indexOf(current);
+        if (!current.id) {
+
+           _glHeaderDetails.splice(indexOfCurrent, 1);
+
+        } else {
+
+            current.rowStatus = DeletedStatus;
+
+           _glHeaderDetails.splice(indexOfCurrent, 1,current);
+        }
+
+
+        bindglHeaderDetailsTable();
+
+        _listGljeLinesDetails.val(_glHeaderDetails.length === 0 ? '' : JSON.stringify(_glHeaderDetails));
+    };
+
+    const LoadDetailGlJeLinesData = function () {
+
+        $.ajax({
+            url: `${baseUrl}/ArInvoiceHd/GetAllArInvoiceHdDetails`,
+            method: 'GET',
+            headers: {
+                        'Authorization': `Bearer ${$_token}`
+            },
+            data: {
+                gljeheaderId: primaryEntityKeyId
+            }
+        }).done(function (data) {
+
+            _glHeaderDetails = [...data.result];
+
+            tblCounterIndex = 0;
+
+            $.each(_glHeaderDetails, function (i,item) {
+                item.index = ++tblCounterIndex;
+            });
+
+            bindglHeaderDetailsTable();
+
+            _listGljeLinesDetails.val(JSON.stringify(_glHeaderDetails));
+        });
+
+    };
+
+    const debitAmmountSetter = function () {
+
+        const currentVal = $('#DebitAmount').val();
+
+        if (currentVal <= 0)
+        {
+            $('#CreditAmount').attr('disabled',false);
+        }
+        else
+        {
+            $('#CreditAmount').attr('disabled',true);
+            $('#CreditAmount').val(0);
+            $('#CreditAmount').parent('.form-line').addClass('focused');
+        }
+    };
+
+    const creditAmmountSetter = function () {
+
+        const currentVal = $('#CreditAmount').val();
+
+        if (currentVal <= 0)
+        {
+            $('#DebitAmount').attr('disabled',false);
+        }
+        else
+        {
+            $('#DebitAmount').attr('disabled',true);
+            $('#DebitAmount').val(0);
+            $('#DebitAmount').parent('.form-line').addClass('focused');
+        }
+
+    };
+
+    const clearFormAdding = function () {
+
+        $('#Amount').val('');
+        $('#TaxPercent').val('');
+        $('#TaxAmount').val('');
+        $('#Total').val('');
+        $('#Description').val('');
+        $('#Amount').attr('disabled',false);
+        $('#TaxPercent').attr('disabled',false);
+        $('#TaxAmount').attr('disabled',false);
+        $('#Total').attr('disabled',false);
+        $('#Description').attr('disabled',false);
+        $('select[data-header-gl-id]').val('').trigger('change');
+        $('#AccId').val('').trigger('change');
+    };
+
+    const GetGlJeRow = function (tblIndex) {
+
+        clearFormAdding();
+
+        $('#btnAddDetailRow').hide();
+        $('#btnUpdateDetailRow').show();
+        $('#btnCancelDetailRow').show();
+
+        const current = _glHeaderDetails.find(z => z.index === tblIndex);
+
+        BindCodeComUtilitesDropDowns(__arrGlSelect2, 'AccId', current.codeComUtilityIds, current.codeComUtilityTexts);
+
+        var amountVal = +current.amount;
+        var taxPercentVal = +current.taxPercent / 100;
+        var taxAmountVal = amountVal * taxPercentVal;
+        var totalVal = +amountVal + +taxAmountVal;
+
+
+        $('#Description').val(current.description);
+        $('#Amount').val(current.amount);
+        $('#TaxPercent').val(current.taxPercent);
+        $('#TaxAmount').val(taxAmountVal);
+        $('#Total').val(totalVal);
+        
+        
+
+        $('#Description').parent('.form-line').addClass('focused');
+        $('#Amount').parent('.form-line').addClass('focused');
+        $('#TaxPercent').parent('.form-line').addClass('focused')
+        $('#TaxAmount').parent('.form-line').addClass('focused')
+        $('#Total').parent('.form-line').addClass('focused')
+
+        updatedRow = current;
+
+    };
+
+    const UpdateArInvoiceHdDetailRow = function () {
+
+        let current = _glHeaderDetails.find(z => z.index === updatedRow.index);
+
+        let indexOfCurrent = _glHeaderDetails.indexOf(_glHeaderDetails.find(z => z.index === updatedRow.index));
+
+       const newRow = fillGlDetail();
+
+        if (newRow === undefined) {
+             toastr.warning('@GlJeHeaders.FormDetailNotValid');
+             return;
+        }
+
+        newRow.index = current.index;
+        newRow.id = updatedRow.id;
+        newRow.arDrCrHdId = updatedRow.arDrCrHdId;
+        newRow.rowStatus = !updatedRow.id ? NewStatus : UpdatedStatus;
+
+        _glHeaderDetails.splice(indexOfCurrent, 1,newRow);
+
+        $('#btnAddDetailRow').show();
+        $('#btnUpdateDetailRow').hide();
+        $('#btnCancelDetailRow').hide();
+
+        clearFormAdding();
+
+        _listGljeLinesDetails.val(JSON.stringify(_glHeaderDetails));
+
+        bindglHeaderDetailsTable();
+    };
+
+    $('#TaxPercent').on('keyup', function () { calcTaxAmount(); });
+    $('#Amount').on('keyup', function () { calcTaxAmount(); });
+
+    const calcTaxAmount = function () {
+
+        const taxPerc = $('#TaxPercent'), rentAmount = $('#Amount'), taxAmount = $('#TaxAmount');
+
+        if (taxPerc.val() && rentAmount.val()) {
+
+            const taxVal = (parseFloat(taxPerc.val()) / 100) * parseFloat(rentAmount.val());
+
+            taxAmount.val(parseFloat(taxVal.toFixed(6)));
+            taxAmount.parent('.form-line').addClass('focused');
+            calcTotal();
+        }
+
+    };
+
+    const calcTotal = function () {
+
+        if ($('#Amount').val() && $('#TaxAmount').val()) {
+
+            const total = +$('#Amount').val() + +$('#TaxAmount').val();
+
+            $('#Total').val(parseFloat(total.toFixed(6)));
+            $('#Total').parent('.form-line').addClass('focused');
+        }
+
+    };
+
+     const print = function (url,id,lang) {
+
+        const data = { id: id, lang : lang };
+
+        openModal(data, url);
+    };
+
+
+    function printExc() {
+        $('.page-loader-wrapper').show();
+        $('#tblArInvoiceHdPrint_wrapper').parent().addClass('d-none');
+        const parmss = {
+            HdInvoiceNo: $('#searchBox #HdInvoiceNo').val(),
+            HdDate: $('#searchBox #HdDate').val(),
+            StatusLkpId: $('#searchBox #StatusLkpId').find(':selected').val(),
+            ArCustomerId: $('#searchBox #ArCustomerId').find(':selected').val(),
+            length: 1000000
+        };
+
+        const columns = [
+            {
+                "data": "result.data.id",
+                'render': function (data, type, row, meta) {
+                    return meta.row + meta.settings._iDisplayStart + 1;
+                }
+            },
+            {
+                "data": "HdInvoiceNo",
+                "name": "HdInvoiceNo",
+                "autoWidth": true
+            },
+            {
+                "data": "HdDate",
+                "name": "HdDate",
+                "autoWidth": true
+            },
+            {
+                "data": null,
+                "autoWidth": true,
+                "render": function (d, t, row) {
+                    if (row.ArCustomers == null) return '';
+
+                    return lang === 'ar-EG' ? row.ArCustomers.CustomerNumber : row.ArCustomers.CustomerNumber;
+                }
+            },
+            {
+                "data": null,
+                "autoWidth": true,
+                "render": function (d, t, row) {
+                    if (row.ArCustomers == null) return '';
+
+                    return lang === 'ar-EG' ? row.ArCustomers.CustomerNameAr : row.ArCustomers.CustomerNameEn;
+                }
+            },
+            {
+                "data": null,
+                "autoWidth": true,
+                "render": function (d, t, row) {
+                    if (row.FndLookupValuesArInvoiceHdStatusLkp == null) return '';
+
+                    return lang === 'ar-EG' ? row.FndLookupValuesArInvoiceHdStatusLkp.NameAr : row.FndLookupValuesArInvoiceHdStatusLkp.NameEn;
+                }
+            }
+        ];
+
+        const dtObj = {
+            "language": dataTableLang,
+            "dom": 'Bfrtip',
+            "buttons": [
+                {
+                    extend: 'excel',
+                    messageTop: `${$('#HdInvoiceNo').siblings().text()}: ${(parmss.HdInvoiceNo) ? parmss.HdInvoiceNo : '--'}, ${$('#HdDate').siblings().text()}: ${(parmss.HdDate) ? parmss.HdDate : '--'}, ${$('[for="StatusLkpId"]').text()}: ${(parmss.StatusLkpId) ? parmss.StatusLkpId : '--'}, ${$('[for="ArCustomerId"]').text()}: ${(parmss.ArCustomerId) ? parmss.ArCustomerId : '--'}`
+                },
+
+            ],
+            "ajax": {
+                "url": _loadDataUrl,
+                "type": "POST",
+                "datatype": "json",
+                "data": parmss,
+                "complete": function (d) {
+                    _tblLoader.hide();
+                }
+            },
+            "columns": columns,
+
+            "initComplete": function () {
+                $('#tblArInvoiceHdPrint_wrapper button.dt-button').click();
+
+            }
+        };
+
+        $('#tblArInvoiceHdPrint').dataTable().fnDestroy();
+        $('#tblArInvoiceHdPrint').DataTable(dtObj).on('buttons-processing', function (e, indicator) { if (!indicator) { $('.page-loader-wrapper').hide() } });
+
+
+    }
+</script>

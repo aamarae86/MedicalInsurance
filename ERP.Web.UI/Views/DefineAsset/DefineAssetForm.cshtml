@@ -1,0 +1,214 @@
+﻿@using ERP.Web.UI.Models.ViewModels.Accounts
+@model FaAssetCategoryVM
+@{
+    string formTrigger = ViewBag.trigger;
+    string lang = Request.Cookies["Lang"] == null ? "ar-EG" : Request.Cookies["Lang"].Value.ToString();
+    string lkpKeyDdl = lang == "ar-EG" ? nameof(ERP.Web.UI.Models.ViewModels.General.FndLookupValuesVM.NameAr) : nameof(ERP.Web.UI.Models.ViewModels.General.FndLookupValuesVM.NameEn);
+
+}
+<div class="card">
+    <div class="body">
+        @using (Ajax.BeginForm(
+            nameof(ERP.Web.UI.Controllers.Accounts.DefineAssetController.PostAssetCategory), "DefineAsset",
+            new AjaxOptions { HttpMethod = "POST", OnBegin = "OnBegin", OnSuccess = "OnSuccess", OnComplete = "OnComplete", OnFailure = "OnFailure" }, new { @id = "mainForm" }))
+        {
+            @Html.HiddenFor(z => z.Id)
+            @Html.HiddenFor(z => z.Lang, new { Value = lang })
+            @Html.HiddenFor(z => z.codeComUtilityIds)
+            @Html.HiddenFor(z => z.codeComUtilityIds_alt1)
+            @Html.HiddenFor(z => z.codeComUtilityIds_alt2)
+            @Html.HiddenFor(z => z.codeComUtilityIds_alt3)
+            @Html.HiddenFor(z => z.codeComUtilityTexts)
+            @Html.HiddenFor(z => z.codeComUtilityTexts_alt1)
+            @Html.HiddenFor(z => z.codeComUtilityTexts_alt2)
+            @Html.HiddenFor(z => z.codeComUtilityTexts_alt3)
+            @Html.HiddenFor(z => z.AssetCostAccountId)
+            @Html.HiddenFor(z => z.AssetClearingAccountId)
+            @Html.HiddenFor(z => z.AccDeprenAccountId)
+            @Html.HiddenFor(z => z.DeprenAccountId)
+            <div class="row clearfix">
+                <div class="col-sm-4">
+                    <div class="form-group form-float">
+                        <div class="form-line">
+                            @Html.TextBoxFor(z => z.AssetCategoryNumber, new { @class = "form-control", @readonly = "true" })
+                            @Html.LabelFor(z => z.AssetCategoryNumber, new { @class = "form-label" })
+                        </div>
+                    </div>
+                </div>
+                <div class="col-sm-4">
+                    <div class="form-group form-float">
+                        <div class="form-line">
+                            @Html.TextBoxFor(z => z.AssetCategoryNameAr, new { @class = "form-control" })
+                            @Html.LabelFor(z => z.AssetCategoryNameAr, new { @class = "form-label" })
+                        </div>
+                        @Html.ValidationMessageFor(z => z.AssetCategoryNameAr)
+                    </div>
+                </div>
+                <div class="col-sm-4">
+                    <div class="form-group form-float">
+                        <div class="form-line">
+                            @Html.TextBoxFor(z => z.AssetCategoryNameEn, new { @class = "form-control" })
+                            @Html.LabelFor(z => z.AssetCategoryNameEn, new { @class = "form-label" })
+                        </div>
+                        @Html.ValidationMessageFor(z => z.AssetCategoryNameEn)
+                    </div>
+                </div>
+                <div class="col-sm-4">
+                    <div class="form-group form-float">
+                        <div class="form-line">
+                            @Html.TextBoxFor(z => z.Description, new { @class = "form-control" })
+                            @Html.LabelFor(z => z.Description, new { @class = "form-label" })
+                        </div>
+                    </div>
+                </div>
+                <div class="col-sm-4">
+                    <div class="form-group form-float">
+                        <div class="form-line">
+                            @Html.TextBoxFor(z => z.NoMonthsDepreciation, new { @class = "form-control" })
+                            @Html.LabelFor(z => z.NoMonthsDepreciation, new { @class = "form-label" })
+                        </div>
+                        @Html.ValidationMessageFor(z => z.NoMonthsDepreciation)
+                    </div>
+                </div>
+            </div>
+            <div class="header">
+                <h2><strong>@ERP.ResourcePack.Accounts.FaAssetCategory.AssetCostAccountId</strong></h2>
+            </div>
+            <div class="body">
+                <div class="row clearfix">
+                    @Html.Action(nameof(ERP.Web.UI.Controllers.Accounts.GlAccDetailsController.DrawGlAccController), "GlAccDetails",
+                       new { glAccHeadersVMs = ViewData["ListGlAccHeadersVM"] == null ? new List<ERP.Web.UI.Models.ViewModels.Accounts.GlAccHeadersVM>() : ViewData["ListGlAccHeadersVM"] as List<ERP.Web.UI.Models.ViewModels.Accounts.GlAccHeadersVM>, repeatTrigger = "assetCostAccount" })
+                </div>
+            </div>
+            <div class="header">
+                <h2><strong>@ERP.ResourcePack.Accounts.FaAssetCategory.AssetClearingAccountId</strong></h2>
+            </div>
+            <div class="body">
+                <div class="row clearfix">
+                    @Html.Action(nameof(ERP.Web.UI.Controllers.Accounts.GlAccDetailsController.DrawGlAccController), "GlAccDetails",
+                       new { glAccHeadersVMs = ViewData["ListGlAccHeadersVM"] == null ? new List<ERP.Web.UI.Models.ViewModels.Accounts.GlAccHeadersVM>() : ViewData["ListGlAccHeadersVM"] as List<ERP.Web.UI.Models.ViewModels.Accounts.GlAccHeadersVM>, repeatTrigger = "assetClearingAccount" })
+                </div>
+            </div>
+            <div class="header">
+                <h2><strong>@ERP.ResourcePack.Accounts.FaAssetCategory.AccDeprenAccountId</strong></h2>
+            </div>
+            <div class="body">
+                <div class="row clearfix">
+                    @Html.Action(nameof(ERP.Web.UI.Controllers.Accounts.GlAccDetailsController.DrawGlAccController), "GlAccDetails",
+                       new { glAccHeadersVMs = ViewData["ListGlAccHeadersVM"] == null ? new List<ERP.Web.UI.Models.ViewModels.Accounts.GlAccHeadersVM>() : ViewData["ListGlAccHeadersVM"] as List<ERP.Web.UI.Models.ViewModels.Accounts.GlAccHeadersVM>, repeatTrigger = "accDeprenAccount" })
+                </div>
+            </div>
+            <div class="header">
+                <h2><strong>@ERP.ResourcePack.Accounts.FaAssetCategory.DeprenAccountId</strong></h2>
+            </div>
+            <div class="body">
+                <div class="row clearfix">
+                    @Html.Action(nameof(ERP.Web.UI.Controllers.Accounts.GlAccDetailsController.DrawGlAccController), "GlAccDetails",
+                       new { glAccHeadersVMs = ViewData["ListGlAccHeadersVM"] == null ? new List<ERP.Web.UI.Models.ViewModels.Accounts.GlAccHeadersVM>() : ViewData["ListGlAccHeadersVM"] as List<ERP.Web.UI.Models.ViewModels.Accounts.GlAccHeadersVM>, repeatTrigger = "deprenAccount" })
+                </div>
+            </div>
+            <div class="row clearfix">
+                <div class="form-group text-center form-float">
+                    <button type="submit" id="btnSubmition" class="btn btn-info btn-lg m-l-15 waves-effect">@(Model == null ? ERP.ResourcePack.Common.Settings.BtnSave : ERP.ResourcePack.Common.Settings.BtnUpdate)</button>
+                    <div id="submitLoader" style="display:none">
+                        <div class="lds-roller"><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div></div>
+                    </div>
+                </div>
+            </div>
+        }
+
+
+    </div>
+</div>
+<script src="~/Scripts/jquery.validate.min.js"></script>
+<script src="~/Scripts/jquery.validate.unobtrusive.min.js"></script>
+<script src="~/AssetsPack/assets/js/pages/forms/basic-form-elements.js"></script>
+@Html.Partial("~/ViewsScripts/GlAccDetails/GlAccDetailsScripts.cshtml", ViewData["repeatTrigger"] = "assetCostAccount")
+@Html.Partial("~/ViewsScripts/GlAccDetails/GlAccDetailsScripts.cshtml", ViewData["repeatTrigger"] = "assetClearingAccount")
+@Html.Partial("~/ViewsScripts/GlAccDetails/GlAccDetailsScripts.cshtml", ViewData["repeatTrigger"] = "accDeprenAccount")
+@Html.Partial("~/ViewsScripts/GlAccDetails/GlAccDetailsScripts.cshtml", ViewData["repeatTrigger"] = "deprenAccount")
+@Html.Partial("~/ViewsScripts/GlAccDetails/GlAccDetailsScriptManager.cshtml")
+<script>
+
+    $('#main-modal .modal-footer button[data-dismiss="modal"]').on('click', function (e) {
+
+        e.preventDefault();
+
+        if (window.location.href.includes('AssetCategory'))  window.location.reload();
+
+    });
+
+    $('#main-modal .modal-header button[data-dismiss="modal"]').on('click', function (e) {
+
+        e.preventDefault();
+
+        if (window.location.href.includes('AssetCategory'))  window.location.reload();
+
+    });
+
+
+    $('#btnSubmition').on('click', function () {
+
+        const resultCodeComUtilityassetCostAccount = GetCodeComUtilites(assetCostAccount__arrGlSelect2, 'assetCostAccountAccId');
+        const resultCodeComUtilityassetClearingAccount = GetCodeComUtilites(assetClearingAccount__arrGlSelect2, 'assetClearingAccountAccId');
+        const resultCodeComUtilityaccDeprenAccount = GetCodeComUtilites(accDeprenAccount__arrGlSelect2, 'accDeprenAccountAccId');
+        const resultCodeComUtilitydeprenAccount = GetCodeComUtilites(deprenAccount__arrGlSelect2, 'deprenAccountAccId');
+
+        $('#mainForm #@nameof(Model.codeComUtilityIds)').val(resultCodeComUtilityassetCostAccount.idsStr);
+        $('#mainForm #@nameof(Model.codeComUtilityTexts)').val(resultCodeComUtilityassetCostAccount.textsStr);
+
+        $('#mainForm #@nameof(Model.codeComUtilityIds_alt1)').val(resultCodeComUtilityassetClearingAccount.idsStr);
+        $('#mainForm #@nameof(Model.codeComUtilityTexts_alt1)').val(resultCodeComUtilityassetClearingAccount.textsStr);
+
+        $('#mainForm #@nameof(Model.codeComUtilityIds_alt2)').val(resultCodeComUtilityaccDeprenAccount.idsStr);
+        $('#mainForm #@nameof(Model.codeComUtilityTexts_alt2)').val(resultCodeComUtilityaccDeprenAccount.textsStr);
+
+        $('#mainForm #@nameof(Model.codeComUtilityIds_alt3)').val(resultCodeComUtilitydeprenAccount.idsStr);
+        $('#mainForm #@nameof(Model.codeComUtilityTexts_alt3)').val(resultCodeComUtilitydeprenAccount.textsStr);
+
+        $('#mainForm').submit();
+        window.location.reload();
+    });
+</script>
+
+@if (Model != null && !string.IsNullOrEmpty(Model.codeComUtilityIds) && !string.IsNullOrEmpty(Model.codeComUtilityTexts))
+{
+    <script>
+        BindCodeComUtilitesDropDowns(assetCostAccount__arrGlSelect2, 'assetCostAccountAccId', $('#codeComUtilityIds').val(), $('#codeComUtilityTexts').val());
+    </script>
+}
+
+@if (Model != null && !string.IsNullOrEmpty(Model.codeComUtilityIds_alt1) && !string.IsNullOrEmpty(Model.codeComUtilityTexts_alt1))
+{
+    <script>
+        BindCodeComUtilitesDropDowns(assetClearingAccount__arrGlSelect2, 'assetClearingAccountAccId', $('#codeComUtilityIds_alt1').val(), $('#codeComUtilityTexts_alt1').val());
+    </script>
+}
+
+@if (Model != null && !string.IsNullOrEmpty(Model.codeComUtilityIds_alt2) && !string.IsNullOrEmpty(Model.codeComUtilityTexts_alt2))
+{
+    <script>
+        BindCodeComUtilitesDropDowns(accDeprenAccount__arrGlSelect2, 'accDeprenAccountAccId', $('#codeComUtilityIds_alt2').val(), $('#codeComUtilityTexts_alt2').val());
+    </script>
+}
+
+@if (Model != null && !string.IsNullOrEmpty(Model.codeComUtilityIds_alt3) && !string.IsNullOrEmpty(Model.codeComUtilityTexts_alt3))
+{
+    <script>
+        BindCodeComUtilitesDropDowns(deprenAccount__arrGlSelect2, 'deprenAccountAccId', $('#codeComUtilityIds_alt3').val(), $('#codeComUtilityTexts_alt3').val());
+    </script>
+}
+<script>
+    @*$(function () {
+        setTimeout(function () {
+            debugger;
+            BindCodeComUtilitesDropDowns(assetClearingAccount__arrGlSelect2, 'assetClearingAccountAccId', $('#codeComUtilityIds_alt1').val(), $('#codeComUtilityTexts_alt1').val());
+
+            BindCodeComUtilitesDropDowns(assetCostAccount__arrGlSelect2, 'assetCostAccountAccId', $('#mainForm #@nameof(Model.codeComUtilityIds)').val(), $('#mainForm #@nameof(Model.codeComUtilityTexts)').val());
+            BindCodeComUtilitesDropDowns(assetClearingAccount__arrGlSelect2, 'assetClearingAccountAccId', $('#mainForm #@nameof(Model.codeComUtilityIds_alt1)').val(), $('#mainForm #@nameof(Model.codeComUtilityTexts_alt1)').val());
+            BindCodeComUtilitesDropDowns(accDeprenAccount__arrGlSelect2, 'accDeprenAccountAccId', $('#mainForm #@nameof(Model.codeComUtilityIds_alt2)').val(), $('#mainForm #@nameof(Model.codeComUtilityTexts_alt2)').val());
+            BindCodeComUtilitesDropDowns(deprenAccount__arrGlSelect2, 'deprenAccountAccId', $('#mainForm #@nameof(Model.codeComUtilityIds_alt3)').val(), $('#mainForm #@nameof(Model.codeComUtilityTexts_alt3)').val());
+        }, 3000);
+
+    });*@
+</script>

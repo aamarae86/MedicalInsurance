@@ -1,0 +1,60 @@
+﻿@using ERP.ResourcePack.Accounts
+@model List<ERP.Web.UI.Models.ViewModels.Accounts.GlAccHeadersVM>
+@{
+    ViewBag.Title = ReportsAccounts.BudgetPerformance;
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="card">
+    <div class="header d-flex justify-content-start align-items-center">
+        <i class="fas fa-2x fa-chevron-down down-arr mr-2" data-toggle="collapse" data-target="#searchCollapse"></i>
+        <h2><strong>@ReportsAccounts.BudgetPerformance</strong></h2>
+    </div>
+    <div class="body  collapse show" id="searchCollapse">
+        <div class="row clearfix">
+            @Html.Action(nameof(ERP.Web.UI.Controllers.Accounts.GlAccDetailsController.DrawGlAccController), "GlAccDetails",
+             new { glAccHeadersVMs = Model, repeatTrigger = "" })
+        </div>
+        <div class="row clearfix">
+            <div class="col-md-4">
+                <label class="form-label" for="FromPeriod">@ReportsAccounts.FromPeriod</label>
+                <div class="form-group form-float">
+                    <div class="form-group">
+                        <select class="form-control" name="FromPeriod" id="FromPeriod"></select>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label" for="ToPeriod">@ReportsAccounts.ToPeriod</label>
+                <div class="form-group form-float">
+                    <div class="form-group">
+                        <select class="form-control" name="ToPeriod" id="ToPeriod"></select>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label" for="ToPeriod">@ReportsAccounts.GlAccMappingHd</label>
+                <div class="form-group form-float">
+                    <div class="form-group">
+                        <select class="form-control" name="GlAccMappingHd" id="GlAccMappingHd"></select>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row clearfix">
+            <div class="col-sm-12 text-center">
+                <div class="form-group">
+                    <button id="btnPrint" onclick="return PrintAccountStatementReport()" class="btn btn-success">@ERP.ResourcePack.Common.Settings.Print</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+@section scripts{
+    @Html.Partial("~/ViewsScripts/_ReportsAccounts/BudgetPerformanceScripts.cshtml")
+    @Html.Partial("~/ViewsScripts/GlAccDetails/GlAccDetailsScripts.cshtml", ViewData["repeatTrigger"] = "")
+    @Html.Partial("~/ViewsScripts/GlAccDetails/GlAccDetailsScriptManager.cshtml")
+    @Html.Partial("_ReportModal")
+}

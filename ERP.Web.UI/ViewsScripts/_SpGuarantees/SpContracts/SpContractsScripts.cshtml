@@ -1,0 +1,711 @@
+﻿@using ERP.ResourcePack.SpGuarantees
+@using ERP.Web.UI.Controllers.SpGuarantees
+@using ERP.Authorization;
+@{
+    string permissionsStr = TempData["Permissions"].ToString();
+    string encUpdateTrigger = ERP.Front.Helpers.Enums.Common.EncUpdate;
+    string encInsertTrigger = ERP.Front.Helpers.Enums.Common.EncInsert;
+    string encShowTrigger = ERP.Front.Helpers.Enums.Common.EncShow;
+}
+
+@if (permissionsStr.Contains(PermissionNames.Pages_SpContracts_Post))
+{
+    <script>
+        const PostAjax = function (id) {
+
+            bootbox.confirm({
+                message: _booBoxMessagePosting,
+                buttons: bootBoxDefaultBtns,
+                callback: function (result) {
+
+                    if (result) {
+
+                        const data = {
+                            id: id,
+                            lang: lang,
+                            userId: 0
+                        };
+
+                        $.ajax({
+                            url: `${baseUrl}/SpContracts/PostSpContracts`,
+                            type: 'POST',
+                            data: JSON.stringify(data),
+                            headers:
+                            {
+                                'Content-Type': 'application/json',
+                                'Authorization': `Bearer ${$_token}`
+                            },
+                        }).done(function (response) {
+
+                            if (response.result.finalStatues == 'F') {
+                                toastr.warning(response.result.reason);
+                            }
+                            else {
+                                toastr.success(response.result.reason);
+
+                                if (formView) {
+
+                                    setTimeout(function () {
+                                        window.location.href = $PrefixHostName + '/SpContracts';
+                                    }, 100);
+
+                                } else {
+                                    LoadDataGrid();
+                                }
+                            }
+
+                        }).fail(function (response) {
+                            toastr.error(response.responseText);
+                        });
+
+                    }
+
+                }
+            });
+
+
+        };
+    </script>
+}
+else
+{
+    <script>
+        const PostAjax = function (id) { };
+    </script>
+}
+
+<script>
+    const _mainController = "SpContracts", _apiAppService = "SpContracts"
+    const _newStatus = @Convert.ToInt64(ERP.Front.Helpers.Enums.Common.SpContracts.New);
+
+    $(function () {
+
+        LoadDataGrid();
+
+        $('#SpContracts').addClass('active');
+
+        $('#SponsorCategory').parent('.form-line').addClass('focused');
+        $('#CaseStatus').parent('.form-line').addClass('focused');
+        $('#SponsAccountFor').parent('.form-line').addClass('focused');
+        $('#AccountNumber').parent('.form-line').addClass('focused');
+        $('#AccountOwnerName').parent('.form-line').addClass('focused');
+        $('#CaseNumber').parent('.form-line').addClass('focused');
+        $('#BeneficentNumber').parent('.form-line').addClass('focused');
+        $('#MobileNumber').parent('.form-line').addClass('focused');
+
+    });
+
+    const _loadDataUrl = `${$PrefixHostName}/${_mainController}/@nameof(SpContractsController.LoadDataGrid)`;
+    const _tblSelector = $('#tblSpContracts');
+    const _tblLoader = $('#tblLoader');
+
+    const _permissions = '@permissionsStr';
+    const _updatePermission = '@PermissionNames.Pages_SpContracts_Update';
+    const _deletePermission = '@PermissionNames.Pages_SpContracts_Delete';
+    const _postPermission = '@PermissionNames.Pages_SpContracts_Post';
+
+    var OnBegin = function (response) {
+        fireBtnLoader();
+    };
+
+    var OnSuccess = function (response) {
+
+        $('#btnSubmition').prop('disabled', false);
+
+        if (response.success) {
+
+            if (response.customRestResult.trigger === '@ERP.Front.Helpers.Enums.Common.FormTriggers.Insert') {
+
+                toastr.success(response.customRestResult.message);
+
+                setTimeout(function () {
+                    window.location.href = $PrefixHostName + '/SpContracts';
+                }, 200);
+
+            }
+            else if (response.customRestResult.trigger === '@ERP.Front.Helpers.Enums.Common.FormTriggers.Update') {
+
+                toastr.success(response.customRestResult.message);
+
+                setTimeout(function () {
+                    window.location.href = $PrefixHostName + '/SpContracts';
+                }, 200);
+
+            }
+            else {
+                toastr.error(response.customRestResult.message);
+            }
+
+        } else {
+            toastr.error(response.error.message);
+        }
+
+    };
+
+    var OnComplete = function (response) {
+        downBtnLoader();
+    };
+
+    var OnFailure = function (response) {
+        toastr.error(response);
+        downBtnLoader();
+    };
+
+    const LoadDataGrid = function () {
+
+        $('#tblLoader').show();
+
+        const params = {
+            ContractDate: $('#searchBox #ContractDate').val(),
+            ContractNumber: $('#searchBox #ContractNumber').val(),
+            MobileNumber: $('#searchBox #MobileNumber').val(),
+            BeneficentNumber: $('#searchBox #BeneficentNumber').val(),
+            StatusLkpId: $('#searchBox #StatusLkpId').find(':selected').val(),
+            SpBeneficentId: $('#searchBox #SpBeneficentId').find(':selected').val(),
+            SpCaseId: $('#searchBox #SpCaseId').find(':selected').val(),
+        };
+
+        const columns = [
+            {
+                "data": "result.data.id",
+                'render': function (data, type, row, meta) {
+                    return meta.row + meta.settings._iDisplayStart + 1;
+                }
+            },
+            {
+                "data": "ContractNumber",
+                "name": "ContractNumber",
+                "autoWidth": true
+            },
+            {
+                "data": null,
+                "autoWidth": true,
+                "render": function (d, t, row) {
+
+                    if (row.SpBeneficent == null) return '';
+
+                    return row.SpBeneficent.BeneficentNumber;
+                }
+            },
+            {
+                "data": null,
+                "autoWidth": true,
+                "render": function (d, t, row) {
+
+                    if (row.SpBeneficent == null) return '';
+
+                    return row.SpBeneficent.BeneficentName;
+                }
+            },
+            {
+                "data": "ContractDate",
+                "name": "ContractDate",
+                "autoWidth": true
+            },
+            {
+                "data": null,
+                "autoWidth": true,
+                "render": function (d, t, row) {
+
+                    if (row.FndStatusLkp == null) return '';
+
+                    return lang === 'ar-EG' ? row.FndStatusLkp.NameAr : row.FndStatusLkp.NameEn;
+                }
+            },
+            {
+                "data": null,
+                "autoWidth": true,
+                "render": function (d, t, row) {
+
+                    if (row.SpBeneficent == null) return '';
+
+                    return row.SpBeneficent.MobileNumber1;
+                }
+            },
+            {
+                "data": null,
+                "sortable": false,
+                "render": function (data, type, row) {
+
+                    let formAction = `${$PrefixHostName}/${_mainController}/@nameof(SpContractsController.SpContractsForm)`;
+                    let DeleteAction = `${$PrefixHostName}/${_mainController}/@nameof(SpContractsController.Delete)`;
+
+                    let formTitle = '@ERP.ResourcePack.SpGuarantees.SpContracts.Title';
+                    let btns = '';
+
+                    if (_permissions.includes(_postPermission) && row.StatusLkpId == _newStatus) {
+                        btns += `<a href="javascript:void(0)" onclick="PostAjax(${row.Id})" title="@ERP.ResourcePack.Common.Settings.Post"><i class="mx-2 fas fa-check-circle text-info"></i></a>`;
+                    }
+
+                    if (_permissions.includes(_updatePermission) && row.StatusLkpId == _newStatus) {
+                        btns += `<a href="${$PrefixHostName}/SpContracts/FormView?id=${row.EncId}&t=@encUpdateTrigger" title="@ERP.ResourcePack.Common.Settings.Edit"><i class="mx-2 fas fa-edit text-info"></i></a>`;
+                    }
+
+                    btns += `<a href="${$PrefixHostName}/SpContracts/FormView?id=${row.EncId}&t=@encShowTrigger" title="@ERP.ResourcePack.Common.Settings.Show"><i class="mx-2 fas fa-eye text-info"></i></a>`;
+
+                    if (_permissions.includes(_deletePermission) && row.StatusLkpId == _newStatus) {
+                        btns += `<a href="javascript:void(0)" onclick="AjaxController.DeleteMainTableRow(${row.Id},'${DeleteAction}');" title="@ERP.ResourcePack.Common.Settings.Delete"><i class="mx-2 fas fa-trash-alt text-danger"></i></a>`;
+                    }
+
+                    const _auditedPermission = '@PermissionNames.Pages_SpContracts_Audit';
+
+                    if (_permissions.includes(_auditedPermission)) {
+
+                        row.permission = _auditedPermission;
+
+                        btns += GetAuditedButton(row);
+                    }
+
+                    return btns;
+                }
+            }
+        ];
+
+        const dtObj = {
+            "processing": true,
+            "serverSide": true,
+            "filter": false,
+            "orderMulti": false,
+            "language": dataTableLang,
+            "ajax": {
+                "url": _loadDataUrl,
+                "type": "POST",
+                "datatype": "json",
+                "data": params,
+                "complete": function () {
+                      _tblLoader.hide();
+                }
+            },
+            "columns": columns,
+            "initComplete": function () {
+                $('[data-toggle="tooltip"]').tooltip();
+            }
+
+        };
+
+        _tblSelector.dataTable().fnDestroy();
+        _tblSelector.DataTable(dtObj).on('draw', function () { $('[data-toggle="tooltip"]').tooltip(); });
+
+        setTimeout(function () {
+            $(".sorting_1").removeAttr('colspan');
+        }, 500);
+    };
+
+    $('#btnSubmition').on('click', function () {
+
+        if ($('#mainForm').valid()) {
+
+            $(this).prop('disabled', true);
+
+            $('#submitLoader').show();
+
+            $('#mainForm').submit();
+
+        } else {
+            $(this).prop('disabled', false);
+
+            $('#submitLoader').hide();
+        }
+
+    });
+
+    $('#searchBox #StatusLkpId').select2(ReturnSelect2ObjectForLkpsTypes('@ERP.Front.Helpers.Enums.Common.FndLkpsTypes.SpContractsStatues.ToString()'));
+    $('#searchBox #SpBeneficentId').select2(ReturnSelect2ObjectDefault(`${baseUrl}/SpBeneficent/GetSpBeneficentSelect2`));
+    $('#SpBeneficentId').select2(ReturnSelect2ObjectDefault(`${baseUrl}/SpBeneficent/GetSpBeneficentSelect2`));
+    $('#SpCaseId').select2(ReturnSelect2ObjectDefault(`${baseUrl}/SpCases/GetSpCasesForContractsSelect2`));
+    $('#DeductedLkpId').select2(ReturnSelect2ObjectForLkpsTypes('SpContractsDeducted'));
+    $('#PaymentTypeLkpId').select2(ReturnSelect2ObjectForLkpsTypes('SpContractsPaymentType'));
+
+    $('#SpBeneficentBankId').select2({
+        ajax: {
+            url: `${baseUrl}/SpContracts/GetSpBeneficentBanksSelect2`,
+            dataType: 'json',
+            headers: {
+                'Authorization': `Bearer ${$_token}`
+            },
+            data: function (params) {
+                params.page = params.page || 1;
+                return {
+                    spBeneficentId: $('#SpBeneficentId').find(':selected').val(),
+                    pageSize: pageSize,
+                    pageNumber: params.page,
+                    searchTerm: params.term,
+                    lang: lang
+                };
+            },
+            processResults: function (data, params) {
+
+                params.page = params.page || 1;
+
+                return {
+                    results: data.result.results,
+                    pagination: {
+                        more: (params.page * pageSize) < data.result.total
+                    }
+                };
+            }
+        },
+        placeholder: select2Placeholder,
+        minimumInputLength: 0,
+        allowClear: true,
+        language: select2Lang
+    });
+
+    $('#SpCaseId').on('change', function () {
+
+        if (!updatedDetailsRow) {
+            GetCaseInfo($(this).find(':selected').val());
+        }
+
+    });
+
+    $('#SpBeneficentBankId').on('change', function () {
+        if (!updatedDetailsRow) {
+            GetSpBeneficentBankInfo($(this).find(':selected').val());
+        }
+    });
+
+    $('#SpBeneficentId').on('change', function () {
+
+        GetSpBeneficentInfo($(this).find(':selected').val());
+
+    });
+
+    const GetSpBeneficentBankInfo = function (id) {
+
+        $.ajax({
+            url: `${baseUrl}/SpContracts/GetSpBeneficentBanksForContract`,
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${$_token}`
+            },
+            data: {
+                id: id
+            }
+        }).done(function (data) {
+
+            if (data.result) {
+                $('#AccountOwnerName').val(data.result.accountOwnerName);
+                $('#AccountNumber').val(data.result.accountNumber);
+            }
+        });
+    };
+
+    const GetSpBeneficentInfo = function(id){
+
+        $.ajax({
+            url: `${baseUrl}/SpContracts/GetSpBeneficentForContract`,
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${$_token}`
+            },
+            data: {  id: id   }
+        }).done(function (data) {
+
+            if (data.result) {
+
+                $('#BeneficentNumber').val(data.result.item1.beneficentNumber);
+                $('#MobileNumber').val(data.result.item1.mobileNumber1);
+
+                if (data.result.item2) {
+
+                    $('#AccountOwnerName').val(data.result.item2.accountOwnerName);
+                    $('#AccountNumber').val(data.result.item2.accountNumber);
+
+                    $(`#SpBeneficentBankId`).append($("<option selected='selected'></option>")
+                        .val(data.result.item2.id).text(data.result.item2.lookupBankValues.nameAr)).trigger('change');
+
+                }
+            }
+        });
+
+    };
+
+    const GetCaseInfo = function (id) {
+
+        $.ajax({
+            url: `${baseUrl}/SpCases/GetSpCaseForContract`,
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${$_token}`
+            },
+            data: {
+                id: id
+            }
+        }).done(function (data) {
+
+            if (data.result) {
+
+                if (data.result.fndLookupValuesStatusLkp) {
+                    $('#CaseStatus').val(lang === 'ar-EG' ? data.result.fndLookupValuesStatusLkp.nameAr : data.result.fndLookupValuesStatusLkp.nameEn);
+                }
+
+                if (data.result.fndLookupValuesSponsorCategoryLkp) {
+                    $('#SponsorCategory').val(lang === 'ar-EG' ? data.result.fndLookupValuesSponsorCategoryLkp.nameAr : data.result.fndLookupValuesSponsorCategoryLkp.nameEn);
+                }
+
+                $('#CaseNumber').val(data.result.caseNumber);
+            }
+
+
+        });
+    };
+
+</script>
+
+<script name="detailssssssssssss">
+
+    const _tblSpContractsDetailSelector = $('#tblSpContractDetails');
+    const _listSpContractsDetail = $('#ContractDetailsListStr');
+
+    let _SpContractsDetail = [], updatedDetailsRow, tblCounterDetIndex = 0 ;
+
+    const fillDetail = function () {
+
+        if (validatorDet() === false) return;
+
+        const current = {
+            index: ++tblCounterDetIndex,
+            sponsorCategory: $('#SponsorCategory').val(),
+            caseStatus: $('#CaseStatus').val(),
+            caseNumber: $('#CaseNumber').val(),
+            SpCaseId: $('#SpCaseId').find(':selected').val(),
+            spCase: $('#SpCaseId').find(':selected').text(),
+            startDate: $('#StartDate').val(),
+            endDate: $('#EndDate').val(),
+            amount: $('#Amount').val(),
+            sponsFor: $('#SponsFor').val(),
+            SpBeneficentBankId: $('#SpBeneficentBankId').find(':selected').val(),
+            spBeneficentBank: $('#SpBeneficentBankId').find(':selected').text(),
+            accountOwnerName: $('#AccountOwnerName').val(),
+            accountNumber: $('#AccountNumber').val(),
+            rowStatus: NewStatus,
+            id: 0
+        };
+
+        return current;
+    };
+
+    const AddSpContractsDetail = function () {
+
+        const current = fillDetail();
+
+        if (current === undefined) return;
+
+        _SpContractsDetail.push(current);
+
+        _listSpContractsDetail.val(JSON.stringify(_SpContractsDetail));
+
+        bindSpContractsDetailTable();
+
+        clearFormDetAdding();
+    };
+
+    const bindSpContractsDetailTable = function () {
+
+        const detailArr = _SpContractsDetail.filter(z => z.rowStatus !== DeletedStatus);
+
+        const columns = [
+            { 'data': 'index' },
+            { 'data': 'sponsorCategory' },
+            { 'data': 'caseStatus' },
+            { 'data': 'caseNumber' },
+            { 'data': 'spCase' },
+            { 'data': 'startDate' },
+            { 'data': 'endDate' },
+            { 'data': 'amount' },
+            { 'data': 'sponsFor' },
+            { 'data': 'spBeneficentBank' },
+            { 'data': 'accountOwnerName' },
+            { 'data': 'accountNumber' },
+            {
+                'data': null,
+                'searchable': false,
+                'ordering': false,
+                'sorting': false,
+                'render': function (d, t, row) {
+
+                    let rows = '';
+
+                    if (primaryEntityKeyId === 0 || trigger !== '@ERP.Front.Helpers.Enums.Common.FormTriggers.Show.ToString()') {
+
+                        rows += `<td><a href="javascript:void(0)" onclick="return DeleteSpContractsDetail(${row.index})"><i class="mx-2 fas fa-trash-alt text-danger"></i></a>`;
+                        rows += `<a href="javascript:void(0)" onclick="return GetSpContractsDetailRow(${row.index})"><i class="mx-2 fas fa-edit text-success"></i></a></td>`;
+                    }
+                    else {
+                        rows += '<td></td>';
+                    }
+
+                    return rows;
+                }
+            }
+        ];
+
+        const dtObj = {
+            data: detailArr,
+            retrieve: true,
+            language: dataTableLang,
+            columns: columns,
+            drawCallback: function (c, v, b) {}
+        };
+
+        setTimeout(function () {
+
+            _tblSpContractsDetailSelector.dataTable().fnDestroy();
+            _tblSpContractsDetailSelector.DataTable(dtObj).on('draw', function () { $('[data-toggle="tooltip"]').tooltip(); });
+
+        }, 100);
+
+    };
+
+    const DeleteSpContractsDetail = function (index)  {
+
+        const current = _SpContractsDetail.find(z => z.index === index);
+
+        const indexOfCurrent = _SpContractsDetail.indexOf(current);
+
+        if (!current.id) {
+
+           _SpContractsDetail.splice(indexOfCurrent, 1);
+
+        } else {
+
+            current.rowStatus = DeletedStatus;
+
+           _SpContractsDetail.splice(indexOfCurrent, 1,current);
+        }
+
+        bindSpContractsDetailTable();
+
+        _listSpContractsDetail.val(_SpContractsDetail.length === 0 ? '' : JSON.stringify(_SpContractsDetail));
+
+    };
+
+    const LoadSpContractsDetailData = function () {
+
+        $.ajax({
+            url: `${baseUrl}/SpContracts/GetAllSpContractsDetails`,
+            method: 'GET',
+            headers: {
+                        'Authorization': `Bearer ${$_token}`
+            },
+            data: {
+                id: primaryEntityKeyId
+            }
+        }).done(function (data) {
+
+            _SpContractsDetail = [...data.result];
+
+            tblCounterDetIndex = 0;
+
+            $.each(_SpContractsDetail, function (i, item) {
+
+                item.index = ++tblCounterDetIndex;
+
+            });
+
+            bindSpContractsDetailTable();
+
+            _listSpContractsDetail.val(JSON.stringify(_SpContractsDetail));
+
+        });
+
+    };
+
+    const GetSpContractsDetailRow = function (tblIndex) {
+
+        clearFormDetAdding();
+
+        $('#btnAddDetailRow').hide();
+        $('#btnUpdateDetailRow').show();
+        $('#btnCancelDetailRow').show();
+
+        const current = _SpContractsDetail.find(z => z.index === tblIndex);
+
+        $(`#SpCaseId`).append($("<option selected='selected'></option>")
+            .val(current.spCaseId).text(current.spCase)).trigger('change');
+
+        $(`#SpBeneficentBankId`).append($("<option selected='selected'></option>")
+            .val(current.spBeneficentBankId).text(current.spBeneficentBank)).trigger('change');
+
+        $('#StartDate').val(current.startDate);
+        $('#EndDate').val(current.endDate);
+        $('#Amount').val(current.amount);
+        $('#AccountNumber').val(current.accountNumber);
+        $('#CaseStatus').val(current.caseStatus);
+        $('#CaseNumber').val(current.caseNumber);
+        $('#SponsorCategory').val(current.sponsorCategory);
+        $('#SponsFor').val(current.sponsFor);
+
+        $('#StartDate').parent('.form-line').addClass('focused');
+        $('#EndDate').parent('.form-line').addClass('focused');
+        $('#Amount').parent('.form-line').addClass('focused');
+        $('#SponsFor').parent('.form-line').addClass('focused');
+
+        updatedDetailsRow = current;
+    };
+
+    const UpdateSpContractsDetailRow = function () {
+
+        let current = _SpContractsDetail.find(z => z.index === updatedDetailsRow.index);
+
+        let indexOfCurrent = _SpContractsDetail.indexOf(_SpContractsDetail.find(z => z.index === updatedDetailsRow.index));
+
+        const newRow = fillDetail();
+
+        if (newRow === undefined) return;
+
+        newRow.index = current.index;
+        newRow.id = updatedDetailsRow.id;
+        newRow.rowStatus =  !updatedDetailsRow.id ? NewStatus : UpdatedStatus;
+
+        _SpContractsDetail.splice(indexOfCurrent, 1,newRow);
+
+        $('#btnAddDetailRow').show();
+        $('#btnUpdateDetailRow').hide();
+        $('#btnCancelDetailRow').hide();
+
+        clearFormDetAdding();
+
+        _listSpContractsDetail.val(JSON.stringify(_SpContractsDetail));
+
+        setTimeout(function () {
+            bindSpContractsDetailTable();
+        }, 100);
+    };
+
+    const clearFormDetAdding = function () {
+        $('#details .card:first input,textarea').val('');
+        $('#details .card:first select').val('').trigger('change');
+    };
+
+    const validatorDet = function () {
+
+        if (!$('#SpCaseId').find(':selected').val()) {
+            toastr.warning('@SpContracts.SpCaseId' + ' : ' + '@ERP.ResourcePack.Common.Settings.Required');
+            return false;
+        }
+
+        if (!$('#SpBeneficentBankId').find(':selected').val()&&$('#PaymentTypeLkpId').find(':selected').val()!="873") {
+            toastr.warning('@SpContracts.SpBeneficentBankId' + ' : ' + '@ERP.ResourcePack.Common.Settings.Required');
+            return false;
+        }
+
+        if (!$('#Amount').val()) {
+            toastr.warning('@SpContracts.Amount' + ' : ' + '@ERP.ResourcePack.Common.Settings.Required');
+            return false;
+        }
+
+        if (!$('#SponsFor').val()) {
+            toastr.warning('@SpContracts.SponsFor' + ' : ' + '@ERP.ResourcePack.Common.Settings.Required');
+            return false;
+        }
+
+        if (!$('#StartDate').val()) {
+            toastr.warning('@SpContracts.StartDate' + ' : ' + '@ERP.ResourcePack.Common.Settings.Required');
+            return false;
+        }
+
+    };
+
+</script>

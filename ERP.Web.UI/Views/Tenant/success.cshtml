@@ -1,0 +1,76 @@
+﻿ 
+<div class="container">
+    <div class="row text-center js-success  " style="display:none">
+        <div class="col-sm-6 col-sm-6 mx-auto card p-3">
+            <br><br>
+                <div class="alert alert-success" role="alert">
+                  
+                    <h2 style="color:#0fad00">Success</h2>
+                </div>
+          
+            <img src="http://osmhotels.com//assets/check-true.jpg">
+            <h3>Your payment Successfully completed</h3>
+            <p style="font-size:20px;color:#5C5C5C;">
+               Please Relogin, Thank you  
+            </p>
+            <a href="/Tenant" class="btn btn-success">     Tenent     </a>
+            <br><br>
+        </div>
+
+    </div>
+</div>
+
+@section scripts{
+    <script>
+
+        //debugger;
+        let TrxInfo = localStorage.getItem("TrxInfo");
+        console.log()
+
+        var parsedJson = JSON.parse(TrxInfo);
+      //  alert(parsedJson[0].userName)
+     //   const data = parsedJson.result;
+
+        ExcuteTenantCheckout();
+
+
+
+
+        function   ExcuteTenantCheckout() {
+        //debugger;
+              $.ajax({
+                  url: `${baseUrl}/Tenant/CompleteTenantCheckout`,
+                cache: false,
+                type: "POST",
+                headers: {
+                    'Authorization': `Bearer ${$_token}`,
+                    'Content-Type': 'application/json',
+                },
+                  data: JSON.stringify(parsedJson)
+            })
+                .done(function (data) {
+                    if (data.result === true) {
+                        $('.js-success').show();
+                        toastr.success('@ERP.ResourcePack.Accounts.ReportsAccounts.Sved')
+
+                  //   localStorage.removeItem("TrxInfo");
+                        //setTimeout(function () {
+                        //    location.reload()
+                        // }, 1000);
+                    }
+                })
+                .fail(function () {
+                    toastr.error('@ERP.ResourcePack.Accounts.ReportsAccounts.Faild')
+                    localStorage.removeItem("TrxInfo");
+                    //setTimeout(function () {
+                    //    location.reload()
+                    //}, 1000);
+                })
+
+        }
+
+
+
+    </script>
+    
+    }

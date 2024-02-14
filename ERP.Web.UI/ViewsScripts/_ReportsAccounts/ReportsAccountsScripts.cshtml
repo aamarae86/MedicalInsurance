@@ -1,0 +1,88 @@
+﻿<script>
+    
+    
+    $(function () {
+        $('#ReportsAccounts').addClass('active');
+    });
+
+    const PrintAccountStatementReport = function () {
+
+        const CodeComReport = GetCodeComUtilitesForReports(__arrGlSelect2, 'AccId');
+     
+        $('.page-loader-wrapper').css('display', 'block');
+
+        $.ajax({
+            url: `${$PrefixHostName}/ReportsAccounts/PrintAccountStatment`,
+            method: 'POST',
+            header: {
+                'Authorization':`bearer ${$_token}`
+            },
+            data: {
+                Lang: lang,
+                Attribute1: CodeComReport.attr1,
+                Attribute2: CodeComReport.attr2,
+                Attribute3: CodeComReport.attr3,
+                Attribute4: CodeComReport.attr4,
+                Attribute5: CodeComReport.attr5,
+                Attribute6: CodeComReport.attr6,
+                Attribute7: CodeComReport.attr7,
+                Attribute8: CodeComReport.attr8,
+                Attribute9: CodeComReport.attr9,
+                AccId: CodeComReport.accId,
+                AccId0: $(`#AccId0`).find(':selected').val(),
+                fromDateStr: $('#fromDate').val(),
+                toDateStr:$('#toDate').val()
+            }
+        }).done(function (data) {
+
+            if (data.length > 0) {
+                           
+              $('.page-loader-wrapper').css('display', 'none');
+                var src = formAction;
+
+              $('#bodyss').html('')
+              $('#bodyss').append('<iframe id="ifram1" style="width:100%;height:550px" src="' + src + '"></iframe>')
+              $('#model').modal('show');
+
+            }
+            else {
+                  $('.page-loader-wrapper').css('display', 'none');
+                  toastr.warning(NoData);
+            }
+
+        }).fail(function (response,x,r) {
+            toastr.error(response.responseText);
+        });
+
+    };
+    
+    $('#AccId0').select2({
+        ajax: {
+            url: `${baseUrl}/GlAccounts/GetGlAccountsSelect2`,
+            dataType: 'json',
+            headers: {
+                'Authorization': `Bearer ${$_token}`
+            },
+            data: function (params) {
+
+                params.page = params.page || 1;
+                return {
+                    pageSize: pageSize,
+                    pageNumber: params.page,
+                    searchTerm: params.term,
+                    lang: lang,
+                    filterTrigger: window.location.href.includes('ScPortalRequestStudy') ? 'PORTAL_STUDY' : ''
+                };
+            },
+            processResults: function (data, params) {
+                params.page = params.page || 1;
+                return {
+                    results: data.result.results,
+                    pagination: {
+                        more: (params.page * pageSize) < data.result.total
+                    }
+                };
+            }
+        }
+    });
+</script>

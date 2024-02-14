@@ -1,0 +1,105 @@
+﻿<script>
+    $(function () {
+
+        $('#ArJobCardsReport').addClass('active');
+    });
+
+    const ReturnSelect2ObjectByCustomerId = function (url, selector) {
+
+        return {
+
+            ajax: {
+                url: url,
+                dataType: 'json',
+                headers: {
+                    'Authorization': `Bearer ${$_token}`
+                },
+                data: function (params) {
+                    var custId = $(`#${selector}`).find(':selected').val();
+                   
+                    params.page = params.page || 1;
+                    return {
+                        pageSize: pageSize,
+                        pageNumber: params.page,
+                        searchTerm: params.term,
+                        lang: lang,
+                        customerId: custId != undefined ? Number(custId) : 0,
+                    };
+                },
+                processResults: function (data, params) {
+
+                    params.page = params.page || 1;
+
+                    return {
+                        results: data.result.results,
+                        pagination: {
+                            more: (params.page * pageSize) < data.result.total
+                        }
+                    };
+                }
+            },
+            placeholder: select2Placeholder,
+            minimumInputLength: 0,
+            allowClear: true,
+            language: select2Lang
+        };
+
+    };
+
+
+
+   $('#ArCustomerLkpId').select2(ReturnSelect2ObjectDefault(`${baseUrl}/ArCustomers/GetArCustomersSelect2`));
+   $('#StatusLkpId').select2(ReturnSelect2ObjectForLkpsTypes('@ERP.Front.Helpers.Enums.Common.FndLkpsTypes.ArJobCardStatus.ToString()'));
+   $('#ArCustomerLkpId').on('select2:select', function (e) {
+        $('#JobNumberLkpId').val('').trigger('change');
+        $('#JobNumberLkpId').text('').trigger('change');
+    });
+    $('#JobNumberLkpId').select2(ReturnSelect2ObjectByCustomerId(`${baseUrl}/ArJobCardHd/GetArJobCardHdJobNumberByCustomerIdSelect2`, 'ArCustomerLkpId'));
+
+    const PrintArJobCardReport = function () {
+
+        $('.page-loader-wrapper').css('display', 'block');
+
+        $.ajax({
+            url: `${$PrefixHostName}/ReportsSales/PrintArJobCards`,
+            method: 'POST',
+            header: {
+                'Authorization':`bearer ${$_token}`
+            },
+            data: {
+                Lang: lang,
+                TenantId:@Session["TenantId"],
+                ArCustomerLkpId: $('#ArCustomerLkpId').find('option:selected').val(),
+                ArCustomerLkpIdtxt: $('#ArCustomerLkpId').find('option:selected').text(),
+                JobNumberLkpId: $('#JobNumberLkpId').find('option:selected').val(),
+                JobNumberLkpIdtxt: $('#JobNumberLkpId').find('option:selected').text(),
+                StatusLkpId: $('#StatusLkpId').find('option:selected').val(),
+                StatusLkpIdtxt: $('#StatusLkpId').find('option:selected').text(),
+                FromDate: $('#FromDate').val(),
+                ToDate: $('#ToDate').val()
+            }
+        }).done(function (data) {
+
+            if (data.length > 0) {
+
+              $('.page-loader-wrapper').css('display', 'none');
+                var src = formAction;
+
+              $('#bodyss').html('')
+              $('#bodyss').append('<iframe id="ifram1" style="width:100%;height:550px" src="' + src + '"></iframe>')
+              $('#model').modal('show');
+
+            }
+            else {
+                  $('.page-loader-wrapper').css('display', 'none');
+                  toastr.warning(NoData);
+            }
+
+        }).fail(function (response,x,r) {
+            toastr.error(response.responseText);
+        });
+
+    };
+
+
+</script>

@@ -1,0 +1,256 @@
+﻿@using ERP.Web.UI.Models.ViewModels.PmPropertiesModule
+@model PmTerminateContractsVM
+@{
+    string formTrigger = ViewBag.trigger;
+    string lang = Request.Cookies["Lang"] == null ? "ar-EG" : Request.Cookies["Lang"].Value.ToString();
+    string lkpKeyDdl = lang == "ar-EG" ? nameof(ERP.Web.UI.Models.ViewModels.General.FndLookupValuesVM.NameAr) : nameof(ERP.Web.UI.Models.ViewModels.General.FndLookupValuesVM.NameEn);
+
+}
+<div class="card">
+    <div class="body">
+        @using (Ajax.BeginForm(nameof(ERP.Web.UI.Controllers.PmPropertiesModule.PmTerminateContractsController.PostPmTerminateContracts), "PmTerminateContracts",
+            new AjaxOptions { HttpMethod = "POST", OnBegin = "OnBegin", OnSuccess = "OnSuccess", OnComplete = "OnComplete", OnFailure = "OnFailure" }, new { @id = "mainForm" }))
+        {
+            @Html.HiddenFor(z => z.Id)
+            @Html.HiddenFor(z => z.Lang, new { Value = lang })
+            <div class="row clearfix">
+                <div class="col-sm-6">
+                    <div class="form-group form-float">
+                        <div class="form-line">
+                            @Html.TextBoxFor(z => z.TerminationNumber, new { @class = "form-control", @disabled = true })
+                            @Html.LabelFor(z => z.TerminationNumber, new { @class = "form-label" })
+                        </div>
+                    </div>
+                </div>
+                <div class="col-sm-6">
+                    <div class="form-group form-float">
+                        <div class="form-line">
+                            @Html.TextBoxFor(z => z.FndLookupValuesPmTerminateContractsStatusLkp.NameAr, new { @class = "form-control", @disabled = true })
+                            @Html.LabelFor(z => z.StatusLkpId, new { @class = "form-label" })
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row clearfix">
+                <div class="col-md-6">
+                    <div class="form-group form-float">
+                        <div class="form-line">
+                            @Html.TextBoxFor(z => z.TerminationDate, new { @class = "form-control datepicker" })
+                            @Html.LabelFor(z => z.TerminationDate, new { @class = "form-label" })
+                        </div>
+                        @Html.ValidationMessageFor(z => z.TerminationDate)
+                    </div>
+                </div>
+                <div class="col-sm-6">
+                    @Html.LabelFor(z => z.PmContractId, new { @class = "form-label" })
+                    <div class="form-group form-float">
+                        <div class="form-line">
+                            @if (Model != null && Model.PmContract != null)
+                            {
+                                var list = new List<ERP.Web.UI.Models.ViewModels.General.FndLookupValuesVM> { new ERP.Web.UI.Models.ViewModels.General.FndLookupValuesVM { Id = Model.PmContractId.Value, NameAr = Model.PmContract.ContractNumber, NameEn = Model.PmContract.ContractNumber } };
+
+                                var selectList = new SelectList(list, "Id", lkpKeyDdl, Model.PmContractId);
+
+                                @Html.DropDownListFor(z => z.PmContractId, selectList, new { @class = "form-control" })
+                            }
+                            else
+                            {
+                                @Html.DropDownListFor(z => z.PmContractId, Enumerable.Empty<SelectListItem>(), new { @class = "form-control" })
+                            }
+                        </div>
+                        @Html.ValidationMessageFor(z => z.PmContractId)
+                    </div>
+                </div>
+            </div>
+            <div class="row clearfix">
+                <div class="col-sm-6">
+                    <div class="form-group form-float">
+                        <div class="form-line">
+                            @Html.TextBoxFor(z => z.PmTenantName, new { @class = "form-control", @disabled = true })
+                            @Html.LabelFor(z => z.PmTenantName, new { @class = "form-label" })
+                        </div>
+                    </div>
+                </div>
+                <div class="col-sm-6">
+                    <div class="form-group form-float">
+                        <div class="form-line">
+                            @Html.TextBoxFor(z => z.StartDate, new { @class = "form-control", @disabled = true })
+                            @Html.LabelFor(z => z.StartDate, new { @class = "form-label" })
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row clearfix">
+                <div class="col-sm-6">
+                    <div class="form-group form-float">
+                        <div class="form-line">
+                            @Html.TextBoxFor(z => z.EndDate, new { @class = "form-control", @disabled = true })
+                            @Html.LabelFor(z => z.EndDate, new { @class = "form-label" })
+                        </div>
+                    </div>
+                </div>
+                <div class="col-sm-6">
+                    <div class="form-group form-float">
+                        <div class="form-line">
+                            @Html.TextBoxFor(z => z.FineAmount, new { @class = "form-control currency" })
+                            @Html.LabelFor(z => z.FineAmount, new { @class = "form-label" })
+                        </div>
+                        @Html.ValidationMessageFor(z => z.FineAmount)
+                    </div>
+                </div>
+            </div>
+            <div class="row clearfix">
+                <div class="col-sm-6">
+                    <div class="form-group form-float">
+                        <div class="form-line">
+                            @Html.TextBoxFor(z => z.ContractAmount, new { @class = "form-control currency", @disabled = true })
+                            @Html.LabelFor(z => z.ContractAmount, new { @class = "form-label" })
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    @if (formTrigger == ERP.Front.Helpers.Enums.Common.FormTriggers.Show.ToString())
+                    {
+                        <p>
+                            @if (Model.IsTransferDepositToCustomer)
+                            {
+                                <i class="fas fa-check text-success fa-2x"></i>
+                            }
+                            else
+                            {
+                                <i class="fas fa-times text-danger fa-2x"></i>
+                            }
+                            <span>@Html.LabelFor(z => z.IsTransferDepositToCustomer)</span>
+                        </p>
+                    }
+                    else if (formTrigger == ERP.Front.Helpers.Enums.Common.FormTriggers.Update.ToString())
+                    {
+                        <p>
+                            <label>
+                                @if (Model.IsTransferDepositToCustomer)
+                                {
+                                    <input type="checkbox" onclick="mainForm.IsTransferDepositToCustomer.value = $('#IsTransferDepositToCustomerAlt').is(':checked')" checked id="@nameof(Model.IsTransferDepositToCustomerAlt)" name="@nameof(Model.IsTransferDepositToCustomerAlt)" />
+                                }
+                                else
+                                {
+                                    <input type="checkbox" onclick="mainForm.IsTransferDepositToCustomer.value = $('#IsTransferDepositToCustomerAlt').is(':checked')" id="@nameof(Model.IsTransferDepositToCustomerAlt)" name="@nameof(Model.IsTransferDepositToCustomerAlt)" />
+                                }
+                                <span>@Html.LabelFor(z => z.IsTransferDepositToCustomer)</span>
+                            </label>
+                        </p>
+                    }
+                    else
+                    {
+                        <p>
+                            <label>
+                                <input type="checkbox" onclick="mainForm.IsTransferDepositToCustomer.value = $('#IsTransferDepositToCustomerAlt').is(':checked')" id="@nameof(Model.IsTransferDepositToCustomerAlt)" name="@nameof(Model.IsTransferDepositToCustomerAlt)" />
+                                <span>@Html.LabelFor(z => z.IsTransferDepositToCustomer)</span>
+                            </label>
+                        </p>
+                    }
+
+                    <input type="hidden" id="@nameof(Model.IsTransferDepositToCustomer)" name="@nameof(Model.IsTransferDepositToCustomer)" />
+                </div>
+            </div>
+            <div class="row clearfix">
+                <div class="col-sm-6">
+                    <div class="form-group form-float">
+                        <div class="form-line">
+                            @Html.TextBoxFor(z => z.Notes, new { @class = "form-control"})
+                            @Html.LabelFor(z => z.Notes, new { @class = "form-label" })
+                        </div>
+                        @Html.ValidationMessageFor(z => z.Notes)
+                    </div>
+                </div>
+            </div>
+            <div class="row clearfix">
+                <div class="form-group text-center form-float">
+                    <button type="submit" class="btn btn-info btn-lg m-l-15 waves-effect">@(Model == null ? ERP.ResourcePack.Common.Settings.BtnSave : ERP.ResourcePack.Common.Settings.BtnUpdate)</button>
+                    <div id="submitLoader" style="display:none">
+                        <div class="lds-roller"><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div></div>
+                    </div>
+                </div>
+            </div>
+        }
+
+    </div>
+</div>
+<script src="~/Scripts/jquery.validate.min.js"></script>
+<script src="~/Scripts/jquery.validate.unobtrusive.min.js"></script>
+<script src="~/AssetsPack/assets/js/pages/forms/basic-form-elements.js"></script>
+<script>
+
+    $(".currency").inputmask(
+        {
+            alias: "currency",
+            prefix: '',
+            removeMaskOnSubmit: true,
+            autoUnmask: true,
+            oncleared: function (e) {
+                $numeric.val('');
+            }
+        }
+
+    );
+
+    $(".datepicker").attr("autocomplete", "off");
+
+    $(function () {
+        DDLChange($('#PmContractId'));
+    });
+
+    $('#PmContractId').select2(ReturnSelect2ObjectDefault(`${baseUrl}/PmContract/GetPmContractSelect2`));
+
+    $('#PmContractId').on('change', function (e) {
+
+        const currency = $(this);
+         DDLChange(currency);
+    });
+
+    function DDLChange(currency) {
+
+       const PmTenantNameTxt = $('#PmTenantName');
+       const StartDateTxt = $('#StartDate');
+       const EndDateTxt = $('#EndDate');
+       const ContractAmountTxt = $('#ContractAmount');
+
+       if (currency === undefined || currency.find(':selected').val() === undefined) {
+           $('#PmTenantName').val('');
+           $('#StartDate').val('');
+           $('#EndDate').val('');
+           $('#ContractAmount').val('');
+       } else {
+            $.ajax({
+                url: `${baseUrl}/PmContract/GetPmContractForAjaxCall`,
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${$_token}`
+                },
+                data: {
+                    Id: currency.find(':selected').val()
+                }
+            }).done(function (result) {
+
+                let _inputSelector1 = $('#PmTenantName');
+                let _inputSelector2 = $('#StartDate');
+                let _inputSelector3 = $('#EndDate');
+                let _inputSelector4 = $('#ContractAmount');
+
+                _inputSelector1.parent('.form-line').addClass('focused');
+                _inputSelector2.parent('.form-line').addClass('focused');
+                _inputSelector3.parent('.form-line').addClass('focused');
+                _inputSelector4.parent('.form-line').addClass('focused');
+
+                let tenantName = (lang === 'en-US' ? result.result.pmTenants.tenantNameEn : result.result.pmTenants.tenantNameAr);
+                PmTenantNameTxt.val(tenantName);
+                StartDateTxt.val(result.result.contractStartDate);
+                EndDateTxt.val(result.result.contractEndDate);
+                ContractAmountTxt.val(result.result.rentAmount);
+
+            }).fail(function (response) {
+                toastr.error(response);
+            });
+        }
+    };
+
+</script>

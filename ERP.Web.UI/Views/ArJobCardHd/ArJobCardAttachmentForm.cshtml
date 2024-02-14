@@ -1,0 +1,71 @@
+﻿@using ERP.Web.UI.Models.ViewModels
+@model BaseAttachmentsVM
+@{
+
+    string formOpr = ViewBag.trigger;
+}
+
+@if (formOpr != ERP.Front.Helpers.Enums.Common.FormTriggers.Show.ToString())
+{
+    <div class="card">
+        <div class="body">
+            <div class="row clearfix">
+
+                <div class="col-sm-5">
+                    <div class="form-group form-float">
+                        <div class="form-line">
+                            @Html.TextBoxFor(z => z.AttachmentName, new { @class = "form-control" })
+                            @Html.LabelFor(z => z.AttachmentName, new { @class = "form-label" })
+                        </div>
+                    </div>
+                </div>
+                <div class="col-sm-5">
+                    <div class="row">
+                        <div class="col-sm-6">
+                            <div class="row">
+                                <div class="col-md-12 col-sm-12">
+                                    <div class="file-field input-field" style="margin:0px">
+                                        <div class="file-path-wrapper">
+                                            <div class="btn" style="margin-top: 1rem;">
+                                                <span>@ERP.ResourcePack.Common.Settings.UploadFile</span>
+                                                <input onchange="AJAXMultiAttachmentComponentSubmit('jobcardfiles');" type="file" id="jobcardfiles" name="files" multiple>
+
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-sm-4">
+                            <div class="form-group m-2" style="margin-top:15px !important">
+                                <button style="display:none;" onclick="return UpdateAttachRow('jobcardfiles')" id="btnUpdateArJobcardAttchRow" class="btn btn-info">@ERP.ResourcePack.Common.Settings.BtnUpdate</button>
+                                <button style="display:none;" id="btnCancelArJobcardAttchRow" onclick="ClearInput(); $('#btnCancelArJobcardAttchRow').hide();$('#btnUpdateArJobcardAttchRow').hide();" class="btn btn-danger">@ERP.ResourcePack.Common.Settings.BtnCancel</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+}
+
+<div class="row clearfix">
+    <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+        <div class="table-responsive">
+            <table class="table table-bordered table-striped table-hover" id="tblArJobcardAttachments" style="width:100%">
+                <thead>
+                    <tr>
+                        <th><i class="fas fa-hashtag"></i></th>
+                        <th class="js-th-att-name">Name</th>
+                        <th><i class="fas fa-download"></i></th>
+                        <th><i class="fas fa-cog"></i></th>
+                        <th> </th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+    </div>
+</div>
+

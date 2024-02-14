@@ -1,0 +1,49 @@
+﻿@model ERP.Web.UI.Models.ViewModels.SpGuarantees.SpPaymentsVM
+<div class="card" id="formPaymentPersonDetails">
+    <div class="body">
+        <div class="row clearfix">
+            <div class="col-sm-4">
+                <div class="form-group form-float">
+                    <div class="form-line">
+                        @Html.TextBoxFor(z => z.PaymentName, new { @class = "form-control", @id = "PaymentNameDetails" ,@disabled = "disabled" })
+                        @Html.LabelFor(z => z.PaymentName, new { @class = "form-label" })
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-4">
+                <div class="form-group form-float">
+                    <div class="form-line">
+                        @Html.TextBoxFor(z => z.CaseNumber, new { @class = "form-control",@id="CaseNumberDetails", @disabled = "disabled" })
+                        @Html.LabelFor(z => z.CaseNumber, new { @class = "form-label" })
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-4">
+                <div class="form-group form-float">
+                    <div class="form-line">
+                        @Html.TextBoxFor(z => z.SpCase, new { @class = "form-control", @id = "CaseNameDetails", @disabled = "disabled" })
+                        @Html.LabelFor(z => z.SpCaseId, new { @class = "form-label" })
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row clearfix">
+            <div class="col-sm-6">
+                <div class="form-group form-float">
+                    <div class="form-line">
+                        @Html.TextBoxFor(z => z.FromPeriodId, new { @class = "form-control", @id = "FromPeriodIdDetails", @disabled = "disabled" })
+                        @Html.LabelFor(z => z.FromPeriodId, new { @class = "form-label" })
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-6">
+                <div class="form-group form-float">
+                    <div class="form-line">
+                        @Html.TextBoxFor(z => z.ToPeriodId, new { @class = "form-control", @id = "ToPeriodIdDetails", @disabled = "disabled" })
+                        @Html.LabelFor(z => z.ToPeriodId, new { @class = "form-label" })
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

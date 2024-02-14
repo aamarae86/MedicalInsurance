@@ -1,0 +1,70 @@
+﻿@using ERP.Web.UI.Models.ViewModels.PmPropertiesModule
+@model FmContractsVM
+@{
+    string formTrigger = ViewBag.trigger;
+    string lang = Request.Cookies["Lang"] == null ? "ar-EG" : Request.Cookies["Lang"].Value.ToString();
+    bool isFormDetail = Model != null && formTrigger == ERP.Front.Helpers.Enums.Common.FormTriggers.Show.ToString();
+}
+
+<div class="card" style="display:@(formTrigger ==ERP.Front.Helpers.Enums.Common.FormTriggers.Show.ToString() ? "none":"block" ) ">
+    <div class="body">
+        <div class="row clearfix">
+
+            <div class="col-md-4">
+                <div class="form-group form-float">
+                    <div class="form-line">
+                        @Html.TextBoxFor(z => z.VisitNumber, getHtmlAttributes(isFormDetail, "form-control", string.Empty))
+                        @Html.LabelFor(z => z.VisitNumber, new { @class = "form-label" })
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="form-group form-float">
+                    <div class="form-line">
+                        @Html.TextBoxFor(z => z.VisitDate, getHtmlAttributes(isFormDetail, "form-control datepicker", string.Empty))
+                        @Html.LabelFor(z => z.VisitDate, new { @class = "form-label" })
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+            @Html.LabelFor(z => z.EngineerId, new { @class = "form-label" })
+            <div class="form-group form-float">
+                <div>
+                    @Html.DropDownListFor(z => z.EngineerId, Enumerable.Empty<SelectListItem>(), new { @class = "form-control" })
+                </div>
+            </div>
+        </div>
+
+
+        </div>
+        <div class="row clearfix">
+            <div class="col-md-12">
+                <div class="form-group form-float">
+                    <div class="form-line">
+                        @Html.TextArea("Comments11", new { @class = "form-control js-comments2" })
+                        @Html.LabelFor(m=>m.Comments, new { @class = "form-label" })
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row clearfix">
+            <div class="col-sm-12 text-center">
+                <div class="form-group">
+                    <button id="btnAddLineRow2" onclick="return AddDetail2()" class="btn btn-success">@ERP.ResourcePack.Common.Settings.BtnAddNew</button>
+                    <button style="display:none;" id="btnUpdateLineRow2" onclick="return UpdateDetailsRow2()" class="btn btn-info">@ERP.ResourcePack.Common.Settings.BtnUpdate</button>
+                    <button style="display:none;" id="btnCancelLineRow2" onclick="clearFormAdding2(); $('#btnCancelLineRow').hide();$('#btnUpdateLineRow').hide();$('#btnAddLineRow').show();" class="btn btn-danger">@ERP.ResourcePack.Common.Settings.BtnCancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@functions {
+    object getHtmlAttributes(bool Disabled, string CssClass, string CssClass2)
+    {
+        if (Disabled) return new { @class = CssClass, Disabled = Disabled };
+        return new { @class = $"{CssClass} {CssClass2}" };
+    }
+}

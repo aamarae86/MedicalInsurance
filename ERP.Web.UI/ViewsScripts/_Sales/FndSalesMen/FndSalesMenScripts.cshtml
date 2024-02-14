@@ -1,0 +1,291 @@
+﻿@using ERP.Authorization;
+@using ERP.Web.UI.Controllers.Sales
+@using ERP.ResourcePack.Sales
+@{
+    string permissionsStr = TempData["Permissions"].ToString();
+}
+<script>
+    const _mainController = "FndSalesMen"
+
+    $(function () {
+        LoadDataGrid();
+
+        $('#tblFndSalesMenPrint thead').html($('#tblFndSalesMen thead').html());
+        $('#tblFndSalesMenPrint thead tr :last-child').remove();
+
+        $('#Salesmen').addClass('active');
+    });
+
+    const _loadDataUrl = `${$PrefixHostName}/${_mainController}/@nameof(FndSalesMenController.LoadDataGrid)`;
+    const _tblSelector = $('#tblFndSalesMen');
+    const _tblLoader = $('#tblLoader');
+    const _txtSalesMenNumber = $('#searchBox #SalesManNumSearch');
+    const _txtSalesMenNameAr = $('#searchBox #SalesManNameArSearch');
+    const _txtSalesMenNameEn = $('#searchBox #SalesManNameEnSearch');
+    const _txtIsActiveLkpId = $('#searchBox #IsActiveLkpIdSearch');
+
+    const _permissions = '@permissionsStr';
+    const _updatePermission = '@PermissionNames.Pages_FndSalesMen_Update';
+    const _deletePermission = '@PermissionNames.Pages_FndSalesMen_Delete';
+
+    var OnBegin = function (response) {
+        fireBtnLoader();
+    };
+
+    var OnSuccess = function (response) {
+
+        if (response.success) {
+
+            if (response.customRestResult.trigger === '@ERP.Front.Helpers.Enums.Common.FormTriggers.Insert') {
+
+                toastr.success(response.customRestResult.message);
+
+                LoadDataGrid();
+
+                _mainModal.modal('hide');
+
+            } else if (response.customRestResult.trigger === '@ERP.Front.Helpers.Enums.Common.FormTriggers.Update') {
+
+                LoadDataGrid();
+
+                _mainModal.modal('hide');
+
+                toastr.success(response.customRestResult.message);
+            }
+
+        } else {
+            toastr.error(response.customRestResult.message);
+        }
+
+    };
+
+    var OnComplete = function (response) {
+        downBtnLoader();
+    };
+
+    var OnFailure = function (response) {
+        toastr.error(response);
+        console.log(response);
+        downBtnLoader();
+    };
+
+    const LoadDataGrid = function () {
+
+        const parms = {
+            SalesManNo: _txtSalesMenNumber.val(),
+            SalesManNameAr: _txtSalesMenNameAr.val(),
+            SalesManNameEn: _txtSalesMenNameEn.val(),
+            IsActive: _txtIsActiveLkpId.val()
+        };
+
+        $('#dataCollapse').show();
+        $('#tblLoader').show();
+
+        const columns = [
+            {
+                "data": "result.data.id",
+                'render': function (data, type, row, meta) {
+                    return meta.row + meta.settings._iDisplayStart + 1;
+                }
+            },
+            {
+                "data": "SalesManNameAr",
+                "name": "SalesManNameAr",
+                "autoWidth": true
+            },
+            {
+                "data": "SalesManNameEn",
+                "name": "SalesManNameEn",
+                "autoWidth": true
+            }, {
+                "data": "SalesManNo", 
+                "name": "SalesManNo",
+                "autoWidth": true
+            },
+            {
+                "data": null,
+                "autoWidth": true,
+                "render": function (d, t, row) {
+                    if (row.IsActive && lang === 'ar-EG') {
+                        return 'نشط';
+                    } else if (!row.IsActive && lang === 'ar-EG') {
+                        return 'غير نشط';
+                    } else if (row.IsActive && lang === 'en-US') {
+                        return 'Active';
+                    } else {
+                        return 'In Active';
+                    }
+
+
+                }
+            },
+            {
+                "data": null,
+                "sortable": false,
+                "render": function (data, type, row) {
+
+                    let formAction = `${$PrefixHostName}/${_mainController}/@nameof(FndSalesMenController.FndSalesMenForm)`;
+                    let DeleteAction = `${$PrefixHostName}/${_mainController}/@nameof(FndSalesMenController.Delete)`;
+
+                    let formTitle = '@FndSalesMen.Title';
+                    let btns = '';
+
+                    if (_permissions.includes(_updatePermission)) {
+                        btns += `<a href="javascript:void(0)" onclick="AjaxController.GetFormModal(${row.Id},'@ERP.Front.Helpers.Enums.Common.FormTriggers.Update','${formAction}','${formTitle}');" title="@ERP.ResourcePack.Common.Settings.Edit"><i class="mx-2 fas fa-edit text-info"></i></a>`;
+                    }
+
+                    btns += `<a href="javascript:void(0)" onclick="AjaxController.GetFormModal(${row.Id},'@ERP.Front.Helpers.Enums.Common.FormTriggers.Show','${formAction}','${formTitle}');" title="@ERP.ResourcePack.Common.Settings.Show"><i class="mx-2 fas fa-eye text-info"></i></a>`;
+
+                    if (_permissions.includes(_deletePermission)) {
+                        btns += `<a href="javascript:void(0)" onclick="AjaxController.DeleteMainTableRow(${row.Id},'${DeleteAction}');" title="@ERP.ResourcePack.Common.Settings.Delete"><i class="mx-2 fas fa-trash-alt text-danger"></i></a>`;
+                    }
+
+                    const _auditedPermission = '@PermissionNames.Pages_FndSalesMen_Audit';
+
+                    if (_permissions.includes(_auditedPermission)) {
+
+                        row.permission = _auditedPermission;
+
+                        btns += GetAuditedButton(row);
+                    }
+
+                    return btns;
+                }
+            }
+        ];
+
+        const dtObj = {
+            "processing": true,
+            "serverSide": true,
+            "filter": false,
+            "orderMulti": false,
+            "language": dataTableLang,
+            "ajax": {
+                "url": _loadDataUrl,
+                "type": "POST",
+                "datatype": "json",
+                "data": parms,
+                "complete": function (d) {
+                    _tblLoader.hide();
+                }
+            },
+            "columns": columns,
+
+
+            "initComplete": function () {
+                $('[data-toggle="tooltip"]').tooltip();
+            }
+        };
+        _tblSelector.dataTable().fnDestroy();
+        _tblSelector.DataTable(dtObj).on('draw', function () { $('[data-toggle="tooltip"]').tooltip(); });
+        };
+
+
+    var dataIsActive = '';
+
+        if (lang === 'ar-EG')
+            dataIsActive = [{ id: 'null', text: '-- Select --' }, { id: true, text: 'فعال' }, { id: false, text: 'غير فعال' }]
+        else
+            dataIsActive = [{ id: 'null', text: '-- Select --' }, { id: true, text: 'Active' }, { id: false, text: 'In Active' }]
+
+
+    $('#searchBox #IsActiveLkpIdSearch').select2({
+        data: dataIsActive,
+        minimumInputLength: 0,
+        allowClear: true,
+        language: select2Lang,
+        placeholder: { id: 'null', text: '-- Select --', selected: true }
+
+    });
+
+        function printExc() {
+            $('.page-loader-wrapper').show();
+            const params = {
+                SalesManNo: _txtSalesMenNumber.val(),
+                SalesManNameAr: _txtSalesMenNameAr.val(),
+                SalesManNameEn: _txtSalesMenNameEn.val(),
+                IsActive: _txtIsActiveLkpId.val(),
+                length: 1000000
+            };
+
+
+        $('#dataCollapse').show();
+        $('#tblLoader').show();
+
+        const columns = [
+            {
+                "data": "result.data.id",
+                'render': function (data, type, row, meta) {
+                    return meta.row + meta.settings._iDisplayStart + 1;
+                }
+            }
+
+            , {
+                "data": "SalesManNameAr",
+                "name": "SalesManNameAr",
+                "autoWidth": true
+            },
+            {
+                "data": "SalesManNameEn",
+                "name": "SalesManNameEn",
+                "autoWidth": true
+            },
+            {
+                "data": "SalesManNo",
+                "name": "SalesManNo",
+                "autoWidth": true
+            },
+            {
+                "data": null,
+                "autoWidth": true,
+                "render": function (d, t, row) {
+                    if (row.IsActive && lang === 'ar-EG') {
+                        return 'نشط';
+                    } else if (!row.IsActive && lang === 'ar-EG') {
+                        return 'غير نشط';
+                    } else if (row.IsActive && lang === 'en-US') {
+                        return 'Active';
+                    } else {
+                        return 'In Active';
+                    }
+
+
+                }
+            }
+        ];
+
+            const dtObj = {
+                "language": dataTableLang,
+                "dom": 'Bfrtip',
+                "buttons": [
+                    {
+                        extend: 'excel',
+                        messageTop: `${$('#SalesMenNumSearch').siblings().text()}: ${(params.SalesManNo) ? params.SalesManNo : '--'}, ${$('#SalesMenNumSearch').siblings().text()}: ${(params.SalesManNameAr) ? params.SalesManNameAr : '--'}, ${$('#SalesMenNumSearch').siblings().text()}: ${(params.SalesManNameEn) ? params.SalesManNameEn : '--'}`
+                    },
+
+                ],
+                "ajax": {
+                    "url": _loadDataUrl,
+                    "type": "POST",
+                    "datatype": "json",
+                    "data": params,
+                    "complete": function (d) {
+                        _tblLoader.hide();
+                    }
+                },
+                "columns": columns,
+
+                "initComplete": function () {
+                    $('#tblFndSalesMenPrint_wrapper button.dt-button').click();
+                    $('#tblFndSalesMenPrint_wrapper').parent().addClass('d-none');
+
+                }
+            };
+
+            $('#tblFndSalesMenPrint').dataTable().fnDestroy();
+            $('#tblFndSalesMenPrint').DataTable(dtObj).on('buttons-processing', function (e, indicator) { if (!indicator) { $('.page-loader-wrapper').hide() } });
+
+
+        }
+
+</script>

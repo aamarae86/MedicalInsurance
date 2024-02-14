@@ -1,0 +1,12 @@
+﻿@{
+    ViewBag.Title = ERP.ResourcePack.SpGuarantees.SpContracts.Title;
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@Html.Action(nameof(ERP.Web.UI.Controllers.SpGuarantees.SpContractsController.SpContractsSearch))
+@Html.Action(nameof(ERP.Web.UI.Controllers.SpGuarantees.SpContractsController.SpContractsData))
+
+@section scripts{
+    <script>let formView = false;</script>
+    @Html.Partial("~/ViewsScripts/_SpGuarantees/SpContracts/SpContractsScripts.cshtml")
+}

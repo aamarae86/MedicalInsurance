@@ -1,0 +1,400 @@
+﻿@using ERP.ResourcePack.CharityBoxes
+@using ERP.Web.UI.Controllers.CharityBoxes
+@using ERP.Authorization;
+@{
+    string encUpdateTrigger = ERP.Front.Helpers.Enums.Common.EncUpdate;
+    string encShowTrigger = ERP.Front.Helpers.Enums.Common.EncShow;
+    string permissionsStr = TempData["Permissions"].ToString();
+}
+
+<script>
+    const _mainController = "TmLocations"
+
+    $(function ()  {
+        LoadDataGrid();
+
+        $('#TmLocations').addClass('active');
+
+        $('#LocationNumber').parent('.form-line').addClass('focused');
+        $('#StatusLkpId').parent('.form-line').addClass('focused');
+    });
+
+    const _loadDataUrl = `${$PrefixHostName}/${_mainController}/@nameof(TmLocationsController.LoadDataGrid)`;
+    const _tblSelector = $('#tblTmLocations');
+    const _tblLoader = $('#tblLoader');
+    const _mainForm = $('#mainForm');
+    const _txtLocationNumberSearch = $('#searchBox #LocationNumber');
+    const _txtLocationNameSearch = $('#searchBox #LocationName');
+
+    const _select2RegionIdSearch = $('#searchBox #RegionId');
+    const _select2RegionId = $('#RegionId');
+
+    const _permissions = '@permissionsStr';
+    const _updatePermission = '@PermissionNames.Pages_TmLocations_Update';
+    const _deletePermission = '@PermissionNames.Pages_TmLocations_Delete';
+
+    let tblHeadersAdded = false;
+
+    $('#btnSubmition').on('click', function () {
+
+        _mainForm.submit();
+
+        if (_mainForm.valid()) {
+            $(this).hide();
+            $('#submitLoader').show();
+
+        } else {
+            $(this).show();
+            $('#submitLoader').hide();
+        }
+    });
+
+    var OnBegin = function (response) {
+        fireBtnLoader();
+    };
+
+    var OnSuccess = function (response) {
+
+        if (response.success) {
+
+            if (response.customRestResult.trigger === '@ERP.Front.Helpers.Enums.Common.FormTriggers.Insert') {
+
+                toastr.success(response.customRestResult.message);
+
+                setTimeout(function () {
+                    window.location.href =  $PrefixHostName + '/TmLocations';
+                },200);
+
+            } else if (response.customRestResult.trigger === '@ERP.Front.Helpers.Enums.Common.FormTriggers.Update') {
+
+                toastr.success(response.customRestResult.message);
+
+                 setTimeout(function () {
+                    window.location.href =  $PrefixHostName + '/TmLocations';
+                },200);
+            }
+
+        } else {
+               toastr.error(response.customRestResult.message);
+        }
+
+    };
+
+    var OnComplete = function (response) {
+        downBtnLoader();
+    };
+
+    var OnFailure = function (response) {
+        toastr.error(response);
+        console.log(response);
+        downBtnLoader();
+    };
+
+    const LoadDataGrid = function () {
+
+        $('#tblLoader').show();
+
+        const parms = {
+            LocationNumber: _txtLocationNumberSearch.val(),
+            RegionId: _select2RegionIdSearch.find(':selected').val(),
+            LocationName:  _txtLocationNameSearch.val()
+        };
+
+        const columns = [
+            {
+                "data": "result.data.id",
+                'render': function (data, type, row, meta) {
+                    return meta.row + meta.settings._iDisplayStart + 1;
+                }
+            },
+            {
+                "data": "LocationNumber",
+                "name": "LocationNumber",
+                "autoWidth": true
+            },
+            {
+                "data": "LocationName",
+                "name": "LocationName",
+                "autoWidth": true
+            },
+            {
+                "data": null,
+                "autoWidth": true,
+                "render": function (d, t, row) {
+                    if (row.Region == null) return '';
+
+                    let regionName = lang === 'ar-EG' ? row.Region.FndLookupValues.NameAr : row.Region.FndLookupValues.NameEn;
+                    let returnRegionNameVal = row.Region.RegionName + " - " + regionName;
+
+                    return returnRegionNameVal;
+                }
+            },
+            {
+                "data": null,
+                "sortable": false,
+                "render": function (data, type, row) {
+
+                    let formAction = `${$PrefixHostName}/${_mainController}/@nameof(TmLocationsController.TmLocationsForm)`;
+                    let DeleteAction = `${$PrefixHostName}/${_mainController}/@nameof(TmLocationsController.Delete)`;
+
+                    let btns = '';
+
+                    if (_permissions.includes(_updatePermission)) {
+                        btns += `<a href="${$PrefixHostName}/TmLocations/FormView?id=${row.EncId}&t=@encUpdateTrigger"  title="@ERP.ResourcePack.Common.Settings.Edit"><i class="mx-2 fas fa-edit text-info"></i></a>`;
+                    }
+
+                    btns += `<a href="${$PrefixHostName}/TmLocations/FormView?id=${row.EncId}&t=@encShowTrigger"  title="@ERP.ResourcePack.Common.Settings.Show"><i class="mx-2 fas fa-eye text-info"></i></a>`;
+
+                    if (_permissions.includes(_deletePermission)) {
+                        btns += `<a href="javascript:void(0)" onclick="AjaxController.DeleteMainTableRow(${row.Id},'${DeleteAction}');"  title="@ERP.ResourcePack.Common.Settings.Delete"><i class="mx-2 fas fa-trash-alt text-danger"></i></a>`;
+                    }
+
+                    const _auditedPermission = '@PermissionNames.Pages_TmLocations_Audit';
+
+                    if (_permissions.includes(_auditedPermission)) {
+
+                        row.permission = _auditedPermission;
+
+                        btns += GetAuditedButton(row);
+                    }
+
+                    return btns;
+                }
+            }
+        ];
+
+        const dtObj = {
+            "processing": true,
+            "serverSide": true,
+            "filter": false,
+            "orderMulti": false,
+            "language": dataTableLang,
+            "ajax": {
+                "url": _loadDataUrl,
+                "type": "POST",
+                "datatype": "json",
+                "data": parms,
+                "complete": function () {
+                      _tblLoader.hide();
+                }
+            },
+            "columns": columns,
+            "initComplete": function () {
+                $('[data-toggle="tooltip"]').tooltip();
+            }
+
+        };
+
+        _tblSelector.dataTable().fnDestroy();
+        _tblSelector.DataTable(dtObj).on('draw', function () { $('[data-toggle="tooltip"]').tooltip(); });
+
+        setTimeout(function () {
+            $(".sorting_1").removeAttr('colspan');
+        }, 500);
+    };
+
+    _select2RegionIdSearch.select2(ReturnSelect2ObjectDefault(`${baseUrl}/TmRegions/GetTmRegionsSelect2`));
+    _select2RegionId.select2(ReturnSelect2ObjectDefault(`${baseUrl}/TmRegions/GetTmRegionsSelect2`));
+
+</script>
+
+<script id="MiscLines">
+
+    const _tblArMiscLocationLinesSelector = $('#tblArMiscReceiptLines');
+    const _tblArMiscLocationLinesSelectorBody = $('#tblArMiscReceiptLines tbody');
+    const _listArLocationDetails = $('#ListOfSubLocationsStr');
+
+    const _subLocationNumberSelector = $('#SubLocationNumber');
+    const _subLocationNameSelector = $('#SubLocationName');
+    const _subLocationNotesSelector = $('#SubLocationNotes');
+
+    const mainHeaders = [];
+
+    let _miscLinesArr = [], tblLinesCounterIndex = 0 , updatedRow
+
+    const fillLinesArr = function () {
+
+        if (validateLines() === false)  return;
+
+        const current = {
+            index: ++tblLinesCounterIndex,
+            tmLocationSubNumber: _subLocationNumberSelector.val(),
+            tmLocationSubName: _subLocationNameSelector.val(),
+            notes: _subLocationNotesSelector.val(),
+            rowStatus: NewStatus
+        };
+
+        return current;
+    };
+
+    const AddMiscLines = function () {
+
+        const current = fillLinesArr();
+
+        if (current === undefined) return;
+
+        _miscLinesArr.push(current);
+
+        _listArLocationDetails.val(JSON.stringify(_miscLinesArr));
+
+        bindLinesTable();
+
+        clearFormAdding();
+    };
+
+    const UpdateMiscLineRow = function () {
+
+        let current = _miscLinesArr.find(z => z.index === updatedRow.index);
+
+        let indexOfCurrent = _miscLinesArr.indexOf(current);
+
+        const newRow = fillLinesArr();
+
+        if (newRow === undefined) return;
+
+        newRow.id = updatedRow.id;
+        newRow.rowStatus = !updatedRow.locationId ? NewStatus : UpdatedStatus;
+
+        _miscLinesArr.splice(indexOfCurrent, 1,newRow);
+
+        $('#btnAddLineRow').show();
+        $('#btnUpdateLineRow').hide();
+        $('#btnCancelLineRow').hide();
+
+        clearFormAdding();
+
+        _listArLocationDetails.val(JSON.stringify(_miscLinesArr));
+
+        bindLinesTable();
+    };
+
+    const bindLinesTable = function () {
+
+        let rows = '';
+
+        const detailArr = _miscLinesArr.filter(z => z.rowStatus !== DeletedStatus);
+
+        $.each(detailArr, function (i, item) {
+
+            rows += '<tr>';
+            rows += `<td>${item.index}</td>`;
+            rows += `<td>${item.tmLocationSubNumber}</td>`;
+            rows += `<td>${item.tmLocationSubName}</td>`;
+            rows += `<td>${item.notes}</td>`;
+
+            if (primaryEntityKeyId === 0 || trigger !== '@ERP.Front.Helpers.Enums.Common.FormTriggers.Show.ToString()') {
+                rows += `<td><a href="javascript:void(0)" onclick="return DeleteRowLine(${item.index})"><i class="mx-2 fas fa-trash-alt text-danger"></i></a>`;
+                rows += `<a href="javascript:void(0)" onclick="return GetRow(${item.index})"><i class="mx-2 fas fa-edit text-success"></i></a></td>`;
+            } else {
+                rows += '<td></td>';
+            }
+
+            rows += '</tr>';
+        });
+
+        setTimeout(function () {
+            _tblArMiscLocationLinesSelectorBody.html(rows);
+        }, 100);
+    };
+
+    const DeleteRowLine= function (index) {
+
+        const current = _miscLinesArr.find(z => z.index === index);
+
+        const indexOfCurrent = _miscLinesArr.indexOf(current);
+
+        if (current.id === undefined || current.id == null || current.id == 0) {
+
+           _miscLinesArr.splice(indexOfCurrent, 1);
+
+        } else {
+
+            current.rowStatus = DeletedStatus;
+
+           _miscLinesArr.splice(indexOfCurrent, 1,current);
+        }
+
+        bindLinesTable();
+
+        _listArLocationDetails.val(_miscLinesArr.length === 0 ? '' : JSON.stringify(_miscLinesArr));
+    };
+
+    const LoadArMiscLocationLinesData = function () {
+
+        $('#tblLoaderLine').show();
+
+        $.ajax({
+            url: `${baseUrl}/TmLocations/GetDetailAsync`,
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${$_token}`
+            },
+            data: {
+                Id: primaryEntityKeyId
+            }
+        }).done(function (data) {
+
+            _miscLinesArr = [...data.result.locationSubs];
+
+            tblLinesCounterIndex = 0;
+
+            _miscLinesArr.forEach(function (item, index, arr) {
+                item.index = ++tblLinesCounterIndex;
+            }, _miscLinesArr);
+
+            bindLinesTable();
+
+            _listArLocationDetails.val(JSON.stringify(_miscLinesArr));
+
+            $('#tblLoaderLine').hide();
+
+            //let custNo = data.result.arCustomer.customerNumber;
+            //_CustomerNumber.val(custNo);
+        });
+
+    };
+
+    const GetRow = function (tblIndex) {
+
+        clearFormAdding();
+
+        $('#btnAddLineRow').hide();
+        $('#btnUpdateLineRow').show();
+        $('#btnCancelLineRow').show();
+
+        const current = _miscLinesArr.find(z => z.index === tblIndex);
+
+        _subLocationNameSelector.val(current.tmLocationSubName);
+        _subLocationNumberSelector.val(current.tmLocationSubNumber);
+        _subLocationNotesSelector.val(current.notes);
+
+        _subLocationNameSelector.parent('.form-line').addClass('focused');
+        _subLocationNumberSelector.parent('.form-line').addClass('focused');
+        _subLocationNotesSelector.parent('.form-line').addClass('focused');
+
+        updatedRow = current;
+
+    };
+
+    const clearFormAdding = function () {
+
+        $('#lines .card select').val('').trigger('change');
+        $('#lines .card input').val('');
+        $('#lines .card textarea').val('');
+
+        $('#details .card select').val('').trigger('change');
+        $('#details .card input').val('');
+        $('#details .card textarea').val('');
+
+    };
+
+    const validateLines = function () {
+
+        @*if ($('#OnAccountLocationTypeLkpId').find(':selected').val() === undefined || $('#lines #LocationTypeLkpId').find(':selected').val() === '') {
+            toastr.warning('@TmLocations.OnAccountLocationTypeLkpId' + ' : ' + '@ERP.ResourcePack.Common.Settings.Required')
+            return false;
+        }*@
+
+        return true;
+    };
+</script>

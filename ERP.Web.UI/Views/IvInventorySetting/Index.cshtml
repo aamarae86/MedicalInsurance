@@ -1,0 +1,12 @@
+﻿@{
+    ViewBag.Title = ERP.ResourcePack.Warehouses.IvInventorySetting.Title;
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@Html.Action(nameof(ERP.Web.UI.Controllers.Warehouses.IvInventorySettingController.IvInventorySettingSearch))
+@Html.Action(nameof(ERP.Web.UI.Controllers.Warehouses.IvInventorySettingController.IvInventorySettingData))
+
+@section scripts{
+    <script>let formView = false;</script>
+    @Html.Partial("~/ViewsScripts/_Warehouses/IvInventorySetting/IvInventorySettingScripts.cshtml")
+}

@@ -1,0 +1,329 @@
+﻿@using ERP.Web.UI.Models.ViewModels.Warehouses
+@model IvItemsVM
+@{
+    string formTrigger = ViewBag.trigger;
+    string lang = Request.Cookies["Lang"] == null ? "ar-EG" : Request.Cookies["Lang"].Value.ToString();
+    string lkpKeyDdl = lang == "ar-EG" ? nameof(ERP.Web.UI.Models.ViewModels.General.FndLookupValuesVM.NameAr) : nameof(ERP.Web.UI.Models.ViewModels.General.FndLookupValuesVM.NameEn);
+}
+<style>
+    .jstree-default .jstree-anchor {
+        color: #000 !important;
+    }
+
+    .modal-dialog.modal-lg {
+        max-width: 90%;
+    }
+</style>
+<div class="card">
+    <div class="body">
+        @using (Ajax.BeginForm(nameof(ERP.Web.UI.Controllers.Warehouses.IvItemsController.PostIvItems), "IvItems",
+            new AjaxOptions { HttpMethod = "POST", OnBegin = "OnBegin", OnSuccess = "OnSuccess", OnComplete = "OnComplete", OnFailure = "OnFailure" }, new { @id = "mainForm" }))
+        {
+            @Html.HiddenFor(z => z.Id)
+
+        <div class="row clearfix">
+            <div class="col-md-4">
+                <div class="form-group form-float">
+                    <div class="form-line">
+                        @Html.TextBoxFor(z => z.ItemNumber, new { @class = "form-control", @readonly = "readonly" })
+                        @Html.LabelFor(z => z.ItemNumber, new { @class = "form-label" })
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-4">
+                @Html.LabelFor(z => z.IvItemsTypesConfigureId, new { @class = "form-label label-required" })
+                <div class="form-group form-float">
+                    <div class="form-line">
+                        @if (Model != null && Model.IvItemsTypesConfigure != null)
+                        {
+                            var list = new List<ERP.Web.UI.Models.ViewModels.General.FndLookupValuesVM> { new ERP.Web.UI.Models.ViewModels.General.FndLookupValuesVM { Id = Model.IvItemsTypesConfigureId.Value, NameAr = Model.IvItemsTypesConfigure.NameAr, NameEn = Model.IvItemsTypesConfigure.NameEn } };
+
+                            var selectList = new SelectList(list, "Id", lkpKeyDdl, Model.IvItemsTypesConfigureId);
+
+                            @Html.DropDownListFor(z => z.IvItemsTypesConfigureId, selectList, new { @class = "form-control" })
+                        }
+                        else
+                        {
+                            @Html.DropDownListFor(z => z.IvItemsTypesConfigureId, Enumerable.Empty<SelectListItem>(), new { @class = "form-control" })
+                        }
+
+                        @Html.ValidationMessageFor(z => z.IvItemsTypesConfigureId)
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-4">
+                @Html.LabelFor(z => z.FndTaxtypeId, new { @class = "form-label label-required" })
+                <div class="form-group form-float">
+                    <div class="form-line">
+                        @if (Model != null && Model.FndTaxtypeId != null)
+                        {
+                            var list = new List<ERP.Web.UI.Models.ViewModels.General.FndLookupValuesVM> { new ERP.Web.UI.Models.ViewModels.General.FndLookupValuesVM { Id = Model.FndTaxtypeId.Value, NameAr = Model.FndTaxType.TaxNameAr, NameEn = Model.FndTaxType.TaxNameEn } };
+
+                            var selectList = new SelectList(list, "Id", lkpKeyDdl, Model.FndTaxtypeId);
+
+                            @Html.DropDownListFor(z => z.FndTaxtypeId, selectList, new { @class = "form-control" })
+                        }
+                        else
+                        {
+                            @Html.DropDownListFor(z => z.FndTaxtypeId, Enumerable.Empty<SelectListItem>(), new { @class = "form-control" })
+                        }
+
+                        @Html.ValidationMessageFor(z => z.FndTaxtypeId)
+                    </div>
+                </div>
+            </div>
+            @*<div class="col-md-4">
+            @Html.LabelFor(z => z.TaxPercentageLkpId, new { @class = "form-label" })
+            <div class="form-group form-float">
+                <div class="form-line">
+                    @if (Model != null && Model.FndLookupValues != null)
+                    {
+                        var list = new List<ERP.Web.UI.Models.ViewModels.General.FndLookupValuesVM> { new ERP.Web.UI.Models.ViewModels.General.FndLookupValuesVM { Id = (long)Model.TaxPercentageLkpId, NameAr = Model.FndLookupValues.NameAr, NameEn = Model.FndLookupValues.NameEn } };
+
+                        var selectList = new SelectList(list, "Id", lkpKeyDdl, Model.TaxPercentageLkpId);
+
+                        @Html.DropDownListFor(z => z.TaxPercentageLkpId, selectList, new { @class = "form-control" })
+                    }
+                    else
+                    {
+                        @Html.DropDownListFor(z => z.TaxPercentageLkpId, Enumerable.Empty<SelectListItem>(), new { @class = "form-control" })
+                    }
+
+                    @Html.ValidationMessageFor(z => z.TaxPercentageLkpId)
+                </div>
+            </div>
+        </div>*@
+            @*<div class="col-md-4">
+            @if (formTrigger == ERP.Front.Helpers.Enums.Common.FormTriggers.Show.ToString())
+            {
+                <p>
+                    @if (Model.IsDonationItem)
+                    {
+                        <i class="fas fa-check text-success fa-2x"></i>
+                    }
+                    else
+                    {
+                        <i class="fas fa-times text-danger fa-2x"></i>
+                    }
+                    <span>@Html.LabelFor(z => z.IsDonationItem)</span>
+                </p>
+            }
+            else if (formTrigger == ERP.Front.Helpers.Enums.Common.FormTriggers.Update.ToString())
+            {
+                <p>
+                    <label>
+                        @if (Model.IsDonationItem)
+                        {
+                            <input type="checkbox" onclick="mainForm.IsDonationItem.value = $('#IsDonationItemAlt').is(':checked')" checked id="@nameof(Model.IsDonationItemAlt)" name="@nameof(Model.IsDonationItemAlt)" />
+                        }
+                        else
+                        {
+                            <input type="checkbox" onclick="mainForm.IsDonationItem.value = $('#IsDonationItemAlt').is(':checked')" id="@nameof(Model.IsDonationItemAlt)" name="@nameof(Model.IsDonationItemAlt)" />
+                        }
+                        <span>@Html.LabelFor(z => z.IsDonationItem)</span>
+                    </label>
+                </p>
+            }
+            else
+            {
+                <p>
+                    <label>
+                        <input type="checkbox" onclick="mainForm.IsDonationItem.value = $('#IsDonationItemAlt').is(':checked')" id="@nameof(Model.IsDonationItemAlt)" name="@nameof(Model.IsDonationItemAlt)" />
+                        <span>@Html.LabelFor(z => z.IsDonationItem)</span>
+                    </label>
+                </p>
+            }
+
+            <input type="hidden" id="@nameof(Model.IsDonationItem)" name="@nameof(Model.IsDonationItem)" value="@(formTrigger == ERP.Front.Helpers.Enums.Common.FormTriggers.Insert.ToString() ? "false" : Model.IsDonationItem.ToString())" />
+        </div>*@
+        </div>
+            <div class="row clearfix">
+                <div class="col-sm-4">
+                    <div class="form-group form-float">
+                        <div class="form-line">
+                            @Html.TextBoxFor(z => z.ItemName, new { @class = "form-control" })
+                            @Html.LabelFor(z => z.ItemName, new { @class = "form-label label-required" })
+                        </div>
+                        @Html.ValidationMessageFor(z => z.ItemName)
+                    </div>
+                </div>
+                <div class="col-sm-4">
+                    <div class="form-group form-float">
+                        <div class="form-line">
+                            @Html.TextBoxFor(z => z.ItemBarcode, new { @class = "form-control" })
+                            @Html.LabelFor(z => z.ItemBarcode, new { @class = "form-label" })
+                        </div>
+                    </div>
+                </div>
+                <div class="col-sm-4">
+                    @Html.LabelFor(z => z.IvUnitId, new { @class = "form-label label-required" })
+                    <div class="form-group form-float">
+                        <div class="form-line">
+                            @if (Model != null && Model.IvUnits != null)
+                            {
+                                var list = new List<ERP.Web.UI.Models.ViewModels.General.FndLookupValuesVM> { new ERP.Web.UI.Models.ViewModels.General.FndLookupValuesVM { Id = Model.IvUnitId.Value, NameAr = Model.IvUnits.UnitName, NameEn = Model.IvUnits.UnitName } };
+
+                                var selectList = new SelectList(list, "Id", lkpKeyDdl, Model.IvUnitId);
+
+                                @Html.DropDownListFor(z => z.IvUnitId, selectList, new { @class = "form-control" })
+                            }
+                            else
+                            {
+                                @Html.DropDownListFor(z => z.IvUnitId, Enumerable.Empty<SelectListItem>(), new { @class = "form-control" })
+                            }
+
+                            @Html.ValidationMessageFor(z => z.IvUnitId)
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row clearfix">
+                <div class="col-sm-4">
+                    <div class="form-group form-float">
+                        <div class="form-line">
+                            @Html.TextBoxFor(z => z.ItemRef1, new { @class = "form-control" })
+                            @Html.LabelFor(z => z.ItemRef1, new { @class = "form-label" })
+                        </div>
+                    </div>
+                </div>
+                <div class="col-sm-4">
+                    <div class="form-group form-float">
+                        <div class="form-line">
+                            @Html.TextBoxFor(z => z.ItemRef2, new { @class = "form-control" })
+                            @Html.LabelFor(z => z.ItemRef2, new { @class = "form-label" })
+                        </div>
+                    </div>
+                </div>
+                <div class="col-sm-4">
+                    <div class="form-group form-float">
+                        <div class="form-line">
+                            @Html.TextBoxFor(z => z.ItemOrdQty, new { @class = "form-control" })
+                            @Html.LabelFor(z => z.ItemOrdQty, new { @class = "form-label" })
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row clearfix">
+                <div class="col-sm-4">
+                    <div class="form-group form-float">
+                        <div class="form-line">
+                            @Html.TextBoxFor(z => z.ItemMaxStk, new { @class = "form-control" })
+                            @Html.LabelFor(z => z.ItemMaxStk, new { @class = "form-label" })
+                        </div>
+                    </div>
+                </div>
+                <div class="col-sm-4">
+                    <div class="form-group form-float">
+                        <div class="form-line">
+                            @Html.TextBoxFor(z => z.ItemMinStk, new { @class = "form-control" })
+                            @Html.LabelFor(z => z.ItemMinStk, new { @class = "form-label label-required" })
+                        </div>
+                        @Html.ValidationMessageFor(z => z.ItemMinStk)
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="form-group form-float">
+                        <div class="form-line">
+                            @Html.TextBoxFor(z => z.ItemQtys, new { @class = "form-control", @readonly = "readonly" })
+                            @Html.LabelFor(z => z.ItemQtys, new { @class = "form-label" })
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row clearfix">
+                <div class="col-md-4">
+                    <div class="form-group form-float">
+                        <div class="form-line">
+                            @Html.TextBoxFor(z => z.AvgCost, new { @class = "form-control currency " })
+                            @Html.LabelFor(z => z.AvgCost, new { @class = "form-label" })
+                        </div>
+                        @Html.ValidationMessageFor(z => z.AvgCost)
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="form-group form-float">
+                        <div class="form-line">
+                            @Html.TextBoxFor(z => z.Total, new { @class = "form-control currency ", @readonly = "readonly" })
+                            @Html.LabelFor(z => z.Total, new { @class = "form-label" })
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="form-group form-float">
+                        <div class="form-line">
+                            @Html.TextBoxFor(z => z.LastCost, new { @class = "form-control currency ", @readonly = "readonly" })
+                            @Html.LabelFor(z => z.LastCost, new { @class = "form-label" })
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row clearfix">
+                <div class="col-md-4">
+                    @if (formTrigger == ERP.Front.Helpers.Enums.Common.FormTriggers.Show.ToString())
+                    {
+                        <p>
+                            @if (Model.IsItemObsolete==true)
+                            {
+                                <i class="fas fa-check text-success fa-2x"></i>
+                            }
+                            else
+                            {
+                                <i class="fas fa-times text-danger fa-2x"></i>
+                            }
+                            <span>@Html.LabelFor(z => z.IsItemObsolete)</span>
+                        </p>
+                    }
+                    else if (formTrigger == ERP.Front.Helpers.Enums.Common.FormTriggers.Update.ToString())
+                    {
+                        <p>
+                            <label>
+                                @if (Model.IsItemObsolete==true)
+                                {
+                                    <input type="checkbox" onclick="mainForm.IsItemObsolete.value = $('#IsItemObsoleteAlt').is(':checked')" checked id="@nameof(Model.IsItemObsoleteAlt)" name="@nameof(Model.IsItemObsoleteAlt)" />
+                                }
+                                else
+                                {
+                                    <input type="checkbox" onclick="mainForm.IsItemObsolete.value = $('#IsItemObsoleteAlt').is(':checked')" id="@nameof(Model.IsItemObsoleteAlt)" name="@nameof(Model.IsItemObsoleteAlt)" />
+                                }
+                                <span>@Html.LabelFor(z => z.IsItemObsolete)</span>
+                            </label>
+                        </p>
+                    }
+                    else
+                    {
+                        <p>
+                            <label>
+                                <input type="checkbox" onclick="mainForm.IsItemObsolete.value = $('#IsItemObsoleteAlt').is(':checked')" id="@nameof(Model.IsItemObsoleteAlt)" name="@nameof(Model.IsItemObsoleteAlt)" />
+                                <span>@Html.LabelFor(z => z.IsItemObsolete)</span>
+                            </label>
+                        </p>
+                    }
+
+                    <input type="hidden" id="@nameof(Model.IsItemObsolete)" name="@nameof(Model.IsItemObsolete)" value="@(formTrigger == ERP.Front.Helpers.Enums.Common.FormTriggers.Insert.ToString() ? "false" : Model.IsItemObsolete.ToString())" />
+                </div>
+
+            </div>
+            <div class="row clearfix">
+                <div class="form-group text-center form-float">
+                    <button type="submit" class="btn btn-info btn-lg m-l-15 waves-effect">@(Model == null ? ERP.ResourcePack.Common.Settings.BtnSave : ERP.ResourcePack.Common.Settings.BtnUpdate)</button>
+                    <div id="submitLoader" style="display:none">
+                        <div class="lds-roller"><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div></div>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+<script src="~/Scripts/jquery.validate.min.js"></script>
+<script src="~/Scripts/jquery.validate.unobtrusive.min.js"></script>
+<script src="~/AssetsPack/assets/js/pages/forms/basic-form-elements.js"></script>
+<script>
+    $('<b class="text-danger"> * </b>').appendTo('.label-required');
+
+    ($('#ItemQtys').val() && $('#AvgCost').val()) ? $('#Total').val(parseFloat(+$('#ItemQtys').val() * +$('#AvgCost').val()).toFixed(2)) : $('#Total').val('');
+    $('#main-modal #IvItemsTypesConfigureId').select2(ReturnSelect2ObjectDefault(`${baseUrl}/IvItemsTypesConfigure/GetIvItemsTypesConfigureWithParentSelect2`));
+    $('#main-modal #IvUnitId').select2(ReturnSelect2ObjectDefault(`${baseUrl}/IvUnits/GetIvUnitsSelect2`));
+    $('#main-modal #TaxPercentageLkpId').select2(ReturnSelect2ObjectForLkpsTypes('@ERP.Front.Helpers.Enums.Common.FndLkpsTypes.TaxVal.ToString()'))
+    $('#main-modal #FndTaxtypeId').select2(ReturnSelect2ObjectDefault(`${baseUrl}/FndTaxType/GetFndTaxTypeSelect2`));
+</script>

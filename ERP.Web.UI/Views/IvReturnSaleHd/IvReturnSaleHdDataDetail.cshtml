@@ -1,0 +1,38 @@
+﻿@using ERP.ResourcePack.Sales
+
+<div class="row clearfix">
+    <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+        <div class="">
+            <div class="">
+                <div class="table-responsive">
+                    <table class="table table-bordered table-striped table-hover" id="tblReturnSalesDetails" style="width:100%">
+                        <thead>
+                            <tr>
+                                <th><i class="fas fa-hashtag"></i></th>
+                                <th>@IvSaleHd.Itemcode</th>
+                                <th>@IvSaleHd.Itemname</th>
+                                <th>@IvSaleHd.Avilablequantity</th>
+                                <th>@IvSaleHd.Qtys</th>
+                                <th>@IvSaleHd.Unitprice</th>
+                                <th>@IvSaleHd.totbeforetax</th>
+                                <th>@IvSaleHd.Taxamount</th>
+                                <th>@IvSaleHd.Totalamount</th>
+                                @*<th>@IvSaleHd.profit</th>*@
+                                <th><i class="fas fa-cog"></i></th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                        <tfoot>
+                            <tr>
+                                <th colspan="8" style="text-align:right">@IvSaleHd.Invoicetotal</th>
+                                <th></th>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+

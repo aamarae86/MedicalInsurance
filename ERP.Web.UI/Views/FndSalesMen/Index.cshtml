@@ -1,0 +1,20 @@
+﻿@{
+    ViewBag.Title = ERP.ResourcePack.Sales.FndSalesMen.Title;
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@Html.Action(nameof(ERP.Web.UI.Controllers.Sales.FndSalesMenController.FndSalesMenSearch))
+@Html.Action(nameof(ERP.Web.UI.Controllers.Sales.FndSalesMenController.FndSalesMenData))
+
+@section scripts{
+    @Html.Partial("~/ViewsScripts/_Sales/FndSalesMen/FndSalesMenScripts.cshtml")
+
+    <script>
+        const setInUseValue = function () {
+            $("#mainForm #IsActive").val($('#IsActive').is(':checked'));
+        }
+    </script>
+
+}
+
+

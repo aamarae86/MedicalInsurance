@@ -1,0 +1,13 @@
+﻿@{
+    ViewBag.Title = ERP.ResourcePack.HR.HrPersonsAdditionHd.Title;
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@Html.Action(nameof(ERP.Web.UI.Controllers.HR.HrPersonsAdditionHdController.HrPersonsAdditionHdSearch))
+@Html.Action(nameof(ERP.Web.UI.Controllers.HR.HrPersonsAdditionHdController.HrPersonsAdditionHdData))
+
+@section scripts{
+    <script>let formView = false;</script>
+    @Html.Partial("~/ViewsScripts/_HR/_HrPersonsAdditionHd/HrPersonsAdditionHdScripts.cshtml")
+}
+

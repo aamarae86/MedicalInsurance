@@ -1,0 +1,1148 @@
+﻿@using ERP.ResourcePack.Accounts
+@using ERP.Web.UI.Controllers.Accounts
+@using ERP.Authorization;
+@{
+    string encUpdateTrigger = ERP.Front.Helpers.Enums.Common.EncUpdate;
+    string encShowTrigger = ERP.Front.Helpers.Enums.Common.EncShow;
+    string permissionsStr = TempData["Permissions"].ToString();
+}
+
+@if (permissionsStr.Contains(PermissionNames.Pages_ApMiscPaymentHeaders_Post))
+{
+    <script>
+        const PostAjax = function (id) {
+
+            bootbox.confirm({
+                message: _booBoxMessagePosting,
+                buttons: bootBoxDefaultBtns,
+                callback: function (result) {
+
+                    if (result) {
+
+                        const data = {
+                            id: id,
+                            lang: lang,
+                            userId: 0
+                        };
+
+                        $.ajax({
+                            url: `${baseUrl}/ApMiscPaymentHeaders/PostApMiscReceiptHeader`,
+                            type: 'POST',
+                            data: JSON.stringify(data),
+                            headers:
+                            {
+                                'Content-Type': 'application/json',
+                                'Authorization': `Bearer ${$_token}`
+                            },
+                        }).done(function (response) {
+
+                            if (response.result.finalStatues == 'F') {
+                                toastr.warning(response.result.reason);
+                            }
+                            else {
+                                toastr.success(response.result.reason);
+
+                                if (formView) {
+
+                                    setTimeout(function () {
+                                        window.location.href = $PrefixHostName + '/ApMiscPaymentHeaders';
+                                    }, 100);
+
+                                } else {
+                                    LoadDataGrid();
+                                }
+                            }
+
+                        }).fail(function (response) {
+                            toastr.error(response);
+                        });
+
+                    }
+
+                }
+            });
+
+        };
+    </script>
+}
+else
+{
+    <script>
+        const PostAjax = function (id) { };
+    </script>
+}
+
+<script>
+    const _mainController = "ApMiscPaymentHeaders"
+
+    $(function () {
+
+        LoadDataGrid();
+        $('#tblApMiscPaymentHeadersPrint thead').html($('#tblApMiscPaymentHeaders thead').html());
+        $('#tblApMiscPaymentHeadersPrint thead tr :last-child').remove();
+        $('#ApMiscPaymentHeaders').addClass('active');
+
+        $('#PaymentNumber').parent('.form-line').addClass('focused');
+        $('#MaturityDate').parent('.form-line').addClass('focused');
+
+        $('#CheckNumber').prop('type', 'number');
+        $('#CheckNumber').prop('min', '0');
+
+        $('#InvoiceNumber').prop('type', 'number');
+        $('#InvoiceNumber').prop('min', '0');
+
+        $('#MaturityDate').val($('#MiscPaymentDate').val());
+
+    });
+
+    const _loadDataUrl = `${$PrefixHostName}/${_mainController}/@nameof(ApMiscPaymentHeadersController.LoadDataGrid)`;
+    const _tblSelector = $('#tblApMiscPaymentHeaders');
+    const _tblLoader = $('#tblLoader');
+    const _mainForm = $('#mainForm');
+    const _txtPaymentNumberSearch = $('#searchBox #PaymentNumber');
+    const _txtCheckNumberSearch = $('#searchBox #CheckNumber');
+    const _txtAmountSearch = $('#searchBox #Amount');
+    const _PostStatus = @Convert.ToInt64(ERP.Front.Helpers.Enums.Common.ApMiscPaymentHeadersPost.Posted);
+
+    const _permissions = '@permissionsStr';
+    const _updatePermission = '@PermissionNames.Pages_ApMiscPaymentHeaders_Update';
+    const _deletePermission = '@PermissionNames.Pages_ApMiscPaymentHeaders_Delete';
+    const _postPermission = '@PermissionNames.Pages_ApMiscPaymentHeaders_Post';
+
+    const _newListBeneficiaries = [];
+
+    $('#btnSubmition').on('click', function () {
+
+        if (_miscLinesArr.length === 0) {
+            toastr.warning('@ApMiscPaymentHeaders.FillDetailTable');
+            return;
+        }
+
+        if (ValidateDetailsData() === false) return;
+
+
+        _mainForm.submit();
+
+        if (_mainForm.valid()) {
+
+            $(this).hide();
+            $('#submitLoader').show();
+
+        } else {
+
+            $(this).show();
+            $('#submitLoader').hide();
+        }
+
+    });
+
+    var OnBegin = function (response) {
+        fireBtnLoader();
+    };
+
+    var OnSuccess = function (response) {
+
+        if (response.success) {
+
+            if (response.customRestResult.trigger === '@ERP.Front.Helpers.Enums.Common.FormTriggers.Insert') {
+
+                toastr.success(response.customRestResult.message);
+
+                setTimeout(function () {
+                    window.location.href = $PrefixHostName + '/ApMiscPaymentHeaders';
+                }, 200);
+
+            } else if (response.customRestResult.trigger === '@ERP.Front.Helpers.Enums.Common.FormTriggers.Update') {
+
+                toastr.success(response.customRestResult.message);
+
+                setTimeout(function () {
+                    window.location.href = $PrefixHostName + '/ApMiscPaymentHeaders';
+                }, 200);
+            }
+
+        } else {
+            toastr.error(response.customRestResult.message);
+        }
+
+    };
+
+    var OnComplete = function (response) {
+        downBtnLoader();
+    };
+
+    var OnFailure = function (response) {
+        toastr.error(response);
+        console.log(response);
+        downBtnLoader();
+    };
+
+    const LoadDataGrid = function () {
+
+        $('#tblLoader').show();
+
+        const parms = {
+            Amount: _txtAmountSearch.val(),
+            PaymentNumber: _txtPaymentNumberSearch.val(),
+            CheckNumber: _txtCheckNumberSearch.val(),
+            PostedlkpId: $('#searchBox #PostedlkpId').find(':selected').val(),
+            SourceCodeLkpId: $('#searchBox #SourceCodeLkpId').find(':selected').val(),
+            BeneficentName: $('#searchBox #BeneficiaryName').val(),
+            CaseNumber: $('#searchBox #CaseNumber').val(),
+            FromDate: $('#searchBox #FromDate').val(),
+            ToDate: $('#searchBox #ToDate').val(),
+            PortalUsersId: $('#searchBox #PortalUsersId').find(':selected').val()
+        };
+
+        const columns = [
+            {
+                "data": "result.data.id",
+                'render': function (data, type, row, meta) {
+                    return meta.row + meta.settings._iDisplayStart + 1;
+                }
+            },
+            {
+                "data": "PaymentNumber",
+                "name": "PaymentNumber",
+                "autoWidth": true
+            },
+            {
+                "data": "MiscPaymentDate",
+                "name": "MiscPaymentDate",
+                "autoWidth": true
+            },
+            {
+                "data": "BeneficiaryName",
+                "name": "BeneficiaryName",
+                "autoWidth": true
+            },
+            {
+                "data": "Amount",
+                "name": "Amount",
+                "render": $.fn.dataTable.render.number(',', '.', 2),
+                "autoWidth": true
+            },
+            {
+                "data": "PortalUserName",
+                "autoWidth": true,
+                "sortable":false
+            },
+            {
+                "data": "CheckNumber",
+                "autoWidth": true,
+                "sortable": false
+            },
+            {
+                "data": null,
+                "autoWidth": true,
+                "render": function (d, t, row) {
+                    return row.FndLookupValuesPostedPaymentLkp ? (lang === 'ar-EG' ? row.FndLookupValuesPostedPaymentLkp.NameAr : row.FndLookupValuesPostedPaymentLkp.NameEn) : '';
+                }
+            },
+            {
+                "data": null,
+                "autoWidth": true,
+                "render": function (d, t, row) {
+                    return row.FndLookupValuesSourceCodePaymentLkp ? (lang === 'ar-EG' ? row.FndLookupValuesSourceCodePaymentLkp.NameAr : row.FndLookupValuesSourceCodePaymentLkp.NameEn) : '';
+                }
+            },
+            {
+                "data": null,
+                "sortable": false,
+                "render": function (data, type, row) {
+
+                    let formAction = `${$PrefixHostName}/${_mainController}/@nameof(ApMiscPaymentHeadersController.ApMiscPaymentHeadersForm)`;
+                    let DeleteAction = `${$PrefixHostName}/${_mainController}/@nameof(ApMiscPaymentHeadersController.Delete)`;
+
+                    let btns = '';
+
+                    if (_permissions.includes(_postPermission) & row.PostedlkpId != _PostStatus) {
+                         btns += `<a href="javascript:void(0)" onclick="PostAjax(${row.Id})"  title="@ERP.ResourcePack.Common.Settings.Post"><i class="mx-2 fas fa-check-circle text-info"></i></a>`;
+                    }
+
+                    if (_permissions.includes(_updatePermission) && row.PostedlkpId != _PostStatus) {
+                        btns += `<a href="${$PrefixHostName}/ApMiscPaymentHeaders/FormView?id=${row.EncId}&t=@encUpdateTrigger"  title="@ERP.ResourcePack.Common.Settings.Edit"><i class="mx-2 fas fa-edit text-info"></i></a>`;
+                    }
+
+                    btns += `<a href="${$PrefixHostName}/ApMiscPaymentHeaders/FormView?id=${row.EncId}&t=@encShowTrigger"  title="@ERP.ResourcePack.Common.Settings.Show"><i class="mx-2 fas fa-eye text-info"></i></a>`;
+
+                    if (_permissions.includes(_deletePermission) && row.PostedlkpId != _PostStatus) {
+                        btns += `<a href="javascript:void(0)" onclick="AjaxController.DeleteMainTableRow(${row.Id},'${DeleteAction}');"  title="@ERP.ResourcePack.Common.Settings.Delete"><i class="mx-2 fas fa-trash-alt text-danger"></i></a>`;
+                    }
+
+                    btns += `<a href="javascript:void(0);" onclick="return print('${$PrefixHostName}/ApMiscPaymentHeaders/PrintMiscPaymentScreen','${row.EncId}','${lang}')" title="@ERP.ResourcePack.Common.Settings.Print"><i class="mx-2 fas fa-print text-success"></i></a>`;
+
+                     const _auditedPermission = '@PermissionNames.Pages_ApMiscPaymentHeaders_Audit';
+
+                    if (_permissions.includes(_auditedPermission)) {
+
+                        row.permission = _auditedPermission;
+
+                        btns += GetAuditedButton(row);
+                    }
+
+                    return btns;
+                }
+            }
+        ];
+
+        const dtObj = {
+            "processing": true,
+            "serverSide": true,
+            "filter": false,
+            "orderMulti": false,
+            "language": dataTableLang,
+            "ajax": {
+                "url": _loadDataUrl,
+                "type": "POST",
+                "datatype": "json",
+                "data": parms,
+                "complete": function () {
+                    _tblLoader.hide();
+                }
+            },
+            "columns": columns,
+            "initComplete": function () {
+                $('[data-toggle="tooltip"]').tooltip();
+            }
+
+        };
+
+        _tblSelector.dataTable().fnDestroy();
+        _tblSelector.DataTable(dtObj).on('draw', function () { $('[data-toggle="tooltip"]').tooltip(); });
+
+        setTimeout(function () {
+            $(".sorting_1").removeAttr('colspan');
+        }, 500);
+    };
+
+    $('#searchBox #PortalUsersId').select2(ReturnSelect2ObjectDefault(`${baseUrl}/PortalUserData/GetUnifiedPortalUsersFromPortalUsersDataSelect2`));
+
+    $('#searchBox #PostedlkpId').select2(ReturnSelect2ObjectForLkpsTypes('@ERP.Front.Helpers.Enums.Common.FndLkpsTypes.ApMiscPaymentHeadersPost.ToString()'));
+
+    $('#SourceCodeLkpId').select2(ReturnSelect2ObjectForLkpsTypes('@ERP.Front.Helpers.Enums.Common.FndLkpsTypes.ApMiscPaymentHeadersSourceCode.ToString()'));
+
+    $('#PaymentTypeLkpId').select2(ReturnSelect2ObjectForLkpsTypes('@ERP.Front.Helpers.Enums.Common.FndLkpsTypes.ApMiscPaymentHeadersType.ToString()'));
+
+    @*$('#TaxPercentageLkpId').select2(ReturnSelect2ObjectForLkpsTypes('@ERP.Front.Helpers.Enums.Common.FndLkpsTypes.TaxVal.ToString()'));*@
+    $('#TaxPercentageLkpId').select2(ReturnSelect2ObjectDefault(`${baseUrl}/FndTaxType/GetFndTaxTypeSelect2`));
+
+
+    $('#mainForm #BankAccountId').select2({
+        ajax: {
+            url: `${baseUrl}/ApBankAccounts/GetUserAccessedApBankAccountsSelect2`,
+            dataType: 'json',
+            headers: {
+                'Authorization': `Bearer ${$_token}`
+            },
+            data: function (params) {
+                params.page = params.page || 1;
+                return {
+                    bankLkpId: $('#PaymentTypeLkpId').find(':selected').val() ?
+                        ($('#PaymentTypeLkpId').find(':selected').val() == @Convert.ToInt64(ERP.Front.Helpers.Enums.Common.ApMiscPaymentHeadersType.Cash) ?
+                                        @Convert.ToInt64(ERP.Front.Helpers.Enums.Common.BankType.Box) :
+                            ($('#PaymentTypeLkpId').find(':selected').val() == @Convert.ToInt64(ERP.Front.Helpers.Enums.Common.ApMiscPaymentHeadersType.Check) ?
+                                            @Convert.ToInt64(ERP.Front.Helpers.Enums.Common.BankType.Bank) : '')) : '',
+                    pageSize: pageSize,
+                    pageNumber: params.page,
+                    searchTerm: params.term,
+                    lang: lang
+                };
+            },
+            processResults: function (data, params) {
+
+                params.page = params.page || 1;
+
+                return {
+                    results: data.result.results,
+                    pagination: {
+                        more: (params.page * pageSize) < data.Total
+                    }
+                };
+            }
+        },
+        placeholder: select2Placeholder,
+        minimumInputLength: 0,
+        allowClear: true,
+        language: select2Lang
+    });
+
+    $('#PaymentTypeLkpId').on('change', function () {
+
+        $('#mainForm #BankAccountId').val('').trigger('change');
+
+    });
+
+    $('#mainForm #BeneficiaryName').select2({
+        ajax: {
+            url: `${baseUrl}/ApMiscPaymentHeaders/GetBeneficiaryNamesSelect2`,
+            dataType: 'json',
+            headers: {
+                'Authorization': `Bearer ${$_token}`
+            },
+            data: function (params) {
+                params.page = params.page || 1;
+                return {
+                    pageSize: pageSize,
+                    pageNumber: params.page,
+                    searchTerm: params.term,
+                    lang: lang
+                };
+            },
+            processResults: function (data, params) {
+
+                const _slctr = $('.select2-search');
+
+                params.page = params.page || 1;
+
+                const newEditedData = data.result.results.map((item, index) => {
+                    return { id: item.text, text: item.text };
+                });
+
+                if (newEditedData.length === 0) {
+
+                    let markup = `<div class="text-center">
+                                  <a class="text-center" href="javascript:;" onclick="return AddNewBeneficiaryName('${params.term}');" title="اضف">
+                                  <i class="fa fa-2x fa-plus text-success"></i>
+                                  </a>
+                                  </div>`;
+
+                    _slctr.find('div').remove();
+                    _slctr.append(markup);
+                }
+                else {
+                    _slctr.find('div').remove();
+                }
+
+                return {
+                    results: newEditedData.concat(_newListBeneficiaries),
+                    pagination: {
+                        more: (params.page * pageSize) < data.Total
+                    }
+                };
+            }
+        },
+        placeholder: select2Placeholder,
+        minimumInputLength: 0,
+        allowClear: true,
+        language: select2Lang
+    });
+
+    const AddNewBeneficiaryName = function (newName) {
+
+        if (_newListBeneficiaries.find(item => item.text === newName))  return;
+
+        _newListBeneficiaries.push({ id: newName, text: newName });
+
+        $('#mainForm #BeneficiaryName').append(new Option(newName, newName, true, true));
+    };
+
+    const ValidateDetailsData = function () {
+
+        let valid = true;
+
+        if ($('#PaymentTypeLkpId').find(':selected').val() == @Convert.ToInt64(ERP.Front.Helpers.Enums.Common.ApMiscPaymentHeadersType.Check)) {
+
+            if (_miscDetailsArr.filter(z => z.rowStatus !== DeletedStatus).length === 0) {
+                toastr.warning('@ArMiscReceiptHeaders.MiscReceiptDetailsRequired');
+                valid = false;
+            }
+            else if (_miscDetailsArr.filter(z => z.rowStatus != DeletedStatus).length > 1 && _miscLinesArr.filter(z => z.rowStatus != DeletedStatus).length > 1) {
+                toastr.warning('@ArMiscReceiptHeaders.DetailsMoreThanTwo');
+                valid = false;
+            }
+        }
+
+        return valid;
+    };
+
+    $('#mainForm #Amount').on('keyup change', function () {
+
+        if (_miscDetailsArr.length === 0) {
+            $('#AmountDetails').val($(this).val());
+            $('#AmountDetails').parent('.form-line').addClass('focused');
+        }
+    });
+
+    $('#mainForm #BeneficiaryName').on('keyup change', function () {
+
+        if (_miscDetailsArr.length === 0) {
+            $('#BeneficiaryNameDetail').val($(this).find(':selected').text());
+            $('#BeneficiaryNameDetail').parent('.form-line').addClass('focused');
+        }
+    });
+
+    $('#mainForm #Notes').on('keyup change', function () {
+
+        if (_miscDetailsArr.length === 0) {
+            $('#details #Notes').val($(this).val());
+            $('#details #Notes').parent('.form-line').addClass('focused');
+        }
+    });
+
+</script>
+
+<script id="MiscLines">
+
+    const _tblApMiscPaymentLinesSelector = $('#tblApMiscPaymentLines');
+    const _tblApMiscPaymentLinesSelectorBody = $('#tblApMiscPaymentLines tbody');
+    const _listApMiscPaymentLines = $('#ListApMiscPaymentLines');
+
+    let  totalOfTotal  = 0,totalCheck = 0;
+    let _miscLinesArr = [], tblLinesCounterIndex = 0 , updatedRow;
+
+    let _fndTaxTypeArr = [];
+
+    InitFndTaxType(`${baseUrl}/FndTaxType/GetFndTaxTypeSelect2`);
+
+    function InitFndTaxType(url) {       
+        $.ajax({
+            url: url,
+            dataType: 'json',
+            headers: {
+                'Authorization': `Bearer ${$_token}`
+            },
+            data: {
+                pageSize: 100,
+                pageNumber: 1,
+                searchTerm: null,
+                lang: 'en-US'
+                },
+            
+        }).done(function (data) {
+            if (data != null || data != undefined)
+                _fndTaxTypeArr = data.result.results;           
+        });
+
+    }
+
+    const CalcTotal = function (taxPercentageLkpId, amount) {
+        return CalcTaxAmount(taxPercentageLkpId, amount) + +amount;
+    }
+
+    const CalcTaxAmount = function (taxPercentageLkpId, amount) {
+        let taxtPerc = 0;
+        let taxval = "";
+        taxval = _fndTaxTypeArr.find(z => z.id === +taxPercentageLkpId)
+
+        if (taxval != null || taxval != undefined)
+            taxtPerc = Number(taxval.altText);
+        
+        return taxtPerc === 0 ? 0 : ((+taxtPerc / 100) * +amount);
+    }
+
+    const fillLinesArr = function () {
+
+        if (!validateLines() )  return;
+
+        const resultCodeComUtility = GetCodeComUtilites(__arrGlSelect2, 'AccId');
+
+        const resultCodeComUtilityTax = GetCodeComUtilites(tax__arrGlSelect2, 'taxAccId');
+
+        if (resultCodeComUtility === null) {
+            toastr.warning('@ApMiscPaymentHeaders.Account' + ' : '  + '@ERP.ResourcePack.Common.Settings.Required');
+            return;
+        }
+
+        if ($('#lines #TaxPercentageLkpId').find(':selected').val() && !resultCodeComUtilityTax) {
+            toastr.warning('@ApMiscPaymentHeaders.AccountTax' + ' : '  + '@ERP.ResourcePack.Common.Settings.Required');
+            return;
+        }
+
+        if (!$('#lines #TaxPercentageLkpId').find(':selected').val() && resultCodeComUtilityTax) {
+            toastr.warning('@ApMiscPaymentHeaders.TaxPercent' + ' : '  + '@ERP.ResourcePack.Common.Settings.Required');
+            return;
+        }
+
+        if (parseInt($('#lines #TaxNo').val()) && !resultCodeComUtilityTax) {
+            toastr.warning('@ApMiscPaymentHeaders.AccountTax' + ' : '  + '@ERP.ResourcePack.Common.Settings.Required');
+            return;
+        }
+
+        if (!parseInt($('#lines #TaxNo').val()) && resultCodeComUtilityTax) {
+            toastr.warning('@ApMiscPaymentHeaders.TaxNo' + ' : '  + '@ERP.ResourcePack.Common.Settings.Required');
+            return;
+        }
+
+        if ($('#lines #TaxPercentageLkpId').find(':selected').val() && !parseInt($('#lines #TaxNo').val())) {
+            toastr.warning('@ApMiscPaymentHeaders.TaxNo' + ' : '  + '@ERP.ResourcePack.Common.Settings.Required');
+            return;
+        }
+
+        if (!$('#lines #TaxPercentageLkpId').find(':selected').val() && parseInt($('#lines #TaxNo').val())) {
+            toastr.warning('@ApMiscPaymentHeaders.TaxPercent' + ' : '  + '@ERP.ResourcePack.Common.Settings.Required');
+            return;
+        }
+
+        const current = {
+            index: ++tblLinesCounterIndex,
+            codeComUtilityIds: resultCodeComUtility.idsStr,
+            codeComUtilityTexts: resultCodeComUtility.textsStr,
+            codeComUtilityIds_alt1: !resultCodeComUtilityTax ? "": resultCodeComUtilityTax.idsStr,
+            codeComUtilityTexts_alt1: !resultCodeComUtilityTax ? "": resultCodeComUtilityTax.textsStr,
+            miscPaymentAmount: $('#lines #MiscPaymentAmount').val(),
+            taxPercentageNameAr: $('#TaxPercentageLkpId').find(':selected').text(),
+            taxPercentageNameEn: $('#TaxPercentageLkpId').find(':selected').text(),
+            taxPercentageLkpId: $('#TaxPercentageLkpId').find(':selected').val(),
+            taxNo: $('#lines #TaxNo').val(),
+            /*trTax: $('#lines #TrTax').val(),*/
+            trTax: CalcTaxAmount($('#TaxPercentageLkpId').find(':selected').val(), $('#lines #MiscPaymentAmount').val()),
+            notes: $('#lines #Notes').val(),
+            invoiceNumber:$('#lines #InvoiceNumber').val(),
+            rowStatus: NewStatus
+        };
+
+        return current;
+    };
+
+    const AddMiscLines = function () {
+
+        if (fillLinesArr() === undefined) return;
+
+        _miscLinesArr.push(fillLinesArr());
+
+        _listApMiscPaymentLines.val(JSON.stringify(_miscLinesArr));
+
+        bindLinesTable();
+
+        clearFormAdding();
+    };
+
+    const UpdateMiscLineRow = function () {
+
+        let current = _miscLinesArr.find(z => z.index === updatedRow.index);
+
+        let indexOfCurrent = _miscLinesArr.indexOf(current);
+
+        const newRow = fillLinesArr();
+
+        if (!newRow) return;
+
+        newRow.apMiscPaymentLinesId = updatedRow.apMiscPaymentLinesId;
+        newRow.rowStatus =  !updatedRow.apMiscPaymentLinesId ? NewStatus : UpdatedStatus;
+
+        _miscLinesArr.splice(indexOfCurrent, 1,newRow);
+
+        $('#btnAddLineRow').show();
+        $('#btnUpdateLineRow').hide();
+        $('#btnCancelLineRow').hide();
+
+        clearFormAdding();
+
+        _listApMiscPaymentLines.val(JSON.stringify(_miscLinesArr));
+
+        bindLinesTable();
+    };
+
+    const bindLinesTable = function () {
+
+        var totalTaxAmount = 0, totalOfTaxAmount =0;
+
+        let rows = '';
+
+        const detailArr = _miscLinesArr.filter(z => z.rowStatus !== DeletedStatus);
+
+        $.each(detailArr, function (i, item) {           
+
+           
+            totalTaxAmount = CalcTotal((item.taxPercentageLkpId != null ? item.taxPercentageLkpId.toString() : ""), item.miscPaymentAmount);
+            totalOfTaxAmount = totalTaxAmount + totalOfTaxAmount;
+
+            if (item.trTax === null) {
+                item.trTax = CalcTaxAmount((item.taxPercentageLkpId != null ? item.taxPercentageLkpId.toString() : ""), item.miscPaymentAmount);
+            }
+            
+
+            rows += '<tr>';
+            rows += `<td>${item.index}</td>`;
+
+            rows += '<td> <ul class="list-group">';
+            rows += '<li class="list-group-item text-center text-info">';
+            rows +=`<strong style="font-weight:800;color:#343434">@ERP.ResourcePack.Accounts.ApMiscPaymentHeaders.Account</strong> :: ${item.codeComUtilityTexts}`
+            rows += '</li>';
+
+            rows += '<li class="list-group-item text-center text-info">';
+            rows +=`<strong style="font-weight:800;color:#343434">@ERP.ResourcePack.Accounts.ApMiscPaymentHeaders.AccountTax</strong> :: ${item.codeComUtilityTexts_alt1}`
+             rows += '</li>';
+            rows += '</td> </ul>';
+
+            rows += `<td>${item.taxNo ? item.taxNo : ''}</td>`;
+            rows += `<td>${item.invoiceNumber  ? item.invoiceNumber : ''}</td>`;
+            rows += `<td>${Number(item.miscPaymentAmount).toLocaleString(undefined, optionsNumFormat)}</td>`;
+            rows += `<td>${item.taxPercentageNameEn ? item.taxPercentageNameEn : '' }</td>`;
+            //rows += `<td>${Number(administrativeAmmount).toLocaleString(undefined, optionsNumFormat)}</td>`;
+            rows += `<td>${Number(item.trTax).toLocaleString(undefined, optionsNumFormat)}</td>`;
+            rows += `<td>${(Math.round(totalTaxAmount * 100) / 100).toLocaleString(undefined, optionsNumFormat)}</td>`;
+            rows += `<td>${item.notes}</td>`;
+
+            if (primaryEntityKeyId === 0 || trigger !== '@ERP.Front.Helpers.Enums.Common.FormTriggers.Show.ToString()') {
+                rows += `<td><a href="javascript:void(0)" onclick="return DeleteRowLine(${item.index})"><i class="mx-2 fas fa-trash-alt text-danger"></i></a>`;
+                rows += `<a href="javascript:void(0)" onclick="return GetRow(${item.index})"><i class="mx-2 fas fa-edit text-success"></i></a></td>`;
+            } else {
+                rows += '<td></td>';
+            }
+
+            rows += '</tr>';
+        });
+
+        rows += '<tr>';
+        rows += `<th class="text-center" colspan="2"><strong>@ApMiscPaymentHeaders.Total</strong></th>`;
+        rows += '<td></td><td></td><td></td><td></td><td></td>';
+        rows += `<th class="text-center" colspan="2"><strong>${(Math.round(totalOfTaxAmount * 100) / 100).toLocaleString(undefined, optionsNumFormat)}</strong></th>`;
+        rows += '</tr>';
+
+        setTimeout(function () {
+            _tblApMiscPaymentLinesSelectorBody.html(rows);
+        }, 100);
+    };
+
+    const DeleteRowLine= function (index) {
+
+        const current = _miscLinesArr.find(z => z.index === index);
+
+        const indexOfCurrent = _miscLinesArr.indexOf(current);
+
+        if (!current.apMiscPaymentLinesId) {
+
+           _miscLinesArr.splice(indexOfCurrent, 1);
+
+        } else {
+
+            current.rowStatus = DeletedStatus;
+
+           _miscLinesArr.splice(indexOfCurrent, 1,current);
+        }
+
+        bindLinesTable();
+
+        _listApMiscPaymentLines.val(_miscLinesArr.length === 0 ? '' : JSON.stringify(_miscLinesArr));
+    };
+
+    const LoadApMiscPaymentLinesData = function () {
+
+        $('#tblLoaderLine').show();
+
+        $.ajax({
+            url: `${baseUrl}/ApMiscPaymentHeaders/GetAllApMiscPaymentLines`,
+            method: 'GET',
+            headers: {
+                        'Authorization': `Bearer ${$_token}`
+            },
+            data: {
+                miscPaymentId: primaryEntityKeyId
+            }
+        }).done(function (data) {
+
+            _miscLinesArr = [...data.result];
+
+            bindLinesTable();
+
+            _listApMiscPaymentLines.val(JSON.stringify(_miscLinesArr));
+
+            const newarr = data.result.reverse();
+
+            tblLinesCounterIndex = newarr[0].index;
+
+            $('#tblLoaderLine').hide();
+        });
+
+    };
+
+    const GetRow = function (tblIndex) {
+
+        clearFormAdding();
+
+        $('#btnAddLineRow').hide();
+        $('#btnUpdateLineRow').show();
+        $('#btnCancelLineRow').show();
+
+        const current = _miscLinesArr.find(z => z.index === tblIndex);
+
+        BindCodeComUtilitesDropDowns(__arrGlSelect2, 'AccId', current.codeComUtilityIds, current.codeComUtilityTexts);
+        BindCodeComUtilitesDropDowns(tax__arrGlSelect2, 'taxAccId', current.codeComUtilityIds_alt1, current.codeComUtilityTexts_alt1);
+
+        $('#lines #TaxNo').val(current.taxNo);
+        $('#lines #MiscPaymentAmount').val(current.miscPaymentAmount);
+        $('#lines #TaxPercent').val(current.taxPercent);
+        $('#lines #InvoiceNumber').val(current.invoiceNumber);
+
+        $(`#lines #TaxPercentageLkpId`).append($("<option selected='selected'></option>")
+            .val(current.taxPercentageLkpId).text(current.taxPercentageNameEn)).trigger('change');
+
+        $('#lines #Notes').val(current.notes);
+
+        $('#lines #TaxNo').parent('.form-line').addClass('focused');
+        $('#lines #MiscPaymentAmount').parent('.form-line').addClass('focused');
+        $('#lines #TaxPercent').parent('.form-line').addClass('focused');
+        $('#lines #Notes').parent('.form-line').addClass('focused');
+        $('#lines #InvoiceNumber').parent('.form-line').addClass('focused');
+
+        updatedRow = current;
+    };
+
+    const clearFormAdding = function () {
+
+        $('#lines .card input').val('');
+        $('#lines .card textarea').val('');
+        $('#lines .card select:not(.slct2gl)').val('').trigger('change');
+
+        $('#details .card select:not(.slct2gl)').val('').trigger('change');
+        $('#details .card input').val('');
+        $('#details .card textarea').val('');
+
+    };
+
+    const validateLines = function () {
+
+        if ($('#lines #MiscPaymentAmount').val() === '') {
+            toastr.warning('@ApMiscPaymentHeaders.MiscPaymentAmount' + ' : ' + '@ERP.ResourcePack.Common.Settings.Required')
+            return false;
+        }
+
+        if ($('#lines #TaxNo').val() && $('#lines #TaxNo').val().split('').length < 15 ||  $('#lines #TaxNo').val().split('').length > 15) {
+            toastr.warning('@ApMiscPaymentHeaders.TaxNo' + ' : ' + '15 digit')
+            return false;
+        }
+
+        return true;
+    };
+
+</script>
+
+<script id="miscDetails">
+
+    const _tblApMiscPaymentDetailsSelector = $('#tblApMiscPaymentDetails');
+    const _tblApMiscPaymentDetailsSelectorBody = $('#tblApMiscPaymentDetails tbody');
+    const _listApMiscPaymentDetails = $('#ListApMiscPaymentDetails');
+
+    let _miscDetailsArr = [], tblMiscCounterIndex = 0,updatedRowDetail;
+
+    const fillMiscDetailArr = function () {
+
+        if (validateDetails() === false) return;
+
+        const current = {
+            index: ++tblMiscCounterIndex,
+            checkNumber: $('#details #CheckNumber').val(),
+            beneficiaryName: $('#details #BeneficiaryNameDetail').val(),
+            amount: $('#details #AmountDetails').val(),
+            maturityDate:$('#details #MaturityDate').val(),
+            notes: $('#details #Notes').val(),
+            rowStatus: NewStatus
+        };
+
+        return current;
+    };
+
+    const AddMiscDetails = function () {
+
+        const current = fillMiscDetailArr();
+
+        if (current === undefined) return;
+
+        _miscDetailsArr.push(current);
+
+        _listApMiscPaymentDetails.val(JSON.stringify(_miscDetailsArr));
+
+        clearFormAdding();
+
+        bindMiscDetailsTable();
+    };
+
+    const bindMiscDetailsTable = function () {
+
+        totalCheck = 0;
+
+        let rows = '';
+
+        const detailArr = _miscDetailsArr.filter(z => z.rowStatus !== DeletedStatus);
+
+        $.each(detailArr, function (i, item) {
+
+            totalCheck = parseFloat(totalCheck) + parseFloat(item.amount);
+
+            rows += '<tr>';
+
+            rows += `<td>${item.index}</td>`;
+            rows += `<td>${item.checkNumber}</td>`;
+            rows += `<td>${item.beneficiaryName}</td>`;
+            rows += `<td>${item.maturityDate}</td>`;
+            rows += `<td>${Number(item.amount).toLocaleString(undefined, optionsNumFormat)}</td>`;
+            rows += `<td>${item.notes}</td>`;
+
+            if (primaryEntityKeyId === 0 || trigger !== '@ERP.Front.Helpers.Enums.Common.FormTriggers.Show.ToString()') {
+                rows += `<td><a href="javascript:void(0)" onclick="return DeleteRowDetails(${item.index})"><i class="mx-2 fas fa-trash-alt text-danger"></i></a>`;
+                rows += `<a href="javascript:void(0)" onclick="return GetRowDetail(${item.index})"><i class="mx-2 fas fa-edit text-success"></i></a></td>`;
+            } else {
+                rows += '<td></td>';
+            }
+
+            rows += '</tr>';
+        });
+
+        rows += '<tr>';
+        rows += `<th class="text-center" colspan="2"><strong>@ApMiscPaymentHeaders.Total</strong></th>`;
+        rows += '<td></td><td></td>';
+        rows += `<th class="text-center" colspan="2"><strong>${(totalCheck).toLocaleString(undefined, optionsNumFormat)}</strong></th>`;
+        rows += '</tr>';
+
+        setTimeout(function () {
+           // _tblApMiscPaymentDetailsSelector.DataTable().clear().destroy();
+            _tblApMiscPaymentDetailsSelectorBody.html(rows);
+          //  _tblApMiscPaymentDetailsSelector.DataTable();
+          //  _tblApMiscPaymentDetailsSelector.DataTable().row.add([`<b class="font-bold">@ApMiscPaymentHeaders.Total</b>`, '', '', '', `<b class="font-bold">${totalCheck.toLocaleString()}</b>`, '']).draw();
+        }, 100);
+
+    };
+
+    const DeleteRowDetails = function (index) {
+
+        const current = _miscDetailsArr.find(z => z.index === index);
+
+        const indexOfCurrent = _miscDetailsArr.indexOf(current);
+
+        if (!current.apMiscDetailId) {
+
+           _miscDetailsArr.splice(indexOfCurrent, 1);
+
+        } else {
+
+            current.rowStatus = DeletedStatus;
+
+           _miscDetailsArr.splice(indexOfCurrent, 1,current);
+        }
+
+        bindMiscDetailsTable();
+
+        _listApMiscPaymentDetails.val(_miscDetailsArr.length === 0 ? '' : JSON.stringify(_miscDetailsArr));
+    };
+
+    const LoadApMiscPaymentDetailsData = function () {
+
+        $('#tblLoaderDetail').show();
+
+        $.ajax({
+            url: `${baseUrl}/ApMiscPaymentHeaders/GetAllApMiscPaymentDetails`,
+            method: 'GET',
+            headers: {
+                        'Authorization': `Bearer ${$_token}`
+            },
+            data: {
+                miscPaymentId: primaryEntityKeyId
+            }
+        }).done(function (data) {
+
+            _miscDetailsArr = [...data.result];
+
+            bindMiscDetailsTable();
+
+            _listApMiscPaymentDetails.val(JSON.stringify(_miscDetailsArr));
+
+            const newarr = data.result.reverse();
+
+            if (newarr.length === 0) {
+                $('#tblLoaderDetail').hide();
+                return;
+            }
+
+            $('#tblLoaderDetail').hide();
+
+            tblMiscCounterIndex = newarr[0].index;
+        });
+
+    };
+
+    const GetRowDetail = function (tblIndex) {
+
+        clearFormAdding();
+
+        const current = _miscDetailsArr.find(z => z.index === tblIndex);
+
+        $('#btnAddMiscDetailRow').hide();
+        $('#btnUpdateMiscDetailRow').show();
+        $('#btnCancelMiscDetailRow').show();
+
+        $('#details #CheckNumber').val(current.checkNumber);
+        $('#details #AmountDetails').val(current.amount);
+        $('#details #Notes').val(current.notes);
+        $('#details #MaturityDate').val(current.maturityDate);
+        $('#details #BeneficiaryNameDetail').val(current.beneficiaryName);
+
+
+        $('#details #CheckNumber').parent('.form-line').addClass('focused');
+        $('#details #BeneficiaryNameDetail').parent('.form-line').addClass('focused');
+        $('#details #AmountDetails').parent('.form-line').addClass('focused');
+        $('#details #Notes').parent('.form-line').addClass('focused');
+        $('#details #MaturityDate').parent('.form-line').addClass('focused');
+
+        updatedRowDetail = current;
+
+    };
+
+    const UpdateMiscRow = function () {
+
+        let current = _miscDetailsArr.find(z => z.index === updatedRowDetail.index);
+
+        let indexOfCurrent = _miscDetailsArr.indexOf(current);
+
+        const newRow = fillMiscDetailArr();
+
+        if (newRow === undefined) return;
+
+        newRow.apMiscDetailId = updatedRowDetail.apMiscDetailId;
+        newRow.rowStatus =!updatedRowDetail.apMiscDetailId ? NewStatus : UpdatedStatus;
+
+        _miscDetailsArr.splice(indexOfCurrent, 1,newRow);
+
+        $('#btnAddMiscDetailRow').show();
+        $('#btnUpdateMiscDetailRow').hide();
+        $('#btnCancelMiscDetailRow').hide();
+
+        clearFormAdding();
+
+        _listApMiscPaymentDetails.val(JSON.stringify(_miscDetailsArr));
+
+        bindMiscDetailsTable();
+    };
+
+    const validateDetails = function () {
+
+        if ($('#details #MaturityDate').val() === '') {
+            toastr.warning('@ApMiscPaymentHeaders.MaturityDate' + ' : ' + '@ERP.ResourcePack.Common.Settings.Required')
+            return false;
+        }
+
+        if ($('#details #CheckNumber').val() === '') {
+            toastr.warning('@ApMiscPaymentHeaders.CheckNumber' + ' : ' + '@ERP.ResourcePack.Common.Settings.Required')
+            return false;
+        }
+
+        if ($('#details #Amount').val() === '') {
+            toastr.warning('@ApMiscPaymentHeaders.Amount' + ' : ' + '@ERP.ResourcePack.Common.Settings.Required')
+            return false;
+        }
+
+        return true;
+    };
+
+    $('.only_2nums').on('keyup', function (e) {
+        let t = e.target.value;
+        console.log(t)
+        e.target.value = (t.indexOf(".") >= 0) ? (t.substr(0, t.indexOf(".")) + t.substr(t.indexOf("."), 3)) : t;
+    });
+
+
+
+    const print = function (url,id,lang) {
+
+        const data = { id: id, lang : lang };
+
+        openModal(data, url);
+    };
+
+    function printExc() {
+        $('.page-loader-wrapper').show();
+
+        const parmss = {
+            Amount: _txtAmountSearch.val(),
+            PaymentNumber: _txtPaymentNumberSearch.val(),
+            CheckNumber: _txtCheckNumberSearch.val(),
+            PostedlkpId: $('#searchBox #PostedlkpId').find(':selected').val(),
+            SourceCodeLkpId: $('#searchBox #SourceCodeLkpId').find(':selected').val(),
+            BeneficentName: $('#searchBox #BeneficiaryName').val(),
+            CaseNumber: $('#searchBox #CaseNumber').val(),
+            FromDate: $('#searchBox #FromDate').val(),
+            ToDate: $('#searchBox #ToDate').val(),
+            PortalUsersId: $('#searchBox #PortalUsersId').find(':selected').val(),
+            length: 1000000
+        };
+
+        const columns = [
+            {
+                "data": "result.data.id",
+                'render': function (data, type, row, meta) {
+                    return meta.row + meta.settings._iDisplayStart + 1;
+                }
+            },
+            {
+                "data": "PaymentNumber",
+                "name": "PaymentNumber",
+                "autoWidth": true
+            },
+            {
+                "data": "MiscPaymentDate",
+                "name": "MiscPaymentDate",
+                "autoWidth": true
+            },
+            {
+                "data": "BeneficiaryName",
+                "name": "BeneficiaryName",
+                "autoWidth": true
+            },
+            {
+                "data": "Amount",
+                "name": "Amount",
+                "render": $.fn.dataTable.render.number(',', '.', 2),
+                "autoWidth": true
+            },
+            {
+                "data": "PortalUserName",
+                "autoWidth": true,
+                "sortable":false
+            },
+            {
+                "data": "CheckNumber",
+                "autoWidth": true,
+                "sortable": false
+            },
+            {
+                "data": null,
+                "autoWidth": true,
+                "render": function (d, t, row) {
+                    return row.FndLookupValuesPostedPaymentLkp ? (lang === 'ar-EG' ? row.FndLookupValuesPostedPaymentLkp.NameAr : row.FndLookupValuesPostedPaymentLkp.NameEn) : '';
+                }
+            },
+            {
+                "data": null,
+                "autoWidth": true,
+                "render": function (d, t, row) {
+                    return row.FndLookupValuesSourceCodePaymentLkp ? (lang === 'ar-EG' ? row.FndLookupValuesSourceCodePaymentLkp.NameAr : row.FndLookupValuesSourceCodePaymentLkp.NameEn) : '';
+                }
+            }
+        ];
+
+        const dtObj = {
+            "language": dataTableLang,
+            "dom": 'Bfrtip',
+            "buttons": [
+                {
+                    extend: 'excel',
+                    messageTop: `${$('#Amount').siblings().text()}: ${(parmss.Amount) ? parmss.Amount : '--'}, ${$('#PaymentNumber').siblings().text()}: ${(parmss.PaymentNumber) ? parmss.PaymentNumber : '--'}, ${$('#CheckNumber').siblings().text()}: ${(parmss.CheckNumber) ? parmss.CheckNumber : '--'}, ${$('[for="PostedlkpId"]').text()}: ${(parmss.PostedlkpId) ? parmss.PostedlkpId : '--'}, ${$('[for="SourceCodeLkpId"]').text()}: ${(parmss.SourceCodeLkpId) ? parmss.SourceCodeLkpId : '--'}, ${$('#BeneficentName').siblings().text()}: ${(parmss.BeneficentName) ? parmss.BeneficentName : '--'}, ${$('#CaseNumber').siblings().text()}: ${(parmss.CaseNumber) ? parmss.CaseNumber : '--'}, ${$('#FromDate').siblings().text()}: ${(parmss.FromDate) ? parmss.FromDate : '--'}, ${$('#ToDate').siblings().text()}: ${(parmss.ToDate) ? parmss.ToDate : '--'}, ${$('[for="PortalUsersId"]').text()}: ${(parmss.PortalUsersId) ? parmss.PortalUsersId : '--'}`
+                },
+
+            ],
+            "ajax": {
+                "url": _loadDataUrl,
+                "type": "POST",
+                "datatype": "json",
+                "data": parmss,
+                "complete": function (d) {
+                    _tblLoader.hide();
+                }
+            },
+            "columns": columns,
+
+            "initComplete": function () {
+                $('#tblApMiscPaymentHeadersPrint_wrapper button.dt-button').click();
+                $('#tblApMiscPaymentHeadersPrint_wrapper').parent().addClass('d-none');
+
+            }
+        };
+
+        $('#tblApMiscPaymentHeadersPrint').dataTable().fnDestroy();
+        $('#tblApMiscPaymentHeadersPrint').DataTable(dtObj).on('buttons-processing', function (e, indicator) { if (!indicator) { $('.page-loader-wrapper').hide() } });
+
+
+    }
+
+</script>

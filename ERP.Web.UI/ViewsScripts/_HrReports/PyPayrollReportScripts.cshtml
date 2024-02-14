@@ -1,0 +1,50 @@
+﻿<script>
+
+    $(function () {
+        $('#PyPayrollReport').addClass('active');
+    });
+
+    $('#PyPayrollTypesId').select2(ReturnSelect2ObjectDefault(`${baseUrl}/PyPayrollTypes/GetPyPayrollTypesSelect2`));
+    $('#PeriodId').select2(ReturnSelect2ObjectDefault(`${baseUrl}/GlPeriodsDetails/GetGlPeriodsSelect2`));
+
+    const PrintPyPayrollReport = function () {
+
+        $('.page-loader-wrapper').css('display', 'block');
+
+        $.ajax({
+            url: `${$PrefixHostName}/HrReports/PrintPyPayrollReport`,
+            method: 'POST',
+            header: {
+                'Authorization': `bearer ${$_token}`
+            },
+            data: {
+                Lang: lang,
+                PeriodId: $('#PeriodId').find(':selected').val(),
+                PeriodIdtxt: $('#PeriodId').find(':selected').text(),
+                PyPayrollTypeId: $('#PyPayrollTypesId').find(':selected').val(),
+                PyPayrollTypeIdtxt: $('#PyPayrollTypesId').find(':selected').text()
+            }
+        }).done(function (data) {
+
+            if (data.length > 0) {
+
+                $('.page-loader-wrapper').css('display', 'none');
+
+                var src = formAction;
+
+                $('#bodyss').html('')
+                $('#bodyss').append('<iframe id="ifram1" style="width:100%;height:550px" src="' + src + '"></iframe>')
+                $('#model').modal('show');
+
+            }
+            else {
+                $('.page-loader-wrapper').css('display', 'none');
+                toastr.warning(NoData);
+            }
+
+        }).fail(function (response, x, r) {
+            toastr.error(response.responseText);
+        });
+    };
+
+</script>

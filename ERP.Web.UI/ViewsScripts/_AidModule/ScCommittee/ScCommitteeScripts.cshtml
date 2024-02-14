@@ -1,0 +1,1656 @@
+﻿@using ERP.ResourcePack.AidModule
+@using ERP.Web.UI.Controllers.AidModule
+@using ERP.Authorization;
+@{
+    string encUpdateTrigger = ERP.Front.Helpers.Enums.Common.EncUpdate;
+    string encShowTrigger = ERP.Front.Helpers.Enums.Common.EncShow;
+    string permissionsStr = TempData["Permissions"].ToString();
+}
+
+@if (permissionsStr.Contains(PermissionNames.Pages_ScCommittee_Post))
+{
+    <script>
+
+        const PostAjax = function (id) {
+
+            bootbox.confirm({
+                message: _booBoxMessagePosting,
+                buttons: bootBoxDefaultBtns,
+                callback: function (result) {
+
+                    if (result) {
+
+                        const data = {
+                            id: id,
+                            lang: lang
+                        };
+
+                        $.ajax({
+                            url: `${baseUrl}/ScCommittee/PostScCommittee`,
+                            type: 'POST',
+                            data: JSON.stringify(data),
+                            headers:
+                            {
+                                'Content-Type': 'application/json',
+                                'Authorization': `Bearer ${$_token}`
+                            },
+                        }).done(function (response) {
+                            console.log(response);
+                            if (response.result.finalStatues == 'F') {
+                                toastr.warning(response.result.reason);
+                            }
+                            else {
+                                toastr.success(response.result.reason);
+                                LoadDataGrid();
+                            }
+                        }).fail(function (response) {
+                            toastr.error(response);
+                        });
+
+                    }
+
+                }
+            });
+
+
+        };
+
+        const RefuseAjax = function (id) {
+
+            bootbox.confirm({
+                message: _booBoxMessageRefusing,
+                 buttons: bootBoxDefaultBtns,
+                 callback: function (result) {
+
+                    if (result) {
+
+                        const data = {
+                            id: id,
+                            lang: lang
+                        };
+
+                        $.ajax({
+                            url: `${baseUrl}/ScCommittee/RefuseCommittee`,
+                            type: 'POST',
+                            data: JSON.stringify(data),
+                            headers:
+                            {
+                                'Content-Type': 'application/json',
+                                'Authorization': `Bearer ${$_token}`
+                            },
+                        }).done(function (response) {
+                            console.log(response);
+                            if (response.result.finalStatues == 'F') {
+                                toastr.warning(response.result.reason);
+                            }
+                            else {
+                                toastr.success(response.result.reason);
+                                LoadDataGrid();
+                            }
+                        }).fail(function (response) {
+                            toastr.error(response.error.message);
+                        });
+
+                    }
+
+                 }
+            });
+
+        };
+
+        const PostScCommitteeDetail = function (id) {
+
+            bootbox.confirm({
+                 message: _booBoxMessagePosting,
+                 buttons: bootBoxDefaultBtns,
+                 callback: function (result) {
+
+                    if (result) {
+
+                        const data = {
+                            id: id,
+                            lang: lang
+                        };
+
+                        $.ajax({
+                            url: `${baseUrl}/ScCommittee/PostScCommitteeDetail`,
+                            type: 'POST',
+                            data: JSON.stringify(data),
+                            headers:
+                            {
+                                'Content-Type': 'application/json',
+                                'Authorization': `Bearer ${$_token}`
+                            },
+                        }).done(function (response) {
+
+                            if (response.result.finalStatues == 'F') {
+                                toastr.warning(response.result.reason);
+                            }
+                            else {
+                                toastr.success(response.result.reason);
+                                LoadScCommitteeDetailData();
+                            }
+                        }).fail(function (response) {
+                            toastr.error(response);
+
+                        });
+
+                    }
+
+                 }
+            });
+
+
+
+        };
+
+        const PostponeScCommitteeDetail = function (id) {
+
+            $.ajax({
+                url:`${$PrefixHostName}/${_mainController}/@nameof(ScCommitteeController.Postpone)`,
+                method: 'GET',
+                data: {id:id}
+            }).done(function (modalData) {
+
+                _mainModalBody.html(modalData);
+
+                _mainModal.modal(_mainModalOprions);
+
+                $('#RefuseDescription').parent('.form-line').addClass('focused');
+
+            }).fail(function (response) {
+                toastr.error(response.error.message);
+            });
+
+        };
+
+        const RejectScCommitteeDetail = function (id) {
+
+            $.ajax({
+                url:`${$PrefixHostName}/${_mainController}/@nameof(ScCommitteeController.Refuse)`,
+                method: 'GET',
+                data: {id:id}
+            }).done(function (modalData) {
+
+                _mainModalBody.html(modalData);
+                _mainModal.modal(_mainModalOprions);
+                $('#RefuseDescription').parent('.form-line').addClass('focused');
+
+            }).fail(function (response) {
+                toastr.error(response.error.message);
+            });
+        };
+
+        const SubmitPostpone = function (id) {
+
+                if ($('#main-modal #RefuseDescription').val()) {
+
+                    const data = {
+                        id: id,
+                        lang: lang
+                    };
+
+                    $.ajax({
+                        url: `${baseUrl}/ScCommittee/PostponeScCommitteeDetail?refuseDescription=${$('#main-modal #RefuseDescription').val()}`,
+                        type: 'POST',
+                        data: JSON.stringify(data),
+                        headers:
+                        {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${$_token}`
+                        },
+                    }).done(function (response) {
+
+                        if (response.result.finalStatues == 'F') {
+                            toastr.warning(response.result.reason);
+                        }
+                        else {
+                            toastr.success(response.result.reason);
+
+                            if (formView) {
+
+                                _mainModal.hide();
+
+                                setTimeout(function () {
+                                    window.location.reload();
+                                    //window.location.href = $PrefixHostName + '/ScCommittee';
+                                }, 100);
+
+                            }
+                            else {
+
+                                _mainModal.hide();
+
+                                LoadDataGrid();
+
+                            }
+                        }
+                    });
+
+                }
+                else {
+                    toastr.warning(`@ScCommittee.RefuseDescription : @ERP.ResourcePack.Common.Settings.Required`);
+                }
+        };
+
+        const SubmitRefuse = function (id) {
+
+                if ($('#main-modal #RefuseDescription').val()) {
+
+                    const data = {
+                        id: id,
+                        lang: lang
+                    };
+
+                    $.ajax({
+                        url: `${baseUrl}/ScCommittee/RejectScCommitteeDetail?refuseDescription=${$('#main-modal #RefuseDescription').val()}`,
+                        type: 'POST',
+                        data: JSON.stringify(data),
+                        headers:
+                        {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${$_token}`
+                        },
+                    }).done(function (response) {
+
+                        if (response.result.finalStatues == 'F') {
+                            toastr.warning(response.result.reason);
+                        }
+                        else {
+                            toastr.success(response.result.reason);
+
+                            if (formView) {
+
+                                _mainModal.hide();
+
+                                setTimeout(function () {
+                                    window.location.reload();
+                                    //window.location.href = $PrefixHostName + '/ScCommittee';
+                                }, 100);
+
+                            } else {
+
+                                _mainModal.hide();
+
+                                LoadDataGrid();
+                            }
+                        }
+                    });
+
+                }
+                else {
+                    toastr.warning(`@ScCommittee.RefuseDescription : @ERP.ResourcePack.Common.Settings.Required`);
+                }
+        };
+
+    </script>
+}
+else
+{
+    <script>
+        const PostAjax = function (id) { };
+        const RefuseAjax = function (id) { };
+        const PostScCommitteeDetail = function (id) { };
+        const PostponeScCommitteeDetail = function (id) { };
+        const RejectScCommitteeDetail = function (id) { };
+    </script>
+}
+
+<script>
+    const _mainController = "ScCommittee"
+
+    $(function () {
+        LoadDataGrid();
+
+        $('#ScCommittee').addClass('active');
+
+        $('#tblScCommitteeMemberDetail_wrapper .row:first').remove();
+        $('#tblScCommitteeMemberDetail_wrapper .row:last').remove();
+        $('#tblScCommitteeMemberDetail_wrapper th').removeClass('sorting');
+    });
+
+    const _loadDataUrl = `${$PrefixHostName}/${_mainController}/@nameof(ScCommitteeController.LoadDataGrid)`;
+    const _tblSelector = $('#tblScCommittee');
+    const _tblLoader = $('#tblLoader');
+    const _mainForm = $('#mainForm');
+    const _PostStatus = @Convert.ToInt64(ERP.Front.Helpers.Enums.Common.ScCommittee.Posted);
+    const _RefusedStatus = @Convert.ToInt64(ERP.Front.Helpers.Enums.Common.ScCommittee.Refused);
+
+    const _permissions = '@permissionsStr';
+    const _updatePermission = '@PermissionNames.Pages_ScCommittee_Update';
+    const _deletePermission = '@PermissionNames.Pages_ScCommittee_Delete';
+    const _postPermission = '@PermissionNames.Pages_ScCommittee_Post';
+    const _detailPostPermission = '@PermissionNames.Pages_ScCommittee_Detail_Post,';
+    const _detailPostponePermission = '@PermissionNames.Pages_ScCommittee_Detail_Postpone';
+    const _detailRejectPermission = '@PermissionNames.Pages_ScCommittee_Detail_Reject';
+
+    const _postDetailStatus = @Convert.ToInt64(ERP.Front.Helpers.Enums.Common.ScCommitteeDetail.Posted);
+    const _rejectedDetailStatus = @Convert.ToInt64(ERP.Front.Helpers.Enums.Common.ScCommitteeDetail.Rejected);
+    const _PostponedToStudy = @Convert.ToInt64(ERP.Front.Helpers.Enums.Common.ScCommitteeDetail.Postponed_to_study);
+    const _newDetailStatus = @Convert.ToInt64(ERP.Front.Helpers.Enums.Common.ScCommitteeDetail.New);
+    const _newDetailStatusTxt = lang === 'ar-EG' ? 'جديد' : 'New';
+
+    $('#btnSubmition').on('click', function () {
+
+        if (_ScCommitteeDetailArr.length === 0) {
+            toastr.warning('@ScCommittee.FillDetailTable');
+            return;
+        }
+
+        _listScCommitteeDetail.val(JSON.stringify(_ScCommitteeDetailArr));
+
+        _mainForm.submit();
+
+        if (_mainForm.valid()) {
+
+            $(this).hide();
+            $('#submitLoader').show();
+
+        } else {
+
+            $(this).show();
+            $('#submitLoader').hide();
+        }
+
+    });
+
+    var OnBegin = function (response) {
+        fireBtnLoader();
+    };
+
+    var OnSuccess = function (response) {
+
+        if (response.success) {
+
+            if (response.customRestResult.trigger === '@ERP.Front.Helpers.Enums.Common.FormTriggers.Insert') {
+
+                toastr.success(response.customRestResult.message);
+
+                setTimeout(function () {
+                    window.location.href = $PrefixHostName + '/ScCommittee';
+                }, 200);
+
+            } else if (response.customRestResult.trigger === '@ERP.Front.Helpers.Enums.Common.FormTriggers.Update') {
+
+                toastr.success(response.customRestResult.message);
+
+                setTimeout(function () {
+                    window.location.href = $PrefixHostName + '/ScCommittee';
+                }, 200);
+            }
+
+        } else {
+            toastr.error(response.customRestResult.message);
+        }
+
+    };
+
+    var OnComplete = function (response) {
+        downBtnLoader();
+    };
+
+    var OnFailure = function (response) {
+        toastr.error(response);
+        console.log(response);
+        downBtnLoader();
+    };
+
+    const LoadDataGrid = function () {
+
+        $('#tblLoader').show();
+
+        const parms = {
+            StatusLkpId: $('#searchBox #StatusLkpId').find(':selected').val(),
+            CommitteeNumber:$('#searchBox #CommitteeNumber').val(),
+            CommitteeName:$('#searchBox #CommitteeName').val(),
+            CommitteeDateFrom:$('#searchBox #CommitteeDateFrom').val(),
+            CommitteeDateTo:$('#searchBox #CommitteeDateTo').val()
+        };
+
+        const columns = [
+            {
+                "data": "result.data.id",
+                'render': function (data, type, row, meta) {
+                    return meta.row + meta.settings._iDisplayStart + 1;
+                }
+            },
+            {
+                "data": "CommitteeName",
+                "name": "CommitteeName",
+                "autoWidth": true
+            },
+            {
+                "data": "CommitteeNumber",
+                "name": "CommitteeNumber",
+                "autoWidth": true
+            },
+            {
+                "data": "CommitteeDate",
+                "name": "CommitteeDate",
+                "autoWidth": true
+            },
+            {
+                "data": null,
+                "autoWidth": true,
+                "render": function (d, t, row) {
+
+                    if (row.FndLookupStatusValues == null)
+                        return '';
+
+                    if (lang === 'ar-EG')
+                        return row.FndLookupStatusValues.NameAr;
+
+                    return row.FndLookupStatusValues.NameEn;
+                }
+            },
+            {
+                "data": null,
+                "sortable": false,
+                "render": function (data, type, row) {
+
+                    let formAction = `${$PrefixHostName}/${_mainController}/@nameof(ScCommitteeController.ScCommitteeForm)`;
+                    let DeleteAction = `${$PrefixHostName}/${_mainController}/@nameof(ScCommitteeController.Delete)`;
+
+                    let btns = '';
+
+                    if (_permissions.includes(_postPermission) & row.StatusLkpId != _PostStatus && row.StatusLkpId != _RefusedStatus) {
+                         btns += `<a href="javascript:void(0)" onclick="PostAjax(${row.Id})" title="@ERP.ResourcePack.Common.Settings.Post"><i class="mx-2 fas fa-check-circle text-info"></i></a>`;
+                    }
+
+                    if (row.StatusLkpId != _RefusedStatus && row.StatusLkpId != _PostStatus) {
+                         btns += `<a href="javascript:void(0)" onclick="RefuseAjax(${row.Id})" title="@ERP.ResourcePack.Common.Settings.Refuse"><i class="mx-2 fas fa-minus-circle text-danger"></i></a>`;
+                    }
+
+                    if (_permissions.includes(_updatePermission) && row.StatusLkpId != _PostStatus  && row.StatusLkpId != _RefusedStatus){
+                        btns += `<a href="${$PrefixHostName}/ScCommittee/FormView?id=${row.EncId}&t=@encUpdateTrigger" title="@ERP.ResourcePack.Common.Settings.Edit"><i class="mx-2 fas fa-edit text-info"></i></a>`;
+                    }
+
+                    btns += `<a href="${$PrefixHostName}/ScCommittee/FormView?id=${row.EncId}&t=@encShowTrigger" title="@ERP.ResourcePack.Common.Settings.Show"><i class="mx-2 fas fa-eye text-info"></i></a>`;
+
+                    if (_permissions.includes(_deletePermission) && row.StatusLkpId != _PostStatus && row.StatusLkpId != _RefusedStatus) {
+                        btns += `<a href="javascript:void(0)" onclick="AjaxController.DeleteMainTableRow(${row.Id},'${DeleteAction}');" title="@ERP.ResourcePack.Common.Settings.Delete"><i class="mx-2 fas fa-trash-alt text-danger"></i></a>`;
+                    }
+
+                    btns += `<a href="javascript:void(0);" onclick="return print('${$PrefixHostName}/ScCommittee/PrintScCommitteeScreen','${row.EncId}','${lang}')" title="@ERP.ResourcePack.Common.Settings.Print"><i class="mx-2 fas fa-print text-success"></i></a>`;
+
+                    const _auditedPermission = '@PermissionNames.Pages_ScCommittee_Audit';
+
+                    if (_permissions.includes(_auditedPermission)) {
+
+                        row.permission = _auditedPermission;
+
+                        btns += GetAuditedButton(row);
+                    }
+
+                    return btns;
+                }
+            }
+        ];
+
+        const dtObj = {
+            "processing": true,
+            "serverSide": true,
+            "filter": false,
+            "orderMulti": false,
+            "language": dataTableLang,
+            "ajax": {
+                "url": _loadDataUrl,
+                "type": "POST",
+                "datatype": "json",
+                "data": parms,
+                "complete": function () {
+                    _tblLoader.hide();
+                }
+            },
+            "columns": columns,
+            "initComplete": function () {
+                $('[data-toggle="tooltip"]').tooltip();
+            }
+
+        };
+
+        _tblSelector.dataTable().fnDestroy();
+        _tblSelector.DataTable(dtObj).on('draw', function () { $('[data-toggle="tooltip"]').tooltip(); });
+
+        setTimeout(function () {
+            $(".sorting_1").removeAttr('colspan');
+        }, 500);
+    };
+
+    $('#searchBox #StatusLkpId').select2(ReturnSelect2ObjectForLkpsTypes('@ERP.Front.Helpers.Enums.Common.FndLkpsTypes.ScCommityStatues.ToString()'));
+    $('#OtherAidLkpId').select2(ReturnSelect2ObjectForLkpsTypes('@ERP.Front.Helpers.Enums.Common.FndLkpsTypes.ScOtherAid.ToString()'));
+
+    const print = function (url, id, lang) {
+        const data = { id: id, lang: lang };
+        openModal(data, url);
+    };
+
+</script>
+
+<script>
+
+    const _tblScCommitteeDetailSelector = $('#tblScCommitteeDetail');
+    const _tblScCommitteeDetailSelectorBody = $('#tblScCommitteeDetail tbody');
+    const _listScCommitteeDetail = $('#ListScCommitteeDetail');
+
+    let  totalOfTotal  = 0,totalCheck = 0,_ScCommitteeDetailArr = [], tblLinesCounterIndex = 0 , updatedRow;
+
+    $('#first #Details_PortalRequestNumber').select2({
+        ajax: {
+            url: `${baseUrl}/ScPortalRequestStudy/GetScPortalRequestStudyByNumberSelect2`,
+            dataType: 'json',
+            headers: {
+                'Authorization': `Bearer ${$_token}`
+            },
+            data: function (params) {
+                params.page = params.page || 1;
+                return {
+                    pageSize: pageSize,
+                    pageNumber: params.page,
+                    searchTerm: params.term,
+                    lang: lang
+                };
+            },
+            processResults: function (data, params) {
+
+                params.page = params.page || 1;
+
+                return {
+                    results: data.result.results,
+                    pagination: {
+                        more: (params.page * pageSize) < data.result.total
+                    }
+                };
+            }
+        },
+        placeholder: select2Placeholder,
+        minimumInputLength: 0,
+        allowClear: true,
+        language: select2Lang,
+        templateSelection: function (data, container) {
+
+            if (data.altText) {
+                $('#first #Details_PortalRequestNumber').attr('isElectronic', data.altText.split('-')[1]);
+                $('#first #Details_PortalRequestNumber').attr('isMaintenance', data.altText.split('-')[2]);
+                $('#first #Details_PortalUser_IdNumber').attr('isElectronic', data.altText.split('-')[1]);
+                $('#first #Details_PortalUser_IdNumber').attr('isMaintenance', data.altText.split('-')[2]);
+            }
+
+            return data.text;
+        }
+    });
+
+    $('#first #Details_PortalUser_IdNumber').select2({
+        ajax: {
+            url: `${baseUrl}/ScPortalRequestStudy/GetScPortalRequestStudyByUserSelect2`,
+            dataType: 'json',
+            headers: {
+                'Authorization': `Bearer ${$_token}`
+            },
+            data: function (params) {
+                params.page = params.page || 1;
+                return {
+                    pageSize: pageSize,
+                    pageNumber: params.page,
+                    searchTerm: params.term,
+                    lang: lang
+                };
+            },
+            processResults: function (data, params) {
+
+                params.page = params.page || 1;
+
+                return {
+                    results: data.result.results,
+                    pagination: {
+                        more: (params.page * pageSize) < data.result.total
+                    }
+                };
+            }
+        },
+        placeholder: select2Placeholder,
+        minimumInputLength: 0,
+        allowClear: true,
+        language: select2Lang,
+        templateSelection: function (data, container) {
+
+            if (data.altText) {
+                $('#first #Details_PortalUser_IdNumber').attr('isElectronic', data.altText.split('-')[1]);
+                $('#first #Details_PortalUser_IdNumber').attr('isMaintenance', data.altText.split('-')[2]);
+                $('#first #Details_PortalRequestNumber').attr('isElectronic', data.altText.split('-')[1]);
+                $('#first #Details_PortalRequestNumber').attr('isMaintenance', data.altText.split('-')[2]);
+            }
+
+            return data.text;
+        }
+    });
+
+    $('#Details_PortalRequestNumber').on('select2:select', function (e) {
+        getStudyData(e);
+        setSelect2Value('Details_PortalUser_IdNumber', e.params.data.id, e.params.data.altText.split('-')[0]);
+    });
+
+    $('#Details_PortalUser_IdNumber').on('select2:select', function (e) {
+        getStudyData(e);
+        setSelect2Value('Details_PortalRequestNumber', e.params.data.id, e.params.data.altText.split('-')[0]);
+    });
+
+    $('#Details_PortalRequestNumber').on('select2:unselect', function (e) {
+        study = undefined;
+        $('#first #Details_CashingTo').val('');
+        $('#first #Details_CashingTo').parent('.form-line').addClass('focused');
+
+        $('#first #Details_AidAmount').val(study.suggestedAmount);
+        $('#first #Details_AidAmount').parent('.form-line').addClass('focused');
+
+        $('#first #Details_NoOfMonths').val(1);
+        $('#first #Details_NoOfMonths').parent('.form-line').addClass('focused');
+
+        unSetSelect2Value('Details_PortalUser_IdNumber');
+
+        $('#Details_CashingTo').prop('disabled', false);
+        $('#IsMedicine').prop('disabled', false);
+        $('#OtherAidLkpId').prop('disabled', false);
+        $('#OtherMonthNo').prop('disabled', false);
+        $('#Details_AidAmount').prop('disabled', false);
+        $('#Details_NoOfMonths').prop('disabled', false);
+    });
+
+    $('#Details_PortalUser_IdNumber').on('select2:unselect', function (e) {
+        study = undefined;
+        $('#first #Details_CashingTo').val('');
+        $('#first #Details_CashingTo').parent('.form-line').addClass('focused');
+
+        $('#first #Details_AidAmount').val('');
+        $('#first #Details_AidAmount').parent('.form-line').addClass('focused');
+
+        $('#first #Details_NoOfMonths').val('');
+        $('#first #Details_NoOfMonths').parent('.form-line').addClass('focused');
+
+        unSetSelect2Value('Details_PortalRequestNumber');
+
+        $('#Details_CashingTo').prop('disabled', false);
+        $('#IsMedicine').prop('disabled', false);
+        $('#OtherAidLkpId').prop('disabled', false);
+        $('#OtherMonthNo').prop('disabled', false);
+        $('#Details_AidAmount').prop('disabled', false);
+        $('#Details_NoOfMonths').prop('disabled', false);
+    });
+
+    let study;
+
+    const getStudyData = function (e) {
+
+        $.ajax({
+            url: `${baseUrl}/ScPortalRequestStudy/Get`,
+            method: 'GET',
+            headers: { 'Authorization': `Bearer ${$_token}` },
+            data: { id: e.params.data.id }
+        }).done(function (data) {
+
+            study = data.result;
+
+            $('#first #Details_CashingTo').val(study.cashingTo);
+            $('#first #Details_CashingTo').parent('.form-line').addClass('focused');
+
+            if (study && study.suggestedAmount){
+                $('#first #Details_AidAmount').val(study.suggestedAmount);
+            }
+            $('#first #Details_AidAmount').parent('.form-line').addClass('focused');
+
+
+            $('#first #OtherMonthNo').val(study.otherMonthNo);
+            $('#first #OtherMonthNo').parent('.form-line').addClass('focused');
+
+            $('#first #Details_NoOfMonths').val(study.numberOfMonths);
+            $('#first #Details_NoOfMonths').parent('.form-line').addClass('focused');
+
+            if (study.fndOtherAidLkp) {
+                setSelect2Value('OtherAidLkpId', study.fndOtherAidLkp.id, (lang === "ar-EG" ? study.fndOtherAidLkp.nameAr : study.fndOtherAidLkp.nameEn));
+            }
+
+            $('#IsMedicine').prop('checked', study.isMedicine);
+
+            const isMaintenance = e.params.data.altText.split('-')[2] == 'True' ? true : false ;
+
+            if (isMaintenance) {
+                $('#Details_CashingTo').prop('disabled', true);
+                $('#IsMedicine').prop('disabled', true);
+                $('#OtherAidLkpId').prop('disabled', true);
+                $('#OtherMonthNo').prop('disabled', true);
+                $('#Details_AidAmount').prop('disabled', true);
+                $('#Details_NoOfMonths').prop('disabled', true);
+
+                $('#Details_CashingTo').val('');
+                $('#IsMedicine').prop('checked', false);
+                $('#OtherAidLkpId').val('').trigger('change');
+                $('#OtherMonthNo').val('');
+                $('#Details_AidAmount').val('').trigger('change');
+                $('#Details_NoOfMonths').val('');
+            }
+            else {
+                $('#Details_CashingTo').prop('disabled', false);
+                $('#IsMedicine').prop('disabled', false);
+                $('#OtherAidLkpId').prop('disabled', false);
+                $('#OtherMonthNo').prop('disabled', false);
+                $('#Details_AidAmount').prop('disabled', false);
+                $('#Details_NoOfMonths').prop('disabled', false);
+            }
+
+        });
+    };
+
+    const fillScCommitteeDetail = function () {
+
+        let userNameAndId = $('#Details_PortalUser_IdNumber').find(':selected').text();
+
+        const isMaintenance = $('#Details_PortalUser_IdNumber').attr('isMaintenance') == "True" ? true : false;
+
+        if (validatetor(isMaintenance) === false) return;
+
+        const current = {
+            index: ++tblLinesCounterIndex,
+            requestStudyId: $('#Details_PortalRequestNumber').find(':selected').val(),
+            portalRequestNumber: $('#Details_PortalRequestNumber').find(':selected').text(),
+            otherAidLkpId: $('#OtherAidLkpId').find(':selected').val(),
+            otherAidLkp: $('#OtherAidLkpId').find(':selected').text(),
+            name: userNameAndId.split('-')[0],
+            //idNumber: userNameAndId.split('-')[1],
+            cashingTo:$('#Details_CashingTo').val(),
+            aidAmount:$('#Details_AidAmount').val(),
+            noOfMonths: $('#Details_NoOfMonths').val(),
+            otherMonthNo: $('#OtherMonthNo').val(),
+            isMedicine: $('#IsMedicine').is(':checked'),
+            codeComUtilityTexts:'',
+            status: _newDetailStatusTxt,
+            statusLkpId: _newDetailStatus,
+            isElectronic: $('#Details_PortalUser_IdNumber').attr('isElectronic') == "True" ? true : false,
+            isMaintenance: isMaintenance,
+            notes: $('#Details_Notes').val(),
+            rowStatus: NewStatus,
+            id:0
+        };
+
+        return current;
+    };
+
+    const AddScCommitteeDetail = function () {
+        let detail = fillScCommitteeDetail();
+        if (detail === undefined) return;
+
+        const detailArr = _ScCommitteeDetailArr.filter(z => z.rowStatus !== DeletedStatus);
+
+        if (validateLinesWithParam(detailArr)) {
+
+            _ScCommitteeDetailArr.push(detail);
+
+            _listScCommitteeDetail.val(JSON.stringify(_ScCommitteeDetailArr));
+
+            bindScCommitteeDetailTable();
+
+            clearFormAdding();
+        }
+    };
+
+    const UpdateScCommitteeDetailRow = function () {
+
+        let current = _ScCommitteeDetailArr.find(z => z.index === updatedRow.index);
+
+        let indexOfCurrent = _ScCommitteeDetailArr.indexOf(current);
+
+        if (fillScCommitteeDetail() === undefined) return;
+
+        const newRow = fillScCommitteeDetail();
+
+        newRow.id = updatedRow.id;
+        newRow.ScCommitteeDetailtatusLkpId = updatedRow.ScCommitteeDetailtatusLkpId;
+        newRow.StatusLkpId = updatedRow.StatusLkpId;
+        newRow.requestStudyId = updatedRow.requestStudyId;
+        newRow.isElectronic = updatedRow.isElectronic;
+        newRow.CommitteeId = updatedRow.CommitteeId;
+        newRow.rowStatus = (updatedRow.id === undefined || updatedRow.id == null || updatedRow.id == 0) ? NewStatus : UpdatedStatus;
+
+        _ScCommitteeDetailArr.splice(indexOfCurrent, 1,newRow);
+
+        $('#btnAddScCommitteeDetailRow').show();
+        $('#btnUpdateScCommitteeDetailRow').hide();
+        $('#btnCancelScCommitteeDetailRow').hide();
+
+        clearFormAdding();
+
+        _listScCommitteeDetail.val(JSON.stringify(_ScCommitteeDetailArr));
+
+        bindScCommitteeDetailTable();
+
+    };
+
+    const CancelEditScCommitteeDetailRow = function () {
+        clearFormAdding();
+        $('#btnCancelScCommitteeDetailRow').hide();
+        $('#btnUpdateScCommitteeDetailRow').hide();
+        $('#btnAddScCommitteeDetailRow').show();
+    };
+
+    const validatetor = function (isMaintenance) {
+
+        const isElectronic = updatedRow ? updatedRow.isElectronic : false;
+   //     const isMaintenance = updatedRow ? updatedRow.isMaintenance : false;
+
+        if (!isMaintenance && !$('#Details_PortalRequestNumber').find(':selected').val()) {
+            toastr.warning(`@ScCommittee.Details_PortalRequestNumber : @ERP.ResourcePack.Common.Settings.Required`);
+            return false;
+        }
+
+        if (!isMaintenance && !$('#Details_CashingTo').val()) {
+            toastr.warning(`@ScCommittee.Details_CashingTo : @ERP.ResourcePack.Common.Settings.Required`);
+            return false;
+        }
+
+        if (!isMaintenance && !isElectronic && !$('#OtherAidLkpId').find(':selected').val() && !$('#Details_AidAmount').val()) {
+            toastr.warning(`@ScCommittee.AidValueValidationMessg`);
+            return false;
+        }
+
+        if (!isMaintenance && !isElectronic && $('#Details_AidAmount').val() && !$('#Details_NoOfMonths').val()) {
+            toastr.warning(`@ScCommittee.Details_NoOfMonths : @ERP.ResourcePack.Common.Settings.Required`);
+            return false;
+        }
+
+        if (!isMaintenance && !isElectronic && $('#OtherAidLkpId').find(':selected').val() && !$('#OtherMonthNo').val()) {
+            toastr.warning(`@ScCommittee.OtherCommitteeMonthNo : @ERP.ResourcePack.Common.Settings.Required`);
+            return false;
+        }
+
+    };
+
+    const hrefUserOnClickEvent = function (UserId) {
+        window.open(`${$PrefixHostName}/PortalUserData/FormView?id=${UserId}&t=@encShowTrigger`, '_blank');
+    };
+
+    const bindScCommitteeDetailTable = function () {
+
+        const detailArr = _ScCommitteeDetailArr.filter(z => z.rowStatus !== DeletedStatus);
+
+        const columns = [
+            { 'data': 'index' },
+            {
+                "data": "portalRequestNumber",
+                "name": "portalRequestNumber",
+                "autoWidth": true,
+                'render': function (d, t, row) {
+
+                    let links = '';
+
+                    if (primaryEntityKeyId && row.rowStatus != NewStatus) {
+                        links += `<a style="color:#3443434;text-decoration:underline" href="${$PrefixHostName}/ScPortalRequests/FormView?id=${row.portalRequestEncId}&t=@encShowTrigger" target="_blank">${row.portalRequestNumber == null ? '' : row.portalRequestNumber}</a>`;
+                        links += '<br />';
+                        links += `<a style="color:#3443434;text-decoration:underline" href="${$PrefixHostName}/ScPortalRequestStudy/FormView?id=${row.requestStudyEncId}&t=@encShowTrigger" target="_blank">@ERP.ResourcePack.AidModule.ScCommittee.ShowStudy</a>`;
+
+                         return links;
+                    }
+                    else {
+                        return row.portalRequestNumber;
+                    }
+                }
+            },
+            {
+                "data": "name",
+                "name": "name",
+                "autoWidth": true,
+                'render': function (d, t, row) {
+
+                    const userEncId = row.requestStudy ? row.requestStudy.scPortalRequest.portalUser.encId : '';
+
+                    if (userEncId != '') {
+                        return `<a style="color:#3443434;text-decoration:underline" href="javascript:void(0);" onclick="hrefUserOnClickEvent('${userEncId}')">${row.requestStudy.scPortalRequest.portalUser == null ? '' : row.requestStudy.scPortalRequest.portalUser.name}</a>`;
+                    }
+                    else {
+                        return row.name;
+                    }
+                }
+            },
+            //{ 'data': 'idNumber' },
+            { 'data': 'codeComUtilityTexts' },
+            { 'data': 'cashingTo' },
+            { 'data': 'aidAmount' },
+            { 'data': 'noOfMonths' },
+            { 'data': 'otherAidLkp' },
+            { 'data': 'otherMonthNo' },
+            { 'data': 'status' },
+            { 'data': 'notes' },
+            {
+                'data': 'isMedicine',
+                'render': function (isMedicine) {
+                    return isMedicine ? '<i class="text-success fas fa-check"></i>' : '<i class="text-danger fas fa-times"></i>';
+                }
+            },
+            {
+                'data': null,
+                'searchable': false,
+                'ordering': false,
+                'sorting': false,
+                'render': function (d, t, row) {
+
+                    let rows = '';
+
+                    if (row.isElectronic) {
+                        rows += `<a href="javascript:void(0)" onclick="return OpenDetailModal(${row.index})" title=""><i class="mx-2 fas ${trigger === '@ERP.Front.Helpers.Enums.Common.FormTriggers.Show.ToString()' ? 'fa-info-circle' : 'fa-plus-circle' }  text-info"></i></a>`;
+                    }
+
+                    if (primaryEntityKeyId && row.rowStatus != NewStatus) {
+                        rows += `<a href="javascript:void(0);" onclick="return print1('${$PrefixHostName}/PortalUserData/PrintFndUsersScreen','${row.portalRequestEncId}','${lang}')" title="@ERP.ResourcePack.Common.Settings.Print"><i class="mx-2 fas fa-print text-success"></i></a>`;
+                    }
+
+                    if (primaryEntityKeyId === 0 || trigger !== '@ERP.Front.Helpers.Enums.Common.FormTriggers.Show.ToString()') {
+
+                        if (row.statusLkpId == _newDetailStatus) {
+                            rows += `<td><a href="javascript:void(0)" onclick="return DeleteRowLine(${row.index})"><i class="mx-2 fas fa-trash-alt text-danger"></i></a>`;
+                            rows += `<a href="javascript:void(0)" onclick="return GetRow(${row.index})"><i class="mx-2 fas fa-edit text-success"></i></a></td>`;
+                        }
+
+                        if (primaryEntityKeyId !== 0 && row.rowStatus !== NewStatus && row.statusLkpId == _newDetailStatus /*&& _permissions.includes(_postPermission)*/ && trigger === '@ERP.Front.Helpers.Enums.Common.FormTriggers.Update.ToString()') {
+
+                            if (_permissions.indexOf(_detailPostPermission) !== -1) {
+                                rows += `<a title="@ScCommittee.PostCommitteeDetail" href="javascript:void(0)"  onclick="return PostScCommitteeDetail(${row.id})"><i class="mx-2 fas fa-check-circle text-success"></i></a></td>`;
+                            }
+                            if (_permissions.indexOf(_detailRejectPermission) !== -1) {
+                                rows += `<a title="@ScCommittee.RejectCommitteeDetail" href="javascript:void(0)"  onclick="return RejectScCommitteeDetail(${row.id})"><i class="mx-2 fas fa-minus-circle text-danger"></i></a></td>`;
+                            }
+                            if (_permissions.indexOf(_detailPostponePermission) !== -1) {
+                                rows += `<a title="@ScCommittee.PostponeCommitteeDetail" href="javascript:void(0)"  onclick="return PostponeScCommitteeDetail(${row.id})"><i class="mx-2 fas fas fa-exchange-alt text-info"></i></a></td>`;
+                            }
+                        }
+
+                    } else {
+                        rows += '<td></td>';
+                    }
+
+                    return rows;
+                }
+            }
+        ];
+
+        const dtObj = {
+            data: detailArr,
+            "pageLength": 50,
+            retrieve: true,
+            language: dataTableLang,
+            columns: columns,
+            drawCallback: function (c, v, b) { }
+        };
+
+        setTimeout(function () {
+            _tblScCommitteeDetailSelector.dataTable().fnDestroy();
+            _tblScCommitteeDetailSelector.DataTable(dtObj).on('draw', function () { $('[data-toggle="tooltip"]').tooltip(); });
+        }, 100);
+
+        totalOfTotal = 0;
+
+        $.each(detailArr, function (i, item) {
+            totalOfTotal += (item.aidAmount * item.noOfMonths);
+        });
+
+        $("#Total").val(totalOfTotal);
+    };
+
+    const DeleteRowLine = function (index) {
+
+        const current = _ScCommitteeDetailArr.find(z => z.index === index);
+
+        const indexOfCurrent = _ScCommitteeDetailArr.indexOf(current);
+
+        if (current.id === undefined || current.id == null || current.id == 0) {
+
+           _ScCommitteeDetailArr.splice(indexOfCurrent, 1);
+
+        } else {
+
+            current.rowStatus = DeletedStatus;
+
+           _ScCommitteeDetailArr.splice(indexOfCurrent, 1,current);
+        }
+
+        bindScCommitteeDetailTable();
+
+        _listScCommitteeDetail.val(_ScCommitteeDetailArr.length === 0 ? '' : JSON.stringify(_ScCommitteeDetailArr));
+    };
+
+    const LoadScCommitteeDetailData = function () {
+
+        $('#tblLoaderLine').show();
+
+        $.ajax({
+            url: `${baseUrl}/ScCommittee/GetDetailAsync`,
+            method: 'GET',
+            headers: {  'Authorization': `Bearer ${$_token}`  },
+            data: { id: primaryEntityKeyId }
+        }).done(function (data) {
+
+            _ScCommitteeDetailArr = [...data.result.committeeDetails];
+
+            tblLinesCounterIndex = 0;
+
+            $.each(_ScCommitteeDetailArr, function (i, item) {
+
+                item.index = ++tblLinesCounterIndex;
+                item.portalRequestNumber = item.portalRequestNumber;
+                item.portalRequestEncId = item.portalRequestEncId;
+                item.requestStudyEncId = item.requestStudyEncId;
+                item.name = item.name;
+                item.idNumber = item.idNumber;
+                item.otherAidLkpId = item.otherAidLkpId;
+                item.isMedicine = item.isMedicine;
+                item.otherMonthNo = item.otherMonthNo;
+                item.codeComUtilityTexts = item.codeComUtilityTexts;
+                item.requestStudyId = item.requestStudyId;
+                item.StatusLkpId = item.fndStatusLkp.id;
+                item.status = lang === 'ar-EG' ? item.fndStatusLkp.nameAr : item.fndStatusLkp.nameEn;
+                item.otherAidLkp = item.fndOtherAidLkp ? (lang === 'ar-EG' ? item.fndOtherAidLkp.nameAr : item.fndOtherAidLkp.nameEn) : '';
+            });
+
+            bindScCommitteeDetailTable();
+
+            LoadScCommitteeMemberDetailData([...data.result.committeeMembersDetails]);
+
+            _listScCommitteeDetail.val(JSON.stringify(_ScCommitteeDetailArr));
+
+            $('#tblLoaderLine').hide();
+        });
+
+    };
+
+    const GetRow = function (tblIndex) {
+
+        clearFormAdding();
+
+        $('#btnAddScCommitteeDetailRow').hide();
+        $('#btnUpdateScCommitteeDetailRow').show();
+        $('#btnCancelScCommitteeDetailRow').show();
+
+        const current = _ScCommitteeDetailArr.find(z => z.index === tblIndex);
+
+        $('#first #Details_CashingTo').val(current.cashingTo);
+        $('#first #Details_AidAmount').val(current.aidAmount);
+        $('#first #Details_NoOfMonths').val(current.noOfMonths);
+        $('#first #OtherMonthNo').val(current.otherMonthNo);
+        $('#first #Details_Notes').val(current.notes);
+
+        if (Boolean(current.isMedicine)) {
+            $('#IsMedicine').attr('checked', true);
+        } else {
+            $('#IsMedicine').attr('checked', false);
+        }
+
+        $('#first #Details_CashingTo').parent('.form-line').addClass('focused');
+        $('#first #Details_AidAmount').parent('.form-line').addClass('focused');
+        $('#first #Details_NoOfMonths').parent('.form-line').addClass('focused');
+        $('#first #Details_Notes').parent('.form-line').addClass('focused');
+        $('#first #OtherMonthNo').parent('.form-line').addClass('focused');
+
+        setSelect2Value('Details_PortalRequestNumber', current.portalReqstudyId, current.portalRequestNumber);
+
+        if (current.otherAidLkpId) {
+            setSelect2Value('OtherAidLkpId', current.otherAidLkpId, current.otherAidLkp);
+        }
+
+        setSelect2Value('Details_PortalUser_IdNumber', current.portalReqstudyId, `${current.name}`);
+
+        $('#Details_PortalUser_IdNumber').prop('disabled', true);
+        $('#Details_PortalRequestNumber').prop('disabled', true);
+
+        if (current.isElectronic) {
+            $('#OtherAidLkpId').prop('disabled', true);
+            $('#OtherMonthNo').prop('disabled', true);
+            $('#Details_AidAmount').prop('disabled', true);
+            $('#Details_NoOfMonths').prop('disabled', true);
+        }
+        else if (current.isMaintenance) {
+            $('#Details_CashingTo').prop('disabled', true);
+            $('#IsMedicine').prop('disabled', true);
+            $('#OtherAidLkpId').prop('disabled', true);
+            $('#OtherMonthNo').prop('disabled', true);
+            $('#Details_AidAmount').prop('disabled', true);
+            $('#Details_NoOfMonths').prop('disabled', true);         
+        } 
+        else {
+            $('#Details_CashingTo').prop('disabled', false);
+            $('#IsMedicine').prop('disabled', false);
+            $('#OtherAidLkpId').prop('disabled', false);
+            $('#OtherMonthNo').prop('disabled', false);
+            $('#Details_AidAmount').prop('disabled', false);
+            $('#Details_NoOfMonths').prop('disabled', false);
+        }
+
+        updatedRow = current;
+    };
+
+    const getSelect2Selected = function (controlName) {
+        $(`#${controlName}`).find(':selected');
+    };
+
+    const setSelect2Value = function (controlName, id, text) {
+        let option = new Option(text,id, true, true);
+        $(`#${controlName}`).append(option).trigger('change');
+    };
+
+    const unSetSelect2Value = function (controlName) {
+        $(`#${controlName}`).val(null).trigger('change');
+    }
+
+    const clearFormAdding = function () {
+
+        $('#first .card select').val('').trigger('change');
+        $('#first .card input').val('');
+        $('#first .card textarea').val('');
+
+        $('#details .card input').val('');
+
+    };
+
+    const validateLinesWithParam = function (arr) {
+
+        const portalReqstudyId = $('#Details_PortalRequestNumber').find(':selected').val(); // getSelect2Selected('Details_PortalRequestNumber').val();
+
+        const current = arr.find(z => z.requestStudyId == portalReqstudyId);
+
+        if (current) {
+            toastr.warning('@ScCommittee.Details_PortalUser_Name' + ' : ' + '@ERP.ResourcePack.Common.Settings.NameExistBefore')
+            return false;
+        }
+
+        return true;
+    };
+
+    const print1 = function (url, id, lang) {
+
+        const data = { id: id, lang : lang,type:"c" };
+        openModal(data, url);
+    };
+
+    const LoadDefaultCommitteeMembers = function () {
+
+        $.ajax({
+            url: `${baseUrl}/ScCommittee/GetAllScCommittteeMembers`,
+            method: 'GET',
+            headers: { 'Authorization': `Bearer ${$_token}` }
+        }).done(function (data) {
+
+            const current = [...data.result];
+
+            $.each(current, function (index,item) {
+                item.committeeMemberId = item.id;
+                item.id = 0;
+            });
+
+            LoadScCommitteeMemberDetailData(current);
+        });
+
+    };
+
+</script>
+
+<script>
+
+    const _tblScCommitteeMemberDetailSelector = $('#tblScCommitteeMemberDetail');
+    const _tblScCommitteeMemberDetailSelectorBody = $('#tblScCommitteeMemberDetail tbody');
+    const _listScCommitteeMemberDetail = $('#ListScCommitteeMemberDetail');
+
+    let _ScCommitteeMemberDetailArr = [], tblMemberLinesCounterIndex = 0 , updatedMemberRow;;
+
+    $('#second #Member_Name').select2({
+        ajax: {
+            url: `${baseUrl}/ScComityMembers/GetCommitteeMembersSelect2`,
+            dataType: 'json',
+            headers: {
+                'Authorization': `Bearer ${$_token}`
+            },
+            data: function (params) {
+                params.page = params.page || 1;
+                return {
+                    pageSize: pageSize,
+                    pageNumber: params.page,
+                    searchTerm: params.term,
+                    lang: lang
+                };
+            },
+            processResults: function (data, params) {
+
+                params.page = params.page || 1;
+                return {
+                    results: data.result.results,
+                    pagination: {
+                        more: (params.page * pageSize) < data.result.total
+                    }
+                };
+            }
+        },
+        placeholder: select2Placeholder,
+        minimumInputLength: 0,
+        allowClear: true,
+        language: select2Lang,
+        templateSelection: function (data, container) {
+
+            $(data.element).attr('data-category-name', data.altText);
+
+          return data.text;
+        }
+    });
+
+    const fillScCommitteeMemberDetailArr = function () {
+
+        if (validateMemberLines() === false)  return;
+
+        let memberData = $(`#Member_Name`).find(':selected').text(); // getMemberSelect2Selected('Member_Name').text();
+
+        const current = {
+            index: ++tblMemberLinesCounterIndex,
+            memberName: memberData.split('-')[1],
+            memberNumber: memberData.split('-')[0],
+            memberCategory: $(`#Member_Name`).find(':selected').attr('data-category-name'),
+            committeeMemberId: $(`#Member_Name`).find(':selected').val(), // getMemberSelect2Selected('Member_Name').val(),
+            rowStatus: NewStatus,
+            id: 0
+        };
+
+        return current;
+    };
+
+    const AddScCommitteeMemberDetail = function () {
+
+        let detail = fillScCommitteeMemberDetailArr();
+
+        if (detail === undefined) return;
+
+        if (validateMemberLinesWithParam(_ScCommitteeMemberDetailArr)) {
+
+            _ScCommitteeMemberDetailArr.push(detail);
+
+            _listScCommitteeMemberDetail.val(JSON.stringify(_ScCommitteeMemberDetailArr));
+
+            bindMemberLinesTable();
+
+            clearFormMemberAdding();
+        }
+    };
+
+    const bindMemberLinesTable = function () {
+
+        let rows = '';
+
+        const detailArr = _ScCommitteeMemberDetailArr.filter(z => z.rowStatus !== DeletedStatus);
+
+        $.each(detailArr, function (i, item) {
+
+            rows += '<tr>';
+            rows += `<td>${item.index}</td>`;
+            rows += `<td>${item.memberNumber}</td>`;
+            rows += `<td>${item.memberName}</td>`;
+            rows += `<td>${item.memberCategory}</td>`;
+
+            if (primaryEntityKeyId === 0 || trigger !== '@ERP.Front.Helpers.Enums.Common.FormTriggers.Show.ToString()') {
+                rows += `<td><a href="javascript:void(0)" onclick="return DeleteMemberRowLine(${item.index})"><i class="mx-2 fas fa-trash-alt text-danger"></i></a></td>`;
+            } else {
+                rows += '<td></td>';
+            }
+
+            rows += '</tr>';
+        });
+
+        setTimeout(function () {
+            _tblScCommitteeMemberDetailSelector.DataTable().clear().destroy();
+            _tblScCommitteeMemberDetailSelectorBody.html(rows);
+            _tblScCommitteeMemberDetailSelector.DataTable();
+        }, 100);
+    };
+
+    const DeleteMemberRowLine = function (index) {
+
+        const current = _ScCommitteeMemberDetailArr.find(z => z.index === index);
+
+        const indexOfCurrent = _ScCommitteeMemberDetailArr.indexOf(current);
+
+        if (current.id === undefined || current.id == null || current.id == 0) {
+
+           _ScCommitteeMemberDetailArr.splice(indexOfCurrent, 1);
+
+        } else {
+
+            current.rowStatus = DeletedStatus;
+
+           _ScCommitteeMemberDetailArr.splice(indexOfCurrent, 1,current);
+        }
+
+        bindMemberLinesTable();
+
+        _listScCommitteeMemberDetail.val(_ScCommitteeMemberDetailArr.length === 0 ? '' : JSON.stringify(_ScCommitteeMemberDetailArr));
+    };
+
+    const LoadScCommitteeMemberDetailData = function (committeeMembersDetailsResult) {
+
+        _ScCommitteeMemberDetailArr = committeeMembersDetailsResult;
+
+            tblMemberLinesCounterIndex = 0;
+
+            $.each(_ScCommitteeMemberDetailArr, function (i, item) {
+                item.index = ++tblMemberLinesCounterIndex;
+                item.memberNumber = item.memberNumber;
+                item.memberName = item.memberName;
+                item.memberCategory = lang == 'ar-Eg' ? item.memberCategoryAr : item.memberCategoryEn;
+                item.committeeMemberId = item.committeeMemberId;
+            });
+
+            bindMemberLinesTable();
+
+            _listScCommitteeMemberDetail.val(JSON.stringify(_ScCommitteeMemberDetailArr));
+
+            $('#tblLoaderLine').hide();
+
+    };
+
+    const clearFormMemberAdding = function () {
+
+        $('#first .card select').val('').trigger('change');
+        $('#first .card input').val('');
+        $('#first .card textarea').val('');
+
+        $('#details .card input').val('');
+
+    };
+
+    const validateMemberLines = function () {
+        return true;
+    };
+
+    const validateMemberLinesWithParam = function (arr) {
+
+        const committeeMemberId = $(`#Member_Name`).find(':selected').val();
+
+        const current = arr.find(z => z.committeeMemberId == committeeMemberId);
+
+
+        if (current) {
+            toastr.warning('@ScCommittee.Member_Name' + ' : ' + '@ERP.ResourcePack.Common.Settings.NameExistBefore')
+            return false;
+        }
+
+        return true;
+    };
+
+</script>
+
+<script name="elctronic-aids-manager">
+
+    let _ElectronicAidsArr = [], UpdatedElectronicAidRow, tblCounterElcIndex = 0, currentParent;
+
+    const OpenDetailModal = function (index) {
+
+        _mainModalTitle.html('@ScCommittee.ScCommitteeDetailsElectronicAid');
+        _mainModalBody.html($('#electronic-aids').html());
+        _mainModal.modal(_mainModalOprions);
+
+        $('#main-modal input.form-control').parent('.form-line').addClass('focused');
+
+        $('#main-modal .modal-dialog').css('max-width', '80%');
+
+        $('#main-modal #ElectronicTypeLkpId').select2(ReturnSelect2ObjectForLkpsTypes('@ERP.Front.Helpers.Enums.Common.FndLkpsTypes.ScPRMgrDecisionElectronicAidType.ToString()'));
+
+        currentParent = _ScCommitteeDetailArr.find(item => item.index === index);
+
+        if (primaryEntityKeyId && !currentParent.trDtlbinded) {
+            LoadElectronicAidsData(currentParent.id);
+        } else {
+            BindElectronicAidsTable();
+        }
+    };
+
+    const fillElectronicAid = function () {
+
+        if (validatorElectronicAid() === false) return;
+
+        const current = {
+            index: ++tblCounterElcIndex,
+            electronicTypeLkpId: $('#ElectronicTypeLkpId').find(':selected').val(),
+            electronicTypeLkpNameAr: $('#ElectronicTypeLkpId').find(':selected').text(),
+            electronicTypeLkpNameEn: $('#ElectronicTypeLkpId').find(':selected').text(),
+            amount: $('#ElectronicAmount').val(),
+            rowStatus: NewStatus,
+            parent: currentParent.index,
+            id: 0
+        };
+
+        return current;
+    };
+
+    const AddElectronicAid = function () {
+
+        const current = fillElectronicAid();
+
+        if (current === undefined) return;
+
+        _ElectronicAidsArr.push(current);
+
+        currentParent.detailsElectronicAids = GetCurrentElectronicAidArr();
+
+        BindElectronicAidsTable();
+
+        ClearElectronicAidForm();
+
+        CalcElcAmount();
+        ValidateElectronicInputs();
+    };
+
+    const BindElectronicAidsTable = function () {
+
+        const detailArr = _ElectronicAidsArr.filter(item => item.rowStatus !== DeletedStatus && item.parent === currentParent.index);
+
+        const columns = [
+            { 'data': 'index' },
+            { 'data': lang === 'ar-EG' ? 'electronicTypeLkpNameAr' : 'electronicTypeLkpNameEn' },
+            { 'data': 'amount' },
+            {
+                'data': null,
+                'searchable': false,
+                'ordering': false,
+                'sorting': false,
+                'render': function (d, t, row) {
+
+                    let rows = '';
+
+                    if (primaryEntityKeyId === 0 || trigger !== '@ERP.Front.Helpers.Enums.Common.FormTriggers.Show.ToString()') {
+
+                        rows += `<td><a href="javascript:void(0)" onclick="return DeleteElectronicAidRow(${row.index})"><i class="mx-2 fas fa-trash-alt text-danger"></i></a>`;
+                        rows += `<a href="javascript:void(0)" onclick="return GetElectronicAidRow(${row.index})"><i class="mx-2 fas fa-edit text-success"></i></a></td>`;
+                    }
+                    else {
+                        rows += '<td></td>';
+                    }
+
+                    return rows;
+                }
+            }
+        ];
+
+        const dtObj = {
+            data: detailArr,
+            retrieve: true,
+            language: dataTableLang,
+            columns: columns,
+            drawCallback: function (c, v, b) { }
+        };
+
+        setTimeout(function () {
+
+            $('#tblElectronicAids').dataTable().fnDestroy();
+            $('#tblElectronicAids').DataTable(dtObj).on('draw', function () { $('[data-toggle="tooltip"]').tooltip(); });
+
+        }, 100);
+
+    };
+
+    const DeleteElectronicAidRow = function (index) {
+
+        const current = _ElectronicAidsArr.find(z => z.index === index);
+
+        const indexOfCurrent = _ElectronicAidsArr.indexOf(current);
+
+        if (!current.id) {
+
+            _ElectronicAidsArr.splice(indexOfCurrent, 1);
+
+        } else {
+
+            current.rowStatus = DeletedStatus;
+
+            _ElectronicAidsArr.splice(indexOfCurrent, 1, current);
+        }
+
+        BindElectronicAidsTable();
+
+        currentParent.detailsElectronicAids = GetCurrentElectronicAidArr();
+
+        CalcElcAmount();
+        ValidateElectronicInputs();
+    };
+
+    const LoadElectronicAidsData = function (trId) {
+
+            $.ajax({
+                url: `${baseUrl}/ScCommittee/GetAllScCommitteeDetailsElectronicAid`,
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${$_token}`
+                },
+                data: {
+                    id: trId
+                }
+            }).done(function (data) {
+
+                _ElectronicAidsArr = _ElectronicAidsArr.concat([...data.result]);
+
+                tblCounterElcIndex = 0;
+
+                $.each(_ElectronicAidsArr, function (i, item) {
+
+                    item.index = ++tblCounterElcIndex;
+
+                    if (item.scCommitteeDetailsId == currentParent.id)  item.parent = currentParent.index;
+
+                });
+
+                BindElectronicAidsTable();
+
+                currentParent.detailsElectronicAids = GetCurrentElectronicAidArr();
+                currentParent.trDtlbinded = true;
+
+                CalcElcAmount();
+                ValidateElectronicInputs();
+            });
+
+        };
+
+    const GetElectronicAidRow = function (tblIndex) {
+
+        ClearElectronicAidForm();
+
+        $('#btnAddElectronicAidRow').hide();
+        $('#btnUpdateElectronicAidRow').show();
+        $('#btnCancelElectronicAidRow').show();
+
+        const current = _ElectronicAidsArr.find(z => z.index === tblIndex);
+
+        $(`#ElectronicTypeLkpId`).append($("<option selected='selected'></option>")
+            .val(current.electronicTypeLkpId).text(lang === 'ar-EG' ? current.electronicTypeLkpNameAr : current.electronicTypeLkpNameEn)).trigger('change');
+
+        $('#ElectronicAmount').val(current.amount);
+
+        UpdatedElectronicAidRow = current;
+    };
+
+    const UpdateElectronicAidRow = function () {
+
+        let current = _ElectronicAidsArr.find(z => z.index === UpdatedElectronicAidRow.index);
+
+        let indexOfCurrent = _ElectronicAidsArr.indexOf(current);
+
+        const newRow = fillElectronicAid();
+
+        if (newRow === undefined) return;
+
+        newRow.index = current.index;
+        newRow.id = UpdatedElectronicAidRow.id;
+        newRow.rowStatus = !UpdatedElectronicAidRow.id ? NewStatus : UpdatedStatus;
+
+        _ElectronicAidsArr.splice(indexOfCurrent, 1, newRow);
+
+        $('#btnAddElectronicAidRow').show();
+        $('#btnUpdateElectronicAidRow').hide();
+        $('#btnCancelElectronicAidRow').hide();
+
+        ClearElectronicAidForm();
+
+        currentParent.detailsElectronicAids = GetCurrentElectronicAidArr();
+
+        setTimeout(function () {
+            BindElectronicAidsTable();
+        }, 100);
+
+        CalcElcAmount();
+        ValidateElectronicInputs();
+    };
+
+    const ClearElectronicAidForm = function () {
+        $('#main-modal .body input,textarea').val('');
+        $('#main-modal .body select').val('').trigger('change');
+    };
+
+    const validatorElectronicAid = function () {
+
+        if (!$('#ElectronicTypeLkpId').find(':selected').val()) {
+            toastr.warning('@ERP.ResourcePack.AidModule.ScCommittee.ElectronicTypeLkpId' + ' : ' + '@ERP.ResourcePack.Common.Settings.Required');
+            return false;
+        }
+    };
+
+    const GetCurrentElectronicAidArr = function () {
+
+        const filteredElectronicAidArr =  _ElectronicAidsArr.filter(item => item.parent === currentParent.index);
+
+        currentParent.trDtlCount = filteredElectronicAidArr.length;
+
+        const indexOfcurrentParent = _ScCommitteeDetailArr.indexOf(currentParent);
+
+        _ScCommitteeDetailArr.splice(indexOfcurrentParent, 1, currentParent);
+
+        bindScCommitteeDetailTable();
+
+        _listScCommitteeDetail.val(JSON.stringify(_ScCommitteeDetailArr));
+
+        return !_ElectronicAidsArr || _ElectronicAidsArr.length === 0 || !currentParent ? [] : [...filteredElectronicAidArr];
+    };
+
+    const CalcElcAmount = function () {
+
+        const val = _ElectronicAidsArr.filter(z => z.rowStatus != DeletedStatus && z.parent == currentParent.index).map(item => +item.amount).reduce((x, y) => x + y, 0);
+
+        currentParent.aidAmount = val;
+
+        bindScCommitteeDetailTable();
+
+        if (currentParent) if (primaryEntityKeyId && currentParent.id) currentParent.rowStatus = UpdatedStatus;
+    };
+
+    const ValidateElectronicInputs = function () {
+
+        if (_ElectronicAidsArr.filter(z => z.rowStatus != DeletedStatus).length > 0) {
+
+            currentParent.noOfMonths = 1;
+            currentParent.otherAidLkpId = '';
+            currentParent.otherMonthNo = '';
+            currentParent.otherAidLkp = '';
+
+            CalcElcAmount();
+        }
+
+    };
+
+</script>

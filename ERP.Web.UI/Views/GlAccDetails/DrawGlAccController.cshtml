@@ -1,0 +1,60 @@
+﻿@using ERP.Web.UI.Models.ViewModels.Accounts
+@model List<GlAccHeadersVM>
+@{
+    string lang = Request.Cookies["Lang"] == null ? "ar-EG" : Request.Cookies["Lang"].Value.ToString();
+    string repeatTrigger = ViewBag.repeatTrigger;
+    string GL = "GL";
+    string AccId = "AccId";
+
+    if (Session["DefaulGlAccDetailsInfo"] == null)
+    {
+        Response.Redirect("/");
+    }
+
+    var defInfo = Session["DefaulGlAccDetailsInfo"] as ERP._System.__AccountModule._GlAccDetails.Dto.DefaulGlAccDetailsInfo;
+}
+
+@if (Model != null && Model.Count > 0)
+{
+    int seqCounter = 1, index = 0;
+
+    foreach (var item in Model)
+    {
+        <div class="col-md-3 gl-controller">
+            <label>@(lang == "ar-EG" ? item.NameAr : item.NameEn)</label>
+            <div class="form-group form-float">
+                <div class="form-line">
+                    <select class="form-control slct2gl"
+                            data-select2-GL="@repeatTrigger@GL-Acc-Dtl"
+                            data-sequence="@ViewData["repeatTrigger"].ToString()@GL-@seqCounter"
+                            data-header-GL-id="@item.Id"
+                            data-parent-id="@(item.ParentId)"
+                            data-attrLkp-Id="@item.AttributeLkpId"
+                            data-Gl-key="@repeatTrigger@(lang == "ar-EG" ? item.NameAr : item.NameEn)"
+                            id="@repeatTrigger@GL-@item.Id-@item.AttributeLkpId">
+
+                        @if (defInfo.isDefArr[index] && defInfo.ids[index] != 0)
+                        {
+                            <option value="@defInfo.ids[index]" selected>@defInfo.texts[index]</option>
+                        }
+
+                    </select>
+                </div>
+            </div>
+        </div>
+        seqCounter++;
+        index++;
+    }
+    <div class="col-md-3 gl-controller">
+        <label>@ERP.ResourcePack.Accounts.GlMainAccounts.AccountName</label>
+        <div class="form-group form-float">
+            <div class="form-line">
+                <select class="form-control" id="@repeatTrigger@AccId"></select>
+            </div>
+        </div>
+    </div>
+}
+
+
+
+

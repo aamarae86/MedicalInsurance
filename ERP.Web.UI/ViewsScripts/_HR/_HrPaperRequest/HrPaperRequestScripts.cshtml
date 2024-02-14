@@ -1,0 +1,483 @@
+﻿@using ERP.Authorization;
+@using ERP.Web.UI.Controllers.HR
+@using ERP.ResourcePack.HR
+@{
+    string permissionsStr = TempData["Permissions"].ToString();
+    string encUpdateTrigger = ERP.Front.Helpers.Enums.Common.EncUpdate;
+    string encInsertTrigger = ERP.Front.Helpers.Enums.Common.EncInsert;
+    string encShowTrigger = ERP.Front.Helpers.Enums.Common.EncShow;
+}
+@*@if (permissionsStr.Contains(PermissionNames.Pages_HrPersonVacations_Post))
+    {
+        <script>
+            const PostAjax = function (id) {
+
+                bootbox.confirm({
+                    message: _booBoxMessagePosting,
+                    buttons: bootBoxDefaultBtns,
+                    callback: function (result) {
+
+                        if (result) {
+
+                            const data = {
+                                id: id,
+                                lang: lang
+                            };
+
+                            $.ajax({
+                                url: `${baseUrl}/HrPersonVacations/PostHrPersonVacations`,
+                                type: 'POST',
+                                data: JSON.stringify(data),
+                                headers:
+                                {
+                                    'Content-Type': 'application/json',
+                                    'Authorization': `Bearer ${$_token}`
+                                },
+                            }).done(function (response) {
+
+                                if (response.result.finalStatues == 'F') {
+                                    toastr.warning(response.result.reason);
+                                }
+                                else {
+                                    toastr.success(response.result.reason);
+
+                                    if (formView) {
+
+                                        setTimeout(function () {
+                                            window.location.href = $PrefixHostName + '/HrPersonVacations';
+                                        }, 100);
+
+                                    } else {
+                                        LoadDataGrid();
+                                    }
+                                }
+
+                            }).fail(function (response) {
+                                toastr.error(response.responseText);
+                            });
+                        }
+                    }
+                });
+            };
+        </script>
+    }
+    else
+    {
+        <script>
+            const PostAjax = function (id) { };
+        </script>
+    }*@
+
+<script>
+    const _mainController = "HrPaperRequest"
+    @*const _newStatus = @Convert.ToInt64(ERP.Front.Helpers.Enums.Common.HrPersonPermissionStatues.New);*@
+
+    $(function () {
+        LoadDataGrid();
+        $('#tblHrPaperRequestPrint thead').html($('#tblHrPaperRequest thead').html());
+        $('#tblHrPaperRequestPrint thead tr :last-child').remove();
+        $('#HrPaperRequest').addClass('active');
+    });
+
+    const _loadDataUrl = `${$PrefixHostName}/${_mainController}/@nameof(HrPaperRequestController.LoadDataGrid)`;
+    const _tblSelector = $('#tblHrPaperRequest');
+
+    const _permissions = '@permissionsStr';
+    const _updatePermission = '@PermissionNames.Pages_HrPaperRequest_Update';
+    const _deletePermission = '@PermissionNames.Pages_HrPaperRequest_Delete';
+    const _postPermission = '@PermissionNames.Pages_HrPaperRequest_Post';
+
+    var OnBegin = function (response) {
+      fireBtnLoader();
+    };
+
+    var OnSuccess = function (response) {
+
+        if (response.success) {
+
+            if (response.customRestResult.trigger === '@ERP.Front.Helpers.Enums.Common.FormTriggers.Insert') {
+
+                toastr.success(response.customRestResult.message);
+
+                LoadDataGrid();
+
+                _mainModal.modal('hide');
+
+            } else if (response.customRestResult.trigger === '@ERP.Front.Helpers.Enums.Common.FormTriggers.Update') {
+
+                LoadDataGrid();
+
+                _mainModal.modal('hide');
+
+                toastr.success(response.customRestResult.message);
+            }
+
+        } else {
+            toastr.error(response.customRestResult.message);
+        }
+
+    };
+
+    var OnComplete = function (response) {
+        downBtnLoader();
+    };
+
+    var OnFailure = function (response) {
+        toastr.error(response);
+        downBtnLoader();
+    };
+
+    const LoadDataGrid = function () {
+
+        const parms = {
+            PaperReqDate: $('#PaperReqDate').val(),
+            PaperReqNumber: $('#PaperReqNumber').val()
+
+        };
+
+        const columns = [
+            {
+                "data": "result.data.id",
+                'render': function (data, type, row, meta) {
+                    return meta.row + meta.settings._iDisplayStart + 1;
+                }
+            },
+            {
+                "data": "PaperReqNumber",
+                "name": "PaperReqNumber",
+                "autoWidth": true
+            },
+            {
+                "data": null,
+                "sortable": false,
+                "render": function (data, type, row) {
+
+                    const formAction = `${$PrefixHostName}/${_mainController}/@nameof(HrPaperRequestController.HrPaperRequestForm)`;
+                    const DeleteAction = `${$PrefixHostName}/${_mainController}/@nameof(HrPaperRequestController.Delete)`;
+
+                    let formTitle = '@HrPersonVacations.Title', btns = ''
+
+                    @*if (_permissions.includes(_postPermission) ) {
+                        btns += `<a href="javascript:void(0)" onclick="PostAjax(${row.Id})" title="@ERP.ResourcePack.Common.Settings.Post"><i class="mx-2 fas fa-check-circle text-info"></i></a>`;
+                    }*@
+
+                     if (_permissions.includes(_updatePermission)) {
+                         btns += `<a href="${$PrefixHostName}/HrPaperRequest/FormView?id=${row.EncId}&t=@encUpdateTrigger" title="@ERP.ResourcePack.Common.Settings.Edit"><i class="mx-2 fas fa-edit text-info"></i></a>`;
+                    }
+
+                    //btns += `<a href="javascript:void(0)" onclick="AjaxController.GetFormModal(${row.Id},'@ERP.Front.Helpers.Enums.Common.FormTriggers.Show','${formAction}','${formTitle}');" title="@ERP.ResourcePack.Common.Settings.Show"><i class="mx-2 fas fa-eye text-info"></i></a>`;
+
+                    if (_permissions.includes(_deletePermission) ) {
+                        btns += `<a href="javascript:void(0)" onclick="AjaxController.DeleteMainTableRow(${row.Id},'${DeleteAction}');" title="@ERP.ResourcePack.Common.Settings.Delete"><i class="mx-2 fas fa-trash-alt text-danger"></i></a>`;
+                    }
+
+                    const _auditedPermission = '@PermissionNames.Pages_HrPaperRequest_Audit';
+
+                    if (_permissions.includes(_auditedPermission)) {
+
+                        row.permission = _auditedPermission;
+
+                        btns += GetAuditedButton(row);
+                    }
+
+                    return btns;
+                }
+            }
+        ];
+
+        const dtObj = {
+            "processing": true,
+            "serverSide": true,
+            "filter": false,
+            "orderMulti": false,
+            "language": dataTableLang,
+            "ajax": {
+                "url": _loadDataUrl,
+                "type": "POST",
+                "datatype": "json",
+                "data": parms,
+                "complete": function () {}
+            },
+            "columns": columns,
+            "initComplete": function () {
+                $('[data-toggle="tooltip"]').tooltip();
+            }
+        };
+
+        _tblSelector.dataTable().fnDestroy();
+        _tblSelector.DataTable(dtObj).on('draw', function () { $('[data-toggle="tooltip"]').tooltip(); });
+
+    };
+
+
+
+
+
+
+
+
+
+    $('#HrPersonId').select2(ReturnSelect2ObjectDefault(`${baseUrl}/HrPersons/GetPersonsSelect2`));
+    $('#PaperReqTypeId').select2(ReturnSelect2ObjectDefault(`${baseUrl}/PaperReqType/GetPaperReqTypeSelect2`));
+    //$('#SearchStatusLkpId').select2(ReturnSelect2ObjectForLkpsTypes('@ERP.Front.Helpers.Enums.Common.FndLkpsTypes.HrPersonVacationsStatues.ToString()'));
+
+
+
+</script>
+<script name="detailsss">
+    const _tblDetailSelector = $('#tblHrPaperRequestDetails'), _HrPaperRequestlistDetail = $('#HrPaperRequestAttachmentdetailsListStr');
+    let _HrPaperRequestDetails = [], updatedDetailsRow, tblCounterIndex = 0 ;
+    let sum = 0;
+    const fillDetail = function () {
+        debugger;
+        if (validator($('#HrPersonId').find(':selected').val()) === false) return;
+        const current = {
+            index: ++tblCounterIndex,
+            HrPersonId: $('#HrPersonId').find(':selected').val(),
+            PaperReqTypeId: $('#PaperReqTypeId').find(':selected').val(),
+            rowStatus: NewStatus,
+            id: 0
+        };
+        return current;
+    };
+
+
+
+    const AddPaperRequestDetails = function () {
+        debugger;
+        const current = fillDetail();
+
+        if (current === undefined) return;
+
+        if (CheckItemExist(current.HrPersonId) === false) {
+            return;
+        }
+        debugger;
+        _HrPaperRequestDetails.push(current);
+
+        _HrPaperRequestlistDetail.val(JSON.stringify(_HrPaperRequestDetails));
+
+        bindDetailTable();
+
+        clearFormAdding();
+    };
+
+    const bindDetailTable = function () {
+        debugger;
+        const detailArr = _HrPaperRequestDetails.filter(z => z.rowStatus !== DeletedStatus);
+        const columns = [
+            { 'data': 'index' },
+            { 'data': 'hrPersonId' },
+            { 'data': 'paperReqTypeId' },
+            
+            {
+                'data': null,
+                'searchable': false,
+                'ordering': false,
+                'sorting': false,
+                'render': function (d, t, row) {
+
+                    let rows = '';
+
+                    if (primaryEntityKeyId === 0 || trigger !== '@ERP.Front.Helpers.Enums.Common.FormTriggers.Show.ToString()') {
+
+                        rows += `<td><a href="javascript:void(0)" onclick="return DeleteDetail(${row.index})"><i class="mx-2 fas fa-trash-alt text-danger"></i></a>`;
+                        rows += `<a href="javascript:void(0)" onclick="return GetDetailRow(${row.index})"><i class="mx-2 fas fa-edit text-success"></i></a></td>`;
+                    }
+                    else {
+                        rows += '<td></td>';
+                    }
+
+                    return rows;
+                }
+            }
+        ];
+
+        const dtObj = {
+            data: detailArr,
+            retrieve: true,
+            language: dataTableLang,
+            columns: columns,
+            drawCallback: function (c, v, b) {
+            }
+        };
+
+        setTimeout(function () {
+            _tblDetailSelector.dataTable().fnDestroy();
+            _tblDetailSelector.DataTable(dtObj).on('draw', function () { $('[data-toggle="tooltip"]').tooltip(); });
+        }, 100);
+    };
+
+    const DeleteDetail = function (index)  {
+        debugger;
+        const current = _HrPaperRequestDetails.find(z => z.index === index);
+
+        const indexOfCurrent = _HrPaperRequestDetails.indexOf(current);
+
+        if (!current.id) {
+
+            _HrPaperRequestDetails.splice(indexOfCurrent, 1);
+
+        } else {
+
+            current.rowStatus = DeletedStatus;
+
+            _HrPaperRequestDetails.splice(indexOfCurrent, 1,current);
+        }
+
+        bindDetailTable();
+
+        _HrPaperRequestlistDetail.val(_SalesDetails.length === 0 ? '' : JSON.stringify(_HrPaperRequestDetails));
+
+    };
+
+    $('#btnSubmition').on('click', function () {
+
+        if ($('#mainForm').valid()) {
+
+            $(this).prop('disabled', true);
+
+            $('#submitLoader').show();
+
+            $('#mainForm').submit();
+
+        } else {
+            $(this).prop('disabled', false);
+
+            $('#submitLoader').hide();
+        }
+
+    });
+
+
+    const LoadDetailData = function () {
+        debugger;
+        $.ajax({
+            url: `${baseUrl}/HrPaperRequest/GetAllPaperRequestlistDetails`,
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${$_token}`
+            },
+            data: {
+                id: primaryEntityKeyId
+            }
+        }).done(function (data) {
+            debugger;
+            _HrPaperRequestDetails = [...data.result];
+
+            tblCounterIndex = 0;
+
+            $.each(_HrPaperRequestDetails, function (i, item) {
+                item.index = ++tblCounterIndex;
+            });
+
+            bindDetailTable();
+
+            _HrPaperRequestlistDetail.val(JSON.stringify(_HrPaperRequestDetails));
+
+        });
+
+    };
+    const GetDetailRow = function (tblIndex) {
+        debugger;
+        clearFormAdding();
+
+        $('#btnAddsalesDetailRow').hide();
+        $('#btnUpdatesalesDetailRow').show();
+        $('#btnCancelsalesDetailRow').show();
+
+        const current = _HrPaperRequestDetails.find(z => z.index === tblIndex);
+        debugger;
+        $(`#HrPersonId`).append($("<option selected='selected'></option>")
+            .val(current.HrPersonId).text(current.itemName)).trigger('change');
+        $(`#Avilablequantity`).val(current.avilablequantity);
+       
+        updatedDetailsRow = current;
+    };
+
+    const UpdatesalesDetailsRow = function () {
+        debugger;
+        let current = _HrPaperRequestDetails.find(z => z.index === updatedDetailsRow.index);
+
+        let indexOfCurrent = _HrPaperRequestDetails.indexOf(_HrPaperRequestDetails.find(z => z.index === updatedDetailsRow.index));
+
+        const newRow = fillDetail();
+        if (newRow === undefined) return;
+        if (_HrPaperRequestDetails.find(z => z.index === updatedDetailsRow.index).IvItemId == newRow.ivPriceListHdId) {
+
+        }
+        else {
+            if (CheckItemExist(newRow.ivItemId, newRow.rowStatus) === false) {
+                return;
+            }
+        }
+
+        newRow.index = current.index;
+        newRow.id = updatedDetailsRow.id;
+        newRow.rowStatus =  !updatedDetailsRow.id ? NewStatus : UpdatedStatus;
+
+        _HrPaperRequestDetails.splice(indexOfCurrent, 1,newRow);
+
+        $('#btnAddsalesDetailRow').show();
+        $('#btnUpdatesalesDetailRow').hide();
+        $('#btnCancelsalesDetailRow').hide();
+
+        clearFormAdding();
+
+        _HrPaperRequestlistDetail.val(JSON.stringify(_HrPaperRequestDetails));
+
+        setTimeout(function () {
+            bindDetailTable();
+        }, 100);
+    };
+
+    const clearFormAdding = function () {
+        $('#details .card:first input,textarea').val('');
+        $('#details .card:first select').val('').trigger('change');
+    };
+
+    const validator = function () {
+        debugger;
+        @*if (!$('#HrPersonId').find(':selected').val()) {
+            toastr.warning('@IvSaleHd.Itemcode' + ' : ' + '@ERP.ResourcePack.Common.Settings.Required');
+            return false;
+        }*@
+        @*if (!$('#Qty').val()) {
+            toastr.warning('@IvSaleHd.Qtys' + ' : ' + '@ERP.ResourcePack.Common.Settings.Required');
+            return false;
+        }
+        if (!$('#UnitPrice').val() || $('#UnitPrice').val()==0) {
+            toastr.warning('@IvSaleHd.Unitprice' + ' : ' + '@ERP.ResourcePack.Common.Settings.Required');
+            return false;
+        }
+        if (parseInt($('#Avilablequantity').val()) < parseInt($('#Qty').val())) {
+               toastr.warning('@IvSaleHd.quantitymustbeless' + ' : ' + '@ERP.ResourcePack.Common.Settings.Required');
+            return false;
+
+        }*@
+
+    };
+
+    const CheckItemExist = function (itemid, rowStatus) {
+        debugger;
+        var s = _HrPaperRequestDetails
+        const found = _HrPaperRequestDetails.some(el => el.HrPersonId == HrPersonId && el.rowStatus != "Deleted");
+        if (!found) {
+            return true;
+        }
+        else {
+            toastr.warning('There is already exsiting data');
+            console.log(false);
+            return false;
+
+        }
+    };
+
+
+    const print = function (url, id, lang) {
+        debugger;
+        const data = { id: id, lang: lang };
+        openModal(data, url);
+    };
+
+</script>

@@ -1,0 +1,926 @@
+﻿@using ERP.ResourcePack.Accounts
+@using ERP.Web.UI.Controllers.Accounts
+@using ERP.Authorization;
+@{
+    string encUpdateTrigger = ERP.Front.Helpers.Enums.Common.EncUpdate;
+    string encShowTrigger = ERP.Front.Helpers.Enums.Common.EncShow;
+    string permissionsStr = TempData["Permissions"].ToString();
+}
+
+@if (permissionsStr.Contains(PermissionNames.Pages_ArReceipts_Post))
+{
+    <script>
+        const PostAjax = function (id) {
+
+            const data = {
+                id: id,
+                lang: lang,
+                userId: 0
+            };
+
+            $.ajax({
+                url: `${baseUrl}/ArReceipts/PostArReceipt`,
+                type: 'POST',
+                data: JSON.stringify(data),
+                headers:
+                {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${$_token}`
+                },
+            }).done(function (response) {
+                console.log(response);
+                if (response.result.finalStatues == 'F') {
+                    toastr.warning(response.result.reason);
+                }
+                else {
+                    toastr.success(response.result.reason);
+                    if (formView) {
+
+                        setTimeout(function () {
+                            window.location.href = $PrefixHostName + '/ArReceipts';
+                        }, 100);
+
+                    } else {
+                        LoadDataGrid();
+                    }
+                }
+            }).fail(function (response) {
+                toastr.error(response);
+            });
+        };
+    </script>
+}
+else
+{
+    <script>
+        const PostAjax = function (id) { };
+    </script>
+}
+
+<script>
+    const _mainController = "ArReceipts"
+
+    $(function ()  {
+        LoadDataGrid();
+        $('#tblArReceiptsPrint thead').html($('#tblArReceipts thead').html());
+        $('#tblArReceiptsPrint thead tr :last-child').remove();
+        $('#ArReceipts').addClass('active');
+
+        //$('#ReceiptNumber').parent('.form-line').addClass('focused');
+        $('#StatusLkpId').parent('.form-line').addClass('focused');
+        $('#Amount').parent('.form-line').addClass('focused');
+        $('#CustomerNumber').parent('.form-line').addClass('focused');
+        $('#CurrencyRate').parent('.form-line').addClass('focused');
+
+        $('#CheckNumber').prop('type', 'number');
+        $('#CheckNumber').prop('min', '0');
+
+    });
+
+    const _loadDataUrl = `${$PrefixHostName}/${_mainController}/@nameof(ArReceiptsController.LoadDataGrid)`;
+    const _tblSelector = $('#tblArReceipts');
+    const _tblLoader = $('#tblLoader');
+    const _mainForm = $('#mainForm');
+    const _txtReceiptNumberSearch = $('#searchBox #ReceiptNumber');
+    const _select2CurrencyIdSearch = $('#searchBox #CurrencyId');
+    const _select2StatusLkpIdSearch = $('#searchBox #StatusLkpId');
+    const _select2ArCustomerIdSearch = $('#searchBox #ArCustomerId');
+    const _txtReceiptDateFromSearch = $('#searchBox #ReceiptDateFrom');
+    const _txtReceiptDateToSearch = $('#searchBox #ReceiptDateTo');
+
+    const _select2CurrencyIdMainForm = $('#mainForm #CurrencyId');
+    const _select2BankAccountIdMainForm = $('#mainForm #BankAccountId');
+    const _select2ArCustomerIdMainForm = $('#mainForm #ArCustomerId');
+
+    const _CurrencyRate = $('#mainForm #CurrencyRate');
+    const _CustomerNumber = $('#mainForm #CustomerNumber');
+
+    const _PostStatus = @Convert.ToInt64(ERP.Front.Helpers.Enums.Common.ArReceiptsPost.Posted);
+    const _SettledStatus = @Convert.ToInt64(ERP.Front.Helpers.Enums.Common.ArReceiptsPost.Settled);
+    const _CanceledStatus = @Convert.ToInt64(ERP.Front.Helpers.Enums.Common.ArReceiptsPost.Canceled);
+    const _chequesType = @Convert.ToInt64(ERP.Front.Helpers.Enums.Common.ArReceiptsTypes.Cheques);
+
+
+    const _permissions = '@permissionsStr';
+    const _updatePermission = '@PermissionNames.Pages_ArReceipts_Update';
+    const _deletePermission = '@PermissionNames.Pages_ArReceipts_Delete';
+    const _postPermission = '@PermissionNames.Pages_ArReceipts_Post';
+
+    let tblHeadersAdded = false;
+
+    $('#btnSubmition').on('click', function () {
+
+        if (_miscLinesArr.length === 0) {
+            toastr.warning('@ArReceipts.FillDetailTable');
+            return;
+        }
+
+        if (chequesTotal != chequesTotalToCheck) {
+
+            toastr.warning('@ArReceipts.CheckAmountNotValid');
+            return;
+        }
+
+        _mainForm.submit();
+
+        if (_mainForm.valid()) {
+            $(this).hide();
+            $('#submitLoader').show();
+
+        } else {
+            $(this).show();
+            $('#submitLoader').hide();
+        }
+    });
+
+    var OnBegin = function (response) {
+        fireBtnLoader();
+    };
+
+    var OnSuccess = function (response) {
+
+        if (response.success) {
+
+            if (response.customRestResult.trigger === '@ERP.Front.Helpers.Enums.Common.FormTriggers.Insert') {
+
+                toastr.success(response.customRestResult.message);
+
+                setTimeout(function () {
+                    window.location.href =  $PrefixHostName + '/ArReceipts';
+                },200);
+
+            } else if (response.customRestResult.trigger === '@ERP.Front.Helpers.Enums.Common.FormTriggers.Update') {
+
+                toastr.success(response.customRestResult.message);
+
+                 setTimeout(function () {
+                    window.location.href =  $PrefixHostName + '/ArReceipts';
+                },200);
+            }
+
+        } else {
+               toastr.error(response.customRestResult.message);
+        }
+
+    };
+
+    var OnComplete = function (response) {
+        downBtnLoader();
+    };
+
+    var OnFailure = function (response) {
+        toastr.error(response);
+        console.log(response);
+        downBtnLoader();
+    };
+
+    const LoadDataGrid = function () {
+
+        $('#tblLoader').show();
+
+        const parms = {
+            ReceiptNumber: _txtReceiptNumberSearch.val(),
+            CurrencyId: _select2CurrencyIdSearch.find(':selected').val(),
+            StatusLkpId: _select2StatusLkpIdSearch.find(':selected').val(),
+            ArCustomerId: _select2ArCustomerIdSearch.find(':selected').val(),
+            ReceiptDateFrom: _txtReceiptDateFromSearch.val(),
+            ReceiptDateTo: _txtReceiptDateToSearch.val()
+        };
+
+        const columns = [
+            {
+                "data": "result.data.id",
+                'render': function (data, type, row, meta) {
+                    return meta.row + meta.settings._iDisplayStart + 1;
+                }
+            },
+            {
+                "data": "ReceiptNumber",
+                "name": "ReceiptNumber",
+                "autoWidth": true
+            },
+            {
+                "data": "ReceiptDate",
+                "name": "ReceiptDate",
+                "autoWidth": true
+            },
+            {
+                "data": null,
+                "autoWidth": true,
+                "render": function (d, t, row) {
+                    //debugger;
+                    if (row.ArCustomer == null) return '';
+
+                    if (lang === 'ar-EG') {
+                        return row.ArCustomer.CustomerNameAr;
+                    }
+                    return row.ArCustomer.CustomerNameEn;
+                }
+            },
+            {
+                "data": null,
+                "autoWidth": true,
+                "render": function (d, t, row) {
+                    if (row.FndStatusLkp == null) return '';
+
+                    if (lang === 'ar-EG') {
+                        return row.FndStatusLkp.NameAr;
+                    }
+                    return row.FndStatusLkp.NameEn;
+                }
+            },
+             {
+                "data": null,
+                "autoWidth": true,
+                 "render": function (d, t, row) {
+
+                    if (row.Currency == null) return '';
+
+                    if (lang === 'ar-EG') {
+                        return row.Currency.DescriptionAr;
+                    }
+                    return row.Currency.DescriptionEn;
+                }
+            },
+            {
+                "data": null,
+                "sortable": false,
+                "render": function (data, type, row) {
+
+                    let formAction = `${$PrefixHostName}/${_mainController}/@nameof(ArReceiptsController.ArReceiptsForm)`;
+                    let DeleteAction = `${$PrefixHostName}/${_mainController}/@nameof(ArReceiptsController.Delete)`;
+
+                    let btns = '';
+
+                    if (_permissions.includes(_postPermission) && row.StatusLkpId != _PostStatus && row.StatusLkpId != _SettledStatus && row.StatusLkpId != _CanceledStatus) {
+                        btns += `<a href="javascript:void(0)" onclick="PostAjax(${row.Id})"  title="@ERP.ResourcePack.Common.Settings.Post"><i class="mx-2 fas fa-check-circle text-info"></i></a>`;
+                    }
+
+                    if (_permissions.includes(_updatePermission) && row.StatusLkpId != _PostStatus && row.StatusLkpId != _SettledStatus && row.StatusLkpId != _CanceledStatus) {
+                       btns += `<a href="${$PrefixHostName}/ArReceipts/FormView?id=${row.EncId}&t=@encUpdateTrigger"  title="@ERP.ResourcePack.Common.Settings.Edit"><i class="mx-2 fas fa-edit text-info"></i></a>`;
+                    }
+
+                    btns += `<a href="${$PrefixHostName}/ArReceipts/FormView?id=${row.EncId}&t=@encShowTrigger"  title="@ERP.ResourcePack.Common.Settings.Show"><i class="mx-2 fas fa-eye text-info"></i></a>`;
+
+                    if (_permissions.includes(_deletePermission) && row.StatusLkpId != _PostStatus && row.StatusLkpId != _SettledStatus && row.StatusLkpId != _CanceledStatus) {
+                       btns += `<a href="javascript:void(0)" onclick="AjaxController.DeleteMainTableRow(${row.Id},'${DeleteAction}');"  title="@ERP.ResourcePack.Common.Settings.Delete"><i class="mx-2 fas fa-trash-alt text-danger"></i></a>`;
+                    }
+
+                    btns += `<a href="javascript:void(0);" onclick="return print('${$PrefixHostName}/ArReceipts/PrintreceipttScreen','${row.EncId}','${lang}')" title="@ERP.ResourcePack.Common.Settings.Print"><i class="mx-2 fas fa-print text-success"></i></a>`;
+
+                    const _auditedPermission = '@PermissionNames.Pages_ArReceipts_Audit';
+
+                    if (_permissions.includes(_auditedPermission)) {
+
+                        row.permission = _auditedPermission;
+
+                        btns += GetAuditedButton(row);
+                    }
+                    return btns;
+                }
+            }
+        ];
+
+        const dtObj = {
+            "processing": true,
+            "serverSide": true,
+            "filter": false,
+            "orderMulti": false,
+            "language": dataTableLang,
+            "ajax": {
+                "url": _loadDataUrl,
+                "type": "POST",
+                "datatype": "json",
+                "data": parms,
+                "complete": function () {
+                      _tblLoader.hide();
+                }
+            },
+            "columns": columns,
+            "initComplete": function () {
+                $('[data-toggle="tooltip"]').tooltip();
+            }
+
+        };
+
+        _tblSelector.dataTable().fnDestroy();
+        _tblSelector.DataTable(dtObj).on('draw', function () { $('[data-toggle="tooltip"]').tooltip(); });
+
+        setTimeout(function () {
+            $(".sorting_1").removeAttr('colspan');
+        }, 500);
+    };
+
+    _select2StatusLkpIdSearch.select2(ReturnSelect2ObjectForLkpsTypes('@ERP.Front.Helpers.Enums.Common.FndLkpsTypes.ArReceiptsStatues.ToString()'));
+
+    _select2ArCustomerIdSearch.select2(ReturnSelect2ObjectDefault(`${baseUrl}/ArCustomers/GetArCustomersSelect2`));
+
+    _select2CurrencyIdSearch.select2(ReturnSelect2ObjectDefault(`${baseUrl}/Currency/GetCurrenciesSelect2`));
+
+    _select2BankAccountIdMainForm.select2(ReturnSelect2ObjectCustomParams(`${baseUrl}/ApBankAccounts/GetUserAccessedApBankAccountsSelect2`,
+            { bankLkpId:@Convert.ToInt64(ERP.Front.Helpers.Enums.Common.FndBankLkpsTypes.Box)}));
+
+    _select2ArCustomerIdMainForm.select2(ReturnSelect2ObjectDefault(`${baseUrl}/ArCustomers/GetArCustomersSelect2`));
+
+    _select2CurrencyIdMainForm.select2(ReturnSelect2ObjectDefault(`${baseUrl}/Currency/GetCurrenciesSelect2`));
+
+    _select2ArCustomerIdMainForm.on('select2:select', function (e) {
+        _CustomerNumber.val(e.params.data.altText);
+    });
+
+    _select2CurrencyIdMainForm.on('select2:select', function (e) {
+        getRate(e);
+    });
+
+    const getRate = function (e) {
+
+        $.ajax({
+            url: `${baseUrl}/Currency/GetRate`,
+            method: 'GET',
+            headers: { 'Authorization': `Bearer ${$_token}` },
+            data: { id: e.params.data.id }
+        }).done(function (data) {
+            var rate = data.result;
+            console.log(rate);
+            _CurrencyRate.val(rate);
+
+            _CurrencyRate.parent('.form-line').addClass('focused');
+        });
+    };
+
+</script>
+
+<script id="MiscLines">
+
+    const _tblArMiscReceiptLinesSelector = $('#tblArMiscReceiptLines');
+    const _tblArMiscReceiptLinesSelectorBody = $('#tblArMiscReceiptLines tbody');
+    const _listArReceiptDetails = $('#ListReceiptsOnAccountStr');
+
+    const _select2OnAccountReceiptTypeLkpId = $('#OnAccountReceiptTypeLkpId');
+    const _select2ReceiptDetailBankLkpId = $('#ReceiptDetailBankLkpId');
+
+    _select2OnAccountReceiptTypeLkpId.select2(ReturnSelect2ObjectForLkpsTypes('@ERP.Front.Helpers.Enums.Common.FndLkpsTypes.ArReceiptsOnAccountType.ToString()'));
+    _select2ReceiptDetailBankLkpId.select2(ReturnSelect2ObjectForLkpsTypes('@ERP.Front.Helpers.Enums.Common.FndLkpsTypes.Banks.ToString()'));
+
+    let chequesTotalToCheck = 0;
+
+    let totalOfTotalCheck = 0, chequesTotal = 0 ,_miscLinesArr = [], tblLinesCounterIndex = 0 , updatedRow
+
+    const fillLinesArr = function (recptId) {
+
+        if (validateLines() === false)  return;
+
+      
+        const current = {
+            index: ++tblLinesCounterIndex,
+            receiptTypeLkpId: $('#OnAccountReceiptTypeLkpId').find(':selected').val(),
+            receiptTypeLkpText: $('#OnAccountReceiptTypeLkpId').find(':selected').text(),
+            amount: $('#OnAccountAmount').val(),
+            applyDate: $('#OnAccountApplyDateStr').val(),
+            notes: $('#OnAccountNotes').val(),
+            rowStatus: (recptId != null ? UpdatedStatus : NewStatus),
+            receiptId: (recptId == null ? 0 : recptId)
+        };
+
+        return current;
+    };
+
+    const AddMiscLines = function () {
+
+        const current = fillLinesArr(null);
+
+        if (current === undefined) return;
+
+        _miscLinesArr.push(current);
+
+        _listArReceiptDetails.val(JSON.stringify(_miscLinesArr));
+
+        bindLinesTable();
+
+        clearFormAdding();
+    };
+
+    const UpdateMiscLineRow = function () {
+
+        let current = _miscLinesArr.find(z => z.index === updatedRow.index);
+
+        let indexOfCurrent = _miscLinesArr.indexOf(current);
+
+        const newRow = fillLinesArr(current.receiptId);
+
+        if (newRow === undefined) return;
+
+        newRow.id = updatedRow.id;
+        newRow.rowStatus = !updatedRow.receiptId ? NewStatus : UpdatedStatus;
+
+        _miscLinesArr.splice(indexOfCurrent, 1,newRow);
+
+        $('#btnAddLineRow').show();
+        $('#btnUpdateLineRow').hide();
+        $('#btnCancelLineRow').hide();
+
+        clearFormAdding();
+
+        _listArReceiptDetails.val(JSON.stringify(_miscLinesArr));
+
+        bindLinesTable();
+    };
+
+    const bindLinesTable = function () {
+
+        let rows = '';
+
+        const detailArr = _miscLinesArr.filter(z => z.rowStatus !== DeletedStatus);
+
+        var total = 0;
+        chequesTotalToCheck = 0;
+
+        $.each(detailArr, function (i, item) {
+            total += parseFloat(item.amount);
+
+            if (item.receiptTypeLkpId == _chequesType) {
+                chequesTotalToCheck += parseFloat(item.amount);
+            }
+            console.log(chequesTotalToCheck);
+
+
+            $('#mainForm #Amount').val(total);
+            rows += '<tr>';
+            rows += `<td>${item.index}</td>`;
+            rows += `<td>${item.applyDate}</td>`;
+            rows += `<td>${Number(item.amount).toLocaleString(undefined, optionsNumFormat)}</td>`;
+            rows += `<td>${item.receiptTypeLkpText}</td>`;
+            rows += `<td>${item.notes}</td>`;
+
+            if (primaryEntityKeyId === 0 || trigger !== '@ERP.Front.Helpers.Enums.Common.FormTriggers.Show.ToString()') {
+                rows += `<td><a href="javascript:void(0)" onclick="return DeleteRowLine(${item.index})"><i class="mx-2 fas fa-trash-alt text-danger"></i></a>`;
+                rows += `<a href="javascript:void(0)" onclick="return GetRow(${item.index})"><i class="mx-2 fas fa-edit text-success"></i></a></td>`;
+            } else {
+                rows += '<td></td>';
+            }
+
+            rows += '</tr>';
+        });
+
+        setTimeout(function () {
+            _tblArMiscReceiptLinesSelector.DataTable().clear().destroy();
+            _tblArMiscReceiptLinesSelectorBody.html(rows);
+            _tblArMiscReceiptLinesSelector.DataTable();
+            _tblArMiscReceiptLinesSelector.DataTable().row.add([`<b class="font-bold">@ArReceipts.Total</b>`, '', `<b class="font-bold">${(total).toLocaleString(undefined, optionsNumFormat)}</b>`,'','','']).draw();
+        }, 100);
+    };
+
+    const DeleteRowLine= function (index) {
+
+        const current = _miscLinesArr.find(z => z.index === index);
+
+        const indexOfCurrent = _miscLinesArr.indexOf(current);
+
+        if (current.id === undefined || current.id == null || current.id == 0) {
+
+           _miscLinesArr.splice(indexOfCurrent, 1);
+
+        } else {
+
+            current.rowStatus = DeletedStatus;
+
+           _miscLinesArr.splice(indexOfCurrent, 1,current);
+        }
+
+        bindLinesTable();
+
+        _listArReceiptDetails.val(_miscLinesArr.length === 0 ? '' : JSON.stringify(_miscLinesArr));
+    };
+
+    const LoadArMiscReceiptLinesData = function () {
+
+        $('#tblLoaderLine').show();
+
+        $.ajax({
+            url: `${baseUrl}/ArReceipts/GetDetailAsync`,
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${$_token}`
+            },
+            data: {
+                Id: primaryEntityKeyId
+            }
+        }).done(function (data) {
+
+            _miscLinesArr = [...data.result.arReceiptsOnAccount];
+
+            tblLinesCounterIndex = 0;
+
+            _miscLinesArr.forEach(function (item, index, arr) {
+                item.index = ++tblLinesCounterIndex;
+                item.receiptTypeLkpText = lang === 'ar-EG' ? item.fndReceiptTypeLkp.nameAr : item.fndReceiptTypeLkp.nameEn;
+            }, _miscLinesArr);
+
+            bindLinesTable();
+
+            _listArReceiptDetails.val(JSON.stringify(_miscLinesArr));
+
+            $('#tblLoaderLine').hide();
+
+            let custNo = data.result.arCustomer.customerNumber;
+            _CustomerNumber.val(custNo);
+        });
+
+    };
+
+    const GetRow = function (tblIndex) {
+
+        clearFormAdding();
+
+        $('#btnAddLineRow').hide();
+        $('#btnUpdateLineRow').show();
+        $('#btnCancelLineRow').show();
+
+        const current = _miscLinesArr.find(z => z.index === tblIndex);
+
+        $('#OnAccountAmount').val(current.amount);
+        $('#OnAccountApplyDateStr').val(current.applyDate);
+        $('#OnAccountNotes').val(current.notes);
+        $('#lines #Notes').val(current.notes);
+
+        $('#OnAccountAmount').parent('.form-line').addClass('focused');
+        $('#OnAccountApplyDateStr').parent('.form-line').addClass('focused');
+        $('#OnAccountNotes').parent('.form-line').addClass('focused');
+
+        $(`#OnAccountReceiptTypeLkpId`)
+        .append($("<option selected='selected'></option>")
+        .val(current.receiptTypeLkpId)
+        .text(current.receiptTypeLkpText))
+        .trigger('change');
+
+        updatedRow = current;
+
+    };
+
+    const clearFormAdding = function () {
+
+        $('#lines .card select').val('').trigger('change');
+        $('#lines .card input').val('');
+        $('#lines .card textarea').val('');
+
+        $('#details .card select').val('').trigger('change');
+        $('#details .card input').val('');
+        $('#details .card textarea').val('');
+
+    };
+
+    const validateLines = function () {
+
+        if ($('#OnAccountReceiptTypeLkpId').find(':selected').val() === undefined || $('#lines #ReceiptTypeLkpId').find(':selected').val() === '') {
+            toastr.warning('@ArReceipts.OnAccountReceiptTypeLkpId' + ' : ' + '@ERP.ResourcePack.Common.Settings.Required')
+            return false;
+        }
+
+
+
+        if ($('#OnAccountAmount').val() === '') {
+            toastr.warning('@ArReceipts.OnAccountAmount' + ' : ' + '@ERP.ResourcePack.Common.Settings.Required')
+            return false;
+        }
+
+        if ($('#OnAccountApplyDateStr').val() === '') {
+            toastr.warning('@ArReceipts.OnAccountApplyDateStr' + ' : ' + '@ERP.ResourcePack.Common.Settings.Required')
+            return false;
+        }
+
+        return true;
+    };
+</script>
+
+<script id="miscDetails">
+    const _tblArMiscReceiptDetailsSelector = $('#tblArMiscReceiptDetails');
+    const _tblArMiscReceiptDetailsSelectorBody = $('#tblArMiscReceiptDetails tbody');
+    const _listArReceiptCheques = $('#ListReceiptDetailsStr');
+
+    let _miscDetailsArr = [], tblMiscCounterIndex = 0,updatedRowDetail;
+
+    const fillMiscDetailArr = function (recptId) {
+
+        if (validateDetails() === false) return;
+
+        const current = {
+            index: ++tblMiscCounterIndex,
+            checkNumber: $('#ReceiptDetailCheckNumber').val(),
+            bankLkpId: $('#ReceiptDetailBankLkpId').find(':selected').val(),
+            bankTxt: $('#ReceiptDetailBankLkpId').find(':selected').text(),
+            amount: $('#ReceiptDetailAmount').val(),
+            maturityDate:$('#ReceiptDetailMaturityDateStr').val(),
+            notes: $('#ReceiptDetailNotes').val(),
+            rowStatus: (recptId != null ? UpdatedStatus : NewStatus),
+            receiptId: (recptId == null ? 0 : recptId)
+        };
+
+        return current;
+    };
+
+    const AddMiscDetails = function () {
+
+        const current = fillMiscDetailArr(null);
+
+        if (current === undefined) return;
+
+        _miscDetailsArr.push(current);
+
+        _listArReceiptCheques.val(JSON.stringify(_miscDetailsArr));
+
+        clearFormAdding();
+
+        bindMiscDetailsTable();
+    };
+
+    const bindMiscDetailsTable = function () {
+
+        chequesTotal = 0;
+
+        let rows = '';
+
+        const detailArr = _miscDetailsArr.filter(z => z.rowStatus !== DeletedStatus);
+
+        $.each(detailArr, function (i, item) {
+
+            chequesTotal = parseFloat(chequesTotal) + parseFloat(item.amount);
+
+            rows += '<tr>';
+
+            rows += `<td>${item.index}</td>`;
+            rows += `<td>${item.checkNumber}</td>`;
+            rows += `<td>${item.bankTxt}</td>`;
+            rows += `<td>${item.maturityDate}</td>`;
+            rows += `<td>${Number(item.amount).toLocaleString(undefined, optionsNumFormat)}</td>`;
+            rows += `<td>${item.notes}</td>`;
+
+            if (primaryEntityKeyId === 0 || trigger !== '@ERP.Front.Helpers.Enums.Common.FormTriggers.Show.ToString()') {
+                rows += `<td><a href="javascript:void(0)" onclick="return DeleteRowDetails(${item.index})"><i class="mx-2 fas fa-trash-alt text-danger"></i></a>`;
+                rows += `<a href="javascript:void(0)" onclick="return GetRowDetail(${item.index})"><i class="mx-2 fas fa-edit text-success"></i></a></td>`;
+            } else {
+                rows += '<td></td>';
+            }
+
+            rows += '</tr>';
+        });
+
+        setTimeout(function () {
+            _tblArMiscReceiptDetailsSelector.DataTable().clear().destroy();
+            _tblArMiscReceiptDetailsSelectorBody.html(rows);
+            _tblArMiscReceiptDetailsSelector.DataTable();
+            _tblArMiscReceiptDetailsSelector.DataTable().row.add([`<b class="font-bold">@ArReceipts.OnAccountAmount</b>`, '', '', '', `<b class="font-bold">${(chequesTotal).toLocaleString(undefined, optionsNumFormat)}</b>`,'','']).draw();
+        }, 100);
+
+    };
+
+    const DeleteRowDetails = function (index) {
+
+        const current = _miscDetailsArr.find(z => z.index === index);
+
+        const indexOfCurrent = _miscDetailsArr.indexOf(current);
+
+        if (current.id === undefined || current.id == null || current.id == 0) {
+
+           _miscDetailsArr.splice(indexOfCurrent, 1);
+
+        } else {
+
+            current.rowStatus = DeletedStatus;
+
+           _miscDetailsArr.splice(indexOfCurrent, 1,current);
+        }
+
+        bindMiscDetailsTable();
+
+        _listArReceiptCheques.val(_miscDetailsArr.length === 0 ? '' : JSON.stringify(_miscDetailsArr));
+    };
+
+    const LoadArMiscReceiptDetailsData = function () {
+
+        $('#tblLoaderDetail').show();
+
+        $.ajax({
+            url: `${baseUrl}/ArReceipts/GetDetailAsync`,
+            method: 'GET',
+            headers: {
+                        'Authorization': `Bearer ${$_token}`
+            },
+            data: {
+                Id: primaryEntityKeyId
+            }
+        }).done(function (data) {
+
+            _miscDetailsArr = [...data.result.arReceiptDetails];
+
+            tblMiscCounterIndex = 0;
+
+            _miscDetailsArr.forEach(function (item, index, arr) {
+                item.index = ++tblMiscCounterIndex;
+                item.bankTxt = lang === 'ar-EG' ? item.bank.nameAr : item.bank.nameEn;
+            }, _miscDetailsArr);
+
+            bindMiscDetailsTable();
+
+            _listArReceiptCheques.val(JSON.stringify(_miscDetailsArr));
+
+            $('#tblLoaderDetail').hide();
+        });
+
+    };
+
+    const GetRowDetail = function (tblIndex) {
+
+        clearFormAdding();
+
+        const current = _miscDetailsArr.find(z => z.index === tblIndex);
+
+        $('#btnAddMiscDetailRow').hide();
+        $('#btnUpdateMiscDetailRow').show();
+        $('#btnCancelMiscDetailRow').show();
+
+
+        $('#ReceiptDetailCheckNumber').val(current.checkNumber);
+        $('#ReceiptDetailAmount').val(current.amount);
+        $('#ReceiptDetailMaturityDateStr').val(current.maturityDate);
+        $('#ReceiptDetailNotes').val(current.notes);
+
+        $('#ReceiptDetailCheckNumber').parent('.form-line').addClass('focused');
+        $('#ReceiptDetailAmount').parent('.form-line').addClass('focused');
+        $('#ReceiptDetailMaturityDateStr').parent('.form-line').addClass('focused');
+        $('#ReceiptDetailNotes').parent('.form-line').addClass('focused');
+
+        $(`#ReceiptDetailBankLkpId`)
+        .append($("<option selected='selected'></option>")
+        .val(current.bankLkpId)
+        .text(current.bankTxt))
+        .trigger('change');
+
+        updatedRowDetail = current;
+
+    };
+
+    const UpdateMiscRow = function () {
+
+        let current = _miscDetailsArr.find(z => z.index === updatedRowDetail.index);
+
+        let indexOfCurrent = _miscDetailsArr.indexOf(_miscDetailsArr.find(z => z.index === updatedRowDetail.index));
+
+
+        const newRow = fillMiscDetailArr(current.receiptId);
+
+        if (newRow === undefined) return;
+
+        newRow.id = updatedRowDetail.id;
+        newRow.rowStatus =
+            (updatedRowDetail.receiptId === undefined || updatedRowDetail.receiptId == null || updatedRowDetail.receiptId == 0) ? NewStatus : UpdatedStatus;
+
+        _miscDetailsArr.splice(indexOfCurrent, 1,newRow);
+
+        $('#btnAddMiscDetailRow').show();
+        $('#btnUpdateMiscDetailRow').hide();
+        $('#btnCancelMiscDetailRow').hide();
+
+        clearFormAdding();
+
+        _listArReceiptCheques.val(JSON.stringify(_miscDetailsArr));
+
+        bindMiscDetailsTable();
+    };
+
+    const validateDetails = function () {
+
+        if ($('#ReceiptDetailBankLkpId').find(':selected').val() === undefined || $('#ReceiptDetailBankLkpId').find(':selected').val() === '') {
+            toastr.warning('@ArReceipts.ReceiptDetailBankLkpId' + ' : ' + '@ERP.ResourcePack.Common.Settings.Required')
+            return false;
+         }
+
+        if ($('#ReceiptDetailMaturityDateStr').val() === '') {
+            toastr.warning('@ArReceipts.ReceiptDetailMaturityDateStr' + ' : ' + '@ERP.ResourcePack.Common.Settings.Required')
+            return false;
+        }
+
+        if ($('#ReceiptDetailCheckNumber').val() === '') {
+            toastr.warning('@ArReceipts.ReceiptDetailCheckNumber' + ' : ' + '@ERP.ResourcePack.Common.Settings.Required')
+            return false;
+        }
+
+        if ($('#ReceiptDetailAmount').val() === '') {
+            toastr.warning('@ArReceipts.Amount' + ' : ' + '@ERP.ResourcePack.Common.Settings.Required')
+            return false;
+        }
+
+        return true;
+    };
+
+
+      const print = function (url,id,lang) {
+
+        const data = { id: id, lang : lang };
+
+        openModal(data, url);
+    };
+
+    function printExc() {
+        $('.page-loader-wrapper').show();
+        $('#tblArReceiptsPrint_wrapper').parent().addClass('d-none');
+        const parmss = {
+            ReceiptNumber: _txtReceiptNumberSearch.val(),
+            CurrencyId: _select2CurrencyIdSearch.find(':selected').val(),
+            StatusLkpId: _select2StatusLkpIdSearch.find(':selected').val(),
+            ArCustomerId: _select2ArCustomerIdSearch.find(':selected').val(),
+            ReceiptDateFrom: _txtReceiptDateFromSearch.val(),
+            ReceiptDateTo: _txtReceiptDateToSearch.val(),
+            length: 1000000
+        };
+
+        const columns = [
+            {
+                "data": "result.data.id",
+                'render': function (data, type, row, meta) {
+                    return meta.row + meta.settings._iDisplayStart + 1;
+                }
+            },
+            {
+                "data": "ReceiptNumber",
+                "name": "ReceiptNumber",
+                "autoWidth": true
+            },
+            {
+                "data": "ReceiptDate",
+                "name": "ReceiptDate",
+                "autoWidth": true
+            },
+            {
+                "data": null,
+                "autoWidth": true,
+                "render": function (d, t, row) {
+                    if (row.ArCustomer == null) return '';
+
+                    if (lang === 'ar-EG') {
+                        return row.ArCustomer.CustomerNameAr;
+                    }
+                    return row.ArCustomer.CustomerNameEN;
+                }
+            },
+            {
+                "data": null,
+                "autoWidth": true,
+                "render": function (d, t, row) {
+                    if (row.FndStatusLkp == null) return '';
+
+                    if (lang === 'ar-EG') {
+                        return row.FndStatusLkp.NameAr;
+                    }
+                    return row.FndStatusLkp.NameEN;
+                }
+            },
+             {
+                "data": null,
+                "autoWidth": true,
+                 "render": function (d, t, row) {
+
+                    if (row.Currency == null) return '';
+
+                    if (lang === 'ar-EG') {
+                        return row.Currency.DescriptionAr;
+                    }
+                    return row.Currency.DescriptionEn;
+                }
+            }
+        ];
+
+        const dtObj = {
+            "language": dataTableLang,
+            "dom": 'Bfrtip',
+            "buttons": [
+                {
+                    extend: 'excel',
+                    messageTop: `${$('#ReceiptNumber').siblings().text()}: ${(parmss.ReceiptNumber) ? parmss.ReceiptNumber : '--'}, ${$('[for="CurrencyId"]').text()}: ${(parmss.CurrencyId) ? parmss.CurrencyId : '--'}, ${$('[for="StatusLkpId"]').text()}: ${(parmss.StatusLkpId) ? parmss.StatusLkpId : '--'}, ${$('[for="ArCustomerId"]').text()}: ${(parmss.ArCustomerId) ? parmss.ArCustomerId : '--'}, ${$('#ReceiptDateFrom').siblings().text()}: ${(parmss.ReceiptDateFrom) ? parmss.ReceiptDateFrom : '--'}, ${$('#ReceiptDateTo').siblings().text()}: ${(parmss.ReceiptDateTo) ? parmss.ReceiptDateTo : '--'}`
+                },
+
+            ],
+            "ajax": {
+                "url": _loadDataUrl,
+                "type": "POST",
+                "datatype": "json",
+                "data": parmss,
+                "complete": function (d) {
+                    _tblLoader.hide();
+                }
+            },
+            "columns": columns,
+
+            "initComplete": function () {
+                $('#tblArReceiptsPrint_wrapper button.dt-button').click();
+                $('#tblArReceiptsPrint_wrapper').parent().addClass('d-none');
+
+            }
+        };
+
+        $('#tblArReceiptsPrint').dataTable().fnDestroy();
+        $('#tblArReceiptsPrint').DataTable(dtObj).on('buttons-processing', function (e, indicator) { if (!indicator) { $('.page-loader-wrapper').hide() } });
+
+
+    }
+
+</script>

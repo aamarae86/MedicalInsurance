@@ -1,0 +1,325 @@
+﻿@using ERP.Web.UI.Controllers.Warehouses
+@using ERP.Authorization;
+@{
+//string permissionsStr = TempData["Permissions"].ToString();
+}
+<script>
+    const _mainController = "Reports"
+
+    $(function () {
+        $('#ItemMovements').addClass('active');
+        //LoadDataGrid();
+        //$('#tblIvItemsPrint thead').html($('#tblIvItems thead').html());
+        //$('#tblIvItemsPrint thead tr :last-child').remove();
+        //$('#IvItems').addClass('active');
+        //$('#main-modal #TaxPercentageLkpId').parent('.form-line').addClass('focused');
+
+        //$('#IvItemId').select2({
+        //    ajax: {
+        //        url: `${baseUrl}/IvItems/GetSelect2`,
+        //        dataType: 'json',
+        //        headers: {
+        //            'Authorization': `Bearer ${$_token}`
+        //        },
+        //        data: function (params) {
+        //            params.page = params.page || 1;
+        //            return {
+        //                IvWarehouseId: $('#IvWarehouseId').val(),
+        //                IvPriceListHdId: $('#IvPriceListHdId').val(),
+        //                pageSize: pageSize,
+        //                pageNumber: params.page,
+        //                searchTerm: params.term,
+        //                lang: lang
+        //            };
+        //        },
+        //        processResults: function (data, params) {
+
+        //            params.page = params.page || 1;
+
+        //            return {
+        //                results: data.result.results,
+        //                pagination: {
+        //                    more: (params.page * pageSize) < data.Total
+        //                }
+        //            };
+        //        }
+        //    },
+        //    placeholder: select2Placeholder,
+        //    minimumInputLength: 0,
+        //    allowClear: true,
+        //    language: select2Lang
+        //});
+    });
+
+    $('#IvWarehouseId').select2(ReturnSelect2ObjectDefault(`${baseUrl}/IvUserWarehousesPrivileges/GetIvUserWarehousesPrivilegesSelect2`));
+    $('#IvItemId').select2(ReturnSelect2ObjectDefault(`${baseUrl}/IvItems/GetSelect2`));
+
+    const _loadDataUrl = `${$PrefixHostName}/${_mainController}/@nameof(ERP.Web.UI.Controllers.Reports.ReportsController.Search)`;
+    const _tblSelector = $('#tblDetails');
+
+    const _salehdDetails = `${$PrefixHostName}/ivsalehd/@nameof(ERP.Web.UI.Controllers.Sales.IvSaleHdController.FormView)`;
+    const _receivehdDetails = `${$PrefixHostName}/IvReceiveHd/@nameof(ERP.Web.UI.Controllers.Warehouses.IvReceiveHdController.FormView)`;
+    const _adjhdDetails = `${$PrefixHostName}/IvAdjustmentHd/@nameof(ERP.Web.UI.Controllers.Warehouses.IvAdjustmentHdController.FormView)`;
+    @*const _permissions = '@permissionsStr';
+    const _updatePermission = '@PermissionNames.Pages_IvItems_Update';
+    const _deletePermission = '@PermissionNames.Pages_IvItems_Delete';*@
+
+    var OnBegin = function (response) {
+        fireBtnLoader();
+    };
+
+    var OnSuccess = function (response) {
+
+        if (response.success) {
+
+            if (response.customRestResult.trigger === '@ERP.Front.Helpers.Enums.Common.FormTriggers.Insert') {
+
+                toastr.success(response.customRestResult.message);
+
+                LoadDataGrid();
+
+                _mainModal.modal('hide');
+
+            } else if (response.customRestResult.trigger === '@ERP.Front.Helpers.Enums.Common.FormTriggers.Update') {
+
+                LoadDataGrid();
+
+                _mainModal.modal('hide');
+
+                toastr.success(response.customRestResult.message);
+            }
+
+        } else {
+               toastr.error(response.customRestResult.message);
+        }
+    };
+
+    var OnComplete = function (response) {
+        downBtnLoader();
+    };
+
+    var OnFailure = function (response) {
+        toastr.error(response);
+        downBtnLoader();
+    };
+
+    const LoadDataGrid = function () {
+
+        const parms = {
+
+            IvItemId: $('#IvItemId').val(),
+            IvWarehouseId: $('#IvWarehouseId').val(),
+            FromDate: $('#fromDate').val(),
+            ToDate: $('#toDate').val()
+        };
+
+        const columns = [
+
+            {
+                "data": "Date",
+                "name": "Date",
+                "autoWidth": true
+            },
+            {
+                "data": "QtyIn",
+                "name": "QtyIn",
+                "autoWidth": true
+            },
+            {
+                "data": "QtyOut",
+                "name": "QtyOut",
+                "autoWidth": true
+            },
+            {
+                "data": "Balance",
+                "name": "Balance",
+                "autoWidth": true
+            },
+            {
+                "data": "TotalAmount",
+                "name": "TotalAmount",
+                "render": $.fn.dataTable.render.number(',', '.', 2),
+                "autoWidth": true
+            },
+            {
+                "data": "TranType",
+                "name": "TranType",
+                "autoWidth": true
+            },
+            {
+                "data": null,
+                "name": "InvNo",
+                "render": function (d, t, row) {
+                    var link = '';
+                    if (row.TranType == 'RCVD')
+                        link = _receivehdDetails;
+                    if (row.TranType == 'SALS')
+                        link = _salehdDetails;
+                    if (row.TranType == 'ADJ')
+                        link = _adjhdDetails;
+
+                    var itemId = row.Id;//10296;// row.InvNo
+                    return '<a href="' + link + '?id=' + itemId + '&t=28HR9KALoSpLQg3Lbhs-5A,," target="_blank">' + row.InvNo + '</a>';
+                }
+            },
+            {
+                "data": "Customer",
+                "name": "Customer",
+                "autoWidth": true
+            },
+            
+        ];
+
+        const dtObj = {
+            "processing": true,
+            "serverSide": true,
+            "filter": false,
+            "orderMulti": false,
+            "language": dataTableLang,
+            "ajax": {
+                "url": _loadDataUrl,
+                "type": "POST",
+                "datatype": "json",
+                "data": parms,
+                "complete": function () { }
+            },
+            "columns": columns,
+            "initComplete": function () {
+                $('[data-toggle="tooltip"]').tooltip();
+            }
+
+        };
+
+        _tblSelector.dataTable().fnDestroy();
+        _tblSelector.DataTable(dtObj).on('draw', function () { $('[data-toggle="tooltip"]').tooltip(); });
+
+
+    };
+
+    function getFilteredData() {
+
+
+    }
+
+    $('#IvItemsTypesConfigureIdSearch').select2(ReturnSelect2ObjectDefault(`${baseUrl}/IvItemsTypesConfigure/GetIvItemsTypesConfigureWithParentSelect2`));
+    $('#IvUnitIdSearch').select2(ReturnSelect2ObjectDefault(`${baseUrl}/IvUnits/GetIvUnitsSelect2`));
+
+
+
+    function printExc() {
+        $('.page-loader-wrapper').show();
+        $('#tblDetails').parent().addClass('d-none');
+        //const parmss = {
+        //    IvItemsTypesConfigureId: $('#IvItemsTypesConfigureIdSearch').val(),
+        //    IvUnitId: $('#IvUnitIdSearch').val(),
+        //    length: 1000000
+        //};
+        const parmss = {
+
+            IvItemId: $('#IvItemId').val(),
+            IvWarehouseId: $('#IvWarehouseId').val(),
+            FromDate: $('#fromDate').val(),
+            ToDate: $('#toDate').val(),
+            length: 1000000
+        };
+        const columns = [
+
+            {
+                "data": "Date",
+                "name": "Date",
+                "autoWidth": true
+            },
+            {
+                "data": "QtyIn",
+                "name": "QtyIn",
+                "autoWidth": true
+            },
+            {
+                "data": "QtyOut",
+                "name": "QtyOut",
+                "autoWidth": true
+            },
+            {
+                "data": "Balance",
+                "name": "Balance",
+                "autoWidth": true
+            },
+            {
+                "data": "TotalAmount",
+                "name": "TotalAmount",
+                "render": $.fn.dataTable.render.number(',', '.', 2),
+                "autoWidth": true
+            },
+            {
+                "data": "TranType",
+                "name": "TranType",
+                "autoWidth": true
+            },
+            {
+                "data": null,
+                "name": "InvNo",
+                "render": function (d, t, row) {
+                    var link = '';
+                    if (row.TranType == 'RCVD')
+                        link = _receivehdDetails;
+                    if (row.TranType == 'SALS')
+                        link = _salehdDetails;
+                    if (row.TranType == 'ADJ')
+                        link = _adjhdDetails;
+
+                    var itemId = row.Id;
+                    return '<a href="' + link + '?id=' + itemId + '&t=28HR9KALoSpLQg3Lbhs-5A,," target="_blank">' + row.InvNo + '</a>';
+                }
+            },
+            {
+                "data": "Customer",
+                "name": "Customer",
+                "autoWidth": true
+            },
+            
+        ];
+
+        const dtObj = {
+            "processing": true,
+            "serverSide": true,
+            "filter": false,
+            "orderMulti": false,
+            "language": dataTableLang,
+            "dom": 'Bfrtip',
+            "buttons": [
+                {
+                    extend: 'excel'
+                   
+                },
+
+            ],
+            "ajax": {
+                "url": _loadDataUrl,
+                "type": "POST",
+                "datatype": "json",
+                "data": parmss,
+                "complete": function (d) {
+                    $('.page-loader-wrapper').hide()
+                }
+            },
+            "columns": columns,
+
+            "initComplete": function () {
+                /*$('#tblDetailsPrint button.dt-button').click();*/
+                $('button.buttons-excel').hide();
+                $('button.buttons-excel').click();
+                $('#tblDetailsPrint').parent().addClass('d-none');
+
+            }
+        };
+        
+        //$('#tblDetailsPrint').dataTable().fnDestroy();
+        //$('#tblDetailsPrint').DataTable(dtObj).on('buttons-processing', function (e, indicator) { if (!indicator) { $('.page-loader-wrapper').hide() } });
+
+        _tblSelector.dataTable().fnDestroy();
+        _tblSelector.DataTable(dtObj).on('buttons-processing', function (e, indicator) { if (!indicator) { $('.page-loader-wrapper').hide() } });
+
+
+    }
+
+</script>

@@ -1,0 +1,14 @@
+﻿@{
+    ViewBag.Title = ERP.ResourcePack.SpGuarantees.SpCaseEditData.Title;
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@Html.Action(nameof(ERP.Web.UI.Controllers.SpGuarantees.SpCaseEditDataController.Search))
+@Html.Action(nameof(ERP.Web.UI.Controllers.SpGuarantees.SpCaseEditDataController.Data))
+
+@section scripts{
+    <script src="~/AssetsPack/assets/js/pages/forms/basic-form-elements.js"></script>
+    @Html.Partial("~/ViewsScripts/_SpGuarantees/SpCaseEditData/SpCaseEditDataScripts.cshtml")
+}
+
+

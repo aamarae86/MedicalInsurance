@@ -1,0 +1,12 @@
+﻿@{
+    ViewBag.Title = ERP.ResourcePack.HR.HrPersons.Title;
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@Html.Action(nameof(ERP.Web.UI.Controllers.HR.HrPersonsController.HrPersonsSearch))
+@Html.Action(nameof(ERP.Web.UI.Controllers.HR.HrPersonsController.HrPersonsData))
+
+@section scripts{
+    <script>let formView = false;</script>
+    @Html.Partial("~/ViewsScripts/_HR/HrPersons/HrPersonsScripts.cshtml")
+}

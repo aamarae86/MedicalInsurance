@@ -1,0 +1,42 @@
+﻿@using ERP.Front.Helpers.Parameters.Login
+@model LoginParms
+@{
+    ViewBag.Title = "Index";
+    Layout = "~/Views/Shared/_LoginLayout.cshtml";
+}
+<div class="row">
+    <div class="col-md-5">
+        <div class="p-2" style="margin-top:5rem">
+            <img class="img-fluid" alt="" src="~/AssetsPack/SystemLogos/logo Final.png">
+            <hr />
+        </div>
+        <div class="p-4 text-center">
+            <a href="@Url.Action("ChangeLanguage", "Login",new { area = string.Empty })" class="btn btn-outline-primary">
+                @ERP.ResourcePack.Common.Settings.Lang
+            </a>
+        </div>
+    </div>
+    <div class="col-md-7 b-left">
+        @if (TempData["FailedMessage"] != null && TempData["FailedMessage"].ToString() != string.Empty)
+        {
+            <p class="alert alert-danger text-center">
+                @TempData["FailedMessage"].ToString()
+            </p>
+        }
+        @using (Html.BeginForm("Index", "Login", FormMethod.Post, new { @class = "validate-form" }))
+        {
+            <h1>@ERP.ResourcePack.Common.Settings.Login</h1>
+            <p>@ERP.ResourcePack.Common.Settings.LoginHint</p>
+            <div class="form-group validate-input" data-validate="Enter username">
+                @Html.TextBoxFor(z => z.UserNameOrEmailAddress, new { @class = "form-control", @placeholder = ERP.ResourcePack.Common.Settings.UserName })
+            </div>
+            <div class="form-group validate-input" data-validate="Enter password">
+                @Html.PasswordFor(z => z.Password, new { @class = "form-control", @placeholder = ERP.ResourcePack.Common.Settings.Password })
+            </div>
+            <div class="text-center">
+                <button type="submit" class="btn btn-success">@ERP.ResourcePack.Common.Settings.Login</button>
+            </div>
+        }
+
+    </div>
+</div>

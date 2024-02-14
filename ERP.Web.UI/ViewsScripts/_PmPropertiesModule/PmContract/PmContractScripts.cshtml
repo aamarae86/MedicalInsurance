@@ -1,0 +1,1523 @@
+﻿@using ERP.ResourcePack.PmPropertiesModule
+@using ERP.Web.UI.Controllers.PmPropertiesModule
+@using ERP.Authorization;
+@{
+    string encUpdateTrigger = ERP.Front.Helpers.Enums.Common.EncUpdate;
+    string encShowTrigger = ERP.Front.Helpers.Enums.Common.EncShow;
+    string permissionsStr = TempData["Permissions"].ToString();
+}
+@if (permissionsStr.Contains(PermissionNames.Pages_PmContract_Post))
+{
+    <script>
+
+        const ProcContract = function (id, typeKey) {
+
+            bootbox.confirm({
+                message: typeKey === 'Post' ? _booBoxMessagePosting : _booBoxMessageRenew,
+                buttons: bootBoxDefaultBtns,
+                callback: function (result) {
+
+                    if (result) {
+
+                        const data = { id: id, lang: lang };
+
+                        $.ajax({
+                            url: `${baseUrl}/PmContract/${typeKey}Contract`,
+                            type: 'POST',
+                            data: JSON.stringify(data),
+                            headers:
+                            {
+                                'Content-Type': 'application/json',
+                                'Authorization': `Bearer ${$_token}`
+                            },
+                        }).done(function (response) {
+
+                            if (response.result.finalStatues == 'F') {
+                                toastr.error(response.result.reason);
+                            }
+                            else {
+
+                                toastr.success(response.result.reason);
+                                setTimeout(function () {
+                                    window.location.href = $PrefixHostName + '/PmContract';
+                                }, 200);
+                            }
+
+                        }).fail(function (response) {
+                            toastr.error(response);
+                        });
+                    }
+                }
+            });
+        };
+
+    </script>
+}
+else
+{
+    <script>
+        const ProcContract = function (id) { };
+    </script>
+}
+<script>
+    const _mainController = "PmContract", _apiAppService = "PmContract";
+
+    $(function () {
+
+        LoadDataGrid();
+        $('#tblPmContractPrint thead').html($('#tblPmContract thead').html());
+        $('#tblPmContractPrint thead tr :last-child').remove();
+        $('#PmContract').addClass('active');
+
+        $('#ContractNumber').parent('.form-line').addClass('focused');
+
+        //$('#InsuranceAmount').prop('type', 'number').prop('min', '0');
+
+        //$('#AnnualRentAmount').prop('type', 'number').prop('min', '0');
+
+        //$('#TaxAmount').prop('type', 'number').prop('min', '0');
+
+        $('#TaxNo').prop('type', 'number').prop('min', '0');
+
+    });
+
+    const _loadDataUrl = `${$PrefixHostName}/${_mainController}/@nameof(PmContractController.LoadDataGrid)`;
+    const _tblSelector = $('#tblPmContract');
+    const _tblLoader = $('#tblLoader');
+    const _mainForm = $('#mainForm');
+
+    const _permissions = '@permissionsStr';
+    const _updatePermission = '@PermissionNames.Pages_PmContract_Update';
+    const _deletePermission = '@PermissionNames.Pages_PmContract_Delete';
+    const _postPermission = '@PermissionNames.Pages_PmContract_Post';
+    const _newStatus = '@Convert.ToInt64(ERP.Front.Helpers.Enums.Common.PmContractPost.New)'
+    const _postedStatus = '@Convert.ToInt64(ERP.Front.Helpers.Enums.Common.PmContractPost.Posted)'
+
+    $('#btnSubmition').on('click', function () {
+
+        ValidateTotalAmount();
+
+        setTimeout(function () {
+
+            _mainForm.submit();
+
+            if (_mainForm.valid()) {
+
+                $('#btnSubmition').prop('disabled', true);
+                $('#submitLoader').show();
+
+            } else {
+
+                $('#btnSubmition').prop('disabled', false);
+                $('#submitLoader').hide();
+            }
+
+        }, 500);
+
+    });
+
+    var OnBegin = function (response) {
+        fireBtnLoader();
+    };
+
+    var OnSuccess = function (response) {
+
+        if (response.success) {
+
+            if (response.customRestResult.trigger === '@ERP.Front.Helpers.Enums.Common.FormTriggers.Insert') {
+
+                toastr.success(response.customRestResult.message);
+
+                setTimeout(function () {
+                    window.location.href = $PrefixHostName + '/PmContract';
+                }, 200);
+
+            } else if (response.customRestResult.trigger === '@ERP.Front.Helpers.Enums.Common.FormTriggers.Update') {
+
+                toastr.success(response.customRestResult.message);
+
+                setTimeout(function () {
+                    window.location.href = $PrefixHostName + '/PmContract';
+                }, 200);
+            }
+
+        } else {
+            $('#btnSubmition').prop('disabled',false);
+            toastr.error(response.customRestResult.message);
+        }
+
+    };
+
+    var OnComplete = function (response) {
+        downBtnLoader();
+    };
+
+    var OnFailure = function (response) {
+        toastr.error(response);
+        $('#btnSubmition').prop('disabled',false);
+    };
+
+    const LoadDataGrid = function () {
+
+        $('#tblLoader').show();
+
+        const parms = {
+            PropertyId: $('#searchBox #PropertyId').find(':selected').val(),
+            StatusLkpId: $('#searchBox #StatusLkpId').find(':selected').val(),
+            PmTenantId: $('#searchBox #PmTenantId').find(':selected').val(),
+            PmUnitTypeLkpId: $('#searchBox #PmUnitTypeLkpId').find(':selected').val(),
+            ContractNumber: $('#searchBox #ContractNumber').val()
+        };
+
+        const columns = [
+            {
+                "data": "result.data.id",
+                'render': function (data, type, row, meta) {
+                    return meta.row + meta.settings._iDisplayStart + 1;
+                }
+            },
+            {
+                "data": "ContractNumber",
+                "name": "ContractNumber",
+                "autoWidth": true
+            },
+             {
+                "data": null,
+                "autoWidth": true,
+                "render": function (d, t, row) {
+
+                    if (row.PmProperties == null) return '';
+
+                    if (lang === 'ar-EG') return row.PmProperties.PropertyNameAr;
+
+                    return row.PmProperties.PropertyNameEn;
+                }
+            },
+            {
+                "data": null,
+                "autoWidth": true,
+                "render": function (d, t, row) {
+
+                    if (row.PmTenants == null) return '';
+
+                    if (lang === 'ar-EG') return row.PmTenants.TenantNameAr;
+
+                    return row.PmTenants.TenantNameEn;
+                }
+            },
+            {
+                "data": null,
+                "autoWidth": true,
+                "render": function (d, t, row) {
+
+                    if (row.FndUnitTypeLkp == null) return '';
+
+                    if (lang === 'ar-EG') return row.FndUnitTypeLkp.NameAr;
+
+                    return row.FndUnitTypeLkp.NameEn;
+                }
+            },
+            {
+                "data": null,
+                "autoWidth": true,
+                "render": function (d, t, row) {
+
+                    if (row.FndStatusLkp == null) return '';
+
+                    if (lang === 'ar-EG')  return row.FndStatusLkp.NameAr;
+
+                    return row.FndStatusLkp.NameEn;
+                }
+            },
+            {
+                "data": null,
+                "autoWidth": true,
+                "render": function (d, t, row) {
+
+                    if (row.PmTenants == null) return '';
+
+                    return row.PmTenants.IdNumber;
+                }
+            },
+             {
+                "data": null,
+                "autoWidth": true,
+                "render": function (d, t, row) {
+
+                    if (row.PmTenants == null) return '';
+
+                    return row.PmTenants.MobileNumber;
+                }
+            },
+            {
+                "data": null,
+                "sortable": false,
+                "render": function (data, type, row) {
+
+                    let formAction = `${$PrefixHostName}/${_mainController}/@nameof(PmContractController.PmContractForm)`;
+                    let DeleteAction = `${$PrefixHostName}/${_mainController}/@nameof(PmContractController.Delete)`;
+
+                    let btns = '';
+
+                    if (_permissions.includes(_updatePermission) && row.StatusLkpId == _newStatus) {
+                        btns += `<a href="${$PrefixHostName}/PmContract/FormView?id=${row.EncId}&t=@encUpdateTrigger"  title="@ERP.ResourcePack.Common.Settings.Edit"><i class="mx-2 fas fa-edit text-info"></i></a>`;
+                    }
+
+                    btns += `<a href="${$PrefixHostName}/PmContract/FormView?id=${row.EncId}&t=@encShowTrigger"  title="@ERP.ResourcePack.Common.Settings.Show"><i class="mx-2 fas fa-eye text-info"></i></a>`;
+
+                    if (_permissions.includes(_deletePermission) && row.StatusLkpId == _newStatus) {
+                        btns += `<a href="javascript:void(0)" onclick="AjaxController.DeleteMainTableRow(${row.Id},'${DeleteAction}');"  title="@ERP.ResourcePack.Common.Settings.Delete"><i class="mx-2 fas fa-trash-alt text-danger"></i></a>`;
+                    }
+
+                    if (row.StatusLkpId == _newStatus && _permissions.includes(_postPermission)) {
+                         btns += `<a title="@ERP.ResourcePack.Common.Settings.Post" href="javascript:void(0)"  onclick="return ProcContract(${row.Id},'Post')"><i class="mx-2 fas fa-check-circle text-success"></i></a></td>`;
+                    }
+
+                    if (row.StatusLkpId == _postedStatus && _permissions.includes(_postPermission)) {
+                         btns += `<a title="@ERP.ResourcePack.Common.Settings.RenewContract" href="javascript:void(0)"  onclick="return ProcContract(${row.Id},'Renew')"><i class="mx-2 fas fa-plus-square text-success"></i></a></td>`;
+                    }
+
+                    btns += `<a href="javascript:void(0);" onclick="return print('${$PrefixHostName}/PmContract/PrintContractScreenData','${row.EncId}','${lang}')" title="@ERP.ResourcePack.Common.Settings.Print"><i class="mx-2 fas fa-print text-success"></i></a>`;
+
+                    const _auditedPermission = '@PermissionNames.Pages_PmContract_Audit';
+
+                    if (_permissions.includes(_auditedPermission)) {
+
+                        row.permission = _auditedPermission;
+
+                        btns += GetAuditedButton(row);
+                    }
+
+                    return btns;
+                }
+            }
+        ];
+
+        const dtObj = {
+            "processing": true,
+            "serverSide": true,
+            "filter": false,
+            "orderMulti": false,
+            "language": dataTableLang,
+            "ajax": {
+                "url": _loadDataUrl,
+                "type": "POST",
+                "datatype": "json",
+                "data": parms,
+                "complete": function () {
+                    _tblLoader.hide();
+                }
+            },
+            "columns": columns,
+            "initComplete": function () {
+                $('[data-toggle="tooltip"]').tooltip();
+            }
+
+        };
+
+        _tblSelector.dataTable().fnDestroy();
+        _tblSelector.DataTable(dtObj).on('draw', function () { $('[data-toggle="tooltip"]').tooltip(); });
+
+        setTimeout(function () {
+            $(".sorting_1").removeAttr('colspan');
+        }, 500);
+    };
+
+    const print = function (url, id, lang) {
+        const data = { id: id, lang : lang };
+        openModal(data, url);
+    };
+
+    $('#searchBox #PropertyId').select2(ReturnSelect2ObjectDefault(`${baseUrl}/PmProperties/GetPmPropertiesSelect2`));
+
+    $('#PropertyId').select2(ReturnSelect2ObjectDefault(`${baseUrl}/PmProperties/GetPmPropertiesSelect2`));
+
+    $('#searchBox #PmTenantId').select2(ReturnSelect2ObjectDefault(`${baseUrl}/PmTenants/GetPmTenantsNameAndIdNumberSelect2`));
+
+    $('#PmTenantId').select2(ReturnSelect2ObjectDefault(`${baseUrl}/PmTenants/GetPmTenantsNameAndIdNumberSelect2`));
+
+    $('#OtherPaymentTypesId').select2(ReturnSelect2ObjectDefault(`${baseUrl}/PmOtherPaymentTypes/GetPmOtherPaymentTypesSelect2`))
+
+    $('#searchBox #StatusLkpId').select2(ReturnSelect2ObjectForLkpsTypes('@ERP.Front.Helpers.Enums.Common.FndLkpsTypes.PmContractPost.ToString()'));
+
+    $('#PmActivityLkpId').select2(ReturnSelect2ObjectForLkpsTypes('@ERP.Front.Helpers.Enums.Common.FndLkpsTypes.PmOwnersTaxDetailsType.ToString()'));
+
+    $('#PaymentTypeLkpId').select2(ReturnSelect2ObjectForLkpsTypes('@ERP.Front.Helpers.Enums.Common.FndLkpsTypes.PmContractPaymentsPaymentType.ToString()'));
+
+    //$('#PaymentSourceLkpId').select2(ReturnSelect2ObjectForLkpsTypes('@ERP.Front.Helpers.Enums.Common.FndLkpsTypes.PmContractPaymentsPaymentSource.ToString()'));
+
+    $('#searchBox #PmUnitTypeLkpId').select2(ReturnSelect2ObjectForLkpsTypes('@ERP.Front.Helpers.Enums.Common.FndLkpsTypes.PmPropertiesUnitsUnitType.ToString()'))
+
+    $('#PmUnitTypeLkpId').select2(ReturnSelect2ObjectForLkpsTypes('@ERP.Front.Helpers.Enums.Common.FndLkpsTypes.PmPropertiesUnitsUnitType.ToString()'))
+
+    $('#PmPaymentNoLkpId').select2(ReturnSelect2ObjectForLkpsTypes('@ERP.Front.Helpers.Enums.Common.FndLkpsTypes.PmContractPaymentNo.ToString()'))
+
+    $('#BankLkpId').select2(ReturnSelect2ObjectForLkpsTypes('@ERP.Front.Helpers.Enums.Common.FndLkpsTypes.Banks.ToString()'))
+
+    $('#PropertiesUnitId').select2(
+        ReturnSelect2ObjectCustomParams(`${baseUrl}/PmProperties/GetUnitNumbersForContractsSelect2`, {},['PropertyId','PmUnitTypeLkpId']));
+
+
+    $('#ContractStartDate').on('change', function (e) {
+
+        if ($(this).val()) {
+
+            try {
+                const startDate = GetSystemFormatedValidDate($(this).val()).date;
+
+                const endDateStr = `${startDate.getDate()}/${startDate.getMonth() + 1}/${startDate.getFullYear() + 1}`;
+
+                const endDate = GetSystemFormatedValidDate(endDateStr).date;
+
+                endDate.setDate(endDate.getDate() - 1);
+
+                const modifiedEndDate = GetSystemFormatedValidDate(`${endDate.getDate()}/${endDate.getMonth() + 1}/${endDate.getFullYear()}`).stringDate;
+
+                $('#ContractEndDate').val(modifiedEndDate);
+                $('#ContractEndDatePrint').val(modifiedEndDate);
+
+            } catch (e) {
+                $('#ContractEndDate').val($(this).val());
+                $('#ContractEndDatePrint').val($(this).val());
+            }
+
+            $('#ContractEndDate').parent('.form-line').addClass('focused');
+            $('#ContractEndDatePrint').parent('.form-line').addClass('focused');
+        }
+
+    });
+
+</script>
+
+<script id="manager">
+
+    $('#mainForm #PropertyId').on('change', function () {  getPropInfo($(this).find(':selected').val()); });
+
+    $('#mainForm #PmActivityLkpId').on('change', function () {
+
+        if ($(this).find(':selected').val() && $('#PmOwnerId').val()) {
+            getOwnerPercent($('#PmOwnerId').val(),$(this).find(':selected').val());
+        }
+
+    });
+
+    $('#mainForm #InsuranceAmount').on('keyup', function () { calcTotal(); });
+
+    $('#mainForm #AnnualRentAmount').on('keyup', function () { calcRentAmount(); });
+
+    $('#mainForm #ContractStartDate').on('change', function () { calcRentAmount(); });
+
+    $('#mainForm #ContractEndDate').on('change', function () { calcRentAmount(); });
+
+    $('#mainForm #ContractDate').on('change', function () { updatePaymentTaxInsurance(); });
+
+    const getPropInfo = function (propId) {
+
+        $.ajax({
+            url: `${baseUrl}/PmProperties/GetPmPropertiesInfo`,
+            method: 'GET',
+            data: {
+                id: propId,
+                lang: lang
+            }
+        }).done(function (data) {
+
+            if (data.result) {
+
+                $('#OwnerName').val(data.result.item1);
+                $('#PropertyNumber').val(data.result.item2);
+                $('#PmOwnerId').val(data.result.item3);
+
+                $('#OwnerName').parent('.form-line').addClass('focused');
+                $('#PropertyNumber').parent('.form-line').addClass('focused');
+
+                if ($('#mainForm #PmActivityLkpId').find(':selected').val() && data.result.item3) {
+
+                    getOwnerPercent(data.result.item3, $('#mainForm #PmActivityLkpId').find(':selected').val());
+                    calcTaxAmount();
+                }
+            }
+
+        }).fail(function (response) {
+            toastr.error(response.responseText);
+        });
+    };
+
+    const getOwnerPercent = function (ownerId,activityId) {
+
+        $.ajax({
+            url: `${baseUrl}/PmOwners/GetOwnerActivityTaxPercentage`,
+            method: 'GET',
+            data: {
+                ownerId: ownerId,
+                activityLkpId: activityId
+            },
+            headers: {
+                'Authorization': `bearer ${$_token}`
+            }
+        }).done(function (data) {
+
+            $('#TaxPercent').val(data.result);
+
+            calcTaxAmount();
+
+        }).fail(function (response) {
+            toastr.error(response.responseText);
+        });
+    };
+
+    const calcRentAmount = function () {
+
+        const startDt = $('#ContractStartDate'),endDt = $('#ContractEndDate'),
+            annualRent = $('#AnnualRentAmount'),rentAmount = $('#RentAmount');
+
+        if (startDt.val() && endDt.val() && annualRent.val()) {
+
+            const stDt = GetSystemFormatedValidDate(startDt.val()).date;
+            const enDt = GetSystemFormatedValidDate(endDt.val()).date;
+
+            const diffTime = Math.abs(enDt - stDt);
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+            const equ = ((diffDays + 1) / 365) * parseFloat(parseFloat(annualRent.val()).toFixed(6));
+
+            rentAmount.val(Math.round(equ));
+
+            rentAmount.parent('.form-line').addClass('focused');
+
+            calcTaxAmount();
+        }
+    };
+
+    const calcTaxAmount = function () {
+
+        const taxPerc = $('#TaxPercent'), rentAmount = $('#RentAmount'),  taxAmount = $('#TaxAmount');
+
+        if (taxPerc.val() && rentAmount.val()) {
+
+            const taxVal = (parseFloat(taxPerc.val()) / 100) * parseFloat(rentAmount.val());
+
+            taxAmount.val(parseFloat(taxVal.toFixed(6)));
+            taxAmount.parent('.form-line').addClass('focused');
+            calcTotal();
+        }
+
+    };
+
+    const calcTotal = function () {
+
+        if ($('#RentAmount').val() && $('#TaxAmount').val()) {
+
+            const total = parseFloat($('#RentAmount').val()) + parseFloat($('#TaxAmount').val()) + parseFloat($('#InsuranceAmount').val() ?  $('#InsuranceAmount').val() : 0);
+
+            $('#Total').val(parseFloat(total.toFixed(6)));
+            $('#Total').parent('.form-line').addClass('focused');
+        }
+
+    };
+
+    const calcOtherPaymentTotal = function () {
+
+        let sum = 0;
+
+        _otherPaymentsArr.map(item => sum += parseFloat(item.amount));
+
+        $('#TotalOfOther').val(sum);
+        $('#TotalOfOther').parent('.form-line').addClass('focused');
+
+    };
+
+    const generatePayments = function () {
+
+        if (primaryEntityKeyId) {
+
+            _paymentsArr.forEach(function (item,index) {
+
+                item.rowStatus = DeletedStatus;
+
+            },_paymentsArr);
+
+        } else {
+           _paymentsArr = [];
+        }
+
+        const paymentNoSelector = $('#PmPaymentNoLkpId');
+
+        if (paymentNoSelector.find(':selected').val() && $('#RentAmount').val()) {
+
+            const paymentNumber = parseInt(paymentNoSelector.find(':selected').text());
+
+            const startDt = $('#ContractStartDate'), endDt = $('#ContractEndDate');
+
+
+            const stDt = GetSystemFormatedValidDate(startDt.val()).date;
+            const enDt = GetSystemFormatedValidDate(endDt.val()).date;
+
+            const diffTime = Math.abs(enDt - stDt);
+            const daysPays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) / paymentNumber;
+            const monthsPays = daysPays / 30;
+
+            for (var i = 0; i < paymentNumber; i++) {
+
+                const currentAmount = (i === paymentNumber - 1 ? generatePaymentAmountReminder(paymentNumber) : generatePaymentAmount(paymentNumber));
+
+                const current = fillDynamicPayment(i,
+                    '@Convert.ToInt64(ERP.Front.Helpers.Enums.Common.PmContractPaymentsPaymentSource.Rent)',
+                    '@PmContract.Rent', currentAmount, generatePaymentDate(i, monthsPays), '@PmContract.Cash',
+                    '@Convert.ToInt64(ERP.Front.Helpers.Enums.Common.PmContractPaymentsPaymentType.Cash)');
+
+                AddPayments(current);
+            }
+
+            if (parseInt($('#InsuranceAmount').val())) {
+
+                const index = parseInt(_paymentsArr[_paymentsArr.length - 1].paymentNo);
+
+                const current = fillDynamicPayment(index,
+                    '@Convert.ToInt64(ERP.Front.Helpers.Enums.Common.PmContractPaymentsPaymentSource.Inusurance)',
+                    '@PmContract.Insurance', $('#InsuranceAmount').val(), $('#mainForm #ContractDate').val(),
+                    '@PmContract.Cash', '@Convert.ToInt64(ERP.Front.Helpers.Enums.Common.PmContractPaymentsPaymentType.Cash)');
+
+                AddPayments(current);
+
+            }
+
+            @*if (parseInt($('#TaxAmount').val())) {
+
+                const index = parseInt(_paymentsArr[_paymentsArr.length - 1].paymentNo);
+
+                const current = fillDynamicPayment(index,
+                    '@Convert.ToInt64(ERP.Front.Helpers.Enums.Common.PmContractPaymentsPaymentSource.Tax)',
+                    '@PmContract.Tax', $('#TaxAmount').val(), $('#mainForm #ContractDate').val(),
+                    '@PmContract.Cash', '@Convert.ToInt64(ERP.Front.Helpers.Enums.Common.PmContractPaymentsPaymentType.Cash)');
+
+                AddPayments(current);
+
+            }*@
+        } else {
+
+            if(!paymentNoSelector.find(':selected').val())
+            {
+                toastr.warning('@PmContract.PmPaymentNoLkpId' + ' : ' + '@ERP.ResourcePack.Common.Settings.Required');
+            }
+        }
+    };
+
+    const fillDynamicPayment = function (i,paymentSourceLkpId,paymentSourceLkp,amount,paymentDate,paymentTypeLkp,paymentTypeLkpID) {
+
+        const current = {
+              index: ++tblPaymentsCounterIndex,
+              paymentNo: (i + 1),
+              paymentTypeLkpId:paymentTypeLkpID,
+              paymentTypeLkp: paymentTypeLkp,
+             // paymentSourceLkpId: paymentSourceLkpId ,
+              paymentSourceLkp: paymentSourceLkp,
+              bankLkpId: '',
+              bankLkp: '',
+              amount: amount,
+              comments: '',
+              paymentDate: paymentDate,
+              rowStatus: NewStatus
+        };
+
+        return current;
+    };
+
+    const generatePaymentDate = function (index,monthsPays) {
+
+        if ($('#mainForm #ContractDate').val()) {
+
+            let initDate = $('#mainForm #ContractDate').val();
+
+            if (index === 0)
+                return initDate;
+            else {
+                const dt = _paymentsArr[index - 1].paymentDate;
+                const lastMonthDate = GetSystemFormatedValidDate(dt).date;
+
+                lastMonthDate.setMonth(lastMonthDate.getMonth() + monthsPays);
+
+                return ConvertToSystemFormatedValidDate(lastMonthDate).stringDate;
+            }
+        }
+
+        return '';
+    };
+
+    const generatePaymentAmount = function (paymentNo) {
+
+        const rentAmount = parseFloat($('#RentAmount').val()) + +$('#TaxAmount').val();
+
+        return Math.round((rentAmount / paymentNo));
+    };
+
+    const generatePaymentAmountReminder = function (paymentNo) {
+
+        const rentAmount = parseFloat($('#RentAmount').val()) + +$('#TaxAmount').val();
+
+        const reminder = rentAmount - (Math.round((rentAmount / paymentNo)) * (paymentNo - 1));
+
+        return parseFloat(reminder.toFixed(6));
+    };
+
+    const initAnnualRent = function () {
+
+        if (_unitsArr.length > 0) {
+
+            let sum = 0;
+
+            _unitsArr.map(x => sum += parseFloat(x.amount));
+
+            $('#AnnualRentAmount').val(sum);
+
+            $('#AnnualRentAmount').parent('.form-line').addClass('focused');
+
+            calcRentAmount();
+        }
+    };
+
+    const updatePaymentTaxInsurance = function () {
+
+        _paymentsArr.forEach(function (item, index, arr) {
+
+            @*if (
+                item.paymentSourceLkpId == '@Convert.ToInt64(ERP.Front.Helpers.Enums.Common.PmContractPaymentsPaymentSource.Tax)' ||
+                item.paymentSourceLkpId == '@Convert.ToInt64(ERP.Front.Helpers.Enums.Common.PmContractPaymentsPaymentSource.Inusurance)'
+                ) {*@
+
+                item.paymentDate = $('#mainForm #ContractDate').val();
+           // }
+
+        }, _paymentsArr);
+
+        bindPaymentsTable();
+    };
+
+</script>
+
+<script id="units">
+
+    const _tblUnitsSelector = $('#tblUnits');
+    const _tblUnitsSelectorBody = $('#tblUnits tbody');
+    const _unitsListStr = $('#UnitsListStr');
+
+    let _unitsArr = [], tblUnitsCounterIndex = 0,updatedUnitRow;
+
+    const fillUnitObject = function () {
+
+        if (validateUnits() === false) return;
+
+        const current = {
+            index: ++tblUnitsCounterIndex,
+            propertiesUnitId: $('#units #PropertiesUnitId').find(':selected').val(),
+            propertiesUnit: $('#units #PropertiesUnitId').find(':selected').text(),
+            amount: $('#units #Amount').val(),
+            areaSize: $('#units #AreaSize').val(),
+            notes: $('#units #Notes2').val(),
+            rowStatus: NewStatus
+        };
+
+        return current;
+    };
+
+    const AddUnits = function () {
+
+        const current = fillUnitObject();
+
+        if (current === undefined) return;
+
+         if (_unitsArr.indexOf(_unitsArr.find(z => z.propertiesUnitId == $('#units #PropertiesUnitId').find(':selected').val())) >= 0) {
+
+            toastr.warning('@PmContract.UnitNoExistsBefore');
+            return;
+         }
+
+        _unitsArr.push(current);
+
+        _unitsListStr.val(JSON.stringify(_unitsArr));
+
+        clearFormUnits();
+
+        bindUnitsTable();
+
+        initAnnualRent();
+    };
+
+    const bindUnitsTable = function () {
+
+        let rows = '';
+
+        const detailArr = _unitsArr.filter(z => z.rowStatus !== DeletedStatus);
+
+        $.each(detailArr, function (i, item) {
+
+            rows += '<tr>';
+
+            rows += `<td>${item.index}</td>`;
+            rows += `<td>${item.propertiesUnit}</td>`;
+            rows += `<td>${item.areaSize ? item.areaSize : ''}</td>`;
+            rows += `<td>${Number(item.amount).toLocaleString(undefined, optionsNumFormat)}</td>`;
+            rows += `<td>${item.notes}</td>`;
+
+            if (primaryEntityKeyId === 0 || trigger !== '@ERP.Front.Helpers.Enums.Common.FormTriggers.Show.ToString()') {
+                rows += `<td><a href="javascript:void(0)" onclick="return DeleteUnitRow(${item.index})"><i class="mx-2 fas fa-trash-alt text-danger"></i></a>`;
+                rows += `<a href="javascript:void(0)" onclick="return GetUnitRowDetail(${item.index})"><i class="mx-2 fas fa-edit text-success"></i></a></td>`;
+            } else {
+                rows += '<td></td>';
+            }
+
+            rows += '</tr>';
+        });
+
+        setTimeout(function () {
+            _tblUnitsSelectorBody.html(rows);
+        }, 100);
+
+    };
+
+    const DeleteUnitRow = function (index) {
+
+        const current = _unitsArr.find(z => z.index === index);
+
+        const indexOfCurrent = _unitsArr.indexOf(current);
+
+        if (!current.id) {
+
+           _unitsArr.splice(indexOfCurrent, 1);
+
+        } else {
+
+            current.rowStatus = DeletedStatus;
+
+           _unitsArr.splice(indexOfCurrent, 1,current);
+        }
+
+        bindUnitsTable();
+
+        _unitsListStr.val(_unitsArr.length === 0 ? '' : JSON.stringify(_unitsArr));
+    };
+
+    const LoadUnitsData = function () {
+
+        $('#tblLoaderDetail').show();
+
+        $.ajax({
+            url: `${baseUrl}/PmContract/GetAllPmContractUnits`,
+            method: 'GET',
+            headers: {
+                        'Authorization': `Bearer ${$_token}`
+            },
+            data: {
+                id: primaryEntityKeyId
+            }
+        }).done(function (data) {
+
+            _unitsArr = [...data.result];
+
+            $.each(_unitsArr, function (i, item) {
+                item.index = ++tblUnitsCounterIndex;
+            });
+
+            bindUnitsTable();
+
+            _unitsListStr.val(JSON.stringify(_unitsArr));
+
+        });
+
+    };
+
+    const GetUnitRowDetail = function (tblIndex) {
+
+        clearFormUnits();
+
+        const current = _unitsArr.find(z => z.index === tblIndex);
+
+        $('#btnAddUnitRow').hide();
+        $('#btnUpdateUnitRow').show();
+        $('#btnCancelUnitRow').show();
+
+        $('#units #Amount').val(current.amount);
+        $('#units #AreaSize').val(current.areaSize);
+        $('#units #Notes2').val(current.notes);
+
+        $(`#units #PropertiesUnitId`)
+        .append($("<option selected='selected'></option>")
+        .val(current.propertiesUnitId)
+        .text(current.propertiesUnit))
+            .trigger('change');
+
+        $('#units #Amount').parent('.form-line').addClass('focused');
+        $('#units #AreaSize').parent('.form-line').addClass('focused');
+        $('#units #Notes2').parent('.form-line').addClass('focused');
+      
+        updatedUnitRow = current;
+
+    };
+
+    const UpdateUnitsRow = function () {
+
+        let current = _unitsArr.find(z => z.index === updatedUnitRow.index);
+
+        let indexOfCurrent = _unitsArr.indexOf(current);
+
+        const newRow = fillUnitObject();
+
+        if (newRow === undefined) return;
+
+        if (_unitsArr.indexOf(_unitsArr.find(z => z.index != current.index && z.propertiesUnitId == $('#units #PropertiesUnitId').find(':selected').val())) >= 0) {
+
+            toastr.warning('@PmContract.UnitNoExistsBefore');
+            return;
+        }
+
+        newRow.id = updatedUnitRow.id;
+        newRow.rowStatus = !updatedUnitRow.id ? NewStatus : UpdatedStatus;
+
+        _unitsArr.splice(indexOfCurrent, 1,newRow);
+
+        $('#btnAddUnitRow').show();
+        $('#btnUpdateUnitRow').hide();
+        $('#btnCancelUnitRow').hide();
+
+        clearFormUnits();
+
+        _unitsListStr.val(JSON.stringify(_unitsArr));
+
+        bindUnitsTable();
+    };
+
+    const clearFormUnits = function () {
+
+        $('#units .card select').val('').trigger('change');
+        $('#units .card input').val('');
+        $('#units .card textarea').val('');
+
+    };
+
+    const validateUnits = function () {
+
+        if (!$('#units #PropertiesUnitId').find(':selected').val()) {
+            toastr.warning('@PmContract.PropertiesUnitId' + ' : ' + '@ERP.ResourcePack.Common.Settings.Required')
+            return false;
+        }
+
+        return true;
+    };
+
+
+</script>
+
+<script id="Payments">
+
+    const _tblPaymentsSelector = $('#tblPayments');
+    const _tblPaymentsSelectorBody = $('#tblPayments tbody');
+    const _PaymentsListStr = $('#PaymentsListStr');
+
+    let _paymentsArr = [], tblPaymentsCounterIndex = 0 , updatedPaymentsRow;
+
+    const fillPaymentsObject = function () {
+
+        if (validatePayments() === false) return;
+
+        let lastPaymentNo = (_paymentsArr.length > 0 ? parseInt(_paymentsArr[_paymentsArr.length - 1].paymentNo) : 0);
+
+        const current = {
+            index: ++tblPaymentsCounterIndex,
+            paymentNo: ++lastPaymentNo,
+            paymentTypeLkpId: $('#Payments #PaymentTypeLkpId').find(':selected').val(),
+            paymentTypeLkp: $('#Payments #PaymentTypeLkpId').find(':selected').text(),
+         //   paymentSourceLkpId: $('#Payments #PaymentSourceLkpId').find(':selected').val(),
+          //  paymentSourceLkp: $('#Payments #PaymentSourceLkpId').find(':selected').text(),
+            bankLkpId: $('#Payments #BankLkpId').find(':selected').val(),
+            bankLkp: $('#Payments #BankLkpId').find(':selected').text(),
+            amount: $('#Payments #PayAmount').val(),
+            comments: $('#Payments #Comments').val(),
+            checkNumber: $('#Payments #CheckNumber').val(),
+            paymentDate: $('#Payments #PaymentDate').val(),
+            rowStatus: NewStatus
+        };
+
+        return current;
+    };
+
+    const AddPayments = function (generatedOnj = undefined) {
+
+
+        if (generatedOnj) {
+
+            _paymentsArr.push(generatedOnj);
+
+        } else {
+
+            const current = fillPaymentsObject();
+
+            if (current === undefined) return;
+
+            _paymentsArr.push(current);
+
+        }
+
+        _PaymentsListStr.val(JSON.stringify(_paymentsArr));
+
+        bindPaymentsTable();
+
+        clearFormPayments();
+    };
+
+    const UpdatePaymentsRow = function () {
+
+        let current = _paymentsArr.find(z => z.index === updatedPaymentsRow.index);
+
+        let indexOfCurrent = _paymentsArr.indexOf(current);
+
+        const newRow = fillPaymentsObject();
+
+        if (newRow === undefined) return;
+
+        newRow.id = updatedPaymentsRow.id;
+        newRow.paymentNo = updatedPaymentsRow.paymentNo;
+        newRow.rowStatus =  !updatedPaymentsRow.id ? NewStatus : UpdatedStatus;
+
+        _paymentsArr.splice(indexOfCurrent, 1,newRow);
+
+        $('#btnAddPaymentsRow').show();
+        $('#btnUpdatePaymentsRow').hide();
+        $('#btnCancelPaymentsRow').hide();
+
+        clearFormPayments();
+
+        _PaymentsListStr.val(JSON.stringify(_paymentsArr));
+
+        bindPaymentsTable();
+    };
+
+    const bindPaymentsTable = function () {
+
+        let rows = '';
+
+        const detailArr = _paymentsArr.filter(z => z.rowStatus !== DeletedStatus);
+
+        $.each(detailArr, function (i, item) {
+
+            rows += '<tr>';
+            rows += `<td>${item.index}</td>`;
+            rows += `<td>${item.paymentTypeLkp}</td>`;
+            rows += `<td>${item.checkNumber ? item.checkNumber : '' }</td>`;
+            //rows += `<td>${item.paymentSourceLkp}</td>`;
+            rows += `<td>${item.paymentNo}</td>`;
+            rows += `<td>${item.paymentDate}</td>`;
+            rows += `<td>${item.bankLkp}</td>`;
+            rows += `<td>${Number(item.amount).toLocaleString(undefined, optionsNumFormat)}</td>`;
+            rows += `<td>${item.comments}</td>`;
+
+            if (primaryEntityKeyId === 0 || trigger !== '@ERP.Front.Helpers.Enums.Common.FormTriggers.Show.ToString()') {
+                rows += `<td><a href="javascript:void(0)" onclick="return DeletePaymentsRow(${item.index})"><i class="mx-2 fas fa-trash-alt text-danger"></i></a>`;
+                rows += `<a href="javascript:void(0)" onclick="return GetPaymentsRow(${item.index})"><i class="mx-2 fas fa-edit text-success"></i></a></td>`;
+            } else {
+                rows += '<td></td>';
+            }
+
+            rows += '</tr>';
+        });
+
+        setTimeout(function () {
+            _tblPaymentsSelectorBody.html(rows);
+        }, 100);
+    };
+
+    const DeletePaymentsRow = function (index) {
+
+        const current = _paymentsArr.find(z => z.index === index);
+
+        const indexOfCurrent = _paymentsArr.indexOf(current);
+
+        if (!current.id) {
+
+           _paymentsArr.splice(indexOfCurrent, 1);
+
+        } else {
+
+            current.rowStatus = DeletedStatus;
+
+           _paymentsArr.splice(indexOfCurrent, 1,current);
+        }
+
+        bindPaymentsTable();
+
+        _PaymentsListStr.val(_paymentsArr.length === 0 ? '' : JSON.stringify(_paymentsArr));
+    };
+
+    const LoadPaymentsData = function () {
+
+        $('#tblLoaderLine').show();
+
+        $.ajax({
+            url: `${baseUrl}/PmContract/GetAllPmPayments`,
+            method: 'GET',
+            headers: {
+                        'Authorization': `Bearer ${$_token}`
+            },
+            data: {
+                id: primaryEntityKeyId,
+                lang: lang
+            }
+        }).done(function (data) {
+
+            _paymentsArr = [...data.result];
+
+            $.each(_paymentsArr, function (i, item) {
+                item.index = ++tblPaymentsCounterIndex;
+            });
+
+            bindPaymentsTable();
+
+            _PaymentsListStr.val(JSON.stringify(_paymentsArr));
+
+            $('#tblLoaderLine').hide();
+        });
+
+    };
+
+    const GetPaymentsRow = function (tblIndex) {
+
+        clearFormPayments();
+
+        $('#btnAddPaymentsRow').hide();
+        $('#btnUpdatePaymentsRow').show();
+        $('#btnCancelPaymentsRow').show();
+
+        const current = _paymentsArr.find(z => z.index === tblIndex);
+
+        $('#Payments #PaymentNo').val(current.paymentNo);
+        $('#Payments #PaymentNo').parent('.form-line').addClass('focused');
+
+        $('#Payments #PaymentDate').val(current.paymentDate);
+        $('#Payments #PaymentDate').parent('.form-line').addClass('focused');
+
+        $('#Payments #PayAmount').val(current.amount);
+        $('#Payments #PayAmount').parent('.form-line').addClass('focused');
+
+        $('#Payments #Comments').val(current.comments);
+        $('#Payments #Comments').parent('.form-line').addClass('focused');
+
+        $('#Payments #CheckNumber').val(current.checkNumber);
+        $('#Payments #CheckNumber').parent('.form-line').addClass('focused');
+
+        $(`#Payments #PaymentTypeLkpId`)
+        .append($("<option selected='selected'></option>")
+        .val(current.paymentTypeLkpId)
+        .text(current.paymentTypeLkp))
+            .trigger('change');
+
+        //$(`#Payments #PaymentSourceLkpId`)
+        //.append($("<option selected='selected'></option>")
+        //.val(current.paymentSourceLkpId)
+        //.text(current.paymentSourceLkp))
+        //    .trigger('change');
+
+        $(`#Payments #BankLkpId`)
+        .append($("<option selected='selected'></option>")
+        .val(current.bankLkpId)
+        .text(current.bankLkp))
+            .trigger('change');
+
+
+        updatedPaymentsRow = current;
+    };
+
+    const clearFormPayments = function () {
+
+        $('#Payments .card select').val('').trigger('change');
+        $('#Payments .card input').val('');
+        $('#Payments .card textarea').val('');
+    };
+
+    const validatePayments = function () {
+
+        if (!$('#Payments #PaymentTypeLkpId').find(':selected').val()) {
+            toastr.warning('@PmContract.PaymentTypeLkpId' + ' : ' + '@ERP.ResourcePack.Common.Settings.Required')
+            return false;
+        }
+
+        if ($('#PaymentTypeLkpId').find(':selected').val() == "246") {
+            $('#CheckNumber').val('');
+            $('#BankLkpId').val('').trigger('change')
+        }
+
+        if ( $('#Payments #PaymentTypeLkpId').find(':selected').val() == @Convert.ToInt64(ERP.Front.Helpers.Enums.Common.PmContractPaymentsPaymentType.Check) && !$('#Payments #BankLkpId').find(':selected').val()) {
+            toastr.warning('@PmContract.BankLkpId' + ' : ' + '@ERP.ResourcePack.Common.Settings.Required')
+            return false;
+        }
+
+        if ( $('#Payments #PaymentTypeLkpId').find(':selected').val() == @Convert.ToInt64(ERP.Front.Helpers.Enums.Common.PmContractPaymentsPaymentType.Check) && !$('#Payments #CheckNumber').val()) {
+            toastr.warning('@PmContract.CheckNumber' + ' : ' + '@ERP.ResourcePack.Common.Settings.Required')
+            return false;
+        }
+
+        if (!$('#Payments #PaymentDate').val()) {
+            toastr.warning('@PmContract.PaymentDate' + ' : ' + '@ERP.ResourcePack.Common.Settings.Required')
+            return false;
+        }
+
+        if (!$('#Payments #PayAmount').val()) {
+            toastr.warning('@PmContract.PayAmount' + ' : ' + '@ERP.ResourcePack.Common.Settings.Required')
+            return false;
+        }
+
+        return true;
+    };
+
+
+    const ValidateTotalAmount = function () {
+
+        const filteredArr = _paymentsArr.filter(item => item.rowStatus != DeletedStatus);
+
+        if (!$('#Total').val() || filteredArr.length === 0) {
+
+            toastr.warning('@PmContract.PaymentAmountTotal');
+
+            return false;
+        }
+
+
+        const totalPaymentAmount = filteredArr.map(item => item.amount).reduce((a1, a2) => +a1 + +a2, 0);
+
+        if ($('#Total').val() != totalPaymentAmount) {
+
+            toastr.warning('@PmContract.PaymentAmountTotal');
+
+            return false;
+        }
+
+        return true;
+    };
+
+</script>
+
+<script id="OtherPayments">
+
+    const _tblOtherPaymentsSelector = $('#tblOtherPayments');
+    const _tblOtherPaymentsSelectorBody = $('#tblOtherPayments tbody');
+    const _OtherPaymentsListStr = $('#PaymentsOtherListStr');
+
+    let _otherPaymentsArr = [], tblOtherPaymentsCounterIndex = 0 , updatedOtherPaymentsRow;
+
+    const fillOtherPaymentsObject = function () {
+
+        if (validateOtherPayments() === false)  return;
+
+        const current = {
+            index: ++tblOtherPaymentsCounterIndex,
+            otherPaymentTypesId: $('#OtherPayments #OtherPaymentTypesId').find(':selected').val(),
+            otherPaymentTypes: $('#OtherPayments #OtherPaymentTypesId').find(':selected').text(),
+            amount: $('#OtherPayments #PayAmount').val(),
+            notes: $('#OtherPayments #Notes').val(),
+            rowStatus: NewStatus
+        };
+
+        return current;
+    };
+
+    const AddOtherPayments = function () {
+
+        const current = fillOtherPaymentsObject();
+
+        if (current === undefined) return;
+
+        _otherPaymentsArr.push(current);
+
+        _OtherPaymentsListStr.val(JSON.stringify(_otherPaymentsArr));
+
+        calcOtherPaymentTotal();
+
+        bindOtherPaymentsTable();
+
+        clearFormOtherPayments();
+    };
+
+    const UpdateOtherPaymentsRow = function () {
+
+        let current = _otherPaymentsArr.find(z => z.index === updatedOtherPaymentsRow.index);
+
+        let indexOfCurrent = _otherPaymentsArr.indexOf(current);
+
+        const newRow = fillOtherPaymentsObject();
+
+        if (newRow === undefined) return;
+
+        newRow.id = updatedOtherPaymentsRow.id;
+        newRow.rowStatus =  !updatedOtherPaymentsRow.id ? NewStatus : UpdatedStatus;
+
+        _otherPaymentsArr.splice(indexOfCurrent, 1,newRow);
+
+        $('#btnAddOtherPaymentsRow').show();
+        $('#btnUpdateOtherPaymentsRow').hide();
+        $('#btnCancelOtherPaymentsRow').hide();
+
+        clearFormOtherPayments();
+
+        _OtherPaymentsListStr.val(JSON.stringify(_otherPaymentsArr));
+
+        calcOtherPaymentTotal();
+
+        bindOtherPaymentsTable();
+    };
+
+    const bindOtherPaymentsTable = function () {
+
+        let rows = '';
+
+        const detailArr = _otherPaymentsArr.filter(z => z.rowStatus !== DeletedStatus);
+
+        $.each(detailArr, function (i, item) {
+
+            rows += '<tr>';
+            rows += `<td>${item.index}</td>`;
+            rows += `<td>${item.otherPaymentTypes}</td>`;
+            rows += `<td>${Number(item.amount).toLocaleString(undefined, optionsNumFormat)}</td >`;
+            //rows += `<td>${item.notes}</td>`;
+
+            if (primaryEntityKeyId === 0 || trigger !== '@ERP.Front.Helpers.Enums.Common.FormTriggers.Show.ToString()') {
+                rows += `<td><a href="javascript:void(0)" onclick="return DeleteOtherPaymentsRow(${item.index})"><i class="mx-2 fas fa-trash-alt text-danger"></i></a>`;
+                rows += `<a href="javascript:void(0)" onclick="return GetOtherPaymentsRow(${item.index})"><i class="mx-2 fas fa-edit text-success"></i></a></td>`;
+            } else {
+                rows += '<td></td>';
+            }
+
+            rows += '</tr>';
+        });
+
+        setTimeout(function () {
+            _tblOtherPaymentsSelectorBody.html(rows);
+        }, 100);
+    };
+
+    const DeleteOtherPaymentsRow = function (index) {
+
+        const current = _otherPaymentsArr.find(z => z.index === index);
+
+        const indexOfCurrent = _otherPaymentsArr.indexOf(current);
+
+        if (!current.id) {
+
+           _otherPaymentsArr.splice(indexOfCurrent, 1);
+
+        } else {
+
+            current.rowStatus = DeletedStatus;
+
+           _otherPaymentsArr.splice(indexOfCurrent, 1,current);
+        }
+
+        bindOtherPaymentsTable();
+
+        calcOtherPaymentTotal();
+
+        _OtherPaymentsListStr.val(_otherPaymentsArr.length === 0 ? '' : JSON.stringify(_otherPaymentsArr));
+    };
+
+    const LoadOtherPaymentsData = function () {
+
+        $('#tblLoaderLine').show();
+
+        $.ajax({
+            url: `${baseUrl}/PmContract/GetAllPmOtherPayments`,
+            method: 'GET',
+            headers: {
+                        'Authorization': `Bearer ${$_token}`
+            },
+            data: {
+                id: primaryEntityKeyId
+            }
+        }).done(function (data) {
+
+            _otherPaymentsArr = [...data.result];
+
+            $.each(_otherPaymentsArr, function (i, item) {
+                item.index = ++tblOtherPaymentsCounterIndex;
+            });
+
+            bindOtherPaymentsTable();
+
+            _OtherPaymentsListStr.val(JSON.stringify(_otherPaymentsArr));
+
+             calcOtherPaymentTotal();
+
+            $('#tblLoaderLine').hide();
+        });
+
+    };
+
+    const GetOtherPaymentsRow = function (tblIndex) {
+
+        clearFormOtherPayments();
+
+        $('#btnAddOtherPaymentsRow').hide();
+        $('#btnUpdateOtherPaymentsRow').show();
+        $('#btnCancelOtherPaymentsRow').show();
+
+        const current = _otherPaymentsArr.find(z => z.index === tblIndex);
+
+        $('#OtherPayments #PayAmount').val(current.amount);
+        $('#OtherPayments #PayAmount').parent('.form-line').addClass('focused');
+
+        $(`#OtherPayments #OtherPaymentTypesId`)
+        .append($("<option selected='selected'></option>")
+        .val(current.otherPaymentTypesId)
+        .text(current.otherPaymentTypes))
+        .trigger('change');
+
+        updatedOtherPaymentsRow = current;
+    };
+
+    const clearFormOtherPayments = function () {
+
+        $('#OtherPayments .card select').val('').trigger('change');
+        $('#OtherPayments .card input').val('');
+        $('#OtherPayments .card textarea').val('');
+    };
+
+    const validateOtherPayments = function () {
+
+        if (!$('#OtherPayments #OtherPaymentTypesId').find(':selected').val()) {
+            toastr.warning('@PmContract.OtherPaymentTypesId' + ' : ' + '@ERP.ResourcePack.Common.Settings.Required')
+            return false;
+        }
+
+        if (!$('#OtherPayments #PayAmount').val()) {
+            toastr.warning('@PmContract.PayAmount' + ' : ' + '@ERP.ResourcePack.Common.Settings.Required')
+            return false;
+        }
+
+        return true;
+    };
+
+    function printExc() {
+        $('.page-loader-wrapper').show();
+
+        const parmss = {
+            PropertyId: $('#searchBox #PropertyId').find(':selected').val(),
+            StatusLkpId: $('#searchBox #StatusLkpId').find(':selected').val(),
+            PmTenantId: $('#searchBox #PmTenantId').find(':selected').val(),
+            PmUnitTypeLkpId: $('#searchBox #PmUnitTypeLkpId').find(':selected').val(),
+            ContractNumber: $('#searchBox #ContractNumber').val(),
+            length: 1000000
+        };
+
+        const columns = [
+            {
+                "data": "result.data.id",
+                'render': function (data, type, row, meta) {
+                    return meta.row + meta.settings._iDisplayStart + 1;
+                }
+            },
+            {
+                "data": "ContractNumber",
+                "name": "ContractNumber",
+                "autoWidth": true
+            },
+             {
+                "data": null,
+                "autoWidth": true,
+                "render": function (d, t, row) {
+
+                    if (row.PmProperties == null) return '';
+
+                    if (lang === 'ar-EG') return row.PmProperties.PropertyNameAr;
+
+                    return row.PmProperties.PropertyNameEn;
+                }
+            },
+            {
+                "data": null,
+                "autoWidth": true,
+                "render": function (d, t, row) {
+
+                    if (row.PmTenants == null) return '';
+
+                    if (lang === 'ar-EG') return row.PmTenants.TenantNameAr;
+
+                    return row.PmTenants.TenantNameEn;
+                }
+            },
+            {
+                "data": null,
+                "autoWidth": true,
+                "render": function (d, t, row) {
+
+                    if (row.FndUnitTypeLkp == null) return '';
+
+                    if (lang === 'ar-EG') return row.FndUnitTypeLkp.NameAr;
+
+                    return row.FndUnitTypeLkp.NameEn;
+                }
+            },
+            {
+                "data": null,
+                "autoWidth": true,
+                "render": function (d, t, row) {
+
+                    if (row.FndStatusLkp == null) return '';
+
+                    if (lang === 'ar-EG')  return row.FndStatusLkp.NameAr;
+
+                    return row.FndStatusLkp.NameEn;
+                }
+            },
+            {
+                "data": null,
+                "autoWidth": true,
+                "render": function (d, t, row) {
+
+                    if (row.PmTenants == null) return '';
+
+                    return row.PmTenants.IdNumber;
+                }
+            },
+             {
+                "data": null,
+                "autoWidth": true,
+                "render": function (d, t, row) {
+
+                    if (row.PmTenants == null) return '';
+
+                    return row.PmTenants.MobileNumber;
+                }
+            }
+        ];
+
+        const dtObj = {
+            "language": dataTableLang,
+            "dom": 'Bfrtip',
+            "buttons": [
+                {
+                    extend: 'excel',
+                    messageTop: `${$('#ContractNumber').siblings().text()}: ${(parmss.ContractNumber) ? parmss.ContractNumber : '--'}, ${$('[for="PropertyId"]').text()}: ${(parmss.PropertyId) ? parmss.PropertyId : '--'}, ${$('[for="StatusLkpId"]').text()}: ${(parmss.StatusLkpId) ? parmss.StatusLkpId : '--'}, ${$('[for="PmTenantId"]').text()}: ${(parmss.PmTenantId) ? parmss.PmTenantId : '--'}, ${$('[for="PmUnitTypeLkpId"]').text()}: ${(parmss.PmUnitTypeLkpId) ? parmss.PmUnitTypeLkpId : '--'}, ${$('[for="ContractNumber"]').text()}: ${(parmss.ContractNumber) ? parmss.ContractNumber : '--'}`
+                },
+
+            ],
+            "ajax": {
+                "url": _loadDataUrl,
+                "type": "POST",
+                "datatype": "json",
+                "data": parmss,
+                "complete": function (d) {
+                    _tblLoader.hide();
+                }
+            },
+            "columns": columns,
+
+            "initComplete": function () {
+                $('#tblPmContractPrint_wrapper button.dt-button').click();
+                $('#tblPmContractPrint_wrapper').parent().addClass('d-none');
+
+            }
+        };
+
+        $('#tblPmContractPrint').dataTable().fnDestroy();
+        $('#tblPmContractPrint').DataTable(dtObj).on('buttons-processing', function (e, indicator) { if (!indicator) { $('.page-loader-wrapper').hide() } });
+
+
+    }
+
+</script>

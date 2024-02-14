@@ -1,0 +1,11 @@
+﻿@{
+    ViewBag.Title = ERP.ResourcePack.Accounts.FaAssetCategory.Title;
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@Html.Action(nameof(ERP.Web.UI.Controllers.Accounts.DefineAssetController.DefineAssetSearch))
+@Html.Action(nameof(ERP.Web.UI.Controllers.Accounts.DefineAssetController.DefineAssetData))
+
+@section scripts{
+    @Html.Partial("~/ViewsScripts/_Accounts/FaAssetCategory/FaAssetCategoryScripts.cshtml")
+}

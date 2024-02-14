@@ -1,0 +1,14 @@
+﻿@{
+    ViewBag.Title = ERP.ResourcePack.CRM.Deals.deals.Title;
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@Html.Action(nameof(ERP.Web.UI.Controllers.CRM.CrmDealsController.CrmDealsSearch))
+@Html.Action(nameof(ERP.Web.UI.Controllers.CRM.CrmDealsController.CrmDealsData))
+
+@section scripts{
+    <script>let formView = false;</script>
+
+    @Html.Partial("~/ViewsScripts/_CRM/CrmDealsScripts.cshtml")
+}
+ 

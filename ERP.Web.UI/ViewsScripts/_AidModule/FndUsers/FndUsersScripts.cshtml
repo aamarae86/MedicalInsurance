@@ -1,0 +1,446 @@
+﻿@using ERP.ResourcePack.AidModule
+@using ERP.Web.UI.Controllers.AidModule
+@using ERP.Authorization;
+@{
+    string permissionsStr = TempData["Permissions"]?.ToString() ?? string.Empty;
+    string encUpdateTrigger = ERP.Front.Helpers.Enums.Common.EncUpdate;
+    string encInsertTrigger = ERP.Front.Helpers.Enums.Common.EncInsert;
+    string encShowTrigger = ERP.Front.Helpers.Enums.Common.EncShow;
+}
+
+    <script>
+
+    const _mainController = "UnifiedUsers", _apiAppService = "PortalUserUnified";
+
+    $(function () {
+        LoadDataGrid();
+
+        if (_permissions == "") {
+            $('#Home').addClass('menu-toggle waves-effect waves-block toggled');
+        }
+        else {
+            $('#UnifiedUsers').addClass('active');
+        }
+
+        $('#Source').parent('.form-line').addClass('focused');
+        $('#SourceCreatorName').parent('.form-line').addClass('focused');
+        $('#CreationTimeStr').parent('.form-line').addClass('focused');
+
+        $('#Password').attr('type','password');
+        $('#ConfirmPassword').attr('type', 'password');
+    });
+
+    const _loadDataUrl = `${$PrefixHostName}/${_mainController}/@nameof(UnifiedUsersController.LoadDataGrid)`;
+    const _tblSelector = $('#tblFndUsers');
+
+    const _permissions = '@permissionsStr';
+    const _updatePermission = '@PermissionNames.Pages_PortalUser_Update';
+    const _deletePermission = '@PermissionNames.Pages_PortalUser_Delete';
+
+    var OnBegin = function (response) {
+        $('.page-loader-wrapper').show();
+    };
+
+    var OnSuccess = function (response) {
+
+        $('#btnSubmition').prop('disabled', false);
+
+        if (response.success) {
+
+            if (response.customRestResult.trigger === '@ERP.Front.Helpers.Enums.Common.FormTriggers.Insert') {
+
+                toastr.success(response.customRestResult.message);
+
+                setTimeout(function () {
+                    window.location.href = $PrefixHostName + '/PortalUserData/FormView?id&t=@encInsertTrigger' + '&tt=' + response.result.encId;
+                }, 200);
+            }
+            else if (response.customRestResult.trigger === '@ERP.Front.Helpers.Enums.Common.FormTriggers.Update') {
+
+                toastr.success(response.customRestResult.message);
+
+                setTimeout(function () {
+                    window.location.href = $PrefixHostName + '/UnifiedUsers';
+                }, 200);
+            }
+            else {
+                toastr.error(response.customRestResult.message);
+            }
+        }
+        else {
+            toastr.error(response.error.message);
+        }
+    };
+
+    var OnComplete = function (response) {
+        $('.page-loader-wrapper').hide();
+    };
+
+    var OnFailure = function (response) {
+        $('#btnSubmition').prop('disabled', false);
+    };
+
+    const LoadDataGrid = function () {
+
+        const params = {
+            Name: $('#searchBox #Name').val(),
+            CaseNumber: $('#searchBox #CaseNumber').val(),
+            IdNumber: $('#searchBox #IdNumber').val(),
+            FromDate: $('#searchBox #FromDate').val(),
+            ToDate: $('#searchBox #ToDate').val(),
+            PhoneNumber: $('#searchBox #PhoneNumber').val(),
+            GenderLkpId: $('#searchBox #GenderLkpId').find(':selected').val(),
+            CityLkpId: $('#searchBox #CityLkpId').find(':selected').val(),
+            NationalityLkpId: $('#searchBox #NationalityLkpId').find(':selected').val(),
+            CreatorId: $('#searchBox #CreatorId').find(':selected').val(),
+            SourceId: $('#searchBox #SourceId').find(':selected').val(),
+            CaseCategoryLkpId: $('#searchBox #CaseCategoryLkpId').find(':selected').val(),
+            AddToLoggedTenant: $('#searchBox #AddToLoggedTenant').is(':checked')
+        };
+
+        const columns = [
+            {
+                "data": "result.data.id",
+                'render': function (data, type, row, meta) {
+                    return meta.row + meta.settings._iDisplayStart + 1;
+                }
+            },
+            {
+                "data": "CaseNumber",
+                "name": "CaseNumber",
+                "autoWidth": true
+            },
+            {
+                "data": "Name",
+                "name": "Name",
+                "autoWidth": true,
+                'render': function (d, t, row) {
+                    return `<a style="color:#3443434;text-decoration:underline" href="${$PrefixHostName}/UnifiedUsers/FormView?id=${row.EncId}&t=@encShowTrigger">${row.Name == null ? '' : row.Name}</a>`;
+                }
+            },
+            {
+                "data": "IdNumber",
+                "name": "IdNumber",
+                "autoWidth": true
+            },
+            {
+                "data": null,
+                "autoWidth": true,
+                "render": function (d, t, row) {
+                    return row.FndCaseCategoryLkp ? (lang === 'ar-EG' ? row.FndCaseCategoryLkp.NameAr : row.FndCaseCategoryLkp.NameEn) : '';
+                }
+            },
+            {
+                "data": "MobileNumber1",
+                "name": "MobileNumber1",
+                "autoWidth": true
+            },
+            {
+                "data": null,
+                "autoWidth": true,
+                "render": function (d, t, row) {
+                    return row.CityFndLookupValues ? (lang === 'ar-EG' ? row.CityFndLookupValues.NameAr : row.CityFndLookupValues.NameEn) : '';
+                }
+            },
+            {
+                "data": null,
+                "autoWidth": true,
+                "render": function (d, t, row) {
+                    return row.NationalityFndLookupValues ? (lang === 'ar-EG' ? row.NationalityFndLookupValues.NameAr : row.NationalityFndLookupValues.NameEn) : '';
+                }
+            },
+            {
+                "data": null,
+                "autoWidth": true,
+                "render": function (d, t, row) {
+                    return row.GenderFndLookupValues ? (lang === 'ar-EG' ? row.GenderFndLookupValues.NameAr : row.GenderFndLookupValues.NameEn) : '';
+                }
+            },
+            {
+                "data": null,
+                "sortable": false,
+                "render": function (data, type, row) {
+
+                    let formAction = `${$PrefixHostName}/${_mainController}/@nameof(UnifiedUsersController.UnifiedUsersForm)`;
+                    let formTitle = '@ERP.ResourcePack.AidModule.FndUsers.Title', btns = '';
+
+                    if (_permissions.includes(_updatePermission)) {
+                        btns += `<a href="${$PrefixHostName}/UnifiedUsers/FormView?id=${row.EncId}&t=@encUpdateTrigger" title="@ERP.ResourcePack.Common.Settings.Edit"><i class="mx-2 fas fa-edit text-info"></i></a>`;
+                    }
+
+                    btns += `<a href="${$PrefixHostName}/UnifiedUsers/FormView?id=${row.EncId}&t=@encShowTrigger" title="@ERP.ResourcePack.Common.Settings.Show"><i class="mx-2 fas fa-eye text-info"></i></a>`;
+
+                    const _auditedPermission = '@PermissionNames.Pages_PortalUser_Audit';
+
+                    if (_permissions.includes(_auditedPermission)) {
+
+                        row.permission = _auditedPermission;
+
+                        btns += GetAuditedButton(row);
+                    }
+
+                    return btns;
+                }
+            }
+        ];
+
+        const dtObj = {
+            "processing": true,
+            "serverSide": true,
+            "filter": false,
+            "orderMulti": false,
+            "language": dataTableLang,
+            "ajax": {
+                "url": _loadDataUrl,
+                "type": "POST",
+                "datatype": "json",
+                "data": params,
+                "complete": function () {}
+            },
+            "columns": columns,
+            "initComplete": function () {
+                $('[data-toggle="tooltip"]').tooltip();
+            }
+
+        };
+
+        _tblSelector.dataTable().fnDestroy();
+        _tblSelector.DataTable(dtObj).on('draw', function () { $('[data-toggle="tooltip"]').tooltip(); });
+
+        setTimeout(function () {
+            $(".sorting_1").removeAttr('colspan');
+        }, 500);
+    };
+
+    $('#btnSubmition').on('click', function () {
+
+        const user = {
+            UserName: $('#UsName').val(),
+            Password: $('#Password2').val(),
+            Surname: $('#UsName').val(),
+            EmailAddress:$('#EmailAddress').val(),
+            Password:$('#Password2').val(),
+            Name:$('#Name').val()
+        };
+
+        $('#UserStr').val(JSON.stringify(user));
+
+
+        if ($('#mainForm').valid()) {
+
+                $(this).prop('disabled', true);
+
+                if ($('#UsName').val() && !$('#EmailAddress').val()) {
+                    toastr.warning(`@FndUsers.EmailAddress,@ERP.ResourcePack.Common.Settings.Required !`);
+                    $(this).prop('disabled', false);
+
+                    return;
+                }
+
+                if ($('#UsName').val() && !$('#Password2').val()) {
+                    toastr.warning(`@FndUsers.Password,@ERP.ResourcePack.Common.Settings.Required !`);
+                    $(this).prop('disabled', false);
+
+                    return;
+                }
+
+                if ($('#EmailAddress').val() && !$('#Password2').val()) {
+                    toastr.warning(`@FndUsers.Password,@ERP.ResourcePack.Common.Settings.Required !`);
+                    $(this).prop('disabled', false);
+
+                    return;
+                }
+
+                if ($('#EmailAddress').val() && !$('#UsName').val()) {
+                    toastr.warning(`@FndUsers.UserName,@ERP.ResourcePack.Common.Settings.Required !`);
+                    $(this).prop('disabled', false);
+
+                    return;
+                }
+
+                if ($('#Password2').val() && !$('#EmailAddress').val()) {
+                    toastr.warning(`@FndUsers.EmailAddress,@ERP.ResourcePack.Common.Settings.Required !`);
+                    $(this).prop('disabled', false);
+
+                    return;
+                }
+
+                if ($('#Password2').val() && !$('#UsName').val()) {
+                    toastr.warning(`@FndUsers.UserName,@ERP.ResourcePack.Common.Settings.Required !`);
+                    $(this).prop('disabled', false);
+
+                    return;
+                }
+
+                $('#mainForm').submit();
+
+        } else {
+                $(this).prop('disabled', false);
+
+        }
+
+    });
+
+    $('#searchBox #GenderLkpId').select2(ReturnSelect2ObjectForLkpsTypes('@ERP.Front.Helpers.Enums.Common.FndLkpsTypes.Gender.ToString()'));
+    $('#searchBox #CityLkpId').select2(ReturnSelect2ObjectForLkpsTypes('@ERP.Front.Helpers.Enums.Common.FndLkpsTypes.City.ToString()'));
+    $('#searchBox #NationalityLkpId').select2(ReturnSelect2ObjectForLkpsTypes('@ERP.Front.Helpers.Enums.Common.FndLkpsTypes.Nationality.ToString()'));
+    $('#GenderLkpId').select2(ReturnSelect2ObjectForLkpsTypes('@ERP.Front.Helpers.Enums.Common.FndLkpsTypes.Gender.ToString()'));
+    $('#CityLkpId').select2(ReturnSelect2ObjectForLkpsTypes('@ERP.Front.Helpers.Enums.Common.FndLkpsTypes.City.ToString()'));
+    $('#QualificationLkpId').select2(ReturnSelect2ObjectForLkpsTypes('@ERP.Front.Helpers.Enums.Common.FndLkpsTypes.Qualification.ToString()'));
+    $('#MaritalStatusLkpId').select2(ReturnSelect2ObjectForLkpsTypes('@ERP.Front.Helpers.Enums.Common.FndLkpsTypes.MaritalStatus.ToString()'));
+    $('#MaritalStatusRelativesLkpId').select2(ReturnSelect2ObjectForLkpsTypes('@ERP.Front.Helpers.Enums.Common.FndLkpsTypes.MaritalStatus.ToString()'));
+    $('#NationalityLkpId').select2(ReturnSelect2ObjectForLkpsTypes('@ERP.Front.Helpers.Enums.Common.FndLkpsTypes.Nationality.ToString()'));
+    $('#RelativesTypeLkpId').select2(ReturnSelect2ObjectForLkpsTypes('@ERP.Front.Helpers.Enums.Common.FndLkpsTypes.RelativesType.ToString()'));
+    $('#RelNationality').select2(ReturnSelect2ObjectForLkpsTypes('@ERP.Front.Helpers.Enums.Common.FndLkpsTypes.Nationality.ToString()'));
+    $('#RelQualification').select2(ReturnSelect2ObjectForLkpsTypes('@ERP.Front.Helpers.Enums.Common.FndLkpsTypes.Qualification.ToString()'));
+    $('#RelGender').select2(ReturnSelect2ObjectForLkpsTypes('@ERP.Front.Helpers.Enums.Common.FndLkpsTypes.Gender.ToString()'));
+    $('#CaseCategoryLkpId').select2(ReturnSelect2ObjectForLkpsTypes('@ERP.Front.Helpers.Enums.Common.FndLkpsTypes.PortalUsersCaseCategory.ToString()'));
+    $('#searchBox #CaseCategoryLkpId').select2(ReturnSelect2ObjectForLkpsTypes('@ERP.Front.Helpers.Enums.Common.FndLkpsTypes.PortalUsersCaseCategory.ToString()'));
+    $('#searchBox #CreatorId').select2(ReturnSelect2ObjectDefault(`${baseUrl}/User/GetUsersSelect2`));
+    $('#searchBox #SourceId').select2(ReturnSelect2ObjectDefault(`${baseUrl}/Tenant/GetTenantsSelect2`));
+
+    </script>
+
+
+
+<script>
+
+    const txtRepeat = '@FndUsers.IdNumbersRepeated';
+
+    const idNumber = $('#IdNumber'), idWNumber1 = $('#IdNumberWifeHusband1'),
+        idWNumber2 = $('#IdNumberWife2'), idWNumber3 = $('#IdNumberWife3'), idWNumber4 = $('#IdNumberWife4');
+
+
+    const IdNumberNotRepeatedInDB = function (e) {
+
+        const data = {
+            id: primaryEntityKeyId,
+            idNumber: idNumber.val(),
+            idNumberWifeHusband1: idWNumber1.val(),
+            idNumberWife2:idWNumber2.val(),
+            idNumberWife3: idWNumber3.val(),
+            idNumberWife4: idWNumber4.val()
+        };
+
+        $.ajax({
+            url: `${baseUrl}/PortalUserUnified/IdNumberNotRepeatedInDB`,
+            type: 'POST',
+            headers: {
+                'Content-Type' : 'application/json',
+                'Authorization': `Bearer ${$_token}`
+            },
+            data: JSON.stringify(data)
+        }).done(function (response) {
+
+            if (response.result) {
+                toastr.warning('@FndUsers.IdRegisterdBefore');
+
+                e.target.value = '';
+            }
+
+        });
+
+    };
+
+    idNumber.on('change', function (e) { IdNumberNotRepeatedInDB(e); });
+    idWNumber1.on('change', function (e) { IdNumberNotRepeatedInDB(e); });
+    idWNumber2.on('change', function (e) { IdNumberNotRepeatedInDB(e); });
+    idWNumber3.on('change', function (e) { IdNumberNotRepeatedInDB(e); });
+    idWNumber4.on('change', function (e) { IdNumberNotRepeatedInDB(e); });
+
+    idNumber.on('keyup', function () {
+
+        const currentVal = $(this).val();
+
+        if (currentVal === '') return;
+
+        if (
+            currentVal === idWNumber1.val() ||
+            currentVal === idWNumber2.val() ||
+            currentVal === idWNumber3.val() ||
+            currentVal === idWNumber4.val()
+        ) {
+            $(this).val('');
+            toastr.warning(txtRepeat);
+            return;
+        }
+
+    });
+
+    idWNumber1.on('keyup', function () {
+
+        const currentVal = $(this).val();
+
+        if (currentVal === '') return;
+
+        if (
+            currentVal === idNumber.val() ||
+            currentVal === idWNumber2.val() ||
+            currentVal === idWNumber3.val() ||
+            currentVal === idWNumber4.val()
+        ) {
+            $(this).val('');
+            toastr.warning(txtRepeat);
+            return;
+        }
+
+    });
+
+    idWNumber2.on('keyup', function () {
+
+        const currentVal = $(this).val();
+
+        if (currentVal === '') return;
+
+        if (
+            currentVal === idNumber.val() ||
+            currentVal === idWNumber1.val() ||
+            currentVal === idWNumber3.val() ||
+            currentVal === idWNumber4.val()
+        ) {
+            $(this).val('');
+            toastr.warning(txtRepeat);
+            return;
+        }
+
+    });
+
+    idWNumber3.on('keyup', function () {
+
+        const currentVal = $(this).val();
+
+        if (currentVal === '') return;
+
+        if (
+            currentVal === idNumber.val() ||
+            currentVal === idWNumber1.val() ||
+            currentVal === idWNumber2.val() ||
+            currentVal === idWNumber4.val()
+        ) {
+            $(this).val('');
+            toastr.warning(txtRepeat);
+            return;
+        }
+
+    });
+
+    idWNumber4.on('keyup', function () {
+
+        const currentVal = $(this).val();
+
+        if (currentVal === '') return;
+
+        if (
+            currentVal === idNumber.val() ||
+            currentVal === idWNumber1.val() ||
+            currentVal === idWNumber2.val() ||
+            currentVal === idWNumber3.val()
+        ) {
+            $(this).val('');
+            toastr.warning(txtRepeat);
+            return;
+        }
+
+    });
+
+</script>

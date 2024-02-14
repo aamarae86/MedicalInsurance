@@ -1,0 +1,11 @@
+﻿@{
+    ViewBag.Title = ERP.ResourcePack.Authentications.Users.Title;
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@Html.Action(nameof(ERP.Web.UI.Controllers.Authentications.UsersController.UsersSearch))
+@Html.Action(nameof(ERP.Web.UI.Controllers.Authentications.UsersController.UsersData))
+
+@section scripts{
+    @Html.Partial("~/ViewsScripts/Users/UsersScripts.cshtml")
+}

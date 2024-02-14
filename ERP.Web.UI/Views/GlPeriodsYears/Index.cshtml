@@ -1,0 +1,12 @@
+﻿@{
+    ViewBag.Title = ERP.ResourcePack.Accounts.GlPeriodsYears.Title;
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@Html.Action(nameof(ERP.Web.UI.Controllers.Accounts.GlPeriodsYearsController.GlPeriodsYearsSearch))
+@Html.Action(nameof(ERP.Web.UI.Controllers.Accounts.GlPeriodsYearsController.GlPeriodsYearsData))
+
+@section scripts{
+    <script>const formView = false;</script>
+    @Html.Partial("~/ViewsScripts/GlPeriodsYears/GlPeriodsYearsScripts.cshtml")
+}

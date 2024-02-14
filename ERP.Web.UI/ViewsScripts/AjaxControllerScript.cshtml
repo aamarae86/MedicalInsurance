@@ -1,0 +1,190 @@
+﻿<script>
+
+    const _booBoxMessageCanceling = '@ERP.ResourcePack.Common.Settings.AreYouSureAboutCanceling';
+    const _booBoxMessagePosting = '@ERP.ResourcePack.Common.Settings.AreYouSureAboutPosting';
+    const _booBoxMessageClosing = '@ERP.ResourcePack.Common.Settings.AreYouSureAboutClosing';
+    const _booBoxMessageForwaring = '@ERP.ResourcePack.Common.Settings.AreYouSureAboutForwarding';
+    const _booBoxMessageRefusing = '@ERP.ResourcePack.Common.Settings.AreYouSureAboutRefusing';
+    const _booBoxMessageCopying = '@ERP.ResourcePack.Common.Settings.AreYouSureAboutCoping';
+    const _booBoxMessageCahsing = '@ERP.ResourcePack.Common.Settings.AreYouSureAboutCahsing';
+    const _booBoxMessageRenew = '@ERP.ResourcePack.Common.Settings.AreYouSureAboutRenew';
+    const _booBoxMessageDeny = '@ERP.ResourcePack.Common.Settings.AreYouSureAboutDeny';
+    const _booBoxMessageTurnOff = '@ERP.ResourcePack.Common.Settings.AreYouSureAboutTurnOff';
+    const _booBoxMessageUpPost = '@ERP.ResourcePack.Common.Settings.AreYouSureAboutUnPost';
+    const _booBoxMessageReplace = '@ERP.ResourcePack.Common.Settings.AreYouSureAboutReplace';
+    const _booBoxMessageForEdit = '@ERP.ResourcePack.Common.Settings.AreYouSureAboutRefusingForEdit';
+
+
+    const bootBoxDefaultBtns = {
+        confirm: {
+            label: '@ERP.ResourcePack.Common.Settings.BtnYes',
+            className: 'btn-success'
+        },
+        cancel: {
+            label: '@ERP.ResourcePack.Common.Settings.BtnNo',
+            className: 'btn-default'
+        }
+    };
+
+    const AjaxController = {
+
+        DeleteMainTableRow: function (id, _url) {
+
+            bootbox.confirm({
+                message: "@ERP.ResourcePack.Common.Settings.DeleteBootboxMessage",
+                buttons: bootBoxDefaultBtns,
+                callback: function (result) {
+
+                    if (result) {
+
+                        $.ajax({
+                            url: _url,
+                            method: 'GET',
+                            headers: {
+                                'Authorization': `Bearer ${$_token}`
+                            },
+                            data: {
+                                id: id
+                            }
+                        }).done(function (response) {
+
+                            if (response.success) {
+                                toastr.success(response.customRestResult.message);
+                                LoadDataGrid();
+                            }
+                            else {
+                                toastr.error(response.customRestResult.message);
+                            }
+
+                        }).fail(function (response) {
+                            toastr.error(response);
+                        });
+
+                    }
+
+                }
+            });
+
+        },
+
+        GetFormModal: function (id, trigger, _url, title) {
+
+            $('.page-loader-wrapper').css("display", "block");
+
+            const parms = {
+                id: id,
+                trigger: trigger
+            };
+
+            $.ajax({
+                url: _url,
+                method: 'GET',
+                data: parms
+            }).done(function (data) {
+
+                $('.page-loader-wrapper').css("display", "none");
+
+                _mainModalTitle.text(`${title}`);
+                _mainModalBody.html(data);
+
+                if (trigger === '@ERP.Front.Helpers.Enums.Common.FormTriggers.Update' || trigger === '@ERP.Front.Helpers.Enums.Common.FormTriggers.Show') {
+
+                    let _inputSelector = $('#main-modal input.form-control');
+
+                    _inputSelector.parent('.form-line').addClass('focused');
+                    $('#main-modal textarea.form-control').parent('.form-line').addClass('focused');
+
+                    if (trigger === '@ERP.Front.Helpers.Enums.Common.FormTriggers.Show') {
+                        _mainModal.find('input,select,textarea').prop('disabled', true);
+                        _mainModal.find('button[type="submit"]').remove();
+                    }
+                }
+
+                _mainModal.modal(_mainModalOprions);
+
+            }).fail(function (response) {
+
+                $('.page-loader-wrapper').css("display", "none");
+
+                toastr.error(response.responseText);
+            });
+
+        }
+       
+
+
+        , GetAuditedDataModal: function (permission, creationTime, modificationTime, postTime, unPostTime, createdUserId, updateUserId, postedUserId, unPostedUserId) {
+
+            $('.page-loader-wrapper').css("display", "block");
+
+            const parms = {
+                permission: permission,
+                createdUserId: createdUserId,
+                updateUserId: updateUserId,
+                postedUserId: postedUserId,
+                unPostedUserId: unPostedUserId
+            };
+
+            $.ajax({
+                url: `${baseUrl}/AuditedData/GetFullAuditedUserNameData`,
+                method: 'GET',
+                data: parms,
+                headers: {
+                    'Authorization': `Bearer ${$_token}`
+                }
+            }).done(function (data) {
+
+                $('.page-loader-wrapper').css("display", "none");
+
+                const auditedObj = {
+                    creationTime: creationTime,
+                    modificationTime: modificationTime,
+                    postTime: postTime,
+                    unPostTime: unPostTime
+                };
+
+                drawAuditedDataTable(data, auditedObj);
+
+            }).fail(function (response) {
+
+                $('.page-loader-wrapper').css("display", "none");
+
+                toastr.error(response.responseJSON.error.message);
+            });
+        }
+    };
+
+    const drawAuditedDataTable = function (data, auditedObj) {
+
+        const tds = [];
+
+        tds.push(`${data.result.createdBy ?? ''}`);
+        tds.push(`${auditedObj.creationTime}`);
+        tds.push(`${data.result.updatedBy ?? ''}`);
+        tds.push(`${auditedObj.modificationTime ?? ''}`);
+        tds.push(`${data.result.postedBy ?? ''}`);
+        tds.push(`${auditedObj.postTime ?? ''}`);
+        tds.push(`${data.result.unPostedBy ?? ''}`);
+        tds.push(`${auditedObj.unPostTime ?? ''}`);
+
+        $('#audited-modal .modal-body table tbody td').each(function (index, item) {
+
+            if (index > 3 && !tds[index]) item.parentNode.style.display = 'none';
+            else item.parentNode.removeAttribute('style');
+
+            item.textContent = tds[index];
+        });
+
+        $('#audited-modal').modal(_mainModalOprions);
+    };
+
+    const GetAuditedButton = function (row) {
+
+        const params = `'${row.permission}','${row.CreationTimeStr}','${!row.LastModificationTimeStr ? '' : row.LastModificationTimeStr}',
+                                       '${!row.PostedTimeStr ? '' : row.PostedTimeStr}','${!row.UnPostedTimeStr ? '' : row.UnPostedTimeStr}',
+                                        ${row.CreatorUserId},${row.LastModifierUserId},${row.PostUserId},${row.UnPostUserId}`;
+
+        return `<a href="javascript:void(0);" onclick="AjaxController.GetAuditedDataModal(${params})" title="@ERP.ResourcePack.Common.Settings.AuditedInfo"><i class="mx-2 fas fa-info-circle text-info"></i></a>`;
+    };
+
+</script>

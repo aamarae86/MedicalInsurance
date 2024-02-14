@@ -1,0 +1,48 @@
+﻿@using ERP.Web.UI.Models.ViewModels.AidModule
+@model PortalUsersVM
+
+<div class="card" style="display:@(ViewBag.trigger == ERP.Front.Helpers.Enums.Common.FormTriggers.Show.ToString() ? "none":"block" ) ">
+    <div class="body">
+        <div class="row clearfix">
+            <div class="col-sm-3">
+                <div class="form-group form-float">
+                    <div class="form-line">
+                        @Html.TextBoxFor(z => z.DutyType, new { @class = "form-control" })
+                        @Html.LabelFor(z => z.DutyType, new { @class = "form-label" })
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-3">
+                <div class="form-group form-float">
+                    <div class="form-line">
+                        @Html.TextBoxFor(z => z.DutyDescription, new { @class = "form-control" })
+                        @Html.LabelFor(z => z.DutyDescription, new { @class = "form-label" })
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-3">
+                <div class="form-group form-float">
+                    <div class="form-line">
+                        @Html.TextBoxFor(z => z.MonthlyAmount, new { @class = "form-control" })
+                        @Html.LabelFor(z => z.MonthlyAmount, new { @class = "form-label" })
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-3">
+                <div class="form-group form-float">
+                    <div class="form-line">
+                        @Html.TextBoxFor(z => z.TotalAmount, new { @class = "form-control" })
+                        @Html.LabelFor(z => z.TotalAmount, new { @class = "form-label" })
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-4">
+                <div class="form-group m-2">
+                    <button id="btnAddDutiesRow" onclick="return AddDutiesDetail()" class="btn btn-success">@ERP.ResourcePack.Common.Settings.BtnAddNew</button>
+                    <button style="display:none;" id="btnUpdateDutiesRow" onclick="return UpdateDutiesDetailRow()" class="btn btn-info">@ERP.ResourcePack.Common.Settings.BtnUpdate</button>
+                    <button style="display:none;" id="btnCancelDutiesRow" onclick="clearFormAdding(); $('#btnCancelDetailRow').hide();$('#btnUpdateDutiesRow').hide();$('#btnAddDutiesRow').show();" class="btn btn-danger">@ERP.ResourcePack.Common.Settings.BtnCancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

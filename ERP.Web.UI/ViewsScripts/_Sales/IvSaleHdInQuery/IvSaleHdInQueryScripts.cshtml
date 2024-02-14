@@ -1,0 +1,759 @@
+﻿@using ERP.ResourcePack.Sales
+@using ERP.Web.UI.Controllers.Sales
+@using ERP.Authorization;
+@{
+    string permissionsStr = TempData["Permissions"].ToString();
+    string encUpdateTrigger = ERP.Front.Helpers.Enums.Common.EncUpdate;
+    string encInsertTrigger = ERP.Front.Helpers.Enums.Common.EncInsert;
+    string encShowTrigger = ERP.Front.Helpers.Enums.Common.EncShow;
+}
+
+
+
+<script>
+    const _mainController = "IvSaleHdInQuery"
+    const _newStatus = @Convert.ToInt64(ERP.Front.Helpers.Enums.Common.IvSaleHd.New);
+
+    $(function () {
+
+        LoadDataGrid();
+        $('#tblIvSaleHdPrint thead').html($('#tblIvSaleHd thead').html());
+        $('#tblIvSaleHdPrint thead tr :last-child').remove();
+        $('#IvSaleHdInQuery').addClass('active');
+        $('#CurrencyId').trigger('change');
+        $('#ArCustomerId').trigger('change');
+        //$('#Notes').parent('.form-line').addClass('focused');
+        //$('#Amount').parent('.form-line').addClass('focused');
+
+        @*var IsCash = '@(ViewData["PaymentMethodLkpId"])';
+        console.log('IsCash = ' + IsCash);
+            if (IsCash != 'True') {
+                document.getElementById('CreditCardRefDiv').style.display = "block";*@
+        var paymentId = '@(ViewData["PaymentMethodLkpId"])';
+            console.log(paymentId);
+            showHideCreditCardRef(paymentId);
+            $('#CreditCardRef').prop('disabled', true)
+        
+    });
+
+    function showHideCreditCardRef(id) {
+
+        if (id == 31674) {
+            document.getElementById('CreditCardRefDiv').style.display = "block";
+        } else {
+            document.getElementById('CreditCardRefDiv').style.display = "none";
+        }
+    }
+
+    const _loadDataUrl = `${$PrefixHostName}/${_mainController}/@nameof(IvSaleHdInQueryController.LoadDataGrid)`;
+    const _tblSelector = $('#tblIvSaleHdInQuery');
+
+
+
+    var OnBegin = function (response) {
+        fireBtnLoader();
+    };
+
+    var OnSuccess = function (response) {
+
+        $('#btnSubmition').prop('disabled', false);
+
+        if (response.success) {
+
+            if (response.customRestResult.trigger === '@ERP.Front.Helpers.Enums.Common.FormTriggers.Insert') {
+
+                toastr.success(response.customRestResult.message);
+
+                setTimeout(function () {
+                    window.location.href = $PrefixHostName + '/IvSaleHdInQuery';
+                }, 200);
+
+            }
+            else if (response.customRestResult.trigger === '@ERP.Front.Helpers.Enums.Common.FormTriggers.Update') {
+
+                toastr.success(response.customRestResult.message);
+
+                setTimeout(function () {
+                    window.location.href = $PrefixHostName + '/IvSaleHdInQuery';
+                }, 200);
+
+            }
+            else {
+                toastr.error(response.customRestResult.message);
+            }
+
+        } else {
+            toastr.error(response.error.message);
+        }
+
+    };
+
+    var OnComplete = function (response) {
+        downBtnLoader();
+    };
+
+    var OnFailure = function (response) {
+        toastr.error(response);
+        downBtnLoader();
+    };
+
+    const LoadDataGrid = function () {
+        debugger;
+        const params = {
+            StatusLkpId: $('#searchBox #StatusLkpId').val(),
+            FndSalesMenId: $('#searchBox #SearchFndSalesMenId').val(),
+            ArCustomerId: $('#searchBox #ArCustomerId').val(),
+            IvWarehouseId: $('#searchBox #IvWarehouseId').val(),
+            IvSaleNumber: $('#searchBox #IvSaleNumber').val(),
+            IvSaleDate: $('#searchBox #IvSaleDate').val(),
+            LpoNo: $('#searchBox #LpoNo').val(),
+            
+
+        };
+
+        const columns = [
+            {
+                "data": "result.data.id",
+                'render': function (data, type, row, meta) {
+                    return meta.row + meta.settings._iDisplayStart + 1;
+                }
+            },
+            {
+                "data": "IvSaleNumber",
+                "name": "IvSaleNumber",
+                "autoWidth": true
+            },
+            {
+                "data": "IvSaleDate",
+                "name": "IvSaleDate",
+                "autoWidth": true
+            },
+            {
+                "data": null,
+                "autoWidth": true,
+                "render": function (d, t, row) {
+                    if (row.ArCustomers == null) return '';
+                    return lang === 'ar-EG' ? row.ArCustomers.CustomerNameAr : row.ArCustomers.CustomerNameEn;
+                }
+            },
+            {
+                "data": null,
+                "autoWidth": true,
+                "render": function (d, t, row) {
+                    if (row.FndLookupStatusLkp == null) return '';
+                    return lang === 'ar-EG' ? row.FndLookupStatusLkp.NameAr : row.FndLookupStatusLkp.NameEn;
+                }
+            },
+            {
+                "data": "Amount",
+                "name": "Amount",
+                "render": $.fn.dataTable.render.number(',', '.', 2),
+                "autoWidth": true
+            },
+            {
+                "data": "TotalCost",
+                "name": "TotalCost",
+                "render": $.fn.dataTable.render.number(',', '.', 2),
+                "autoWidth": true
+            },
+            {
+                "data": null,
+                "autoWidth": true,
+                "render": function (d, t, row) {
+
+                    return fixNumberFormatting(row.Amount - row.TotalCost);
+                }
+            },
+            {
+                "data": null,
+                "autoWidth": true,
+                "render": function (d, t, row) {
+
+                    return fixNumberFormatting(((row.Amount - row.TotalCost) / row.Amount)*100);
+                }
+            },
+            {
+                "data": null,
+                "autoWidth": true,
+                "render": function (d, t, row) {
+                    if (row.IvWarehouses == null) return '';
+                    return row.IvWarehouses.WarehouseName;
+                }
+            },     {
+                "data": null,
+                "sortable": false,
+                "render": function (data, type, row) {
+                    let formAction = `${$PrefixHostName}/${_mainController}/@nameof(IvSaleHdController.IvSaleHdForm)`;
+                    let DeleteAction = `${$PrefixHostName}/${_mainController}/@nameof(IvSaleHdController.Delete)`;
+
+                    let formTitle = '@ERP.ResourcePack.Sales.IvSaleHdInQuery.Title';
+                    let btns = '';
+                    btns += `<a href="${$PrefixHostName}/IvSaleHdInQuery/FormView?id=${row.EncId}&t=@encShowTrigger" title="@ERP.ResourcePack.Common.Settings.Show"><i class="mx-2 fas fa-eye text-info"></i></a>`;
+
+
+                    return btns;
+                }
+            }
+        ];
+
+        const dtObj = {
+            "processing": true,
+            "serverSide": true,
+            "filter": false,
+            "orderMulti": false,
+            "pageLength": 100,
+            "language": dataTableLang,
+            "ajax": {
+                "url": _loadDataUrl,
+                "type": "POST",
+                "datatype": "json",
+                "data": params,
+                "complete": function () {}
+            },
+            "columns": columns,
+            "initComplete": function () {
+                $('[data-toggle="tooltip"]').tooltip();
+
+            }
+
+        };
+
+        _tblSelector.dataTable().fnDestroy();
+        _tblSelector.DataTable(dtObj).on('draw', function () { $('[data-toggle="tooltip"]').tooltip(); });
+
+        setTimeout(function () {
+            $(".sorting_1").removeAttr('colspan');
+        }, 500);
+    };
+
+    $('#btnSubmition').on('click', function () {
+
+        if ($('#mainForm').valid()) {
+
+            $(this).prop('disabled', true);
+
+            $('#submitLoader').show();
+
+            $('#mainForm').submit();
+
+        } else {
+            $(this).prop('disabled', false);
+
+            $('#submitLoader').hide();
+        }
+
+    });
+
+  $('#searchBox #StatusLkpId').select2(ReturnSelect2ObjectForLkpsTypes('@ERP.Front.Helpers.Enums.Common.FndLkpsTypes.IvSaleHdStatus.ToString()'));
+  $('#searchBox #ArCustomerId').select2(ReturnSelect2ObjectDefault(`${baseUrl}/ArCustomers/GetArCustomersSelect2`));
+    $('#searchBox #IvPriceListHdId').select2(ReturnSelect2ObjectDefault(`${baseUrl}/IvPriceListHd/GetIvPriceListHdSelect2`));
+    $('#searchBox #IvWarehouseId').select2(ReturnSelect2ObjectDefault(`${baseUrl}/IvUserWarehousesPrivileges/GetIvUserWarehousesPrivilegesSelect2`));
+
+    $('#IvWarehouseId').select2(ReturnSelect2ObjectDefault(`${baseUrl}/IvUserWarehousesPrivileges/GetIvUserWarehousesPrivilegesSelect2`));
+    $('#IvPriceListHdId').select2(ReturnSelect2ObjectDefault(`${baseUrl}/IvPriceListHd/GetIvPriceListHdSelect2`));
+    $('#CurrencyId').select2(ReturnSelect2ObjectDefault(`${baseUrl}/Currency/GetCurrenciesSelect2`));
+
+  $('#FndSalesMenId').select2(ReturnSelect2ObjectDefault(`${baseUrl}/FndSalesMen/GetFndSalesMenSelect2`));
+    $('#SearchFndSalesMenId').select2(ReturnSelect2ObjectDefault(`${baseUrl}/FndSalesMen/GetFndSalesMenSelect2`));
+  $('#ArCustomerId').select2({
+        ajax: {
+            url: `${baseUrl}/ArCustomers/GetArCustomersBytypeSelect2`,
+            dataType: 'json',
+            headers: {
+                'Authorization': `Bearer ${$_token}`
+            },
+            data: function (params) {
+                params.page = params.page || 1;
+                return {
+                    IsCash: $('#IsCash').is(':checked'),
+                    pageSize: pageSize,
+                    pageNumber: params.page,
+                    searchTerm: params.term,
+                    lang: lang
+                };
+            },
+            processResults: function (data, params) {
+                debugger;
+                ArcustomerDefaultId = data.result.results[0].id;
+                ArcustomerDefaultName = data.result.results[0].name;
+                params.page = params.page || 1;
+
+                return {
+                    results: data.result.results,
+                    pagination: {
+                        more: (params.page * pageSize) < data.Total
+                    }
+                };
+            }
+        },
+        placeholder: select2Placeholder,
+        minimumInputLength: 0,
+        allowClear: true,
+        language: select2Lang
+    });
+
+    $('#ArCustomerId').on('change', function (e) {
+        const customer = $(this);
+        const rateTxt = $('#CurrencyRate');
+        if (customer === undefined || customer.find(':selected').val() === undefined) { } else {
+            $.ajax({
+                url: `${baseUrl}/ArCustomers/GetCustomerDatadetails`,
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${$_token}`
+                }
+                ,
+                data: {
+                    Id: customer.find(':selected').val(),
+                    date: ''
+                }
+            }).done(function (Respone) {
+                debugger;
+                var customerdata = Respone.result;
+                $('#Phone').val(customerdata.homeTel ? customerdata.homeTel : customerdata.workTel);
+                $('#Phone').parent('.form-line').addClass('focused');
+                $('#Mobile').val(customerdata.mobile);
+                $('#Mobile').parent('.form-line').addClass('focused');
+                $('#Limit').val(customerdata.creditLimit);
+                $('#Limit').parent('.form-line').addClass('focused');
+
+            }).fail(function (response) {
+                toastr.error(response);
+            });
+        }
+    });
+</script>
+
+
+<script name="detailsss">
+    const _tblDetailSelector = $('#tblSalesDetails'), _SaleslistDetail = $('#SaleHdDetailsListStr');
+    let _SalesDetails = [], updatedDetailsRow, tblCounterIndex = 0 ;
+    let sum = 0;
+    const fillDetail = function () {
+        //debugger;
+        if (validator($('#IvItemId').find(':selected').val()) === false) return;
+        const current = {
+            index: ++tblCounterIndex,
+            ivItemId: $('#IvItemId').find(':selected').val(),
+            itemName: $('#IvItemId').find(':selected').text(),
+            avilablequantity: $('#Avilablequantity').val(),
+            qty: $('#Qty').val(),
+            unitPrice: $('#UnitPrice').val(),
+            totbeforetax: $('#Totbeforetax').val(),
+            taxAmount: $('#TaxAmount').val(),
+            trCost: $('#TrCost').val(),
+            rowStatus: NewStatus,
+            id: 0
+        };
+        return current;
+    };
+
+
+
+    const AddsalesDetails = function () {
+        //debugger;
+        const current = fillDetail();
+
+        if (current === undefined) return;
+
+        if (CheckItemExist(current.ivItemId) === false) {
+            return;
+        }
+
+        _SalesDetails.push(current);
+
+        _SaleslistDetail.val(JSON.stringify(_SalesDetails));
+
+        bindDetailTable();
+
+        clearFormAdding();
+    };
+
+    const bindDetailTable = function () {
+        //debugger;
+        const detailArr = _SalesDetails.filter(z => z.rowStatus !== DeletedStatus);
+        var totalAmount = 0;
+        console.log(detailArr);
+        for (var i = 0; i < detailArr.length; i++) {
+            totalAmount += detailArr[i].unitPrice * detailArr[i].qty + detailArr[i].taxAmount;
+        }
+        //totalAmount = detailArr.reduce((n, { totalamount }) => n + totalamount, 0);
+        const columns = [
+            { 'data': 'index' },
+            { 'data': 'itemNumber' },
+            { 'data': 'itemName' },
+            {
+                'data': 'avilablequantity',
+                "className": "myclass textrightDatatable"
+            },
+            {
+                'data': 'qty',
+                "className": "myclass textrightDatatable"
+            },
+            {
+                'data': 'unitPrice',
+                "className": "myclass textrightDatatable",
+                 "render": $.fn.dataTable.render.number(',', '.', 2),
+            },
+           
+
+            {
+                'data': 'discount',
+                "className": "myclass textrightDatatable",
+                "render": $.fn.dataTable.render.number(',', '.', 2),
+            },
+            {
+                'data': 'totbeforetax',
+                "className": "myclass textrightDatatable",
+                "render": $.fn.dataTable.render.number(',', '.', 2),
+            },
+           
+
+
+            {
+                'data': 'taxAmount',
+                "className": "myclass textrightDatatable",
+                "render": $.fn.dataTable.render.number(',', '.', 2),
+            },
+            {
+                'data': 'totalamount',
+                "className": "myclass textrightDatatable",
+                "render": $.fn.dataTable.render.number(',', '.', 2),
+            },
+            //{
+            //    'data': 'trCost',
+            //    "className": "myclass textrightDatatable",
+            //     "render": $.fn.dataTable.render.number(',', '.', 2),
+            //},
+            //{
+            //    'data': 'totalCost',
+            //    "className": "myclass textrightDatatable",
+            //    "render": $.fn.dataTable.render.number(',', '.', 2),
+            //},
+            {
+                'data': 'avgCost',
+                "className": "myclass textrightDatatable",
+                "render": $.fn.dataTable.render.number(',', '.', 2),
+            },
+            {
+                'data': 'profit',
+                "className": "myclass textrightDatatable",
+                "render": $.fn.dataTable.render.number(',', '.', 2),
+            },
+            {
+                'data': 'profitamount',
+                "className": "myclass textrightDatatable",
+                "render": $.fn.dataTable.render.number(',', '.', 2),
+            }
+        ];
+
+        const dtObj = {
+            data: detailArr,
+            retrieve: true,
+            language: dataTableLang,
+            columns: columns,
+            drawCallback: function (c, v, b) {
+            },
+            "footerCallback": function (row, data, start, end, display) {
+                var api = this.api();
+                debugger;
+                // Remove the formatting to get integer data for summation
+                var intVal = function (i) {
+                    debugger;
+                    return typeof i === 'string' ?
+                        i.replace(/[\$,]/g, '') * 1 :
+                        typeof i === 'number' ?
+                            i : 0;
+                };
+                var numberRenderer = $.fn.dataTable.render.number(',', '.', 2).display;
+                debugger;
+                // Totalamount over all pages
+                Totalamount = api
+                    .column(6)
+                    .data()
+                    .reduce(function (a, b) {
+                        return parseFloat(a) + parseFloat(b);
+                    }, 0);
+
+                // Total over this page
+                pageTotal = api
+                    .column(6, { page: 'current' })
+                    .data()
+                    .reduce(function (a, b) {
+                        return parseFloat(a) + parseFloat(b);
+                    }, 0);
+                Totalamount = parseFloat(Totalamount).toFixed(2);
+                // Update footer
+                $(api.column(6).footer()).html(
+                    numberRenderer(Totalamount)
+                );
+
+                // totalTaxbefore over all pages
+                taxamount = api
+                    .column(7)
+                    .data()
+                    .reduce(function (a, b) {
+                        return parseFloat(a) + parseFloat(b);
+                    }, 0);
+
+                // totalTaxbefore over this page
+                pageTotal = api
+                    .column(7, { page: 'current' })
+                    .data()
+                    .reduce(function (a, b) {
+                        return parseFloat(a) + parseFloat(b);
+                    }, 0);
+                taxamount = parseFloat(taxamount).toFixed(2);
+                // Update footer
+                $(api.column(7).footer()).html(
+                    numberRenderer(taxamount)
+                );
+                // Total over all pages
+                total = api
+                    .column(8)
+                    .data()
+                    .reduce(function (a, b) {
+                        return parseFloat(a) + parseFloat(b);
+                    }, 0);
+             
+                // Total over this page
+                pageTotal = api
+                    .column(8, { page: 'current' })
+                    .data()
+                    .reduce(function (a, b) {
+                        return parseFloat(a) + parseFloat(b);
+                    }, 0);
+                total = parseFloat(total).toFixed(2);
+                // Update footer
+                $(api.column(8).footer()).html(
+                    numberRenderer(total)
+                );
+
+            //    // cost over all pages
+                cost = api
+                    .column(9)
+                    .data()
+                    .reduce(function (a, b) {
+                        return parseFloat(a) + parseFloat(b);
+                    }, 0);
+
+            //    // Total over this page
+                pageTotal = api
+                    .column(9, { page: 'current' })
+                    .data()
+                    .reduce(function (a, b) {
+                        return parseFloat(a) + parseFloat(b);
+                    }, 0);
+                cost = parseFloat(cost).toFixed(2);
+                // Update footer
+                $(api.column(9).footer()).html(
+                    numberRenderer(cost)
+                );
+
+            //    // totalcost over all pages
+            //    totalcost = api
+            //        .column(10)
+            //        .data()
+            //        .reduce(function (a, b) {
+            //            return parseFloat(a) + parseFloat(b);
+            //        }, 0);
+
+            //    // Total over this page
+            //    pageTotal = api
+            //        .column(10, { page: 'current' })
+            //        .data()
+            //        .reduce(function (a, b) {
+            //            return parseFloat(a) + parseFloat(b);
+            //        }, 0);
+            //    totalcost = parseFloat(totalcost).toFixed(2);
+            //    // Update footer
+            //    $(api.column(10).footer()).html(
+            //        numberRenderer(totalcost)
+            //    );
+
+                // totalprofit over all pages
+                profit = api
+                    .column(10)
+                    .data()
+                    .reduce(function (a, b) {
+                        return parseFloat(a) + parseFloat(b);
+                    }, 0);
+
+                // Total over this page
+                pageTotal = api
+                    .column(10, { page: 'current' })
+                    .data()
+                    .reduce(function (a, b) {
+                        return parseFloat(a) + parseFloat(b);
+                    }, 0);
+                profit = parseFloat(profit).toFixed(2);
+                // Update footer
+                $(api.column(10).footer()).html(
+                    numberRenderer(profit)
+                );
+
+                // totalprofit over all pages
+                totalprofit = api
+                    .column(11)
+                    .data()
+                    .reduce(function (a, b) {
+                        return parseFloat(a) + parseFloat(b);
+                    }, 0);
+
+                // Total over this page
+                pageTotal = api
+                    .column(11, { page: 'current' })
+                    .data()
+                    .reduce(function (a, b) {
+                        return parseFloat(a) + parseFloat(b);
+                    }, 0);
+                totalprofit = parseFloat(totalprofit).toFixed(2);
+                // Update footer
+                $(api.column(11).footer()).html(
+                    numberRenderer(totalprofit)
+                );
+
+                //    // cost over all pages
+                cost = api
+                    .column(12)
+                    .data()
+                    .reduce(function (a, b) {
+                        return parseFloat(a) + parseFloat(b);
+                    }, 0);
+
+                //    // Total over this page
+                pageTotal = api
+                    .column(12, { page: 'current' })
+                    .data()
+                    .reduce(function (a, b) {
+                        return parseFloat(a) + parseFloat(b);
+                    }, 0);
+                cost = parseFloat(cost).toFixed(2);
+                // Update footer
+                $(api.column(12).footer()).html(
+                    numberRenderer(cost)
+                );
+
+
+                //    // cost over all pages
+                cost = api
+                    .column(4)
+                    .data()
+                    .reduce(function (a, b) {
+                        return parseFloat(a) + parseFloat(b);
+                    }, 0);
+
+                //    // Total over this page
+                pageTotal = api
+                    .column(4, { page: 'current' })
+                    .data()
+                    .reduce(function (a, b) {
+                        return parseFloat(a) + parseFloat(b);
+                    }, 0);
+                cost = parseFloat(cost).toFixed(2);
+                // Update footer
+                $(api.column(4).footer()).html(
+                    numberRenderer(cost)
+                );
+
+
+
+
+
+            }
+
+        };
+
+        setTimeout(function () {
+            _tblDetailSelector.dataTable().fnDestroy();
+            _tblDetailSelector.DataTable(dtObj).on('draw', function () { $('[data-toggle="tooltip"]').tooltip(); });
+
+            insertFooter( totalAmount);
+        }, 100);
+    };
+
+    function insertFooter( totalAmount) {
+        var discount = parseFloat($('#Discount').val());
+        var delivery = parseFloat($('#DeliveryCharges').val());
+
+        if (!discount)
+            discount = 0;
+
+        if (!delivery)
+            delivery = 0;
+
+        var fTotal = totalAmount - discount + delivery;
+
+        var status = 'disabled';
+        
+        $('tfoot').append(`<tr id="trDiscount" style="background-color:silver"><th colspan="6" style="text-align:right;" rowspan="1" class="myclass textrightDatatable">Total Discount</th><th rowspan="1" colspan="1" class="myclass textrightDatatable">
+            <span>` + discount.toFixed(2) + `</span></th>
+<th colspan="2"  style="text-align:right;"  class="myclass textrightDatatable">Delivery Charges</th><th rowspan="1" colspan="1" class="myclass textrightDatatable"><span>` + delivery.toFixed(2) + `</span></th>
+<th colspan="2" style="text-align:right;" rowspan="1" class="myclass textrightDatatable">Total</th><th rowspan="1" colspan="1" class="myclass textrightDatatable"><span id="fTotal">` + fTotal.toFixed(2) + `</span></th></tr>
+`)
+
+
+
+        /*$('tfoot').append(`<tr id="trDelivery"><th colspan="12" style="text-align:right;padding-top: 30px;" rowspan="1" class="myclass textrightDatatable">Delivery Charges</th><th rowspan="1" colspan="1" class="myclass textrightDatatable"><input ` + status + ` onblur="deliveryChanged()" id="t_DeliveryCharges"  type="number" value="` + delivery + `" class="form-control" /></th></tr>`)*/
+
+
+
+      /*  $('tfoot').append(`<tr id="trTotal"><th colspan="12" style="text-align:right" rowspan="1" class="myclass textrightDatatable">Total</th><th rowspan="1" colspan="1" class="myclass textrightDatatable"><span id="fTotal">` + fTotal.toFixed(2) + `</span></th></tr>`);*/
+
+    }
+
+
+    const DeleteDetail = function (index)  {
+        debugger;
+        const current = _SalesDetails.find(z => z.index === index);
+
+        const indexOfCurrent = _SalesDetails.indexOf(current);
+
+        if (!current.id) {
+
+            _SalesDetails.splice(indexOfCurrent, 1);
+
+        } else {
+
+            current.rowStatus = DeletedStatus;
+
+            _SalesDetails.splice(indexOfCurrent, 1,current);
+        }
+
+        bindDetailTable();
+
+        _SaleslistDetail.val(_SalesDetails.length === 0 ? '' : JSON.stringify(_SalesDetails));
+
+    };
+
+    const LoadDetailData = function () {
+        debugger;
+        $.ajax({
+            url: `${baseUrl}/IvSaleHd/GetAllSalesInQuerylistDetails`,
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${$_token}`
+            },
+            data: {
+                id: primaryEntityKeyId
+            }
+        }).done(function (data) {
+            debugger;
+            _SalesDetails = [...data.result];
+
+            tblCounterIndex = 0;
+
+            $.each(_SalesDetails, function (i, item) {
+                item.index = ++tblCounterIndex;
+            });
+
+            bindDetailTable();
+
+            _SaleslistDetail.val(JSON.stringify(_SalesDetails));
+
+        });
+
+    };
+ 
+
+</script>

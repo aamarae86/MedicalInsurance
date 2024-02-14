@@ -1,0 +1,174 @@
+﻿@using ERP.Web.UI.Controllers.CRM
+@using ERP.Authorization;
+@{
+    string encUpdateTrigger = ERP.Front.Helpers.Enums.Common.EncUpdate;
+    string encShowTrigger = ERP.Front.Helpers.Enums.Common.EncShow;
+    string permissionsStr = TempData["Permissions"].ToString();
+}
+
+
+<script>
+    const PostAjax = function (id) { };
+</script>
+
+
+
+<script>
+    const _mainController = "CrmQueries", _apiAppService = "CrmLeadsPersons";
+
+    $(function () {
+        LoadDataGrid();
+        $('#CrmQueriesMenu').addClass('active');
+
+        $('#UploadShow').click(function () {
+            $('#ShowUploader').click();
+            $('.js-showdwnload').hide();
+            $('#ShowFilelbl').show();
+
+        })
+    });
+
+    const _loadDataUrl = `${$PrefixHostName}/${_mainController}/@nameof(CrmQueriesController.LoadDataGrid)`;
+    const _tblSelector = $('#tblCrmQueries');
+    const _mainForm = $('#mainForm');
+
+    const _permissions = '@permissionsStr';
+
+
+    const LoadDataGrid = function () {
+
+        const parms = {
+
+
+            FullName: $('#FullName').find(':selected').text(),
+            Phone: $('#Phone').val(),
+            Email: $('#Email').val(),
+            ActivityType: $('#ActivityType').find(':selected').text(),
+            FromDate: $('#fromDate').val(),
+            ToDate: $('#toDate').val(),
+            UserId: $('#UserId').find(':selected').val(),
+            CreatedDate: $('#SearchCreatedDate').val(),
+            Company:$('#Company').val()
+
+        };
+
+        const columns = [
+            {
+                "data": "result.data.id",
+                'render': function (data, type, row, meta) {
+                    return meta.row + meta.settings._iDisplayStart + 1;
+                }
+            },
+            {
+                "data": "FullName",
+                "name": "FullName",
+                "autoWidth": true
+            },
+            {
+                "data": "Company",
+                "name": "Company",
+                "autoWidth": true
+            },
+            {
+                "data": "Phone",
+                "name": "Phone",
+                "autoWidth": true
+            },
+            {
+                "data": "Email",
+                "name": "Email",
+                "autoWidth": true
+            },
+            {
+                "data": "ActivityDate",
+                "name": "ActivityDate",
+                "autoWidth": true
+            },
+            {
+                "data": "ActivityType",
+                "name": "ActivityType",
+                "autoWidth": true
+            },
+
+            {
+                "data": "CountryVal",
+                "name": "CountryVal",
+                "autoWidth": true
+            },
+            {
+                "data": "City",
+                "name": "City",
+                "autoWidth": true
+            },
+            {
+                "data": "IndustryVal",
+                "name": "IndustryVal",
+                "autoWidth": true
+            },
+              {
+                "data": null,
+                "sortable": false,
+                "render": function (data, type, row) {
+
+
+
+                    let btns = '';
+                    if (data.ActivityType == 'Call' || data.ActivityType == "إتصال")
+                        btns += `<a href="${$PrefixHostName}/ActivityCall/FormView?id=&t=ohY6agOArKMhinIh5af4rw,,&LeadContactId=${row.Id}&Name=${row.FullName}&type=Inqery"  title="@ERP.ResourcePack.CRM.activityCall.activityCall.Title"><i class="mx-2 fas  fa-phone  text-info"></i></a>`;
+                    if (data.ActivityType == 'Meeting' || data.ActivityType == "إجتماع")
+                        btns += `<a href="${$PrefixHostName}/ActivityMeeting/FormView?id=&t=ohY6agOArKMhinIh5af4rw,,&LeadContactId=${row.Id}&Name=${row.FullName}&type=Inqery"  title="@ERP.ResourcePack.CRM.Meetings.activityMeeting.MasterTitle"><i class="mx-2   fas fa-handshake  text-info"></i></a>`;
+                    if (data.ActivityType == 'Task' || data.ActivityType == "مهمة")
+                        btns += `<a href="${$PrefixHostName}/ActivityTasks/FormView?id=&t=ohY6agOArKMhinIh5af4rw,,&LeadContactId=${row.Id}&Name=${row.FullName}&type=Inqery"  title="@ERP.ResourcePack.CRM.activityTask.activityTask.Title"><i class="mx-2 fas fa-tasks text-info"></i></a>`;
+
+                    const _auditedPermission = '@PermissionNames.Pages_CrmQueries_Audit';
+
+                    
+                    if (_permissions.includes(_auditedPermission)) {
+
+                        row.permission = _auditedPermission;
+
+                        btns += GetAuditedButton(row);
+                    }
+
+                    return btns;
+                }
+            }
+
+
+        ];
+
+        const dtObj = {
+            "processing": true,
+            "serverSide": true,
+            "filter": false,
+            "orderMulti": false,
+            "language": dataTableLang,
+            "ajax": {
+                "url": _loadDataUrl,
+                "type": "POST",
+                "datatype": "json",
+                "data": parms,
+                "complete": function () { }
+            },
+            "columns": columns,
+            "initComplete": function () {
+                $('[data-toggle="tooltip"]').tooltip();
+            }
+
+        };
+
+        _tblSelector.dataTable().fnDestroy();
+        _tblSelector.DataTable(dtObj).on('draw', function () { $('[data-toggle="tooltip"]').tooltip(); });
+
+        setTimeout(function () {
+            $(".sorting_1").removeAttr('colspan');
+        }, 500);
+    };
+
+
+    $('#FullName').select2((ReturnSelect2ObjectDefault(`${baseUrl}/CrmLeadsPersons/GetLeadsNameSelect2`)));
+    $('#ActivityType').select2(ReturnSelect2ObjectForLkpsTypes('@ERP.Front.Helpers.Enums.Common.FndLkpsTypes.CrmContactActionType.ToString()'));
+    $('#UserId').select2(ReturnSelect2ObjectDefault(`${baseUrl}/User/GetUsersSelect2`));
+
+
+</script>

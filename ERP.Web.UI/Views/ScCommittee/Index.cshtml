@@ -1,0 +1,15 @@
+﻿@{
+    ViewBag.Title = ERP.ResourcePack.AidModule.ScCommittee.Title;
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@Html.Action(nameof(ERP.Web.UI.Controllers.AidModule.ScCommitteeController.ScCommitteeSearch))
+@Html.Action(nameof(ERP.Web.UI.Controllers.AidModule.ScCommitteeController.ScCommitteeData))
+@Html.Partial("_ReportModal")
+
+@section scripts{
+    <script>
+        let formView = false;
+    </script>
+    @Html.Partial("~/ViewsScripts/_AidModule/ScCommittee/ScCommitteeScripts.cshtml")
+}

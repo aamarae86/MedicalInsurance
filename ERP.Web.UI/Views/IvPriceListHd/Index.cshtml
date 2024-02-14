@@ -1,0 +1,12 @@
+﻿@{
+    ViewBag.Title = ERP.ResourcePack.Warehouses.IvPriceListHd.Title;
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@Html.Action(nameof(ERP.Web.UI.Controllers.Warehouses.IvPriceListHdController.IvPriceListHdSearch))
+@Html.Action(nameof(ERP.Web.UI.Controllers.Warehouses.IvPriceListHdController.IvPriceListHdData))
+
+@section scripts{
+    <script>let formView = false;</script>
+    @Html.Partial("~/ViewsScripts/_Warehouses/IvPriceListHd/IvPriceListHdScripts.cshtml")
+}

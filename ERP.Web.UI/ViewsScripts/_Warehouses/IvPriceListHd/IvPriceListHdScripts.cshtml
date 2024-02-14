@@ -1,0 +1,526 @@
+﻿@using ERP.ResourcePack.Warehouses
+@using ERP.Web.UI.Controllers.Warehouses
+@using ERP.Authorization;
+@{
+    string permissionsStr = TempData["Permissions"].ToString();
+    string encUpdateTrigger = ERP.Front.Helpers.Enums.Common.EncUpdate;
+    string encInsertTrigger = ERP.Front.Helpers.Enums.Common.EncInsert;
+    string encShowTrigger = ERP.Front.Helpers.Enums.Common.EncShow;
+}
+
+
+<script>
+    const _mainController = "IvPriceListHd"
+    const _newStatus = @Convert.ToInt64(ERP.Front.Helpers.Enums.Common.HrPersonsDeductionHd.New);
+
+    $(function () {
+
+        LoadDataGrid();
+        $('#tblIvPriceListHdPrint thead').html($('#tblIvPriceListHd thead').html());
+        $('#tblIvPriceListHdPrint thead tr :last-child').remove();
+        $('#IvPriceListHd').addClass('active');
+
+        //$('#Notes').parent('.form-line').addClass('focused');
+        //$('#Amount').parent('.form-line').addClass('focused');
+    });
+
+    const _loadDataUrl = `${$PrefixHostName}/${_mainController}/@nameof(IvPriceListHdController.LoadDataGrid)`;
+    const _tblSelector = $('#tblIvPriceListHd');
+
+    const _permissions = '@permissionsStr';
+    const _updatePermission = '@PermissionNames.Pages_IvPriceListHd_Update';
+    const _deletePermission = '@PermissionNames.Pages_IvPriceListHd_Delete';
+    const _postPermission = '@PermissionNames.Pages_IvPriceListHd_Post';
+
+    var OnBegin = function (response) {
+        fireBtnLoader();
+    };
+
+    var OnSuccess = function (response) {
+
+        $('#btnSubmition').prop('disabled', false);
+
+        if (response.success) {
+
+            if (response.customRestResult.trigger === '@ERP.Front.Helpers.Enums.Common.FormTriggers.Insert') {
+
+                toastr.success(response.customRestResult.message);
+
+                setTimeout(function () {
+                    window.location.href = $PrefixHostName + '/IvPriceListHd';
+                }, 200);
+
+            }
+            else if (response.customRestResult.trigger === '@ERP.Front.Helpers.Enums.Common.FormTriggers.Update') {
+
+                toastr.success(response.customRestResult.message);
+
+                setTimeout(function () {
+                    window.location.href = $PrefixHostName + '/IvPriceListHd';
+                }, 200);
+
+            }
+            else {
+                toastr.error(response.customRestResult.message);
+            }
+
+        } else {
+            toastr.error(response.error.message);
+        }
+
+    };
+
+    var OnComplete = function (response) {
+        downBtnLoader();
+    };
+
+    var OnFailure = function (response) {
+        toastr.error(response);
+        downBtnLoader();
+    };
+
+    const LoadDataGrid = function () {
+
+        const params = {
+            PriceListNumber: $('#searchBox #PriceListNumber').val(),
+            PriceListName: $('#searchBox #PriceListName').val()
+        };
+
+        const columns = [
+            {
+                "data": "result.data.id",
+                'render': function (data, type, row, meta) {
+                    return meta.row + meta.settings._iDisplayStart + 1;
+                }
+            },
+            {
+                "data": "PriceListNumber",
+                "name": "PriceListNumber",
+                "autoWidth": true
+            },
+            {
+                "data": "PriceListName",
+                "name": "PriceListName",
+                "autoWidth": true
+            },
+            {
+                "data": null,
+                "sortable": false,
+                "render": function (data, type, row) {
+                    let formAction = `${$PrefixHostName}/${_mainController}/@nameof(IvPriceListHdController.IvPriceListHdForm)`;
+                    let DeleteAction = `${$PrefixHostName}/${_mainController}/@nameof(IvPriceListHdController.Delete)`;
+
+                    let formTitle = '@ERP.ResourcePack.Warehouses.IvPriceListHd.Title';
+                    let btns = '';
+
+                    @*if (_permissions.includes(_updatePermission) ) {
+                        btns += `<a href="javascript:void(0)" onclick="PostAjax(${row.Id})" title="@ERP.ResourcePack.Common.Settings.Post"><i class="mx-2 fas fa-check-circle text-info"></i></a>`;
+                    }*@
+
+                    if (_permissions.includes(_updatePermission)) {
+                        btns += `<a href="${$PrefixHostName}/IvPriceListHd/FormView?id=${row.EncId}&t=@encUpdateTrigger" title="@ERP.ResourcePack.Common.Settings.Edit"><i class="mx-2 fas fa-edit text-info"></i></a>`;
+                    }
+
+                    btns += `<a href="${$PrefixHostName}/IvPriceListHd/FormView?id=${row.EncId}&t=@encShowTrigger" title="@ERP.ResourcePack.Common.Settings.Show"><i class="mx-2 fas fa-eye text-info"></i></a>`;
+
+                    if (_permissions.includes(_deletePermission)) {
+                        btns += `<a href="javascript:void(0)" onclick="AjaxController.DeleteMainTableRow(${row.Id},'${DeleteAction}');" title="@ERP.ResourcePack.Common.Settings.Delete"><i class="mx-2 fas fa-trash-alt text-danger"></i></a>`;
+                    }
+
+                    const _auditedPermission = '@PermissionNames.Pages_IvPriceListHd_Audit';
+
+                    if (_permissions.includes(_auditedPermission)) {
+
+                        row.permission = _auditedPermission;
+
+                        btns += GetAuditedButton(row);
+                    }
+
+                    return btns;
+                }
+            }
+        ];
+
+        const dtObj = {
+            "processing": true,
+            "serverSide": true,
+            "filter": false,
+            "orderMulti": false,
+            "language": dataTableLang,
+            "ajax": {
+                "url": _loadDataUrl,
+                "type": "POST",
+                "datatype": "json",
+                "data": params,
+                "complete": function () {}
+            },
+            "columns": columns,
+            "initComplete": function () {
+                $('[data-toggle="tooltip"]').tooltip();
+            }
+
+        };
+
+        _tblSelector.dataTable().fnDestroy();
+        _tblSelector.DataTable(dtObj).on('draw', function () { $('[data-toggle="tooltip"]').tooltip(); });
+
+        setTimeout(function () {
+            $(".sorting_1").removeAttr('colspan');
+        }, 500);
+    };
+
+    $('#btnSubmition').on('click', function () {
+
+        if ($('#mainForm').valid()) {
+
+            $(this).prop('disabled', true);
+
+            $('#submitLoader').show();
+
+            $('#mainForm').submit();
+
+        } else {
+            $(this).prop('disabled', false);
+
+            $('#submitLoader').hide();
+        }
+
+    });
+  
+    $('#IvItemsTypesConfigureId').select2(ReturnSelect2ObjectDefault(`${baseUrl}/IvItemsTypesConfigure/GetIvItemsTypesConfigureSelect2`));
+    $('#IvItemId').select2(ReturnSelect2ObjectDefault(`${baseUrl}/IvItems/GetSelect2`));
+
+    $('#IvItemId').change(function () {
+      
+        var itemname = $('#IvItemId').find(':selected').text();
+        $('#ItemName').val(itemname);
+        $('#ItemName').parent('.form-line').addClass('focused ');
+
+    });
+
+</script>
+
+<script name="detailsss">
+   
+    const _tblDetailSelector = $('#tblDetails'), _listDetail = $('#PriceListDetailsListStr');
+
+    let _salespriceDetails = [], updatedDetailsRow, tblCounterIndex = 0 ;
+
+    const fillDetail = function () {
+       
+        if (validator($('#IvItemId').find(':selected').val()) === false) return;
+        const current = {
+            index: ++tblCounterIndex,
+            ivItemId: $('#IvItemId').find(':selected').val(),
+            itemName: $('#IvItemId').find(':selected').text(),
+            price: $('#Price').val(),
+            rowStatus: NewStatus,
+            id: 0
+        };
+        return current;
+
+
+    };
+
+    const AddDetails = function () {
+     
+        const current = fillDetail();
+        if (CheckItemExist(current.ivItemId) === false) {
+            return;
+        }
+
+        if (current === undefined) return;
+
+        _salespriceDetails.push(current);
+
+        _listDetail.val(JSON.stringify(_salespriceDetails));
+
+        bindDetailTable();
+
+        clearFormAdding();
+    };
+
+    const bindDetailTable = function () {
+       
+        const detailArr = _salespriceDetails.filter(z => z.rowStatus !== DeletedStatus);
+        const columns = [
+            { 'data': 'index' },
+            { 'data': 'ivItemId' },
+            { 'data':'itemName' },
+            {
+                'data': 'price',
+                "render": $.fn.dataTable.render.number(',', '.', 2)
+            },
+            {
+                'data': null,
+                'searchable': false,
+                'ordering': false,
+                'sorting': false,
+                'render': function (d, t, row) {
+
+                    let rows = '';
+
+                    if (primaryEntityKeyId === 0 || trigger !== '@ERP.Front.Helpers.Enums.Common.FormTriggers.Show.ToString()') {
+
+                        rows += `<td><a href="javascript:void(0)" onclick="return DeleteDetail(${row.index})"><i class="mx-2 fas fa-trash-alt text-danger"></i></a>`;
+                        rows += `<a href="javascript:void(0)" onclick="return GetDetailRow(${row.index})"><i class="mx-2 fas fa-edit text-success"></i></a></td>`;
+                    }
+                    else {
+                        rows += '<td></td>';
+                    }
+
+                    return rows;
+                }
+            }
+        ];
+
+        const dtObj = {
+            data: detailArr,
+            retrieve: true,
+            language: dataTableLang,
+            columns: columns,
+            drawCallback: function (c, v, b) {}
+        };
+
+        setTimeout(function () {
+           
+            _tblDetailSelector.dataTable().fnDestroy();
+            _tblDetailSelector.DataTable(dtObj).on('draw', function () { $('[data-toggle="tooltip"]').tooltip(); });
+
+        }, 100);
+    };
+
+    const DeleteDetail = function (index)  {
+      
+        const current = _salespriceDetails.find(z => z.index === index);
+
+        const indexOfCurrent = _salespriceDetails.indexOf(current);
+
+        if (!current.id) {
+
+            _salespriceDetails.splice(indexOfCurrent, 1);
+
+        } else {
+
+            current.rowStatus = DeletedStatus;
+
+            _salespriceDetails.splice(indexOfCurrent, 1,current);
+        }
+
+        bindDetailTable();
+
+        _listDetail.val(_salespriceDetails.length === 0 ? '' : JSON.stringify(_salespriceDetails));
+
+    };
+
+    const LoadDetailData = function () {
+       
+        $.ajax({
+            url: `${baseUrl}/IvPriceListHd/GetAllPriceListDetails`,
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${$_token}`
+            },
+            data: {
+                id: primaryEntityKeyId
+            }
+        }).done(function (data) {
+
+            _salespriceDetails = [...data.result];
+
+            tblCounterIndex = 0;
+
+            $.each(_salespriceDetails, function (i, item) {
+                item.index = ++tblCounterIndex;
+            });
+
+            bindDetailTable();
+
+            _listDetail.val(JSON.stringify(_salespriceDetails));
+
+        });
+
+    };
+    const GetDetailRow = function (tblIndex) {
+       
+        clearFormAdding();
+
+        $('#btnAddDetailRow').hide();
+        $('#btnUpdateDetailRow').show();
+        $('#btnCancelDetailRow').show();
+
+        const current = _salespriceDetails.find(z => z.index === tblIndex);
+
+        $(`#IvItemId`).append($("<option selected='selected'></option>")
+            .val(current.ivItemId).text(current.itemName)).trigger('change');
+        $('#ItemName').val(current.itemName);
+        $('#Price').val(current.price);
+         $('#ItemName').parent('.form-line').addClass('focused');
+        $('#Price').parent('.form-line').addClass('focused');
+
+
+
+        updatedDetailsRow = current;
+    };
+
+    const UpdateDetailsRow = function () {
+        debugger;
+        let current = _salespriceDetails.find(z => z.index === updatedDetailsRow.index);
+
+        let indexOfCurrent = _salespriceDetails.indexOf(_salespriceDetails.find(z => z.index === updatedDetailsRow.index));
+
+        const newRow = fillDetail();
+        if (newRow === undefined) return;
+        if (_salespriceDetails.find(z => z.index === updatedDetailsRow.index).ivItemId == newRow.ivItemId) {
+
+        }
+        else {
+            if (CheckItemExist(newRow.ivItemId, newRow.rowStatus) === false) {
+                return;
+            }
+        }
+        newRow.index = current.index;
+        newRow.id = updatedDetailsRow.id;
+        newRow.rowStatus =  !updatedDetailsRow.id ? NewStatus : UpdatedStatus;
+
+        _salespriceDetails.splice(indexOfCurrent, 1,newRow);
+
+        $('#btnAddDetailRow').show();
+        $('#btnUpdateDetailRow').hide();
+        $('#btnCancelDetailRow').hide();
+
+        clearFormAdding();
+
+        _listDetail.val(JSON.stringify(_salespriceDetails));
+
+        setTimeout(function () {
+            bindDetailTable();
+        }, 100);
+    };
+
+    const clearFormAdding = function () {
+        $('#details .card:first input,textarea').val('');
+        $('#details .card:first select').val('').trigger('change');
+    };
+
+    const validator = function () {
+
+        if (!$('#IvItemId').find(':selected').val()) {
+            toastr.warning('@IvPriceListHd.ItemNo' + ' : ' + '@ERP.ResourcePack.Common.Settings.Required');
+            return false;
+        }
+
+        if (!$('#Price').val()) {
+            toastr.warning('@IvPriceListHd.Price' + ' : ' + '@ERP.ResourcePack.Common.Settings.Required');
+            return false;
+        }
+
+    };
+
+    const CheckItemExist = function (itemid, rowStatus) {
+        debugger;
+        var s = _salespriceDetails
+        const found = _salespriceDetails.some(el => el.ivItemId == itemid && el.rowStatus != "Deleted");
+            if (!found) {
+            return true;
+        }
+        else {
+           toastr.warning('There is already exsiting data');
+            console.log(false);
+            return false;
+          
+        }
+    };
+
+</script>
+
+<script>
+  
+    const LoadAllOrganization = function () {
+      
+        var AllOrganizationcheck = $('#AllOrganization').is(':checked');
+        var percentage = $('#Percentage').val();
+        var IvItemsTypesConfigureId = $('#IvItemsTypesConfigureId').find(':selected').val();
+        if (percentage!=0) {
+            requestsalespriceData($('#AllOrganization').is(':checked'), $('#Percentage').val(), $('#IvItemsTypesConfigureId').find(':selected').val());
+        }
+        else {
+            toastr.warning('@IvPriceListHd.Percentage : @ERP.ResourcePack.Common.Settings.Required');
+        }
+
+    };
+
+    const requestsalespriceData = function (AllOrganizationcheck, percentage, IvItemsTypesConfigureId) {
+       
+        $('.page-loader-wrapper').css("display", "block");
+
+        $.ajax({
+            url: `${baseUrl}/IvPriceListHd/GetSalesPriceData`,
+            method: 'GET',
+            data: {
+                AllOrganizationcheck: AllOrganizationcheck,
+                percentage: percentage,
+                IvItemsTypesConfigureId: IvItemsTypesConfigureId
+            },
+            headers: {  'Authorization': `Bearer ${$_token}` }
+        }).done(function (response) {
+          
+            console.log(response.result);
+            const data = response.result;
+
+            if (!primaryEntityKeyId) {
+                _salespriceDetails = [];
+            }
+
+            if (data.length === 0) {
+                //_listDetail.val('');
+                //_salespriceDetails = [];
+                //bindDetailTable();
+            }
+            else {
+                $.each(data, function (i, item) {
+                   
+                    const current = {
+                        index: ++tblCounterIndex,
+                        ivItemId: item.ivItemId,
+                        itemName: item.itemName,
+                        price: item.price,
+                        rowStatus: NewStatus,
+                        id: 0
+                    };
+
+                    AddSalesPriceDataDetail(current);
+
+                });
+            }
+            $('.page-loader-wrapper').css("display", "none");
+
+        }).fail(function (response) {
+            
+            $('.page-loader-wrapper').css("display", "none");
+            toastr.error(response.responseText);
+        });
+
+    };
+
+
+
+
+    const AddSalesPriceDataDetail = function (current) {
+        
+        if (current === undefined) return;
+        if (CheckItemExist(current.ivItemId) === false) {
+            return;
+        }
+        else {
+            _salespriceDetails.push(current);
+
+            _listDetail.val(JSON.stringify(_salespriceDetails));
+
+            bindDetailTable();
+        }
+    };
+
+
+
+</script>

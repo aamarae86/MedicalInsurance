@@ -1,0 +1,158 @@
+﻿@using ERP.Authorization;
+@using ERP.Web.UI.Controllers.Accounts
+@using ERP.ResourcePack.Accounts
+@{
+    string permissionsStr = TempData["Permissions"].ToString();
+}
+<script>
+    const _mainController = "GeneralUnPost"
+
+    $(function () {
+        LoadDataGrid();
+
+        $('#GeneralUnPost').addClass('active');
+
+        $('#main-modal #UnPostNo').parent('.form-line').addClass('focused');
+
+    });
+
+    const _loadDataUrl = `${$PrefixHostName}/${_mainController}/@nameof(ArCustomersController.LoadDataGrid)`;
+    const _tblSelector = $('#tblArCustomers');
+    const _tblLoader = $('#tblLoader');
+    const _txtUnPostNo = $('#searchBox #UnPostNo');
+    const _txtUnPostDate = $('#searchBox #UnPostDate');
+    const _txtSourceLkpIdSearch = $('#searchBox #SourceLkpIdSearch');
+
+    const _permissions = '@permissionsStr';
+    const _updatePermission = '@PermissionNames.Pages_GeneralUnPost_Update';
+    const _deletePermission = '@PermissionNames.Pages_GeneralUnPost_Delete';
+
+    var OnBegin = function (response) {
+        fireBtnLoader();
+    };
+
+    var OnSuccess = function (response) {
+
+        if (response.success) {
+
+            if (response.customRestResult.trigger === '@ERP.Front.Helpers.Enums.Common.FormTriggers.Insert') {
+
+                toastr.success(response.customRestResult.message);
+
+                LoadDataGrid();
+
+                _mainModal.modal('hide');
+
+            } else if (response.customRestResult.trigger === '@ERP.Front.Helpers.Enums.Common.FormTriggers.Update') {
+
+                LoadDataGrid();
+
+                _mainModal.modal('hide');
+
+                toastr.success(response.customRestResult.message);
+            }
+
+        } else {
+            toastr.error(response.customRestResult.message);
+        }
+
+    };
+
+    var OnComplete = function (response) {
+        downBtnLoader();
+    };
+
+    var OnFailure = function (response) {
+        toastr.error(response);
+        console.log(response);
+        downBtnLoader();
+    };
+
+    const LoadDataGrid = function () {
+
+        $('#tblLoader').show();
+
+        const parms = {
+            UnPostNo: _txtUnPostNo.val(),
+            UnPostDate: _txtUnPostDate.val(),
+            SourceLkpId: _txtSourceLkpIdSearch.val()
+        };
+
+        const columns = [
+            {
+                "data": "result.data.id",
+                'render': function (data, type, row, meta) {
+                    return meta.row + meta.settings._iDisplayStart + 1;
+                }
+            },
+            {
+                "data": "UnPostNo",
+                "name": "UnPostNo",
+                "autoWidth": true
+            },
+            {
+                "data": "UnPostDate",
+                "name": "UnPostDate",
+                "autoWidth": true
+            }
+            ,
+            {
+                "data": "Notes",
+                "name": "Notes",
+                "autoWidth": true
+            }, {
+                "data": null,
+                "sortable": false,
+                "render": function (data, type, row) {
+
+                    let formAction = `${$PrefixHostName}/${_mainController}/@nameof(GeneralUnPostController.GeneralUnPostForm)`;
+                    let DeleteAction = `${$PrefixHostName}/${_mainController}/@nameof(GeneralUnPostController.Delete)`;
+
+                    let formTitle = '@ArCustomers.GeneralUnPost';
+                    let btns = '';
+
+                    btns += `<a href="javascript:void(0)" onclick="AjaxController.GetFormModal(${row.Id},'@ERP.Front.Helpers.Enums.Common.FormTriggers.Show','${formAction}','${formTitle}');" title="@ERP.ResourcePack.Common.Settings.Show"><i class="mx-2 fas fa-eye text-info"></i></a>`;
+
+                    const _auditedPermission = '@PermissionNames.Pages_GeneralUnPost_Audit';
+
+                    if (_permissions.includes(_auditedPermission)) {
+
+                        row.permission = _auditedPermission;
+
+                        btns += GetAuditedButton(row);
+                    }
+
+                    return btns;
+                }
+            }
+        ];
+
+        const dtObj = {
+            "processing": true,
+            "serverSide": true,
+            "filter": false,
+            "orderMulti": false,
+            "language": dataTableLang,
+            "ajax": {
+                "url": _loadDataUrl,
+                "type": "POST",
+                "datatype": "json",
+                "data": parms,
+                "complete": function () {
+                    _tblLoader.hide();
+                }
+            },
+            "columns": columns,
+            "initComplete": function () {
+                $('[data-toggle="tooltip"]').tooltip();
+            }
+        };
+
+        _tblSelector.dataTable().fnDestroy();
+        _tblSelector.DataTable(dtObj).on('draw', function () { $('[data-toggle="tooltip"]').tooltip(); });
+
+    };
+
+    $('#searchBox #SourceLkpIdSearch').select2(ReturnSelect2ObjectForLkpsTypes('GeneralUnPostSourceType'));
+
+</script>

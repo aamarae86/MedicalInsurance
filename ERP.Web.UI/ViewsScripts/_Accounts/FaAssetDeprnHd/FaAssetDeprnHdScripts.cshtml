@@ -1,0 +1,652 @@
+﻿@using ERP.ResourcePack.Accounts
+@using ERP.Web.UI.Controllers.AccountsExtend
+@using ERP.Authorization;
+@{
+    string permissionsStr = TempData["Permissions"].ToString();
+    string encUpdateTrigger = ERP.Front.Helpers.Enums.Common.EncUpdate;
+    string encInsertTrigger = ERP.Front.Helpers.Enums.Common.EncInsert;
+    string encShowTrigger = ERP.Front.Helpers.Enums.Common.EncShow;
+}
+
+@if (permissionsStr.Contains(PermissionNames.Pages_FaAssetDeprnHd_Post))
+{
+    <script>
+
+        const PostInvoice = function (id) {
+
+            bootbox.confirm({
+                message: _booBoxMessagePosting,
+                buttons: bootBoxDefaultBtns,
+                callback: function (result) {
+
+                    if (result) {
+
+                        const data = {
+                            id: id,
+                            lang: lang
+                        };
+
+                        $.ajax({
+                            url: `${baseUrl}/FaAssetDeprnHd/PostFaAssetDeprnHd`,
+                            type: 'POST',
+                            data: JSON.stringify(data),
+                            headers:
+                            {
+                                'Content-Type': 'application/json',
+                                'Authorization': `Bearer ${$_token}`
+                            },
+                        }).done(function (response) {
+
+                            if (response.result.finalStatues == 'F') {
+                                toastr.warning(response.result.reason);
+                            }
+                            else {
+                                toastr.success(response.result.reason);
+                                setTimeout(function () {
+
+                                    if (formView) {
+                                        window.location.href = $PrefixHostName + '/FaAssetDeprnHd';
+                                    } else {
+                                        LoadDataGrid();
+                                    }
+
+                                }, 100);
+                            }
+                        }).fail(function (response) {
+                            toastr.error(response);
+                        });
+
+                    }
+                }
+            });
+        };
+
+        const PostAjax = function (id) {
+
+            bootbox.confirm({
+                message: _booBoxMessagePosting,
+                buttons: bootBoxDefaultBtns,
+                callback: function (result) {
+
+                    if (result) {
+
+                        const data = {
+                            id: id,
+                            lang: lang
+                        };
+
+                        $.ajax({
+                            url: `${baseUrl}/FaAssetDeprnHd/PostFaAssetDeprnHdGl`,
+                            type: 'POST',
+                            data: JSON.stringify(data),
+                            headers:
+                            {
+                                'Content-Type': 'application/json',
+                                'Authorization': `Bearer ${$_token}`
+                            },
+                        }).done(function (response) {
+
+                            if (response.result.finalStatues == 'F') {
+                                toastr.warning(response.result.reason);
+                            }
+                            else {
+                                toastr.success(response.result.reason);
+                                setTimeout(function () {
+
+                                    if (formView) {
+                                        window.location.href = $PrefixHostName + '/FaAssetDeprnHd';
+                                    } else {
+                                        LoadDataGrid();
+                                    }
+
+                                }, 100);
+                            }
+                        }).fail(function (response) {
+                            toastr.error(response);
+                        });
+
+                    }
+                }
+            });
+        };
+
+    </script>
+}
+else
+{
+    <script>
+        const PostInvoice = function (id) { };
+        const PostAjax = function (id) { };
+    </script>
+}
+
+<script>
+    const _mainController = "FaAssetDeprnHd"
+
+    $(function () {
+        LoadDataGrid();
+        $('#tblFaAssetDeprnHdPrint thead').html($('#tblFaAssetDeprnHd thead').html());
+        $('#tblFaAssetDeprnHdPrint thead tr :last-child').remove();
+
+        //$('#StartDate').parent('.form-line').addClass('focused');
+        //$('#EndDate').parent('.form-line').addClass('focused');
+        $('#AssetDeprnNumber').parent('.form-line').addClass('focused');
+        $('#StatusAr').parent('.form-line').addClass('focused');
+        $('#StatusEn').parent('.form-line').addClass('focused');
+
+        $('#FaAssetDeprnHd').addClass('active');
+
+    });
+
+    const _loadDataUrl = `${$PrefixHostName}/${_mainController}/@nameof(FaAssetDeprnHdController.LoadDataGrid)`;
+    const _tblSelector = $('#tblFaAssetDeprnHd');
+    const _permissions = '@permissionsStr';
+    const _updatePermission = '@PermissionNames.Pages_FaAssetDeprnHd_Update';
+    const _deletePermission = '@PermissionNames.Pages_FaAssetDeprnHd_Delete';
+    const _postPermission = '@PermissionNames.Pages_FaAssetDeprnHd_Post';
+    const _postStatus = @Convert.ToInt64(ERP.Front.Helpers.Enums.Common.FaAssetDeprnHd.Posted);
+    const _newStatus = @Convert.ToInt64(ERP.Front.Helpers.Enums.Common.FaAssetDeprnHd.New);
+
+    var OnBegin = function (response) {
+        fireBtnLoader();
+    };
+
+    var OnSuccess = function (response) {
+
+        $('#btnSubmition').prop('disabled', false);
+
+        if (response.success) {
+
+            if (response.customRestResult.trigger === '@ERP.Front.Helpers.Enums.Common.FormTriggers.Insert') {
+
+                toastr.success(response.customRestResult.message);
+
+                setTimeout(function () {
+                    window.location.href = $PrefixHostName + '/FaAssetDeprnHd';
+                }, 200);
+
+            }
+            else if (response.customRestResult.trigger === '@ERP.Front.Helpers.Enums.Common.FormTriggers.Update') {
+
+                toastr.success(response.customRestResult.message);
+
+                setTimeout(function () {
+                    window.location.href = $PrefixHostName + '/FaAssetDeprnHd';
+                }, 200);
+
+            }
+            else {
+                toastr.error(response.customRestResult.message);
+            }
+
+        } else {
+            toastr.error(response.error.message);
+        }
+
+    };
+
+    var OnComplete = function (response) {
+        downBtnLoader();
+    };
+
+    var OnFailure = function (response) {
+        toastr.error(response);
+        downBtnLoader();
+    };
+
+    const LoadDataGrid = function () {
+
+        const params = {
+            AssetDeprnNumber: $('#searchBox #AssetDeprnNumber').val(),
+            PeriodId: $('#searchBox #PeriodId').find(':selected').val(),
+            AssetId: $('#searchBox #AssetId').find(':selected').val(),
+            StatusLkpId: $('#searchBox #StatusLkpId').find(':selected').val(),
+        };
+
+        const columns = [
+            {
+                "data": "result.data.id",
+                'render': function (data, type, row, meta) {
+                    return meta.row + meta.settings._iDisplayStart + 1;
+                }
+            },
+            {
+                "data": "AssetDeprnNumber",
+                "name": "AssetDeprnNumber",
+                "autoWidth": true
+            },
+            {
+                "data": "PeriodId",
+                "name": "PeriodId",
+                "autoWidth": true,
+                "render": function (d, t, row) {
+                    return lang === 'ar-EG' ? row.PeriodAr : row.PeriodEn;
+                }
+            },
+            {
+                "data": "StartDate",
+                "name": "StartDate",
+                "autoWidth": true
+            },
+            {
+                "data": "EndDate",
+                "name": "EndDate",
+                "autoWidth": true
+            },
+            {
+                "data": "AssetId",
+                "name": "AssetId",
+                "autoWidth": true,
+                "render": function (d, t, row) {
+                    return  row.AssetDescription;
+                }
+            },
+            {
+                "data": "StatusId",
+                "name": "StatusId",
+                "autoWidth": true,
+                "render": function (d,t,row) {
+                    return lang === 'ar-EG' ? row.StatusAr : row.StatusEn;
+                }
+            },
+            {
+                "data": null,
+                "sortable": false,
+                "render": function (data, type, row) {
+
+                    let formAction = `${$PrefixHostName}/${_mainController}/@nameof(FaAssetDeprnHdController.FaAssetDeprnHdForm)`;
+                    let DeleteAction = `${$PrefixHostName}/${_mainController}/@nameof(FaAssetDeprnHdController.Delete)`;
+
+                    let formTitle = '@FaAssetDeprnHd.Title';
+                    let btns = '';
+
+
+                    if (_permissions.includes(_postPermission) && row.StatusLkpId == _newStatus) {
+                        btns += `<a href="javascript:void(0)" onclick="PostInvoice(${row.Id})"  title="@ERP.ResourcePack.Accounts.FaAssetDeprnHd.FaAssetDeprnHdPost"><i class="mx-2 fas fa-check-circle text-info"></i></a>`;
+                    }
+
+                    if (_permissions.includes(_postPermission) && row.StatusLkpId == _postStatus) {
+                        btns += `<a href="javascript:void(0)" onclick="PostAjax(${row.Id})"  title="@ERP.ResourcePack.Accounts.FaAssetDeprnHd.FaAssetsGlPost"><i class="mx-2 fas fa-check-circle text-success"></i></a>`;
+                    }
+
+                    if (_permissions.includes(_updatePermission) && row.StatusLkpId == _newStatus) {
+                        btns += `<a href="${$PrefixHostName}/FaAssetDeprnHd/FormView?id=${row.EncId}&t=@encUpdateTrigger" title="@ERP.ResourcePack.Common.Settings.Edit"><i class="mx-2 fas fa-edit text-info"></i></a>`;
+                    }
+
+                    btns += `<a href="${$PrefixHostName}/FaAssetDeprnHd/FormView?id=${row.EncId}&t=@encShowTrigger" title="@ERP.ResourcePack.Common.Settings.Show"><i class="mx-2 fas fa-eye text-info"></i></a>`;
+
+                    if (_permissions.includes(_deletePermission) && row.StatusLkpId == _newStatus) {
+                        btns += `<a href="javascript:void(0)" onclick="AjaxController.DeleteMainTableRow(${row.Id},'${DeleteAction}');" title="@ERP.ResourcePack.Common.Settings.Delete"><i class="mx-2 fas fa-trash-alt text-danger"></i></a>`;
+                    }
+
+                    const _auditedPermission = '@PermissionNames.Pages_FaAssetDeprnHd_Audit';
+
+                    if (_permissions.includes(_auditedPermission)) {
+
+                        row.permission = _auditedPermission;
+
+                        btns += GetAuditedButton(row);
+                    }
+
+                    return btns;
+                }
+            }
+        ];
+
+        const dtObj = {
+            "processing": true,
+            "serverSide": true,
+            "filter": false,
+            "orderMulti": false,
+            "language": dataTableLang,
+            "ajax": {
+                "url": _loadDataUrl,
+                "type": "POST",
+                "datatype": "json",
+                "data": params,
+                "complete": function () { }
+            },
+            "columns": columns,
+            "initComplete": function () {
+                $('[data-toggle="tooltip"]').tooltip();
+            }
+
+        };
+
+        _tblSelector.dataTable().fnDestroy();
+        _tblSelector.DataTable(dtObj).on('draw', function () { $('[data-toggle="tooltip"]').tooltip(); });
+
+        setTimeout(function () {
+            $(".sorting_1").removeAttr('colspan');
+        }, 500);
+    };
+
+    $('#btnSubmition').on('click', function () {
+
+        if ($('#mainForm').valid()) {
+
+            $(this).prop('disabled', true);
+
+            $('#mainForm').submit();
+
+        } else {
+            $(this).prop('disabled', false);
+        }
+
+    });
+
+    $('#searchBox #StatusLkpId').select2(ReturnSelect2ObjectForLkpsTypes('@ERP.Front.Helpers.Enums.Common.FndLkpsTypes.FaAssetsStatusLkpId.ToString()'));
+    $('#searchBox #AssetId').select2(ReturnSelect2ObjectDefault(`${baseUrl}/FaAssetDeprnHd/GetSelect2FaAssets`));
+    $('#AssetId').select2(ReturnSelect2ObjectDefault(`${baseUrl}/FaAssetDeprnHd/GetSelect2FaAssets`));
+
+    $('#searchBox #PeriodId').select2({
+        ajax: {
+            url: `${baseUrl}/GlPeriodsDetails/GetGlPeriodsSelect2`,
+            dataType: 'json',
+            headers: {
+                'Authorization': `Bearer ${$_token}`
+            },
+            data: function (params) {
+                params.page = params.page || 1;
+                return {
+                    pageSize: pageSize,
+                    pageNumber: params.page,
+                    searchTerm: params.term,
+                    lang: lang
+                };
+            },
+            processResults: function (data, params) {
+
+                params.page = params.page || 1;
+
+                return {
+                    results: data.result.results,
+                    pagination: {
+                        more: (params.page * pageSize) < data.result.total
+                    }
+                };
+            }
+        },
+        placeholder: select2Placeholder,
+        minimumInputLength: 0,
+        allowClear: true,
+        language: select2Lang,
+        templateSelection: function (data, container) {
+
+            if (data.altText) {
+                $('#searchBox #StartDate').val(data.altText.split('__')[0]);
+                $('#searchBox #EndDate').val(data.altText.split('__')[1]);
+            }
+
+            return data.text;
+        }
+    });
+
+    $('#PeriodId').select2({
+        ajax: {
+            url: `${baseUrl}/GlPeriodsDetails/GetGlPeriodsSelect2`,
+            dataType: 'json',
+            headers: {
+                'Authorization': `Bearer ${$_token}`
+            },
+            data: function (params) {
+                params.page = params.page || 1;
+                return {
+                    pageSize: pageSize,
+                    pageNumber: params.page,
+                    searchTerm: params.term,
+                    lang: lang
+                };
+            },
+            processResults: function (data, params) {
+
+                params.page = params.page || 1;
+
+                return {
+                    results: data.result.results,
+                    pagination: {
+                        more: (params.page * pageSize) < data.result.total
+                    }
+                };
+            }
+        },
+        placeholder: select2Placeholder,
+        minimumInputLength: 0,
+        allowClear: true,
+        language: select2Lang,
+        templateSelection: function (data, container) {
+
+            if (data.altText) {
+                $('#StartDate').val(data.altText.split('__')[0]);
+                $('#EndDate').val(data.altText.split('__')[1]);
+            }
+
+            return data.text;
+        }
+    });
+
+</script>
+
+<script name="details_s_s_o_o_s">
+
+    const _tblDetailSelector = $('#tblFaAssetDeprnTr');
+
+    const bindFaAssetDeprnTrTable = function (date) {
+
+        const columns = [
+            { 'data': 'index' },
+            { 'data': 'assetNumber' },
+            { 'data': 'assetDescription' },
+            { 'data': 'assetOriginalCost' },
+            { 'data': 'assetCurrentCost' },
+            { 'data': 'assetProrateDate' },
+            { 'data': 'assetSalvageValue' },
+            { 'data': 'assetLifeInMonths' },
+            {
+                'data': null,
+                'searchable': false,
+                'ordering': false,
+                'sorting': false,
+                'render': function (d, t, row) {
+                    let rows = '';
+
+                    rows += `<td><a href="javascript:void(0)" onclick="return GetFaAssetDeprnTrDtlData(${row.id})"><i class="mx-2 fas fa-info-circle text-info"></i></a></td>`;
+
+                    return rows;
+                }
+            }
+        ];
+
+        const dtObj = {
+            data: date,
+            retrieve: true,
+            language: dataTableLang,
+            columns: columns,
+            drawCallback: function (c, v, b) { }
+        };
+
+        setTimeout(function () {
+
+            _tblDetailSelector.dataTable().fnDestroy();
+            _tblDetailSelector.DataTable(dtObj).on('draw', function () { $('[data-toggle="tooltip"]').tooltip(); });
+
+        }, 100);
+    };
+
+    const LoadFaAssetDeprnTrData = function () {
+
+        $.ajax({
+            url: `${baseUrl}/FaAssetDeprnHd/GetAllFaAssetDeprnTr`,
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${$_token}`
+            },
+            data: {
+                id: primaryEntityKeyId
+            }
+        }).done(function (data) {
+
+            let tblCounterIndex = 0;
+
+            const list = [...data.result];
+
+            list.forEach(function (item, index) {
+                item.index = ++tblCounterIndex;
+            }, list);
+
+            bindFaAssetDeprnTrTable(list);
+
+        });
+    };
+
+    const bindFaAssetDeprnTrDtlTable = function (date) {
+
+        const columns = [
+            { 'data': 'index' },
+            { 'data': lang === 'ar-EG' ? 'accountNameAr' : 'accountNameEn'  },
+            { 'data': 'accountNumber' },
+            { 'data': 'creditAmount' },
+            { 'data': 'debitAmount' },
+        ];
+
+        const dtObj = {
+            data: date,
+            retrieve: true,
+            language: dataTableLang,
+            columns: columns,
+            drawCallback: function (c, v, b) { }
+        };
+
+        $('#tblFaAssetDeprnTrDtl').dataTable().fnDestroy();
+        $('#tblFaAssetDeprnTrDtl').DataTable(dtObj).on('draw', function () { $('[data-toggle="tooltip"]').tooltip(); });
+    };
+
+    const LoadFaAssetDeprnTrDtlData = function (id) {
+
+        $.ajax({
+            url: `${baseUrl}/FaAssetDeprnHd/GetAllFaAssetDeprnTrDtl`,
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${$_token}`
+            },
+            data: {
+                id: id
+            }
+        }).done(function (data) {
+
+            let tblCounterIndex = 0;
+
+            const list = [...data.result];
+
+            list.forEach(function (item, index) {
+                item.index = ++tblCounterIndex;
+            }, list);
+
+            bindFaAssetDeprnTrDtlTable(list);
+
+        });
+    };
+
+    const GetFaAssetDeprnTrDtlData = function (id) {
+
+        _mainModalTitle.html('@ERP.ResourcePack.Accounts.FaAssetDeprnHd.FaAssetDeprnTrDtl');
+        _mainModalBody.html($('#tr-dtl-box-container').html());
+        _mainModal.modal(_mainModalOprions);
+
+        $('#main-modal .modal-dialog').css('max-width', '80%');
+
+        LoadFaAssetDeprnTrDtlData(id);
+    };
+
+    function printExc() {
+        $('.page-loader-wrapper').show();
+
+        const parmss = {
+            AssetDeprnNumber: $('#searchBox #AssetDeprnNumber').val(),
+            PeriodId: $('#searchBox #PeriodId').find(':selected').val(),
+            AssetId: $('#searchBox #AssetId').find(':selected').val(),
+            StatusLkpId: $('#searchBox #StatusLkpId').find(':selected').val(),
+            length: 1000000
+        };
+
+        const columns = [
+            {
+                "data": "result.data.id",
+                'render': function (data, type, row, meta) {
+                    return meta.row + meta.settings._iDisplayStart + 1;
+                }
+            },
+            {
+                "data": "AssetDeprnNumber",
+                "name": "AssetDeprnNumber",
+                "autoWidth": true
+            },
+            {
+                "data": "PeriodId",
+                "name": "PeriodId",
+                "autoWidth": true,
+                "render": function (d, t, row) {
+                    return lang === 'ar-EG' ? row.PeriodAr : row.PeriodEn;
+                }
+            },
+            {
+                "data": "StartDate",
+                "name": "StartDate",
+                "autoWidth": true
+            },
+            {
+                "data": "EndDate",
+                "name": "EndDate",
+                "autoWidth": true
+            },
+            {
+                "data": "AssetId",
+                "name": "AssetId",
+                "autoWidth": true,
+                "render": function (d, t, row) {
+                    return  row.AssetDescription;
+                }
+            },
+            {
+                "data": "StatusId",
+                "name": "StatusId",
+                "autoWidth": true,
+                "render": function (d,t,row) {
+                    return lang === 'ar-EG' ? row.StatusAr : row.StatusEn;
+                }
+            }
+        ];
+
+        const dtObj = {
+            "language": dataTableLang,
+            "dom": 'Bfrtip',
+            "buttons": [
+                {
+                    extend: 'excel',
+                    messageTop: `${$('#AssetDeprnNumber').siblings().text()}: ${(parmss.AssetDeprnNumber) ? parmss.AssetDeprnNumber : '--'}, ${$('[for="PeriodId"]').text()}: ${(parmss.PeriodId) ? parmss.PeriodId : '--'}, ${$('[for="AssetId"]').text()}: ${(parmss.AssetId) ? parmss.AssetId : '--'}`
+                },
+
+            ],
+            "ajax": {
+                "url": _loadDataUrl,
+                "type": "POST",
+                "datatype": "json",
+                "data": parmss,
+                "complete": function (d) {
+                    _tblLoader.hide();
+                }
+            },
+            "columns": columns,
+
+            "initComplete": function () {
+                $('#tblFaAssetDeprnHdPrint_wrapper button.dt-button').click();
+            }
+        };
+
+        $('#tblFaAssetDeprnHdPrint').dataTable().fnDestroy();
+        $('#tblFaAssetDeprnHdPrint').DataTable(dtObj).on('buttons-processing', function (e, indicator) { if (!indicator) { $('.page-loader-wrapper').hide() } });
+
+
+    }
+
+</script>

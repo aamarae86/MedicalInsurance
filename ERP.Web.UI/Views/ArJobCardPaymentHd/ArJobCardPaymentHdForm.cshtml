@@ -1,0 +1,96 @@
+﻿@using ERP.Web.UI.Models.ViewModels.Accounts
+@using ERP.Web.UI.Models.ViewModels.General
+@model ArJobCardPaymentHdVM
+@{
+    string formTrigger = ViewBag.trigger;
+    string lang = Request.Cookies["Lang"] == null ? "ar-EG" : Request.Cookies["Lang"].Value.ToString();
+    string lkpKeyDdl = lang == "ar-EG" ? nameof(ERP.Web.UI.Models.ViewModels.Accounts.CurrenciesVM.DescriptionAr) : nameof(ERP.Web.UI.Models.ViewModels.Accounts.CurrenciesVM.DescriptionEn);
+    string lkpJobcardDdl = lang == "ar-EG" ? "NameAr" : "NameEn";
+    bool isFormDetail = Model != null && formTrigger == ERP.Front.Helpers.Enums.Common.FormTriggers.Show.ToString();
+    string JobCardPaymentStatus = lang == "ar-EG" ? ((Model == null || Model.FndJobCardPaymenStatusLkp == null) ? "جديد" : Model.FndJobCardPaymenStatusLkp.NameAr) : (Model == null ? "New" : Model.FndJobCardPaymenStatusLkp.NameEn);
+
+}
+<div class="card">
+    <div class="header">
+        <h2><strong>@ERP.ResourcePack.Accounts.GlJeHeaders.MasterData</strong></h2>
+    </div>
+    <div class="body">
+        @using (Ajax.BeginForm(nameof(ERP.Web.UI.Controllers.Accounts.ArJobCardPaymentHdController.CreateArJobCardPaymentHd), "ArJobCardPaymentHd",
+            new AjaxOptions { HttpMethod = "POST", OnBegin = "OnBegin", OnSuccess = "OnSuccess", OnComplete = "OnComplete", OnFailure = "OnFailure" }, new { @id = "mainForm" }))
+        {
+            @Html.HiddenFor(z => z.Id)
+            @Html.HiddenFor(z => z.TransactionNumber)
+            @Html.HiddenFor(z => z.StatusLkpId, new { @Value = @Convert.ToInt64(ERP.Front.Helpers.Enums.Common.ArJobCardPaymentHd.New) })
+            @Html.HiddenFor(z => z.PaymentDate)
+            @Html.HiddenFor(z => z.Notes)
+            @Html.HiddenFor(z => z.Amount)
+            @Html.HiddenFor(z => z.ListArJobCardPaymentTr)
+            @Html.HiddenFor(z => z.ArJobCardHdId)
+            @Html.HiddenFor(z => z.ArJobCardPaymentHdId)
+            @Html.HiddenFor(z => z.ArJobCardPaymentTrList)
+
+
+            <div class="row clearfix">
+                <div class="col-md-3">
+                    <div class="form-group form-float">
+                        <div class="form-line">
+                            @Html.TextBoxFor(z => z.TransactionDate, getHtmlAttributes(false, "form-control", "datepicker"))
+                            @Html.LabelFor(z => z.TransactionDate, new { @class = "form-label" })
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="form-group form-float">
+                        <div class="form-line">
+                            @Html.TextBoxFor(z => z.TransactionNumber, getHtmlAttributes(true, "form-control", string.Empty))
+                            @Html.LabelFor(z => z.TransactionNumber, new { @class = "form-label" })
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-3">
+                    <div class="form-group form-float">
+                        <div class="form-line">
+                            @Html.TextBox("StatusLkpId", JobCardPaymentStatus, getHtmlAttributes(true, "form-control", string.Empty))
+                            @Html.LabelFor(z => z.StatusLkpId, new { @class = "form-label" })
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-3">
+                    @Html.LabelFor(z => z.JobNumberLkpId, new { @class = "form-label" })
+                    <div class="form-group form-float">
+                        <div class="form-line">
+
+                            @if (Model != null && Model.JobNumberLkpId != null)
+                            {
+                                var list = new List<FndLookupValuesVM> { new FndLookupValuesVM { Id = (long)Model.JobNumberLkpId, NameAr = Model.ArJobCardHd.JobNumber, NameEn = Model.ArJobCardHd.JobNumber } };
+                                var selectList = new SelectList(list, "Id", lkpJobcardDdl, Model.JobNumberLkpId);
+
+                                @Html.DropDownListFor(z => z.JobNumberLkpId, selectList, getHtmlAttributes(isFormDetail, "form-control", string.Empty))
+                            }
+                            else
+                            {
+                                @Html.DropDownListFor(z => z.JobNumberLkpId, Enumerable.Empty<SelectListItem>(), getHtmlAttributes(isFormDetail, "form-control", string.Empty))
+                            }
+
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        }
+
+    </div>
+</div>
+
+@functions {
+    object getHtmlAttributes(bool Disabled, string CssClass, string CssClass2)
+    {
+        if (Disabled)
+        {
+            return new { @class = CssClass, Disabled = Disabled };
+        }
+        return new { @class = $"{CssClass} {CssClass2}" };
+    }
+}

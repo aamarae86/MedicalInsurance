@@ -1,0 +1,104 @@
+﻿@using ERP.Web.UI.Controllers.HR
+@using ERP.Web.UI.Models.ViewModels.HR
+@{
+    ViewBag.Title = ERP.ResourcePack.HR.HrPersons.Title;
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    string formTrigger = ViewBag.trigger;
+    long? id = ViewData["Id"] == null ? null : (long?)Convert.ToInt32(ViewData["Id"]);
+    var detailObj = ViewData["DetailAsync"] == null ? null : ViewData["DetailAsync"] as HrPersonsVM;
+}
+
+<div class="row clearfix">
+    <div class="col-12">
+        @Html.Action(nameof(HrPersonsController.HrPersonsForm), new { id = id, trigger = formTrigger, HrPersonsVM = detailObj })
+    </div>
+    <div class="col-12">
+        <div class="card">
+            <div class="body">
+                <ul class="mt-2 nav nav-tabs tab-nav-right" role="tablist">
+                    <li role="presentation">
+                        <a href="#visaa" data-toggle="tab" class="show active">@ERP.ResourcePack.HR.HrPersons.VisaDetails</a>
+                    </li>
+                    <li role="presentation">
+                        <a href="#passsport" data-toggle="tab" class="">@ERP.ResourcePack.HR.HrPersons.PassportDetails</a>
+                    </li>
+                    <li role="presentation">
+                        <a href="#identityCard" data-toggle="tab" class="">@ERP.ResourcePack.HR.HrPersons.IdentityCasrdDetails</a>
+                    </li>
+                    <li role="presentation">
+                        <a href="#salaryElements" data-toggle="tab" class="">@ERP.ResourcePack.HR.HrPersons.SalaryElements</a>
+                    </li>
+                    <li role="presentation">
+                        <a href="#person-attachemnts" data-toggle="tab" class="">@ERP.ResourcePack.Common.Menu.Attachments</a>
+                    </li>
+                </ul>
+                <div class="tab-content">
+                    <div role="tabpanel" class="tab-pane fade in active show" id="visaa">
+                        @Html.Action(nameof(HrPersonsController.VisaFormDetail), new { id = id, trigger = formTrigger })
+                        @Html.Action(nameof(HrPersonsController.VisaDataDetail))
+                    </div>
+                    <div role="tabpanel" class="tab-pane fade in  " id="passsport">
+                        @Html.Action(nameof(HrPersonsController.PassportFormDetail), new { id = id, trigger = formTrigger })
+                        @Html.Action(nameof(HrPersonsController.PassportDataDetail))
+                    </div>
+                    <div role="tabpanel" class="tab-pane fade in  " id="identityCard">
+                        @Html.Action(nameof(HrPersonsController.IdentityCardFormDetail), new { id = id, trigger = formTrigger })
+                        @Html.Action(nameof(HrPersonsController.IdentityCardDataDetail))
+                    </div>
+                    <div role="tabpanel" class="tab-pane fade in  " id="salaryElements">
+                        @Html.Action(nameof(HrPersonsController.SalaryElementsFormDetail), new { id = id, trigger = formTrigger })
+                        @Html.Action(nameof(HrPersonsController.SalaryElementsDataDetail))
+                    </div>
+                    <div role="tabpanel" class="tab-pane fade in  " id="person-attachemnts">
+                        @if (formTrigger != ERP.Front.Helpers.Enums.Common.FormTriggers.Show.ToString())
+                        {
+                            @Html.Partial("_AttachmentForm")
+                        }
+                        @Html.Partial("_AttachmentsData")
+                    </div>
+                </div>
+                <div class="row clearfix"> <div class="col-md-12 text-center" id="btnContainer"></div></div>
+            </div>
+        </div>
+    </div>
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body">
+                <div class="text-center">
+                    @if (formTrigger != ERP.Front.Helpers.Enums.Common.FormTriggers.Show.ToString())
+                    {
+                        <button type="submit" id="btnSubmition" class="btn btn-info btn-lg m-l-15 waves-effect">@(formTrigger == ERP.Front.Helpers.Enums.Common.FormTriggers.Insert.ToString() ? ERP.ResourcePack.Common.Settings.BtnSave : ERP.ResourcePack.Common.Settings.BtnUpdate)</button>
+                        <div id="submitLoader" style="display:none">
+                            <div class="lds-roller"><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div></div>
+                        </div>
+                    }
+                    <a href="~/HrPersons" class="btn btn-danger btn-lg m-l-15 waves-effect">@(ERP.ResourcePack.Common.Settings.BtnClose)</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section scripts{
+    <script>
+        const primaryEntityKeyId =  @(id == null ? 0 : id);
+        const trigger = '@formTrigger';
+        let formView = true;
+    </script>
+    <script src="~/Scripts/jquery.validate.min.js"></script>
+    <script src="~/Scripts/jquery.validate.unobtrusive.min.js"></script>
+    @Html.Partial("~/ViewsScripts/_HR/HrPersons/HrPersonsScripts.cshtml")
+    @if (id != null)
+    {
+        <script>
+            $(function () {
+                LoadVisaDetailData();
+                LoadIdentityDetailData();
+                LoadPassportDetailData();
+                LoadSalaryElementsDetailData();
+                LoadAttachments();
+                SetFullName();
+            });
+        </script>
+    }
+}

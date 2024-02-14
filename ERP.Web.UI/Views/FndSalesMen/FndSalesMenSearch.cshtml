@@ -1,0 +1,59 @@
+﻿@using ERP.ResourcePack.Sales
+@using ERP.Web.UI.Models.ViewModels.Sales
+@model FndSalesMenVM
+
+<div class="card" id="searchBox">
+    <div class="header d-flex justify-content-start align-items-center">
+        <i class="fas fa-2x fa-chevron-down down-arr mr-2" data-toggle="collapse" data-target="#searchCollapse"></i>
+        <h2><strong>@FndSalesMen.Title</strong> -  @FndSalesMen.SearchForm</h2>
+        
+    </div>
+    <div class="body collapse show" id="searchCollapse">
+        <div class="row clearfix">
+            <div class="col-sm-4">
+                <div class="form-group form-float">
+                    <div class="form-line">
+                        @Html.TextBoxFor(z => z.SalesManNo, new { @Id = "SalesManNumSearch", @class = "form-control" })
+                        @Html.LabelFor(z => z.SalesManNo, new { @class = "form-label" })
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-4">
+                <div class="form-group form-float">
+                    <div class="form-line">
+                        @Html.TextBoxFor(z => z.SalesManNameAr, new { @Id = "SalesManNameArSearch", @class = "form-control" })
+                        @Html.LabelFor(z => z.SalesManNameAr, new { @class = "form-label" })
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-4">
+                <div class="form-group form-float">
+                    <div class="form-line">
+                        @Html.TextBoxFor(z => z.SalesManNameEn, new { @Id = "SalesManNameEnSearch", @class = "form-control" })
+                        @Html.LabelFor(z => z.SalesManNameEn, new { @class = "form-label" })
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-4">
+                @*@Html.LabelFor(z => z.IsActive, new { @class = "form-label", @style = "position: absolute; background-color: rgb(255, 255, 255); font-size: 12px; margin: 0px 5px; padding: 0px 10px; font-weight: bold; z-index: 2; top: 0px;" })*@
+                @Html.LabelFor(z => z.IsActive, new { @class = "form-label"})
+
+                <div class="form-group form-float">
+                    <div class="form-group">
+                        @Html.DropDownListFor(z => z.IsActive, Enumerable.Empty<SelectListItem>(), new { @Id = "IsActiveLkpIdSearch", @class = "form-control" })
+                    </div>
+                </div>
+            </div>
+            
+
+        </div>
+        <div class="d-flex justify-content-end mb-3">
+            <button type="button" class="btn btn-success btn-border-radius mx-2 waves-effect" onclick="return LoadDataGrid()">
+                @ERP.ResourcePack.Common.Settings.BtnSearch
+            </button>
+            <a href="javascript:void(0)" class="btn btn-danger btn-border-radius" onclick="return clearSearchForm()" role="button" aria-haspopup="true" aria-expanded="false">
+                @ERP.ResourcePack.Common.Settings.BtnClear
+            </a>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,99 @@
+﻿@using ERP.Web.UI.Models.ViewModels.HR
+@using ERP.Web.UI.Models.ViewModels.General
+@model HrPersonsAdditionHdVM
+@{
+    string formTrigger = ViewBag.trigger;
+    string lang = Request.Cookies["Lang"] == null ? "ar-EG" : Request.Cookies["Lang"].Value.ToString();
+    string lkpKeyDdl = lang == "ar-EG" ? nameof(FndLookupValuesVM.NameAr) : nameof(FndLookupValuesVM.NameEn);
+    string bankAccKeyDdl = lang == "ar-EG" ? nameof(ERP.Web.UI.Models.ViewModels.Accounts.ApBankAccountsVM.BankAccountNameAr) : nameof(ERP.Web.UI.Models.ViewModels.Accounts.ApBankAccountsVM.BankAccountNameEn);
+    bool isFormDetail = Model != null && formTrigger == ERP.Front.Helpers.Enums.Common.FormTriggers.Show.ToString();
+}
+<div class="card">
+    <div class="header d-flex justify-content-start align-items-center">
+        <i class="fas fa-2x fa-chevron-down down-arr mr-2" data-toggle="collapse" data-target="#masterData"></i>
+        <h2><strong>@ERP.ResourcePack.HR.HrPersonsAdditionHd.Title</strong></h2>
+    </div>
+    <div class="body collapse show" id="masterData">
+        @using (Ajax.BeginForm(nameof(ERP.Web.UI.Controllers.HR.HrPersonsAdditionHdController.CreateHrPersonsAdditionHd), "HrPersonsAdditionHd",
+            new AjaxOptions { HttpMethod = "POST", OnBegin = "OnBegin", OnSuccess = "OnSuccess", OnComplete = "OnComplete", OnFailure = "OnFailure" }, new { @id = "mainForm" }))
+        {
+            @Html.HiddenFor(z => z.Id)
+            @Html.HiddenFor(z => z.PersonsAdditionTrStr)
+            @Html.HiddenFor(z => z.StatusLkpId)
+
+            <div class="row clearfix">
+                <div class="col-md-4">
+                    <div class="form-group form-float">
+                        <div class="form-line">
+                            @Html.TextBoxFor(z => z.AdditionNumber, new { @readOnly = "readonly", @class = "from-control" })
+                            @Html.LabelFor(z => z.AdditionNumber, new { @class = "form-label" })
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="form-group form-float">
+                        <div class="form-line">
+                            @Html.TextBoxFor(z => z.AdditionName, getHtmlAttributes(isFormDetail, "form-control", string.Empty))
+                            @Html.LabelFor(z => z.AdditionName, new { @class = "form-label" })
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    @Html.LabelFor(z => z.PeriodId, new { @class = "form-label label-required" })
+                    <div class="form-group form-float">
+                        <div class="">
+                            @if (Model != null && Model.PeriodId != null)
+                            {
+                                var list = new List<FndLookupValuesVM> { new FndLookupValuesVM { Id = (long)Model.PeriodId, NameAr = Model.GlPeriodsDetails.periodNameAr, NameEn = Model.GlPeriodsDetails.periodNameEn } };
+                                var selectList = new SelectList(list, "Id", lkpKeyDdl, Model.PeriodId);
+
+                                @Html.DropDownListFor(z => z.PeriodId, selectList, getHtmlAttributes(isFormDetail, "form-control", string.Empty))
+                            }
+                            else
+                            {
+                                @Html.DropDownListFor(z => z.PeriodId, Enumerable.Empty<SelectListItem>(), getHtmlAttributes(isFormDetail, "form-control", string.Empty))
+                            }
+                        </div>
+                        @Html.ValidationMessageFor(z => z.PeriodId)
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="form-group form-float">
+                        <div class="form-line">
+
+                            @if (Model == null || Model.FndLookupValuesHrPersonsAdditionHdStatusLkp == null)
+                            {
+                                @Html.TextBoxFor(z => z.Status, getHtmlAttributes(true, "form-control", string.Empty))
+                                @Html.LabelFor(z => z.StatusLkpId, new { @class = "form-label" })
+                            }
+                            else if (lang == "ar-EG")
+                            {
+                                @Html.TextBoxFor(z => z.FndLookupValuesHrPersonsAdditionHdStatusLkp.NameAr, getHtmlAttributes(true, "form-control", string.Empty))
+                                @Html.LabelFor(z => z.StatusLkpId, new { @class = "form-label" })
+                            }
+                            else
+                            {
+                                @Html.TextBoxFor(z => z.FndLookupValuesHrPersonsAdditionHdStatusLkp.NameEn, getHtmlAttributes(true, "form-control", string.Empty))
+                                @Html.LabelFor(z => z.StatusLkpId, new { @class = "form-label" })
+                            }
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+
+    </div>
+</div>
+
+@functions {
+    object getHtmlAttributes(bool Disabled, string CssClass, string CssClass2)
+    {
+        if (Disabled)
+        {
+            return new { @class = CssClass, Disabled = Disabled };
+        }
+        return new { @class = $"{CssClass} {CssClass2}" };
+    }
+}
+

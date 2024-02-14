@@ -1,0 +1,77 @@
+﻿@using ERP.Web.UI.Models.ViewModels.Warehouses
+@model PoPurchaseOrderVM
+@{
+    string formTrigger = ViewBag.trigger;
+    string lang = Request.Cookies["Lang"] == null ? "ar-EG" : Request.Cookies["Lang"].Value.ToString();
+    bool isFormDetail = Model?.Id > 0 && formTrigger == ERP.Front.Helpers.Enums.Common.FormTriggers.Show.ToString();
+}
+
+<div class="card" style="display:@(formTrigger == ERP.Front.Helpers.Enums.Common.FormTriggers.Show.ToString() ? "none":"block" ) ">
+    <div class="body" id="formAdding">
+        <div class="row clearfix">
+            <div class="col-sm-4">
+                <div class="form-group form-float">
+                    <div class="form-line">
+                        @Html.TextBoxFor(z => z.IvItemNumber, new { @class = "form-control", Disabled = true })
+                        @Html.LabelFor(z => z.IvItemNumber, new { @class = "form-label" })
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-4">
+                @Html.LabelFor(z => z.IvItemId, new { @class = "form-label label-required" })
+                <div class="form-group form-float">
+                    <div class="form-group">
+                        @Html.DropDownListFor(z => z.IvItemId, Enumerable.Empty<SelectListItem>(), new { @class = "form-control" })
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-4">
+                <div class="form-group form-float">
+                    <div class="form-line">
+                        @Html.TextBoxFor(z => z.QtyOrdered, new { @class = "form-control" })
+                        @Html.LabelFor(z => z.QtyOrdered, new { @class = "form-label label-required" })
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row clearfix">
+            <div class="col-sm-4">
+                <div class="form-group form-float">
+                    <div class="form-line">
+                        @Html.TextBoxFor(z => z.UnitPrice, new { @class = "form-control currency" })
+                        @Html.LabelFor(z => z.UnitPrice, new { @class = "form-label label-required" })
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-4">
+                <div class="form-group form-float">
+                    <div class="form-line">
+                        @Html.TextBoxFor(z => z.Total, new { @class = "form-control currency", Disabled = true })
+                        @Html.LabelFor(z => z.Total, new { @class = "form-label" })
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row clearfix">
+            <div class="col-sm-12">
+                <div class="form-group m-2">
+                    <button id="btnAddPoPurchaseOrderDetailRow" onclick="return AddPoPurchaseOrderDetail()" class="btn btn-success">@ERP.ResourcePack.Common.Settings.BtnAddNew</button>
+                    <button style="display:none;" id="btnUpdatePoPurchaseOrderDetailRow" onclick="return UpdatePoPurchaseOrderDetailRow()" class="btn btn-info">@ERP.ResourcePack.Common.Settings.BtnUpdate</button>
+                    <button style="display:none;" id="btnCancelPoPurchaseOrderDetailRow" onclick="CancelEditPoPurchaseOrderDetailRow()" class="btn btn-danger">@ERP.ResourcePack.Common.Settings.BtnCancel</button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+@functions {
+    object getHtmlAttributes(bool Disabled, string CssClass, string CssClass2)
+    {
+        if (Disabled)
+        {
+            return new { @class = CssClass, Disabled = Disabled };
+        }
+        return new { @class = $"{CssClass} {CssClass2}" };
+    }
+}

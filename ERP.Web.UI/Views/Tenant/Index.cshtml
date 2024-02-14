@@ -1,0 +1,689 @@
+﻿@using ERP.Web.UI.Models.ViewModels.Tenant
+@using ERP.ResourcePack.Authentications
+@model TenantDetailEditVM
+@{
+    ViewBag.Title = ERP.ResourcePack.Accounts.ReportsAccounts.TitleTenant;
+    string lang = Request.Cookies["Lang"] == null ? "ar-EG" : Request.Cookies["Lang"].Value.ToString();
+    Layout = "~/Views/Shared/_Layout.cshtml";
+
+}
+
+
+<style>
+    div#tblUsersChecked_filter {
+        display: none;
+    }
+    div#tblUsersChecked_length {
+        display: none;
+    }
+    div#tblUsersChecked_paginate {
+        display: none;
+    }
+    div#tblUsersChecked_info {
+        display: none;
+    }
+
+    h5#h5totamount {
+        text-align: center;
+        padding: 10px 2px 2px 0px;
+        color: #4caf50;
+    }
+
+    input.form-check-input {
+        opacity: 1 !important;
+        pointer-events: all !important;
+    }
+
+    .product {
+        display: flex;
+    }
+
+    .description {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+    }
+
+  .monthes-lbl {
+        position: absolute;
+        z-index: 1;
+        background: white;
+        right: 25px;
+        top: -2px;
+        padding: 0px 3px 0px 3px;
+    }
+
+
+
+    #checkout-button {
+        height: 36px;
+        background: #556cd6;
+        color: white;
+        width: 100%;
+        font-size: 14px;
+        border: 0;
+        font-weight: 500;
+        cursor: pointer;
+        letter-spacing: 0.6;
+        border-radius: 0 0 6px 6px;
+        transition: all 0.2s ease;
+        box-shadow: 0px 4px 5.5px 0px rgba(0, 0, 0, 0.07);
+    }
+
+        #checkout-button:hover {
+            opacity: 0.8;
+        }
+
+    .totamount {
+        padding: 6px;
+        color: #4a984d;
+    }
+ 
+ 
+
+
+ 
+
+</style>
+
+
+
+<div class="card">
+    <div class="header d-flex justify-content-start align-items-center">
+        <i class="fas fa-2x fa-chevron-down down-arr mr-2" data-toggle="collapse" data-target="#searchCollapse"></i>
+        <h2><strong>@ERP.ResourcePack.Accounts.ReportsAccounts.TitleTenant</strong></h2>
+    </div>
+    <div class="body  collapse show" id="searchCollapse">
+        <div class="row clearfix">
+            @Html.HiddenFor(x => x.Id)
+            @Html.HiddenFor(x => x.TenantId)
+            @Html.HiddenFor(x => x.LogoPath)
+            @Html.HiddenFor(x => x.StripePublishablekey)
+            @Html.HiddenFor(x => x.UserValue)
+            @Html.HiddenFor(x => x.AdminValue)
+            @Html.HiddenFor(x => x.AdminSubEndDate)
+
+
+            <div class="col-md-9">
+                <div class="row">
+
+                    <div class="col-md-3">
+                        <div class="form-group form-float">
+                            <div class="form-line">
+                                @Html.TextBoxFor(x => x.TenantNameAr, new { @class = "form-control" })
+                                @Html.LabelFor(x => x.TenantNameAr, new { @class = "form-label" })
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="form-group form-float">
+                            <div class="form-line">
+                                @Html.TextBoxFor(x => x.TenantNameEn, new { @class = "form-control" })
+                                @Html.LabelFor(x => x.TenantNameEn, new { @class = "form-label" })
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="form-group form-float">
+                            <div class="form-line">
+                                @Html.TextBoxFor(x => x.BoxNo, new { @class = "form-control" })
+                                @Html.LabelFor(x => x.BoxNo, new { @class = "form-label" })
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="form-group form-float">
+                            <div class="form-line">
+                                @Html.TextBoxFor(x => x.Tel, new { @class = "form-control" })
+                                @Html.LabelFor(x => x.Tel, new { @class = "form-label" })
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group form-float">
+                            <div class="form-line">
+                                @Html.TextBoxFor(x => x.Fax, new { @class = "form-control" })
+                                @Html.LabelFor(x => x.Fax, new { @class = "form-label" })
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="form-group form-float">
+                            <div class="form-line">
+                                @Html.TextBoxFor(x => x.Email, new { @class = "form-control" })
+                                @Html.LabelFor(x => x.Email, new { @class = "form-label" })
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="form-group form-float">
+                            <div class="form-line">
+                                @Html.TextBoxFor(x => x.WebSite, new { @class = "form-control" })
+                                @Html.LabelFor(x => x.WebSite, new { @class = "form-label" })
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="form-group form-float">
+                            <div class="form-line">
+                                @Html.TextBoxFor(x => x.ManagerName, new { @class = "form-control" })
+                                @Html.LabelFor(x => x.ManagerName, new { @class = "form-label" })
+                            </div>
+                        </div>
+                    </div>
+                    @*<div class="col-md-3">
+            <div class="form-group form-float">
+                <div class="form-line">
+                    @Html.TextBoxFor(x => x.RepManagerName, new { @class = "form-control" })
+                    @Html.LabelFor(x => x.RepManagerName, new { @class = "form-label" })
+                </div>
+            </div>
+        </div>*@
+                    <div class="col-md-3">
+                        <div class="form-group form-float">
+                            <div class="form-line">
+                                @if (lang == "ar-EG")
+                                {
+                                    @Html.TextBoxFor(x => x.IndustryAr, new { @class = "form-control", Disabled = true })
+                                }
+                                else
+                                {
+                                    @Html.TextBoxFor(x => x.IndustryEn, new { @class = "form-control", Disabled = true })
+                                }
+                                @Html.LabelFor(x => x.IndustryAr, new { @class = "form-label" })
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="form-group form-float">
+                            <div class="form-line">
+                                @if (lang == "ar-EG")
+                                {
+                                    @Html.TextBoxFor(x => x.CountryAr, new { @class = "form-control", Disabled = true })
+                                }
+                                else
+                                {
+                                    @Html.TextBoxFor(x => x.CountryEn, new { @class = "form-control", Disabled = true })
+                                }
+                                @Html.LabelFor(x => x.CountryAr, new { @class = "form-label" })
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        @Html.LabelFor(z => z.CurrencyId, new { @class = "form-label" })
+                        <div class="form-group form-float">
+                            <div>
+                                @Html.DropDownListFor(z => z.BaseCurrency, Enumerable.Empty<SelectListItem>(), new { @class = "form-control" })
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="form-group form-float">
+                            <div class="form-line">
+                                @Html.TextBoxFor(x => x.TaxRegNo, new { @class = "form-control" })
+                                @Html.LabelFor(x => x.TaxRegNo, new { @class = "form-label" })
+                            </div>
+                        </div>
+                    </div>
+
+
+                </div>
+
+
+            </div>
+
+            <div class="col-md-3 img-row">
+                @Html.HiddenFor(z => z.Filepath)
+
+                @if (string.IsNullOrEmpty(Model?.Filepath))
+                {
+
+                    <img id="blah" src="~/AssetsPack/assets/images/img-previewer.png" alt="Person Photo" style="height:200px" class="card-img-top img-thumbnail responsive-img" />
+                }
+                else
+                {
+                    <img id="blah" src="@Model.Filepath" alt="Person Photo" style="height:200px" class="card-img-top img-thumbnail responsive-img" />
+                }
+
+                @Html.Partial("_AttachmentComponent", new ERP.Web.UI.Models.ViewModels.AttachmentComponentModelVM { HidenFilePathId = nameof(Model.Filepath), ImgId = "blah" })
+
+            </div>
+
+
+
+
+
+
+
+
+
+        </div>
+        <div class="row clearfix">
+            <div class="col-sm-12 text-center">
+                <div class="form-group">
+                    <button id="btnPrint" onclick="return PrintAccountStatementReport()" class="btn btn-success">@ERP.ResourcePack.Common.Settings.BtnUpdate</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+<div class="row no-gutters clearfix">
+    <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+        <div class="card">
+            <div class="header d-flex justify-content-start align-items-center">
+                <i class="fas fa-2x fa-chevron-down down-arr mr-2" data-toggle="collapse" data-target="#dataCollapse"></i>
+                <h2> <strong>@ERP.ResourcePack.Common.Settings.RenewSubscription</strong>   </h2>
+
+            </div>
+
+            <div class="p-3  row m-0 ">
+                <div class="col-6">
+                    <label class="form-label monthes-lbl"> @ERP.ResourcePack.Common.Settings.NofMonthes</label>
+                    <select id="monthes">      
+                        @for (int month = 1; month <= 12; month++)
+                        {
+                            <option value="@month">@month</option>
+                        }
+                    </select>
+                </div>
+                <div class="col-3 d-none">
+                    <div class="form-group form-float">
+                        <div class="form-line focused">
+                            <input class="form-control" disabled id="ExpDate" name="ExpDate" type="text" value="@Model.AdminSubEndDate">
+                            <label class="form-label active" for="BoxNo">@ERP.ResourcePack.Accounts.GlPeriodsYearsDetails.EndDate</label>
+                        </div>
+                    </div>
+                </div>  
+                
+                @*<div class="col-6">
+                    <div class="form-group form-float">
+                        <div class="form-line focused">
+                            <input class="form-control" disabled   type="text" value="@Model.AdminSubEndDate">
+                            <label class="form-label active" >@ERP.ResourcePack.Accounts.GlPeriodsYearsDetails.EndDate</label>
+                        </div>
+                    </div>
+                </div>*@
+
+
+
+            </div>
+
+            <div class="body collapse show" id="dataCollapse">
+                <div class="table-responsive">
+                    <div id="tblLoader" style="display:none">
+                        <div class="lds-roller"><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div></div>
+                    </div>
+                    <table class="dataTable dt-responsive no-footer nowrap table table-bordered table-striped w-100" id="tblUsers">
+                        <thead>
+                            <tr>
+                                <th><i class="fas fa-hashtag"></i></th>
+                                <th>@Users.Name</th>
+                                <th>@Users.SurName</th>
+                                <th>@Users.FullName</th>
+                                <th>@Users.EmailAddress</th>
+                                <th>@Users.UserName</th>
+                                <th>@Users.SubEndDate</th>
+                                <th>@ERP.ResourcePack.Accounts.ReportsAccounts.UserValue</th>
+                                <th>@Users.IsActive</th>
+                                <th class="all"><i class="fas fa-cogs"></i></th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+
+                    <div class="d-none">
+                        <table class="dataTable dt-responsive no-footer nowrap table table-bordered table-striped w-100 d-none" id="tblUsersPrint">
+                            <thead></thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<div  style="display:none" id="ModalInvoice">
+    <div class="" id="ModalContent">
+        <div class="row" id="TenentDetailsRow">
+            <div class="col-md-3">
+                <div class="form-group form-float">
+                    <div class="form-line">
+                        @Html.TextBoxFor(x => x.TenantNameAr, new { @class = "form-control", id = "TNAR", Disabled = true })
+                        @Html.LabelFor(x => x.TenantNameAr, new { @class = "form-label" })
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="form-group form-float">
+                    <div class="form-line">
+                        @Html.TextBoxFor(x => x.Tel, new { @class = "form-control", id = "TelM", Disabled = true })
+                        @Html.LabelFor(x => x.Tel, new { @class = "form-label"})
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="form-group form-float">
+                    <div class="form-line">
+                        @Html.TextBoxFor(x => x.Fax, new { @class = "form-control", id = "FaxM", Disabled = true })
+                        @Html.LabelFor(x => x.Fax, new { @class = "form-label" })
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="form-group form-float">
+                    <div class="form-line">
+                        @Html.TextBoxFor(x => x.Email, new { @class = "form-control", id = "EmailM", Disabled = true })
+                        @Html.LabelFor(x => x.Email, new { @class = "form-label"})
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-3">
+                <div class="form-group form-float">
+                    <div class="form-line focused">
+                        <input class="form-control" disabled id="NofMonthes" name="NofMonthes" type="text" >
+                        <label class="form-label active" for="BoxNo">@ERP.ResourcePack.Common.Settings.NofMonthes</label>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+
+        <table class="dataTable dt-responsive no-footer nowrap table table-bordered table-striped w-100" id="tblUsersChecked">
+            <thead>
+                <tr>
+                    <th><i class="fas fa-hashtag"></i></th>
+                    <th>@Users.UserName</th>
+                    <th>@Users.EmailAddress</th>
+                    <th>@ERP.ResourcePack.Accounts.ReportsAccounts.UserValue</th>
+                    <th>@Users.SubEndDate</th>
+                </tr>
+            </thead>
+            <tbody id="tblUsersChecked_Body"></tbody>
+        </table>
+    </div>
+
+</div>
+
+
+
+<div class="row">
+    <section class="mx-auto">
+        <div class="card p-2 ">
+            <div class="description p-1">
+                <h3>@ERP.ResourcePack.Common.Settings.total</h3>
+                <h5 id="h5totamount">$<span class="js-total" id="totamount">0</span></h5>
+            </div>
+        </div>
+        <button type="button" class="btn btn-outline-success mb-3" id="continue-button">@ERP.ResourcePack.Common.Settings.Continue</button>
+    </section>
+
+
+</div>
+
+
+
+@section scripts{
+    <script src="https://polyfill.io/v3/polyfill.min.js?version=3.52.1&features=fetch"></script>
+    <script src="https://js.stripe.com/v3/"></script>
+    @Html.Partial("~/ViewsScripts/_Tenant/TenantScripts.cshtml")
+
+    <script>
+        $(`#monthes`).select2();
+        let TotalVal = 0;
+        let SelectedMonthes = $(`#monthes`).val();
+        ManupulateDateChange(SelectedMonthes);
+
+
+        function ManupulateDateChange(Monthes) {
+         
+            var today = moment(moment(), 'DD/MM/YYYY');
+            let AdminSubEndDate = moment($('#AdminSubEndDate').val(), 'DD/MM/YYYY');
+            
+            if (AdminSubEndDate.isAfter(today)) {
+                $('#ExpDate').val(AdminSubEndDate.add(SelectedMonthes, 'M').format('DD/MM/YYYY'));
+            } else {
+                var NewExpDate = today.add(SelectedMonthes, 'M').format('DD/MM/YYYY');
+                $('#ExpDate').val(NewExpDate);
+            }
+        }
+
+    </script>
+
+
+    @if (Model?.BaseCurrency > 0)
+    {
+        <script>
+        const _apiAppService = "Tenant";
+        let currName = '@(lang=="ar-EG"? Model.CurrencyAr : Model.CurrencyEn)';
+        let currencyOption = $("<option selected='selected'></option>").val(@Model.BaseCurrency).text(currName);
+        $(`#BaseCurrency`).append(currencyOption).trigger('change');
+     
+        </script>
+    }
+
+
+
+<script type="text/javascript">
+     var stripe = Stripe($('#StripePublishablekey').val());
+     var checkoutButton = document.getElementById("checkout-button");
+
+    $('#continue-button').click(function () {
+        localStorage.removeItem("CheckOutModel")
+        if (SelectedMonthes <=0) {
+            toastr.error('SelectedMonthes ')
+            return;
+        }
+
+        if (GetCheckedUsers().length <= 0) {
+            toastr.error('No Users ')
+            return;
+        }
+
+        if (CheckedUsersSubEndDate()) {
+            toastr.error('@ERP.ResourcePack.Accounts.ReportsAccounts.SubEndDateValidation');
+            return;
+        }
+
+
+
+        $('#tblUsersChecked_Body').html('');
+        $('#CheckoutRow').remove();
+
+        $('#main-modal .modal-body').html($('#ModalContent').html());
+        var index = 0;
+        var res = GetCheckedUsers();
+
+        res.forEach(function (entry) {
+            var markUp = `<tr >
+                            <td class="sorting_1" tabindex="${index++}">${index++}</td>
+                            <td>${entry.userName}</td>
+                            <td>${entry.email}</td>
+                            <td>${entry.price}</td>
+                            <td>${entry.SubEndDate}</td>
+                            </tr>`
+            console.log(entry);
+            $('#tblUsersChecked_Body').append(markUp);
+        });
+        $('#tblUsersChecked').dataTable()
+        $('#main-modal .modal-body').append(`
+            <div class="row" id="CheckoutRow">
+            <section class="mx-auto">
+                <div class="card p-2 ">
+                    <div class="description p-1">
+                        <h3>@ERP.ResourcePack.Common.Settings.total</h3>
+                        <h5 id="h5totamount">$<span class="" id="totamount">${TotalVal}</span></h5>
+                    </div>
+                </div>
+                <button type="button" id="checkout-button">@ERP.ResourcePack.Common.Settings.Checkout</button>
+            </section>
+            </div> `)
+
+        $('#ModalInvoice').remove();
+        $('main-modal-title').text('Invoice')
+        $('#tblUsersChecked').dataTable()
+        $('#NofMonthes').val($('#monthes').val());
+        $('#main-modal').modal('show')
+        })
+
+        $(document).on('click', '#checkout-button',async function () {
+            $.ajax({
+                url: `${baseUrl}/Payment/CreatePayment`,
+                cache: false,
+                type: "POST",
+                headers: {
+                    'Authorization': `Bearer ${$_token}`,
+                    'Content-Type': 'application/json',
+                },
+                data: JSON.stringify({
+                    "domain": window.location.origin,
+                    "unitAmount": TotalVal,
+                    "currency": "USD",
+                    "productName": "Tenx Renewall Subscribtion",
+                    "quantity": 1
+                })
+            })
+                .done(async function (data) {
+                   
+                   // let am = data.result.amount_total / 100;
+                    if ((data.result.amount_total / 100) != TotalVal) {
+
+                        toastr.error('Not Matched Amount .. ')
+                        return;
+                    }
+
+                var res=  await  SaveTRX(data.result.id);
+                    if (res.success) {
+                        localStorage.setItem("TrxInfo", JSON.stringify(res.result))
+                        return await stripe.redirectToCheckout({ sessionId: data.result.id });
+                    }
+                })
+                .fail(function (error) {
+                    console.error("Error:", error);
+                })
+
+
+
+    });
+
+
+   async function SaveTRX(sessenId) {
+
+       let result;
+       let body = {
+           sessionId: sessenId,
+           tenentId: $('#Id').val(),
+           usersModel: GetCheckedUsers()
+       };
+        result = await $.ajax({
+                url: `${baseUrl}/Tenant/TenantCheckoutHold`,
+                cache: false,
+                type: "POST",
+                headers: {
+                    'Authorization': `Bearer ${$_token}`,
+                    'Content-Type': 'application/json',
+                },
+                data: JSON.stringify(body)
+        })
+       return result;
+    }
+
+
+    $('#monthes').on('select2:select', function (e) {
+
+        SelectedMonthes = parseInt($("#monthes").val());
+
+        if (!parseInt(TotalVal)) {
+            TotalVal = 0;
+        }
+
+        TotalVal = CalculateTotal() //TotalVal * SelectedMonthes;
+        $('.js-total').text(TotalVal);
+      //  $('#totamount').text(TotalVal * SelectedMonthes);
+        ManupulateDateChange(SelectedMonthes);
+    });
+
+
+
+
+    $(document).on('change', "input[name*='usersCHK']", function () {
+
+        SelectedMonthes = parseInt($("#monthes").val());
+        if (!$("#monthes").val()) {
+            toastr.warning('Please Select Month');
+            return;
+        }
+
+        if (this.checked) {
+            TotalVal += parseFloat($(this).data('price')) * SelectedMonthes ;
+            $('#h5totamount').addClass('totamount');
+        } else {
+            TotalVal -= parseFloat($(this).data('price')) * SelectedMonthes ;
+        }
+        $('.js-total').text(TotalVal);
+       // $('#totamount').text(TotalVal * SelectedMonthes);
+
+    });
+
+
+    function GetCheckedUsers() {
+        let CheckOutUsers = [];
+        $("input[name*='usersCHK']:checked").each(function (index, obj) {
+            CheckOutUsers.push({
+                userId: $(this).val(),
+                price: $(this).data("price"),
+                userName: $(this).data("username"),
+                email: $(this).data("email"),
+                nOfMonthes: $('#monthes').val(),
+                SubEndDate: $(this).data("subenddate"),
+                tenentId: $('#Id').val(),
+            })
+        });
+        return CheckOutUsers;
+    }
+
+    function CalculateTotal() {
+        SelectedMonthes = parseInt($("#monthes").val());
+        let total = 0;
+        $.each($("input[name*='usersCHK']:checked"), function () {
+            console.log($(this).data('price'));
+            total += parseFloat($(this).data('price'));
+        });
+
+        return total * SelectedMonthes;
+    }
+
+    function CheckedUsersSubEndDate() {
+        let CheckOutUsers = [];
+        var x = false;
+        CheckOutUsers = GetCheckedUsers();
+        CheckOutUsers.forEach(async function (obj) {
+
+            var SubEndDate = moment(obj["SubEndDate"], 'DD/MM/YYYY');
+            //console.log("old Sub Date" + SubEndDate);
+            var newSubEndDate = SubEndDate.add(SelectedMonthes, 'M').format('DD/MM/YYYY');
+            newSubEndDate = moment(newSubEndDate, 'DD/MM/YYYY');
+            console.log("New Sub Date   " + newSubEndDate);
+            let AdminSubEndDate = moment($('#AdminSubEndDate').val(), 'DD/MM/YYYY');
+            console.log("Admin Sub Date   " + AdminSubEndDate);
+            console.log(obj["userName"]);
+            if ((newSubEndDate.isAfter(AdminSubEndDate)) && (obj["userName"] != 'admin')) {
+
+                x = true;
+            }
+        })
+        return x;
+    }
+
+</script>
+
+
+}

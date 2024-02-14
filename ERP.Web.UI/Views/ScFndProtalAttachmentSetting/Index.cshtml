@@ -1,0 +1,11 @@
+﻿@{
+    ViewBag.Title = ERP.ResourcePack.AidModule.ScFndProtalAttachmentSetting.Title;
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@Html.Action(nameof(ERP.Web.UI.Controllers.AidModule.ScFndProtalAttachmentSettingController.ScFndProtalAttachmentSettingSearch))
+@Html.Action(nameof(ERP.Web.UI.Controllers.AidModule.ScFndProtalAttachmentSettingController.ScFndProtalAttachmentSettingData))
+
+@section scripts{
+    @Html.Partial("~/ViewsScripts/_AidModule/ScFndProtalAttachmentSetting/ScFndProtalAttachmentSettingScripts.cshtml")
+}

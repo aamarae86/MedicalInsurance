@@ -1,0 +1,590 @@
+﻿@using ERP.Web.UI.Controllers.Accounts
+@using ERP.ResourcePack.Accounts
+@using ERP.Authorization;
+@{
+    string permissionsStr = TempData["Permissions"].ToString();
+    string encUpdateTrigger = ERP.Front.Helpers.Enums.Common.EncUpdate;
+    string encShowTrigger = ERP.Front.Helpers.Enums.Common.EncShow;
+}
+<script>
+    const _mainController = "ApBanks"
+
+    $(function ()  {
+        LoadDataGrid();
+        $('#tblApBanksPrint thead').html($('#tblApBanks thead').html());
+        $('#tblApBanksPrint thead tr :last-child').remove();
+        $('#ApBanks').addClass('active');
+    });
+
+    const _loadDataUrl = `${$PrefixHostName}/${_mainController}/@nameof(ApBanksController.LoadDataGrid)`;
+    const _tblSelector = $('#tblApBanks');
+    const _tblLoader = $('#tblLoader');
+    const _mainForm = $('#mainForm');
+    const _txtNameArSearch = $('#searchBox #BankNameAr');
+    const _txtNameEnSearch = $('#searchBox #BankNameEn');
+    const bankTypeBank = @Convert.ToInt64(ERP.Front.Helpers.Enums.Common.FndBankLkpsTypes.Bank);
+    const bankTypeBox = @Convert.ToInt64(ERP.Front.Helpers.Enums.Common.FndBankLkpsTypes.Box);
+
+    const _permissions = '@permissionsStr';
+    const _updatePermission = '@PermissionNames.Pages_ApBanks_Update';
+    const _deletePermission = '@PermissionNames.Pages_ApBanks_Delete';
+
+    let tblHeadersAdded = false;
+
+    $('#btnSubmition').on('click', function () {
+
+        if (_ApBankAccountsArr.length === 0) {
+            toastr.warning('@ApBanks.FillDetailTable');
+            return;
+        }
+
+        _mainForm.submit();
+
+        if (_mainForm.valid()) {
+
+            $(this).hide();
+            $('#submitLoader').show();
+
+        } else {
+
+            $(this).show();
+            $('#submitLoader').hide();
+
+        }
+
+    });
+
+    var OnBegin = function (response) {
+        fireBtnLoader();
+    };
+
+    var OnSuccess = function (response) {
+
+        if (response.success) {
+
+            if (response.customRestResult.trigger === '@ERP.Front.Helpers.Enums.Common.FormTriggers.Insert') {
+
+                toastr.success(response.customRestResult.message);
+
+                setTimeout(function () {
+                    window.location.href =  $PrefixHostName + '/ApBanks';
+                },200);
+
+            } else if (response.customRestResult.trigger === '@ERP.Front.Helpers.Enums.Common.FormTriggers.Update') {
+
+                toastr.success(response.customRestResult.message);
+
+                 setTimeout(function () {
+                    window.location.href =  $PrefixHostName + '/ApBanks';
+                },200);
+            }
+
+        } else {
+               toastr.error(response.customRestResult.message);
+        }
+
+    };
+
+    var OnComplete = function (response) {
+        downBtnLoader();
+    };
+
+    var OnFailure = function (response) {
+        toastr.error(response);
+        console.log(response);
+        downBtnLoader();
+    };
+
+    const LoadDataGrid = function () {
+
+        $('#tblLoader').show();
+        const parms = {
+            BankNameAr: _txtNameArSearch.val(),
+            BankNameEn: _txtNameEnSearch.val(),
+            BankTypeLkpId:$('#searchBox #BankTypeLkpId').find(':selected').val()
+        };
+
+        const columns = [
+            {
+                "data": "result.data.id",
+                'render': function (data, type, row, meta) {
+                    return meta.row + meta.settings._iDisplayStart + 1;
+                }
+            },
+            {
+                "data": "BankNameAr",
+                "name": "BankNameAr",
+                "autoWidth": true
+            },
+            {
+                "data": "BankNameEn",
+                "name": "BankNameEn",
+                "autoWidth": true
+            },
+            {
+                "data": null,
+                "autoWidth": true,
+                "render": function (d, t, row) {
+                    if (lang === 'ar-EG') {
+                        return row.FndLookupValues.NameAr;
+                    }
+                    return row.FndLookupValues.NameEn;
+                }
+            },
+            {
+                "data": null,
+                "sortable": false,
+                "render": function (data, type, row) {
+
+                    let formAction = `${$PrefixHostName}/${_mainController}/@nameof(ApBanksController.ApBanksForm)`;
+                    let DeleteAction = `${$PrefixHostName}/${_mainController}/@nameof(ApBanksController.Delete)`;
+
+                    let btns = '';
+
+                    if (_permissions.includes(_updatePermission)) {
+                        btns += `<a href="${$PrefixHostName}/ApBanks/FormView?id=${row.EncId}&t=@encUpdateTrigger" title="@ERP.ResourcePack.Common.Settings.Edit"><i class="mx-2 fas fa-edit text-info"></i></a>`;
+                    }
+
+                    btns += `<a href="${$PrefixHostName}/ApBanks/FormView?id=${row.EncId}&t=@encShowTrigger" title="@ERP.ResourcePack.Common.Settings.Show"><i class="mx-2 fas fa-eye text-info"></i></a>`;
+
+                    if (_permissions.includes(_deletePermission)) {
+                        btns += `<a href="javascript:void(0)" onclick="AjaxController.DeleteMainTableRow(${row.Id},'${DeleteAction}');" title="@ERP.ResourcePack.Common.Settings.Delete"><i class="mx-2 fas fa-trash-alt text-danger"></i></a>`;
+                    }
+
+                    const _auditedPermission = '@PermissionNames.Pages_ApBanks_Audit';
+
+                    if (_permissions.includes(_auditedPermission)) {
+
+                        row.permission = _auditedPermission;
+
+                        btns += GetAuditedButton(row);
+                    }
+
+                    return btns;
+                }
+            }
+        ];
+
+        const dtObj = {
+            "processing": true,
+            "serverSide": true,
+            "filter": false,
+            "orderMulti": false,
+            "language": dataTableLang,
+            "ajax": {
+                "url": _loadDataUrl,
+                "type": "POST",
+                "datatype": "json",
+                "data": parms,
+                "complete": function () {
+                      _tblLoader.hide();
+                }
+            },
+            "columns": columns,
+            "initComplete": function () {
+                $('[data-toggle="tooltip"]').tooltip();
+            }
+
+        };
+
+        _tblSelector.dataTable().fnDestroy();
+        _tblSelector.DataTable(dtObj).on('draw', function () { $('[data-toggle="tooltip"]').tooltip(); });
+
+        setTimeout(function () {
+            $(".sorting_1").removeAttr('colspan');
+        }, 500);
+    };
+
+    $('#searchBox #BankTypeLkpId').select2(ReturnSelect2ObjectForLkpsTypes('@ERP.Front.Helpers.Enums.Common.FndLkpsTypes.BankType.ToString()'));
+
+    $('#BankTypeLkpId').select2(ReturnSelect2ObjectForLkpsTypes('@ERP.Front.Helpers.Enums.Common.FndLkpsTypes.BankType.ToString()'));
+
+    $('#CurrencyId').select2(ReturnSelect2ObjectDefault(`${baseUrl}/Currency/GetCurrenciesSelect2`));
+
+    $('#CurrencyId').on('change', function (e) {
+
+        const currency = $(this);
+        const rateTxt = $('#CurrencyRate');
+
+        if (currency === undefined || currency.find(':selected').val() === undefined) { } else {
+            $.ajax({
+                url: `${baseUrl}/Currency/GetRate`,
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${$_token}`
+                },
+                data: {
+                    Id: currency.find(':selected').val(),
+                    date: ''
+                }
+            }).done(function (rate) {
+
+                let _inputSelector = $('#CurrencyRate');
+
+                _inputSelector.parent('.form-line').addClass('focused');
+
+                rateTxt.val(rate.result);
+
+            }).fail(function (response) {
+                toastr.error(response);
+            });
+        }
+    });
+
+</script>
+
+<script>
+    const _tblApBankAccountsSelector = $('#tblApBankAccounts');
+    const _tblApBankAccountsSelectorBody = $('#tblApBankAccounts tbody');
+    const _tblApBankAccountsSelectorHead = $('#tblApBankAccounts thead tr');
+    const _listApBankAccounts = $('#ListApBankAccounts');
+
+    let _ApBankAccountsArr = [], tblCounterIndex = 0 , updatedRow;
+
+    const add = function () {
+
+        if (validateDetails() === false) return;
+
+        const resultCodeComUtilityAcc1 = GetCodeComUtilites(acc1__arrGlSelect2, 'acc1AccId');
+        const resultCodeComUtilityAcc2 = GetCodeComUtilites(acc2__arrGlSelect2, 'acc2AccId');
+       // const resultCodeComUtilityAcc3 = GetCodeComUtilites(acc3__arrGlSelect2, 'acc3AccId');
+        const resultCodeComUtilityAcc4 = GetCodeComUtilites(acc4__arrGlSelect2, 'acc4AccId');
+
+        const currentBankType = $('#BankTypeLkpId').find(':selected').val();
+
+        let counterBank = 0;
+        let counterBox = 0;
+
+        if (resultCodeComUtilityAcc1 === null) {
+
+            if (currentBankType == bankTypeBank) counterBank++;
+
+            if (currentBankType == bankTypeBox) counterBox++;
+        }
+
+        if (resultCodeComUtilityAcc2 === null)
+            if (currentBankType == bankTypeBox) counterBox++;
+
+
+        if (resultCodeComUtilityAcc4 === null)
+            if (currentBankType == bankTypeBank) counterBank++
+
+        if (counterBank > 0) {
+            toastr.warning('@ApBanks.Account' + ' & ' + '@ApBanks.ApPdcCollAccount' + ' : ' + '@ERP.ResourcePack.Common.Settings.Required');
+            return;
+        }
+
+        if (counterBox > 0) {
+            toastr.warning('@ApBanks.Account' + ' & ' + '@ApBanks.cPdcAccount' + ' : ' + '@ERP.ResourcePack.Common.Settings.Required');
+            return;
+        }
+
+        const current = {
+            index: ++tblCounterIndex,
+            codeComUtilityIds: resultCodeComUtilityAcc1.idsStr,
+            codeComUtilityTexts: resultCodeComUtilityAcc1.textsStr,
+            codeComUtilityIds_alt1: resultCodeComUtilityAcc2 == null ? '': resultCodeComUtilityAcc2.idsStr,
+            codeComUtilityTexts_alt1: resultCodeComUtilityAcc2  == null ? '': resultCodeComUtilityAcc2.textsStr,
+          //  codeComUtilityIds_alt2: resultCodeComUtilityAcc3  == null ? '': resultCodeComUtilityAcc3.idsStr,
+      //      codeComUtilityTexts_alt2: resultCodeComUtilityAcc3  == null ? '':  resultCodeComUtilityAcc3.textsStr,
+            codeComUtilityIds_alt3: resultCodeComUtilityAcc4 == null ? '': resultCodeComUtilityAcc4.idsStr,
+            codeComUtilityTexts_alt3: resultCodeComUtilityAcc4 == null ? '': resultCodeComUtilityAcc4.textsStr,
+            bankAccountNameAr: $('#BankAccountNameAr').val(),
+            bankAccountNameEn: $('#BankAccountNameEn').val(),
+            currencyId: $('#CurrencyId').find(':selected').val(),
+            currencyRate: $('#CurrencyRate').val(),
+            currency: $('#CurrencyId').find(':selected').text(),
+            isActive: $('#IsAccountActive').is(':checked'),
+            rowStatus: NewStatus
+        };
+
+        return current;
+    };
+
+    const AddApBankAccounts = function () {
+
+        if (add() === undefined) return;
+
+        _ApBankAccountsArr.push(add());
+
+        _listApBankAccounts.val(JSON.stringify(_ApBankAccountsArr));
+
+        bindglHeaderDetailsTable();
+
+        clearFormAdding();
+    };
+
+    const UpdateApBankAccountsRow = function () {
+
+        let current = _ApBankAccountsArr.find(z => z.index === updatedRow.index);
+
+        let indexOfCurrent = _ApBankAccountsArr.indexOf(_ApBankAccountsArr.find(z => z.index === updatedRow.index));
+
+        if (add() === undefined) return;
+
+         const newRow = add();
+
+        newRow.apBankAccId = updatedRow.apBankAccId;
+        newRow.rowStatus = !updatedRow.apBankAccId ? NewStatus : UpdatedStatus;
+
+        _ApBankAccountsArr.splice(indexOfCurrent, 1,newRow);
+
+        $('#btnAddDetailRow').show();
+        $('#btnUpdateDetailRow').hide();
+        $('#btnCancelDetailRow').hide();
+
+        clearFormAdding();
+
+        _listApBankAccounts.val(JSON.stringify(_ApBankAccountsArr));
+
+        bindglHeaderDetailsTable();
+    };
+
+    const bindglHeaderDetailsTable = function () {
+
+        let rows = '';
+
+        const detailArr = _ApBankAccountsArr.filter(z => z.rowStatus !== DeletedStatus);
+
+        $.each(detailArr, function (i, item) {
+
+            rows += '<tr>';
+
+            rows += `<td>${item.index}</td>`;
+            rows += `<td>${item.bankAccountNameAr}</td>`;
+            rows += `<td>${item.bankAccountNameEn}</td>`;
+            rows += `<td>${item.currency}</td>`;
+            rows += `<td>${item.currencyRate}</td>`;
+
+            // account
+            rows += '<td> <ul class="list-group">';
+
+            rows += '<li class="list-group-item text-center text-info">';
+            rows +=`<strong style="font-weight:800;color:#343434">@ERP.ResourcePack.Accounts.ApBanks.Account</strong> :: ${item.codeComUtilityTexts}`
+            rows += '</li>';
+
+               // cPdcAccount
+            rows += '<li class="list-group-item text-center text-info">';
+            rows +=`<strong style="font-weight:800;color:#343434">@ERP.ResourcePack.Accounts.ApBanks.cPdcAccount</strong> :: ${item.codeComUtilityTexts_alt1}`
+            rows += '</li>';
+
+               @*// pdcCollAccount
+            rows += '<li class="list-group-item text-center text-info">';
+            rows +=`<strong style="font-weight:800;color:#343434">@ERP.ResourcePack.Accounts.ApBanks.PdcCollAccount</strong> :: ${item.codeComUtilityTexts_alt2}`
+            rows += '</li>';*@
+
+               // apPdcCollAccount
+            rows += '<li class="list-group-item text-center text-info">';
+            rows +=`<strong style="font-weight:800;color:#343434">@ERP.ResourcePack.Accounts.ApBanks.ApPdcCollAccount</strong> :: ${item.codeComUtilityTexts_alt3}`
+            rows += '</li>';
+
+            rows += '</td></ul>';
+
+            if (item.isActive) {
+                rows += `<td><i class="fas fa-check text-success"></i></td>`;
+            } else {
+                rows += `<td><i class="fas fa-times text-danger"></i></td>`;
+            }
+
+            if (primaryEntityKeyId === 0 || trigger !== '@ERP.Front.Helpers.Enums.Common.FormTriggers.Show.ToString()') {
+                rows += `<td><a href="javascript:void(0)" onclick="return DeleteRowDetail(${item.index})"><i class="mx-2 fas fa-trash-alt text-danger"></i></a>`;
+                rows += `<a href="javascript:void(0)" onclick="return GetRow(${item.index})"><i class="mx-2 fas fa-edit text-success"></i></a></td>`;
+            } else {
+                rows += '<td></td>';
+            }
+
+            rows += '</tr>';
+        });
+
+        setTimeout(function () {
+            _tblApBankAccountsSelectorBody.html(rows);
+        }, 100);
+    };
+
+    const DeleteRowDetail = function (index) {
+
+        const current = _ApBankAccountsArr.find(z => z.index === index);
+
+        const indexOfCurrent = _ApBankAccountsArr.indexOf(current);
+
+        if (current.apBankAccId === undefined || current.apBankAccId == null || current.apBankAccId == 0) {
+
+           _ApBankAccountsArr.splice(indexOfCurrent, 1);
+
+        } else {
+
+            current.rowStatus = DeletedStatus;
+
+           _ApBankAccountsArr.splice(indexOfCurrent, 1,current);
+        }
+
+
+        bindglHeaderDetailsTable();
+
+        _listApBankAccounts.val(_ApBankAccountsArr.length === 0 ? '' : JSON.stringify(_ApBankAccountsArr));
+    };
+
+    const LoadApBankAccountsData = function () {
+
+        $.ajax({
+            url: `${baseUrl}/ApBanks/GetAllApBankAccountsDetails`,
+            method: 'GET',
+            headers: {
+                        'Authorization': `Bearer ${$_token}`
+            },
+            data: {
+                bankId: primaryEntityKeyId
+            }
+        }).done(function (data) {
+
+            _ApBankAccountsArr = [...data.result];
+
+            bindglHeaderDetailsTable();
+
+            _listApBankAccounts.val(JSON.stringify(_ApBankAccountsArr));
+
+            const newarr = data.result.reverse();
+
+            if (newarr.length > 0)
+                tblCounterIndex = newarr[0].index;
+            else
+                tblCounterIndex = 0;
+
+
+        });
+
+    };
+
+    const GetRow = function (tblIndex) {
+
+        clearFormAdding();
+
+        $('#btnAddDetailRow').hide();
+        $('#btnUpdateDetailRow').show();
+        $('#btnCancelDetailRow').show();
+
+        const current = _ApBankAccountsArr.find(z => z.index === tblIndex);
+
+        BindCodeComUtilitesDropDowns(acc1__arrGlSelect2, 'acc1AccId', current.codeComUtilityIds, current.codeComUtilityTexts);
+        BindCodeComUtilitesDropDowns(acc2__arrGlSelect2, 'acc2AccId', current.codeComUtilityIds_alt1, current.codeComUtilityTexts_alt1);
+      //  BindCodeComUtilitesDropDowns(acc3__arrGlSelect2, 'acc3AccId', current.codeComUtilityIds_alt2, current.codeComUtilityTexts_alt2);
+        BindCodeComUtilitesDropDowns(acc4__arrGlSelect2, 'acc4AccId', current.codeComUtilityIds_alt3, current.codeComUtilityTexts_alt3);
+
+        $('#BankAccountNameAr').val(current.bankAccountNameAr);
+        $('#BankAccountNameEn').val(current.bankAccountNameEn);
+        $('#BankAccountNameAr').parent('.form-line').addClass('focused');
+        $('#BankAccountNameEn').parent('.form-line').addClass('focused');
+
+        let currencyOption = $("<option selected='selected'></option>").val(current.currencyId).text(current.currency);
+        $(`#CurrencyId`).append(currencyOption).trigger('change');
+
+        updatedRow = current;
+
+    };
+
+    const clearFormAdding = function () {
+
+        $('#first .card select:not(.slct2gl)').val('').trigger('change');
+
+        $('#first .card input').val('');
+    };
+
+    const validateDetails = function () {
+
+        if ($('#BankTypeLkpId').find(':selected').val() === undefined || $('#BankTypeLkpId').find(':selected').val() === '') {
+            toastr.warning('@ApBanks.BankTypeLkpId' + ' : ' + '@ERP.ResourcePack.Common.Settings.Required')
+            return false;
+        }
+
+        if ($('#BankAccountNameAr').val() === '') {
+            toastr.warning('@ApBanks.BankAccountNameAr' + ' : ' + '@ERP.ResourcePack.Common.Settings.Required')
+            return false;
+        }
+
+        if ($('#BankAccountNameEn').val() === '') {
+            toastr.warning('@ApBanks.BankAccountNameEn' + ' : ' + '@ERP.ResourcePack.Common.Settings.Required')
+            return false;
+        }
+
+        if ($('#CurrencyId').find(':selected').val() === undefined || $('#CurrencyId').find(':selected').val() === '') {
+            toastr.warning('@ApBanks.CurrencyId' + ' : ' + '@ERP.ResourcePack.Common.Settings.Required')
+            return false;
+        }
+
+        return true;
+    };
+
+    function printExc() {
+        $('.page-loader-wrapper').show();
+        $('#tblApBanksPrint_wrapper').parent().addClass('d-none');
+        const parmss = {
+            BankNameAr: _txtNameArSearch.val(),
+            BankNameEn: _txtNameEnSearch.val(),
+            BankTypeLkpId: $('#searchBox #BankTypeLkpId').find(':selected').val(),
+            length: 1000000
+        };
+
+        const columns = [
+            {
+                "data": "result.data.id",
+                'render': function (data, type, row, meta) {
+                    return meta.row + meta.settings._iDisplayStart + 1;
+                }
+            },
+            {
+                "data": "BankNameAr",
+                "name": "BankNameAr",
+                "autoWidth": true
+            },
+            {
+                "data": "BankNameEn",
+                "name": "BankNameEn",
+                "autoWidth": true
+            },
+            {
+                "data": null,
+                "autoWidth": true,
+                "render": function (d, t, row) {
+                    if (lang === 'ar-EG') {
+                        return row.FndLookupValues.NameAr;
+                    }
+                    return row.FndLookupValues.NameEn;
+                }
+            }
+        ];
+
+        const dtObj = {
+            "language": dataTableLang,
+            "dom": 'Bfrtip',
+            "buttons": [
+                {
+                    extend: 'excel',
+                    messageTop: `${$('#BankNameAr').siblings().text()}: ${(parmss.BankNameAr) ? parmss.BankNameAr : '--'}, ${$('#BankNameEn').siblings().text()}: ${(parmss.BankNameEn) ? parmss.BankNameEn : '--'}, ${$('[for="BankTypeLkpId"]').text()}: ${(parmss.BankTypeLkpId) ? parmss.BankTypeLkpId : '--'}`
+                },
+
+            ],
+            "ajax": {
+                "url": _loadDataUrl,
+                "type": "POST",
+                "datatype": "json",
+                "data": parmss,
+                "complete": function (d) {
+                    _tblLoader.hide();
+                }
+            },
+            "columns": columns,
+
+            "initComplete": function () {
+                $('#tblApBanksPrint_wrapper button.dt-button').click();
+                $('#tblApBanksPrint_wrapper').parent().addClass('d-none');
+
+            }
+        };
+
+        $('#tblApBanksPrint').dataTable().fnDestroy();
+        $('#tblApBanksPrint').DataTable(dtObj).on('buttons-processing', function (e, indicator) { if (!indicator) { $('.page-loader-wrapper').hide() } });
+
+
+    }
+
+</script>

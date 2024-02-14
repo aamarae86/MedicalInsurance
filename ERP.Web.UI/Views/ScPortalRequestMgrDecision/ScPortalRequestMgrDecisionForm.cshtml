@@ -1,0 +1,265 @@
+﻿@using ERP.Web.UI.Models.ViewModels.AidModule
+@using ERP.Web.UI.Models.ViewModels.General
+@model ScPortalRequestMgrDecisionVM
+@{
+    ViewBag.Title = ERP.ResourcePack.Accounts.ArCustomers.ScPortalRequestMgrDecision;
+    string formTrigger = ViewBag.trigger;
+    string lang = Request.Cookies["Lang"] == null ? "ar-EG" : Request.Cookies["Lang"].Value.ToString();
+    string lkpKeyDdl = lang == "ar-EG" ? nameof(FndLookupValuesVM.NameAr) : nameof(FndLookupValuesVM.NameEn);
+    bool isFormDetail = Model != null && formTrigger == ERP.Front.Helpers.Enums.Common.FormTriggers.Show.ToString();
+}
+
+<div class="card">
+    <div class="body">
+        <div class="header">
+            <h2><strong>@ERP.ResourcePack.AidModule.ScPortalRequests.RequestData</strong></h2>
+        </div>
+        @using (Ajax.BeginForm(nameof(ERP.Web.UI.Controllers.AidModule.ScPortalRequestMgrDecisionController.PostScPortalRequestMgrDecision), "ScPortalRequestMgrDecision", new AjaxOptions { HttpMethod = "POST", OnBegin = "OnBegin", OnSuccess = "OnSuccess", OnComplete = "OnComplete", OnFailure = "OnFailure" }, new { @id = "mainForm" }))
+        {
+            @Html.HiddenFor(z => z.Id)
+            @Html.HiddenFor(z => z.PortalRequestStudyId)
+            @Html.HiddenFor(z => z.MgrDecisionElectronicAidsListStr)
+
+            <div class="row clearfix">
+                <div class="col-sm-4">
+                    <div class="form-group form-float">
+                        <div class="form-line">
+                            <label class="form-label">@ERP.ResourcePack.Accounts.ArCustomers.DecisionNumber</label>
+                            @Html.TextBoxFor(z => z.DecisionNumer, getHtmlAttributes(true, "form-control", string.Empty))
+                        </div>
+                    </div>
+                </div>
+                <div class="col-sm-4">
+                    <div class="form-group form-float">
+                        <div class="form-line">
+                            <label class="form-label label-required">@ERP.ResourcePack.Accounts.ArCustomers.DecisionDate</label>
+                            @Html.TextBoxFor(z => z.DecisionDate, getHtmlAttributes(isFormDetail, "form-control", "datepicker"))
+                        </div>
+                        @Html.ValidationMessageFor(x => x.DecisionDate)
+                    </div>
+                </div>
+                @if (lang == "ar-EG")
+                {
+                    <div class="col-sm-4">
+                        <div class="form-group form-float">
+                            <div class="form-line">
+                                <label class="form-label">@ERP.ResourcePack.Accounts.ArCustomers.Status</label>
+                                @Html.TextBoxFor(z => z.FndLookupValuesStatusLkpId.NameAr, getHtmlAttributes(true, "form-control", string.Empty))
+                            </div>
+                        </div>
+                    </div>
+                }
+                else
+                {
+                    <div class="col-sm-4">
+                        <div class="form-group form-float">
+                            <div class="form-line">
+                                <label class="form-label">@ERP.ResourcePack.Accounts.ArCustomers.Status</label>
+                                @Html.TextBoxFor(z => z.FndLookupValuesStatusLkpId.NameEn, getHtmlAttributes(true, "form-control", string.Empty))
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+            <div class="row clearfix">
+                <div class="col-sm-4">
+                    <div class="form-group form-float">
+                        <div class="form-line">
+                            <label class="form-label">@ERP.ResourcePack.Accounts.ArCustomers.RequestNumber</label>
+                            @Html.TextBoxFor(z => z.ScPortalRequestStudy.ScPortalRequest.PortalRequestNumber, getHtmlAttributes(true, "form-control", string.Empty))
+                        </div>
+                    </div>
+                </div>
+                <div class="col-sm-8">
+                    <div class="form-group form-float">
+                        <div class="form-line">
+                            <label class="form-label">@ERP.ResourcePack.Accounts.ArCustomers.CaseName</label>
+                            @Html.TextBoxFor(z => z.ScPortalRequestStudy.ScPortalRequest.Name, getHtmlAttributes(true, "form-control", string.Empty))
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="header">
+                <h2><strong>@ERP.ResourcePack.AidModule.ScPortalRequests.StudyDecisionData</strong></h2>
+            </div>
+            <div class="row clearfix">
+                <div class="col-sm-12">
+                    <div class="form-group form-float">
+                        <div class="form-line">
+                            <label class="form-label">@ERP.ResourcePack.Accounts.ArCustomers.StudyDesc</label>
+                            @if (isFormDetail)
+                            {
+                                @Html.TextAreaFor(z => z.ScPortalRequestStudy.StudyDetails, new { @class = "form-control", @rows = 5, @disabled = "disabled" })
+                            }
+                            else
+                            {
+                                @Html.TextAreaFor(z => z.ScPortalRequestStudy.StudyDetails, new { @class = "form-control", @rows = 5 })
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row clearfix">
+                <div class="col-sm-12">
+                    <div class="form-group form-float">
+                        <div class="form-line">
+                            <label class="form-label">@ERP.ResourcePack.Accounts.ArCustomers.ResearcherDecision</label>
+                            @if (isFormDetail)
+                            {
+                                @Html.TextAreaFor(z => z.ScPortalRequestStudy.ResearcherDecision, new { @class = "form-control", @rows = 5, @disabled = "disabled" })
+                            }
+                            else
+                            {
+                                @Html.TextAreaFor(z => z.ScPortalRequestStudy.ResearcherDecision, new { @class = "form-control", @rows = 5 })
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row clearfix">
+                <div class="col-md-1">
+                    @if (formTrigger == ERP.Front.Helpers.Enums.Common.FormTriggers.Show.ToString())
+                    {
+                        <p>
+                            @if (Model.IsMedicine)
+                            {
+                                <i class="fas fa-check text-success fa-2x"></i>
+                            }
+                            else
+                            {
+                                <i class="fas fa-times text-danger fa-2x"></i>
+                            }
+                            <span>@Html.LabelFor(z => z.IsMedicine)</span>
+                        </p>
+                    }
+                    else if (formTrigger == ERP.Front.Helpers.Enums.Common.FormTriggers.Update.ToString())
+                    {
+                        <p>
+                            <label>
+                                @if (Model.IsMedicine)
+                                {
+                                    <input type="checkbox" onclick="mainForm.IsMedicine.value = $('#IsMedicineAlt').is(':checked')" checked id="@nameof(Model.IsMedicineAlt)" name="@nameof(Model.IsMedicineAlt)" />
+                                }
+                                else
+                                {
+                                    <input type="checkbox" onclick="mainForm.IsMedicine.value = $('#IsMedicineAlt').is(':checked')" id="@nameof(Model.IsMedicineAlt)" name="@nameof(Model.IsMedicineAlt)" />
+                                }
+                                <span>@Html.LabelFor(z => z.IsMedicine)</span>
+                            </label>
+                        </p>
+                    }
+                    else
+                    {
+                        <p>
+                            <label>
+                                <input type="checkbox" onclick="mainForm.IsMedicine.value = $('#IsMedicineAlt').is(':checked')" id="@nameof(Model.IsMedicineAlt)" name="@nameof(Model.IsMedicineAlt)" />
+                                <span>@Html.LabelFor(z => z.IsMedicine)</span>
+                            </label>
+                        </p>
+                    }
+
+                    <input type="hidden" id="@nameof(Model.IsMedicine)" name="@nameof(Model.IsMedicine)" />
+                </div>
+                <div class="col-sm-3">
+                    <div class="form-group form-float">
+                        <div class="form-line">
+                            <label class="form-label">@ERP.ResourcePack.Accounts.ArCustomers.AidAmount</label>
+                            @Html.TextBoxFor(z => z.Amount, getHtmlAttributes(isFormDetail, "form-control", string.Empty))
+                        </div>
+                        @Html.ValidationMessageFor(x => x.Amount)
+                    </div>
+                </div>
+                <div class="col-sm-2">
+                    <div class="form-group form-float">
+                        <div class="form-line">
+                            @Html.LabelFor(z => z.NumberOfMonths, new { @class = "form-label" })
+                            @Html.TextBoxFor(z => z.NumberOfMonths, getHtmlAttributes(isFormDetail, "form-control", string.Empty))
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    @Html.LabelFor(z => z.OtherAidLkpId, new { @class = "form-label" })
+                    <div class="form-group form-float">
+                        <div class="form-line">
+                            @if (Model != null && Model.FndOtherAidLkp != null)
+                            {
+                                var list = new List<FndLookupValuesVM> { new FndLookupValuesVM { Id = (long)Model.OtherAidLkpId, NameAr = Model.FndOtherAidLkp.NameAr, NameEn = Model.FndOtherAidLkp.NameEn } };
+                                var selectList = new SelectList(list, "Id", lkpKeyDdl, Model.OtherAidLkpId);
+
+                                @Html.DropDownListFor(z => z.OtherAidLkpId, selectList, getHtmlAttributes(isFormDetail, "form-control", string.Empty))
+                            }
+                            else
+                            {
+                                @Html.DropDownListFor(z => z.OtherAidLkpId, Enumerable.Empty<SelectListItem>(), getHtmlAttributes(isFormDetail, "form-control", string.Empty))
+                            }
+                        </div>
+                    </div>
+                </div>
+                <div class="col-sm-3">
+                    <div class="form-group form-float">
+                        <div class="form-line">
+                            @Html.LabelFor(z => z.OtherMonthNo, new { @class = "form-label" })
+                            @Html.TextBoxFor(z => z.OtherMonthNo, getHtmlAttributes(isFormDetail, "form-control", string.Empty))
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-12">
+                <div class="form-group form-float">
+                    <div class="form-line">
+                        <label class="form-label label-required">@ERP.ResourcePack.Accounts.ArCustomers.CashingTo</label>
+                        @Html.TextBoxFor(z => z.CashingTo, getHtmlAttributes(isFormDetail, "form-control", string.Empty))
+                    </div>
+                    @Html.ValidationMessageFor(x => x.CashingTo)
+                </div>
+            </div>
+            if (formTrigger != ERP.Front.Helpers.Enums.Common.FormTriggers.Insert.ToString())
+            {
+                <div class="col-12">
+                    <div class="form-group form-float mb-2">
+                        <div class="form-line">
+                            <label class="form-label">@ERP.ResourcePack.AidModule.ScPortalRequestStudy.Account</label>
+                            @Html.TextBoxFor(z => z.codeComUtilityTexts, getHtmlAttributes(true, "form-control", string.Empty))
+                        </div>
+                    </div>
+                </div>
+            }
+            if (Model.StatusLkpId == 913)
+            {
+                <div class="row clearfix">
+                    <div class="col-sm-12">
+                        <div class="form-group form-float">
+                            <div class="form-line">
+                                @Html.LabelFor(z => z.RefuseForUpdateReason, new { @class = "form-label" })
+                                @Html.TextBoxFor(z => z.RefuseForUpdateReason, getHtmlAttributes(true, "form-control", string.Empty))
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+            <div class="col-12">
+                <div class="form-group form-float mb-2">
+                    <div class="form-line">
+                        <label class="form-label">@ERP.ResourcePack.Accounts.ArCustomers.Notes</label>
+                        @Html.TextAreaFor(z => z.Notes, getHtmlAttributes(isFormDetail, "form-control", string.Empty))
+                    </div>
+                </div>
+            </div>
+
+        }
+
+    </div>
+</div>
+
+@functions {
+    object getHtmlAttributes(bool Disabled, string CssClass, string CssClass2)
+    {
+        if (Disabled)
+        {
+            return new { @class = CssClass, Disabled = Disabled };
+        }
+        return new { @class = $"{CssClass} {CssClass2}" };
+    }
+}
+

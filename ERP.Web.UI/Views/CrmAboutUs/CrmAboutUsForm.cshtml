@@ -1,0 +1,133 @@
+﻿@using ERP.Web.UI.Models.ViewModels.CRM
+@model CrmAboutUsVM
+@{
+    ViewBag.Title = ERP.ResourcePack.CRM.aboutUs.aboutUs.Title;
+    string formTrigger = ViewBag.trigger;
+    string lang = Request.Cookies["Lang"] == null ? "ar-EG" : Request.Cookies["Lang"].Value.ToString();
+    string lkpKeyDdl = lang == "ar-EG" ? nameof(ERP.Web.UI.Models.ViewModels.General.FndLookupValuesVM.NameAr) : nameof(ERP.Web.UI.Models.ViewModels.General.FndLookupValuesVM.NameEn);
+    bool isFormDetail = (Model != null) && formTrigger == ERP.Front.Helpers.Enums.Common.FormTriggers.Show.ToString();
+
+}
+
+<div class="card">
+    <div class="body">
+        <div class="header">
+            <h2><strong>@ERP.ResourcePack.Accounts.GlJeHeaders.MasterData</strong></h2>
+        </div>
+        @using (Ajax.BeginForm(nameof(ERP.Web.UI.Controllers.PmPropertiesModule.CrmAboutUsController.CreateOrUpdateCrmAboutUs), "CrmAboutUs", new AjaxOptions { HttpMethod = "POST", OnBegin = "OnBegin", OnSuccess = "OnSuccess", OnComplete = "OnComplete", OnFailure = "OnFailure" }, new { @id = "mainForm" }))
+        {
+            @Html.HiddenFor(z => z.Id)
+            @Html.HiddenFor(z => z.AttachmentsListStr)
+
+
+            <div class="row clearfix">
+                <div class="col-sm-8">
+                    <div class="row  clearfix">
+
+
+                        <div class="col-sm-6">
+                            <div class="form-group form-float">
+                                <div class="form-line">
+                                    @Html.TextBoxFor(z => z.HeaderNameAr, getHtmlAttributes(isFormDetail, "form-control ", string.Empty))
+                                    @Html.LabelFor(z => z.HeaderNameAr, new { @class = "form-label" })
+                                </div>
+                                @Html.ValidationMessageFor(z => z.HeaderNameAr)
+                            </div>
+                        </div>
+
+
+
+
+
+                        <div class="col-sm-6">
+                            <div class="form-group form-float">
+                                <div class="form-line">
+                                    @Html.TextBoxFor(z => z.HeaderNameEN, getHtmlAttributes(isFormDetail, "form-control ", string.Empty))
+                                    @Html.LabelFor(z => z.HeaderNameEN, new { @class = "form-label" })
+                                </div>
+                                @Html.ValidationMessageFor(z => z.HeaderNameEN)
+                            </div>
+                        </div>
+
+
+
+                    </div>
+
+                </div>
+                <div class="col-sm-4">
+                    @Html.HiddenFor(z => z.AboutUsFilepath)
+
+                    @if (Model == null || string.IsNullOrEmpty(Model.AboutUsFilepath))
+                    {
+                        <img id="blah1" src="~/AssetsPack/assets/images/Unknown.png" alt="Person Photo" style="height:200px" class="card-img-top img-thumbnail responsive-img" />
+                    }
+                    else
+                    {
+                        <img id="blah1" src="@Model.AboutUsFilepath" alt="Person Photo" style="height:200px" class="card-img-top img-thumbnail responsive-img" />
+                    }
+                    @if (formTrigger != ERP.Front.Helpers.Enums.Common.FormTriggers.Show.ToString())
+                    {
+                        @Html.Partial("_AttachmentComponent", new ERP.Web.UI.Models.ViewModels.AttachmentComponentModelVM { HidenFilePathId = nameof(Model.AboutUsFilepath), ImgId = "blah1" })
+                    }
+                </div>
+            </div>
+
+
+
+            <div class="row clearfix">
+
+
+                <div class="col-sm-12">
+                    @Html.LabelFor(z => z.ContentAr, new { @class = "form-label pb-2" })
+                    <div class="form-group form-float">
+                        <div class="form-line">
+                            @Html.TextAreaFor(z => z.ContentAr, getHtmlAttributes(isFormDetail, "form-control summernote", string.Empty))
+                        </div>
+                        @Html.ValidationMessageFor(z => z.ContentAr)
+                    </div>
+                </div>
+
+
+                <div class="col-sm-12">
+                    @Html.LabelFor(z => z.ContentEn, new { @class = "form-label pb-2" })
+                    <div class="form-group form-float">
+                        <div class="form-line">
+                            @Html.TextAreaFor(z => z.ContentEn, getHtmlAttributes(isFormDetail, "form-control summernote", string.Empty))
+                        </div>
+                        @Html.ValidationMessageFor(z => z.ContentEn)
+                    </div>
+                </div>
+
+
+
+            </div>
+
+
+
+
+
+
+
+        }
+    </div>
+</div>
+
+
+@functions {
+    object getHtmlAttributes(bool Disabled, string CssClass, string CssClass2)
+    {
+        if (Disabled)
+        {
+            return new { @class = CssClass, Disabled = Disabled };
+        }
+        return new { @class = $"{CssClass} {CssClass2}" };
+    }
+}
+
+
+
+<script>
+
+
+
+</script>

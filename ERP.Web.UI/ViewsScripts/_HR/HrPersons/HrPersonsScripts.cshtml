@@ -1,0 +1,1510 @@
+﻿@using ERP.ResourcePack.HR
+@using ERP.Web.UI.Controllers.HR
+@using ERP.Authorization;
+@{
+    string permissionsStr = TempData["Permissions"].ToString();
+    string encUpdateTrigger = ERP.Front.Helpers.Enums.Common.EncUpdate;
+    string encInsertTrigger = ERP.Front.Helpers.Enums.Common.EncInsert;
+    string encShowTrigger = ERP.Front.Helpers.Enums.Common.EncShow;
+}
+
+<script>
+    const _mainController = "HrPersons", _apiAppService = "HrPersons"
+
+    $(function () {
+
+        LoadDataGrid();
+        $('#tblHrPersonsPrint thead').html($('#tblHrPersons thead').html());
+        $('#tblHrPersonsPrint thead tr :last-child').remove();
+        $('#HrPersons').addClass('active');
+
+        $('#FullName').parent('.form-line').addClass('focused');
+        $('#EmployeeNumber').parent('.form-line').addClass('focused');
+        $('#AccountNumber').parent('.form-line').addClass('focused');
+        $('#IdNumber').parent('.form-line').addClass('focused');
+        $('#Segment1').parent('.form-line').addClass('focused');
+        $('#Segment2').parent('.form-line').addClass('focused');
+        $('#Segment3').parent('.form-line').addClass('focused');
+        $('#Segment4').parent('.form-line').addClass('focused');
+        $('#Amount').parent('.form-line').addClass('focused');
+
+        $('#NoticeLength').prop('type', 'number').prop('min',0);
+        //$('#TicketAmount').prop('type', 'number').prop('min',0);
+        $('#ProbationLength').prop('type', 'number').prop('min',0);
+        $('#NoOfTickets').prop('type', 'number').prop('min',0);
+        $('#TicketAfterYears').prop('type', 'number').prop('min',0);
+        //$('#TicketAmount').prop('type', 'number').prop('min',0);
+    });
+
+    const _loadDataUrl = `${$PrefixHostName}/${_mainController}/@nameof(HrPersonsController.LoadDataGrid)`;
+    const _tblSelector = $('#tblHrPersons');
+    const _tblLoader = $('#tblLoader');
+
+    const _permissions = '@permissionsStr';
+    const _updatePermission = '@PermissionNames.Pages_HrPersons_Update';
+    const _deletePermission = '@PermissionNames.Pages_HrPersons_Delete';
+
+    var OnBegin = function (response) {
+        fireBtnLoader();
+    };
+
+    var OnSuccess = function (response) {
+
+        $('#btnSubmition').prop('disabled', false);
+
+        if (response.success) {
+
+            if (response.customRestResult.trigger === '@ERP.Front.Helpers.Enums.Common.FormTriggers.Insert') {
+
+                toastr.success(response.customRestResult.message);
+
+                setTimeout(function () {
+                    window.location.href = $PrefixHostName + '/HrPersons';
+                }, 200);
+
+            }
+            else if (response.customRestResult.trigger === '@ERP.Front.Helpers.Enums.Common.FormTriggers.Update') {
+
+                toastr.success(response.customRestResult.message);
+
+                setTimeout(function () {
+                    window.location.href = $PrefixHostName + '/HrPersons';
+                }, 200);
+
+            }
+            else {
+                toastr.error(response.customRestResult.message);
+            }
+
+        } else {
+            toastr.error(response.error.message);
+        }
+
+    };
+
+    var OnComplete = function (response) {
+        downBtnLoader();
+    };
+
+    var OnFailure = function (response) {
+        toastr.error(response);
+        $('#btnSubmition').prop('disabled', false);
+    };
+
+    const LoadDataGrid = function () {
+
+        const params = {
+            FirstName: $('#searchBox #FirstName').val(),
+            HireDate: $('#searchBox #HireDate').val(),
+            EmployeeNumber: $('#searchBox #EmployeeNumber').val(),
+            AccountNumber: $('#searchBox #AccountNumber').val(),
+            StatusLkpId: $('#searchBox #StatusLkpId').find(':selected').val(),
+            NationalityLkpId: $('#searchBox #NationalityLkpId').find(':selected').val()
+        };
+
+        const columns = [
+            {
+                "data": "result.data.id",
+                'render': function (data, type, row, meta) {
+                    return meta.row + meta.settings._iDisplayStart + 1;
+                }
+            },
+            {
+                "data": "EmployeeNumber",
+                "name": "EmployeeNumber",
+                "autoWidth": true
+            },
+            {
+                "data": "FullName",
+                "name": "FirstName",
+                "autoWidth": true
+            },
+            {
+                "data": "HireDate",
+                "name": "HireDate",
+                "autoWidth": true
+            },
+            {
+                "data": "EmailAddress",
+                "name": "EmailAddress",
+                "autoWidth": true
+            },
+            {
+                "data": null,
+                "autoWidth": true,
+                "render": function (d, t, row) {
+                    return row.FndStatusLkp ? (lang === 'ar-EG' ? row.FndStatusLkp.NameAr : row.FndStatusLkp.NameEn) : '';
+                }
+            },
+            {
+                "data": null,
+                "autoWidth": true,
+                "render": function (d, t, row) {
+                    return row.FndNationalityLkp ? (lang === 'ar-EG' ? row.FndNationalityLkp.NameAr : row.FndNationalityLkp.NameEn) : '';
+                }
+            },
+            {
+                "data": null,
+                "sortable": false,
+                "render": function (data, type, row) {
+
+                    let formAction = `${$PrefixHostName}/${_mainController}/@nameof(HrPersonsController.HrPersonsForm)`;
+                    let DeleteAction = `${$PrefixHostName}/${_mainController}/@nameof(HrPersonsController.Delete)`;
+
+                    let formTitle = '@ERP.ResourcePack.HR.HrPersons.Title';
+                    let btns = '';
+
+                    if (_permissions.includes(_updatePermission)) {
+                        btns += `<a href="${$PrefixHostName}/HrPersons/FormView?id=${row.EncId}&t=@encUpdateTrigger" title="@ERP.ResourcePack.Common.Settings.Edit"><i class="mx-2 fas fa-edit text-info"></i></a>`;
+                    }
+
+                    btns += `<a href="${$PrefixHostName}/HrPersons/FormView?id=${row.EncId}&t=@encShowTrigger" title="@ERP.ResourcePack.Common.Settings.Show"><i class="mx-2 fas fa-eye text-info"></i></a>`;
+
+                    if (_permissions.includes(_deletePermission)) {
+                        btns += `<a href="javascript:void(0)" onclick="AjaxController.DeleteMainTableRow(${row.Id},'${DeleteAction}');" title="@ERP.ResourcePack.Common.Settings.Delete"><i class="mx-2 fas fa-trash-alt text-danger"></i></a>`;
+                    }
+
+                    const _auditedPermission = '@PermissionNames.Pages_HrPersons_Audit';
+
+                    if (_permissions.includes(_auditedPermission)) {
+
+                        row.permission = _auditedPermission;
+
+                        btns += GetAuditedButton(row);
+                    }
+
+                    return btns;
+                }
+            }
+        ];
+
+        const dtObj = {
+            "processing": true,
+            "serverSide": true,
+            "filter": false,
+            "orderMulti": false,
+            "language": dataTableLang,
+            "ajax": {
+                "url": _loadDataUrl,
+                "type": "POST",
+                "datatype": "json",
+                "data": params,
+                "complete": function () {}
+            },
+            "columns": columns,
+            "initComplete": function () {
+                $('[data-toggle="tooltip"]').tooltip();
+            }
+
+        };
+
+        _tblSelector.dataTable().fnDestroy();
+        _tblSelector.DataTable(dtObj).on('draw', function () { $('[data-toggle="tooltip"]').tooltip(); });
+
+        setTimeout(function () {
+            $(".sorting_1").removeAttr('colspan');
+        }, 500);
+    };
+
+    $('#btnSubmition').on('click', function () {
+
+        if ($('#mainForm').valid()) {
+
+            $(this).prop('disabled', true);
+
+            $('#mainForm').submit();
+
+        } else {
+            $(this).prop('disabled', false);
+        }
+
+    });
+
+    $('#searchBox #StatusLkpId').select2(ReturnSelect2ObjectForLkpsTypes('@ERP.Front.Helpers.Enums.Common.FndLkpsTypes.HrPersonsPersonStatues.ToString()'));
+    $('#searchBox #NationalityLkpId').select2(ReturnSelect2ObjectForLkpsTypes('@ERP.Front.Helpers.Enums.Common.FndLkpsTypes.Nationality.ToString()'));
+    $('#StatusLkpId').select2(ReturnSelect2ObjectForLkpsTypes('@ERP.Front.Helpers.Enums.Common.FndLkpsTypes.HrPersonsPersonStatues.ToString()'));
+    $('#NationalityLkpId').select2(ReturnSelect2ObjectForLkpsTypes('@ERP.Front.Helpers.Enums.Common.FndLkpsTypes.Nationality.ToString()'));
+    $('#BankLkpId').select2(ReturnSelect2ObjectForLkpsTypes('@ERP.Front.Helpers.Enums.Common.FndLkpsTypes.Banks.ToString()'));
+    $('#GenderLkpId').select2(ReturnSelect2ObjectForLkpsTypes('@ERP.Front.Helpers.Enums.Common.FndLkpsTypes.Gender.ToString()'));
+    $('#PersonTypeLkpId').select2(ReturnSelect2ObjectForLkpsTypes('@ERP.Front.Helpers.Enums.Common.FndLkpsTypes.HrPersonsPersonType.ToString()'));
+    $('#MaritalStatusLkpId').select2(ReturnSelect2ObjectForLkpsTypes('@ERP.Front.Helpers.Enums.Common.FndLkpsTypes.MaritalStatus.ToString()'));
+    $('#FirstTitleLkpId').select2(ReturnSelect2ObjectForLkpsTypes('@ERP.Front.Helpers.Enums.Common.FndLkpsTypes.HrTitle.ToString()'));
+    $('#PassportTypeLkpId').select2(ReturnSelect2ObjectForLkpsTypes('@ERP.Front.Helpers.Enums.Common.FndLkpsTypes.HrPersonPassportDetailsPassportType.ToString()'));
+    $('#CountryOfIssueLkpId').select2(ReturnSelect2ObjectForLkpsTypes('@ERP.Front.Helpers.Enums.Common.FndLkpsTypes.Country.ToString()'));
+    $('#VisaTypeLkpId').select2(ReturnSelect2ObjectForLkpsTypes('@ERP.Front.Helpers.Enums.Common.FndLkpsTypes.HrPersonVisaDetailsVisaType.ToString()'));
+    $('#PlaceOfIssueLkpId').select2(ReturnSelect2ObjectForLkpsTypes('@ERP.Front.Helpers.Enums.Common.FndLkpsTypes.City.ToString()'));
+    $('#IssuedByLkpId').select2(ReturnSelect2ObjectForLkpsTypes('@ERP.Front.Helpers.Enums.Common.FndLkpsTypes.HrPersonVisaDetailsIssuedBy.ToString()'));
+    $('#CountryOfBrithLkpId').select2(ReturnSelect2ObjectForLkpsTypes('@ERP.Front.Helpers.Enums.Common.FndLkpsTypes.Country.ToString()'));
+    $('#JobGradeLkpId').select2(ReturnSelect2ObjectForLkpsTypes('@ERP.Front.Helpers.Enums.Common.FndLkpsTypes.HrPersonsPersonJobGrade.ToString()'));
+    $('#JobLkpId').select2(ReturnSelect2ObjectForLkpsTypes('@ERP.Front.Helpers.Enums.Common.FndLkpsTypes.Job.ToString()'));
+    $('#PersonCategoryLkpId').select2(ReturnSelect2ObjectForLkpsTypes('@ERP.Front.Helpers.Enums.Common.FndLkpsTypes.HrPersonsPersonPersonCategory.ToString()'));
+    $('#SponserLkpId').select2(ReturnSelect2ObjectForLkpsTypes('@ERP.Front.Helpers.Enums.Common.FndLkpsTypes.HrPersonsPersonPersonSponser.ToString()'));
+    $('#ProbationUnitLkpId').select2(ReturnSelect2ObjectForLkpsTypes('@ERP.Front.Helpers.Enums.Common.FndLkpsTypes.HrPersonsPersonProbationUnit.ToString()'));
+    $('#NoticeUnitLkpId').select2(ReturnSelect2ObjectForLkpsTypes('@ERP.Front.Helpers.Enums.Common.FndLkpsTypes.HrPersonsPersonProbationUnit.ToString()'));
+    $('#TicketClassLkpId').select2(ReturnSelect2ObjectForLkpsTypes('@ERP.Front.Helpers.Enums.Common.FndLkpsTypes.HrPersonsPersonTicketClass.ToString()'));
+    $('#DestinationCountryLkpId').select2(ReturnSelect2ObjectForLkpsTypes('@ERP.Front.Helpers.Enums.Common.FndLkpsTypes.Country.ToString()'));
+    $('#PaymentTypeLkpId').select2(ReturnSelect2ObjectForLkpsTypes('@ERP.Front.Helpers.Enums.Common.FndLkpsTypes.HrPersonsPersonPaymentType.ToString()'));
+    $('#PyPayrollTypeId').select2(ReturnSelect2ObjectDefault(`${baseUrl}/PyPayrollTypes/GetPyPayrollTypesSelect2`));
+    $('#HrOrganizationsBranchId').select2(ReturnSelect2ObjectDefault(`${baseUrl}/HrOrganizations/GetHrOrganizationsSelect2`));
+    $('#HrOrganizationsDeptId').select2(ReturnSelect2ObjectDefault(`${baseUrl}/HrOrganizations/GetHrOrganizationsSelect2`));
+    $('#HrPersonSupervisorId').select2(ReturnSelect2ObjectCustomParams(`${baseUrl}/HrPersons/GetPersonSupervisorSelect2`, { id: primaryEntityKeyId }));
+    $('#PyElementId').select2(ReturnSelect2ObjectDefault(`${baseUrl}/HrPersons/GetPyElementsSelect2`));
+
+    $('#StartPeriodId').select2({
+        ajax: {
+            url: `${baseUrl}/GlPeriodsDetails/GetGlPeriodsSelect2`,
+            dataType: 'json',
+            headers: {
+                'Authorization': `Bearer ${$_token}`
+            },
+            data: function (params) {
+                params.page = params.page || 1;
+                return {
+                    pageSize: pageSize,
+                    pageNumber: params.page,
+                    searchTerm: params.term,
+                    lang: lang
+                };
+            },
+            processResults: function (data, params) {
+
+                params.page = params.page || 1;
+
+                return {
+                    results: data.result.results,
+                    pagination: {
+                        more: (params.page * pageSize) < data.result.total
+                    }
+                };
+            }
+        },
+        placeholder: select2Placeholder,
+        minimumInputLength: 0,
+        allowClear: true,
+        language: select2Lang,
+        templateSelection: function (data,container) {
+
+            if (data.altText) {
+                $(data.element).attr('data-start-date', data.altText.split('__')[0]);
+                $(data.element).attr('data-end-date', data.altText.split('__')[1]);
+            }
+
+            return data.text;
+        }
+    });
+
+    $('#EndPeriodId').select2({
+        ajax: {
+            url: `${baseUrl}/GlPeriodsDetails/GetGlPeriodsSelect2`,
+            dataType: 'json',
+            headers: {
+                'Authorization': `Bearer ${$_token}`
+            },
+            data: function (params) {
+                params.page = params.page || 1;
+                return {
+                    pageSize: pageSize,
+                    pageNumber: params.page,
+                    searchTerm: params.term,
+                    lang: lang
+                };
+            },
+            processResults: function (data, params) {
+
+                params.page = params.page || 1;
+
+                return {
+                    results: data.result.results,
+                    pagination: {
+                        more: (params.page * pageSize) < data.result.total
+                    }
+                };
+            }
+        },
+        placeholder: select2Placeholder,
+        minimumInputLength: 0,
+        allowClear: true,
+        language: select2Lang,
+        templateSelection: function (data, container) {
+
+            if (data.altText) {
+                $(data.element).attr('data-start-date', data.altText.split('__')[0]);
+                $(data.element).attr('data-end-date', data.altText.split('__')[1]);
+            }
+
+            return data.text;
+        }
+    });
+
+
+    $('#FirstName').on('change keyup', function (e) {  SetFullName(); });
+    $('#FatherName').on('change keyup', function (e) {  SetFullName(); });
+    $('#LastName').on('change keyup', function (e) {  SetFullName(); });
+
+    const SetFullName = function () {
+
+        let txt = '';
+
+        if ($('#FirstName').val()) txt += `${$('#FirstName').val()} `
+        if ($('#FatherName').val()) txt += `${$('#FatherName').val()} `
+        if ($('#LastName').val()) txt += `${$('#LastName').val()}`
+
+        $('#FullName').val(txt);
+    }
+
+    function ReadPersonPhoto(input) {
+
+        if (input.files && input.files[0]) {
+
+            var reader = new FileReader();
+
+            reader.onload = function (e) {
+                $('#blah').attr('src', e.target.result);
+            }
+
+            const _personPhotoUploader = $('#PersonPhotoInput');
+            const _personPhotoBase64Str = $('#base64Str');
+            const _personPhotoFileExt = $('#fileExt');
+
+            reader.readAsDataURL(input.files[0]);
+
+            ConvertToBase64('PersonPhotoInput').then(baseStr => {
+
+                var personPhotoExt = `.${_personPhotoUploader.val().split('.')[_personPhotoUploader.val().split('.').length - 1]}`;
+
+                _personPhotoBase64Str.val(baseStr);
+                _personPhotoFileExt.val(personPhotoExt);
+
+            });
+        }
+    }
+
+    $("#PersonPhotoInput").change(function () {
+        ReadPersonPhoto(this);
+    });
+
+</script>
+
+<script name="VisaDetailss">
+
+    const _tblVisaDetailSelector = $('#tblVisaDetails'),_listVisaDetail = $('#VisaDetailsListStr');
+
+    let _HrVisaDetail = [], updatedVisaDetailsRow, tblCounterVisaIndex = 0 ;
+
+    const fillVisaDetail = function () {
+
+        if (validatorVisa() === false) return;
+
+        const current = {
+            index: ++tblCounterVisaIndex,
+            visaTypeLkpId: $('#visaa #VisaTypeLkpId').find(':selected').val(),
+            visaTypeLkp: $(' #visaa #VisaTypeLkpId').find(':selected').text(),
+            visaNumber: $('#VisaNumber').val(),
+            placeOfIssueLkpId: $('#visaa #PlaceOfIssueLkpId').find(':selected').val(),
+            placeOfIssueLkp: $('#visaa #PlaceOfIssueLkpId').find(':selected').text(),
+            dateOfIssue: $('#visaa #DateOfIssue').val(),
+            dateOfExpiry: $('#visaa #DateOfExpiry').val(),
+            visaCost: $('#VisaCost').val(),
+            issuedByLkpId: $('#visaa #IssuedByLkpId').find(':selected').val(),
+            issuedByLkp: $('#visaa #IssuedByLkpId').find(':selected').text(),
+            notes:$('#visaa #Notes').val(),
+            rowStatus: NewStatus,
+            id: 0
+        };
+
+        return current;
+    };
+
+    const AddVisaDetails = function () {
+
+        const current = fillVisaDetail();
+
+        if (current === undefined) return;
+
+        _HrVisaDetail.push(current);
+
+        _listVisaDetail.val(JSON.stringify(_HrVisaDetail));
+
+        bindVisaDetailTable();
+
+        clearFormVisaAdding();
+    };
+
+    const bindVisaDetailTable = function () {
+
+        const detailArr = _HrVisaDetail.filter(z => z.rowStatus !== DeletedStatus);
+
+        const columns = [
+            { 'data': 'index' },
+            { 'data': 'visaTypeLkp' },
+            { 'data': 'visaNumber' },
+            { 'data': 'placeOfIssueLkp' },
+            { 'data': 'dateOfIssue' },
+            { 'data': 'dateOfExpiry' },
+            {
+                'data': 'visaCost',
+                "render": $.fn.dataTable.render.number(',', '.', 2)
+            },
+            { 'data': 'issuedByLkp' },
+            { 'data': 'notes' },
+            {
+                'data': null,
+                'searchable': false,
+                'ordering': false,
+                'sorting': false,
+                'render': function (d, t, row) {
+
+                    let rows = '';
+
+                    if (primaryEntityKeyId === 0 || trigger !== '@ERP.Front.Helpers.Enums.Common.FormTriggers.Show.ToString()') {
+
+                        rows += `<td><a href="javascript:void(0)" onclick="return DeleteVisaDetail(${row.index})"><i class="mx-2 fas fa-trash-alt text-danger"></i></a>`;
+                        rows += `<a href="javascript:void(0)" onclick="return GetVisaDetailRow(${row.index})"><i class="mx-2 fas fa-edit text-success"></i></a></td>`;
+                    }
+                    else {
+                        rows += '<td></td>';
+                    }
+
+                    return rows;
+                }
+            }
+        ];
+
+        const dtObj = {
+            data: detailArr,
+            retrieve: true,
+            language: dataTableLang,
+            columns: columns,
+            drawCallback: function (c, v, b) {}
+        };
+
+        setTimeout(function () {
+
+            _tblVisaDetailSelector.dataTable().fnDestroy();
+            _tblVisaDetailSelector.DataTable(dtObj).on('draw', function () { $('[data-toggle="tooltip"]').tooltip(); });
+
+        }, 100);
+    };
+
+    const DeleteVisaDetail = function (index)  {
+
+        const current = _HrVisaDetail.find(z => z.index === index);
+
+        const indexOfCurrent = _HrVisaDetail.indexOf(current);
+
+        if (!current.id) {
+
+           _HrVisaDetail.splice(indexOfCurrent, 1);
+
+        } else {
+
+            current.rowStatus = DeletedStatus;
+
+           _HrVisaDetail.splice(indexOfCurrent, 1,current);
+        }
+
+        bindVisaDetailTable();
+
+        _listVisaDetail.val(_HrVisaDetail.length === 0 ? '' : JSON.stringify(_HrVisaDetail));
+
+    };
+
+    const LoadVisaDetailData = function () {
+
+        $.ajax({
+            url: `${baseUrl}/HrPersons/GetAllPersonVisaData`,
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${$_token}`
+            },
+            data: {
+                id: primaryEntityKeyId
+            }
+        }).done(function (data) {
+
+            _HrVisaDetail = [...data.result];
+
+            tblCounterVisaIndex = 0;
+
+            $.each(_HrVisaDetail, function (i, item) {
+                item.index = ++tblCounterVisaIndex;
+            });
+
+            bindVisaDetailTable();
+
+            _listVisaDetail.val(JSON.stringify(_HrVisaDetail));
+
+        });
+
+    };
+
+    const GetVisaDetailRow = function (tblIndex) {
+        clearFormVisaAdding();
+
+        $('#btnAddVisaDetailRow').hide();
+        $('#btnUpdateVisaDetailRow').show();
+        $('#btnCancelVisaDetailRow').show();
+
+        const current = _HrVisaDetail.find(z => z.index === tblIndex);
+        
+        $('#visaa #VisaTypeLkpId').append($("<option selected='selected'></option>")
+            .val(current.visaTypeLkpId).text(current.visaTypeLkp)).trigger('change');
+
+        $('#visaa #PlaceOfIssueLkpId').append($("<option selected='selected'></option>")
+            .val(current.placeOfIssueLkpId).text(current.placeOfIssueLkp)).trigger('change');
+
+        $('#visaa #IssuedByLkpId').append($("<option selected='selected'></option>")
+            .val(current.issuedByLkpId).text(current.issuedByLkp)).trigger('change');
+
+        $('#VisaNumber').val(current.visaNumber);
+        $('#VisaNumber').parents('.form-line').addClass('focused');
+        $('#DateOfExpiry').val(current.dateOfExpiry);
+        $('#DateOfExpiry').parents('.form-line').addClass('focused');
+        $('#DateOfIssue').val(current.dateOfIssue);
+        $('#DateOfIssue').parents('.form-line').addClass('focused');
+        $('#VisaCost').val(current.visaCost);
+        $('#VisaCost').parents('.form-line').addClass('focused');
+        $('#Notes').val(current.notes);
+        $('#Notes').parents('.form-line').addClass('focused');
+
+        updatedVisaDetailsRow = current;
+    };
+
+    const UpdateVisaDetailsRow = function () {
+        
+        let current = _HrVisaDetail.find(z => z.index === updatedVisaDetailsRow.index);
+
+        let indexOfCurrent = _HrVisaDetail.indexOf(_HrVisaDetail.find(z => z.index === updatedVisaDetailsRow.index));
+
+        const newRow = fillVisaDetail();
+
+        if (newRow === undefined) return;
+
+        newRow.index = current.index;
+        newRow.id = updatedVisaDetailsRow.id;
+        newRow.rowStatus =  !updatedVisaDetailsRow.id ? NewStatus : UpdatedStatus;
+
+        _HrVisaDetail.splice(indexOfCurrent, 1,newRow);
+
+        $('#btnAddVisaDetailRow').show();
+        $('#btnUpdateVisaDetailRow').hide();
+        $('#btnCancelVisaDetailRow').hide();
+
+        clearFormVisaAdding();
+
+        _listVisaDetail.val(JSON.stringify(_HrVisaDetail));
+
+        setTimeout(function () {
+            bindVisaDetailTable();
+        }, 100);
+    };
+
+    const clearFormVisaAdding = function () {
+        $('#visaa .card:first input,textarea').val('');
+        $('#visaa .card:first select').val('').trigger('change');
+    };
+
+    const validatorVisa = function () {
+
+        if (!$('#VisaTypeLkpId').find(':selected').val()) {
+            toastr.warning('@HrPersons.VisaTypeLkpId' + ' : ' + '@ERP.ResourcePack.Common.Settings.Required');
+            return false;
+        }
+
+        if (!$('#visaa #VisaNumber').val()) {
+            toastr.warning('@HrPersons.VisaNumber' + ' : ' + '@ERP.ResourcePack.Common.Settings.Required');
+            return false;
+        }
+
+        if (!$('#visaa #DateOfIssue').val()) {
+            toastr.warning('@HrPersons.DateOfIssue' + ' : ' + '@ERP.ResourcePack.Common.Settings.Required');
+            return false;
+        }
+
+        if (!$('#visaa #DateOfExpiry').val()) {
+            toastr.warning('@HrPersons.DateOfExpiry' + ' : ' + '@ERP.ResourcePack.Common.Settings.Required');
+            return false;
+        }
+
+    };
+
+</script>
+
+<script name="PassportDetailss">
+
+    const _tblPassportDetailSelector = $('#tblPassportDetails'),_listPassportDetail = $('#PassportDetailsListStr');
+
+    let _HrPassportDetail = [], updatedPassportDetailsRow, tblCounterPassportIndex = 0 ;
+
+    const fillPassportDetail = function () {
+
+        if (validatorPassport() === false) return;
+
+        const current = {
+            index: ++tblCounterPassportIndex,
+            PassportTypeLkpId: $('#PassportTypeLkpId').find(':selected').val(),
+            passportTypeLkp: $('#PassportTypeLkpId').find(':selected').text(),
+            passportNumber: $('#PassportNumber').val(),
+            placeOfIssue: $('#PlaceOfIssue').val(),
+            dateOfIssue: $('#passsport #DateOfIssue').val(),
+            dateOfExpiry: $('#passsport #DateOfExpiry').val(),
+            CountryOfIssueLkpId: $('#CountryOfIssueLkpId').find(':selected').val(),
+            countryOfIssueLkp: $('#CountryOfIssueLkpId').find(':selected').text(),
+            notes: $('#passsport #Notes').val(),
+            rowStatus: NewStatus,
+            id: 0
+        };
+
+        return current;
+    };
+
+    const AddPassportDetails = function () {
+
+        const current = fillPassportDetail();
+
+        if (current === undefined) return;
+
+        _HrPassportDetail.push(current);
+
+        _listPassportDetail.val(JSON.stringify(_HrPassportDetail));
+
+        bindPassportDetailTable();
+
+        clearFormPassportAdding();
+    };
+
+    const bindPassportDetailTable = function () {
+
+        const detailArr = _HrPassportDetail.filter(z => z.rowStatus !== DeletedStatus);
+
+        const columns = [
+            { 'data': 'index' },
+            { 'data': 'passportTypeLkp' },
+            { 'data': 'passportNumber' },
+            { 'data': 'countryOfIssueLkp' },
+            { 'data': 'placeOfIssue' },
+            { 'data': 'dateOfIssue' },
+            { 'data': 'dateOfExpiry' },
+            { 'data': 'notes' },
+            {
+                'data': null,
+                'searchable': false,
+                'ordering': false,
+                'sorting': false,
+                'render': function (d, t, row) {
+
+                    let rows = '';
+
+                    if (primaryEntityKeyId === 0 || trigger !== '@ERP.Front.Helpers.Enums.Common.FormTriggers.Show.ToString()') {
+
+                        rows += `<td><a href="javascript:void(0)" onclick="return DeletePassportDetail(${row.index})"><i class="mx-2 fas fa-trash-alt text-danger"></i></a>`;
+                        rows += `<a href="javascript:void(0)" onclick="return GetPassportDetailRow(${row.index})"><i class="mx-2 fas fa-edit text-success"></i></a></td>`;
+                    }
+                    else {
+                        rows += '<td></td>';
+                    }
+
+                    return rows;
+                }
+            }
+        ];
+
+        const dtObj = {
+            data: detailArr,
+            retrieve: true,
+            language: dataTableLang,
+            columns: columns,
+            drawCallback: function (c, v, b) {}
+        };
+
+        setTimeout(function () {
+
+            _tblPassportDetailSelector.dataTable().fnDestroy();
+            _tblPassportDetailSelector.DataTable(dtObj).on('draw', function () { $('[data-toggle="tooltip"]').tooltip(); });
+
+        }, 100);
+    };
+
+    const DeletePassportDetail = function (index)  {
+
+        const current = _HrPassportDetail.find(z => z.index === index);
+
+        const indexOfCurrent = _HrPassportDetail.indexOf(current);
+
+        if (!current.id) {
+
+           _HrPassportDetail.splice(indexOfCurrent, 1);
+
+        } else {
+
+            current.rowStatus = DeletedStatus;
+
+           _HrPassportDetail.splice(indexOfCurrent, 1,current);
+        }
+
+        bindPassportDetailTable();
+
+        _listPassportDetail.val(_HrPassportDetail.length === 0 ? '' : JSON.stringify(_HrPassportDetail));
+
+    };
+
+    const LoadPassportDetailData = function () {
+
+        $.ajax({
+            url: `${baseUrl}/HrPersons/GetAllPersonPassportData`,
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${$_token}`
+            },
+            data: {
+                id: primaryEntityKeyId
+            }
+        }).done(function (data) {
+
+            _HrPassportDetail = [...data.result];
+
+            tblCounterPassportIndex = 0;
+
+            $.each(_HrPassportDetail, function (i, item) {
+                item.index = ++tblCounterPassportIndex;
+            });
+
+            bindPassportDetailTable();
+
+            _listPassportDetail.val(JSON.stringify(_HrPassportDetail));
+
+        });
+
+    };
+
+    const GetPassportDetailRow = function (tblIndex) {
+
+        clearFormPassportAdding();
+
+        $('#btnAddPassportDetailRow').hide();
+        $('#btnUpdatePassportDetailRow').show();
+        $('#btnCancelPassportDetailRow').show();
+
+        const current = _HrPassportDetail.find(z => z.index === tblIndex);
+
+        $(`#IssuedByLkpId`).append($("<option selected='selected'></option>")
+            .val(current.IssuedByLkpId).text(current.issuedByLkp)).trigger('change');
+
+        $(`#PassportTypeLkpId`).append($("<option selected='selected'></option>")
+            .val(current.PassportTypeLkpId).text(current.passportTypeLkp)).trigger('change');
+
+        $(`#CountryOfIssueLkpId`).append($("<option selected='selected'></option>")
+            .val(current.CountryOfIssueLkpId).text(current.countryOfIssueLkp)).trigger('change');
+
+        $('#PlaceOfIssue').val(current.placeOfIssue);
+        $('#passsport #PassportNumber').val(current.passportNumber);
+        $('#passsport #DateOfIssue').val(current.dateOfIssue);
+        $('#passsport #DateOfExpiry').val(current.dateOfExpiry);
+        $('#passsport #Notes').val(current.notes);
+
+        updatedPassportDetailsRow = current;
+    };
+
+    const UpdatePassportDetailsRow = function () {
+
+        let current = _HrPassportDetail.find(z => z.index === updatedPassportDetailsRow.index);
+
+        let indexOfCurrent = _HrPassportDetail.indexOf(_HrPassportDetail.find(z => z.index === updatedPassportDetailsRow.index));
+
+        const newRow = fillPassportDetail();
+
+        if (newRow === undefined) return;
+
+        newRow.index = current.index;
+        newRow.id = updatedPassportDetailsRow.id;
+        newRow.rowStatus =  !updatedPassportDetailsRow.id ? NewStatus : UpdatedStatus;
+
+        _HrPassportDetail.splice(indexOfCurrent, 1,newRow);
+
+        $('#btnAddPassportDetailRow').show();
+        $('#btnUpdatePassportDetailRow').hide();
+        $('#btnCancelPassportDetailRow').hide();
+
+        clearFormPassportAdding();
+
+        _listPassportDetail.val(JSON.stringify(_HrPassportDetail));
+
+        setTimeout(function () {
+            bindPassportDetailTable();
+        }, 100);
+    };
+
+    const clearFormPassportAdding = function () {
+        $('#passsport .card:first input,textarea').val('');
+        $('#passsport .card:first select').val('').trigger('change');
+    };
+
+    const validatorPassport = function () {
+
+        if (!$('#PassportTypeLkpId').find(':selected').val()) {
+            toastr.warning('@HrPersons.PassportTypeLkpId' + ' : ' + '@ERP.ResourcePack.Common.Settings.Required');
+            return false;
+        }
+
+        if (!$('#CountryOfIssueLkpId').find(':selected').val()) {
+            toastr.warning('@HrPersons.CountryOfIssueLkpId' + ' : ' + '@ERP.ResourcePack.Common.Settings.Required');
+            return false;
+        }
+
+        if (!$('#passsport #PassportNumber').val()) {
+            toastr.warning('@HrPersons.PassportNumber' + ' : ' + '@ERP.ResourcePack.Common.Settings.Required');
+            return false;
+        }
+
+        if (!$('#passsport #DateOfIssue').val()) {
+            toastr.warning('@HrPersons.DateOfIssue' + ' : ' + '@ERP.ResourcePack.Common.Settings.Required');
+            return false;
+        }
+
+        if (!$('#passsport #DateOfExpiry').val()) {
+            toastr.warning('@HrPersons.DateOfExpiry' + ' : ' + '@ERP.ResourcePack.Common.Settings.Required');
+            return false;
+        }
+
+    };
+
+</script>
+
+<script name="IdentityDetailss">
+
+    const _tblIdentityDetailSelector = $('#tblIdentityDetails'), _listIdentityDetail = $('#IdentityCardsListStr');
+
+    let _HrIdentityDetail = [], updatedIdentityDetailsRow, tblCounterIdentityIndex = 0 ;
+
+    const fillIdentityDetail = function () {
+
+        if (validatorIdentity() === false) return;
+
+        const current = {
+            index: ++tblCounterIdentityIndex,
+            segment1: $('#Segment1').val(),
+            segment2: $('#Segment2').val(),
+            segment3: $('#Segment3').val(),
+            segment4: $('#Segment4').val(),
+            idNumber: $('#IdNumber').val(),
+            cardNo: $('#CardNo').val(),
+            dateOfExpiry: $('#identityCard #DateOfExpiry').val(),
+            notes: $('#identityCard #IdentityCardNotes').val(),
+            rowStatus: NewStatus,
+            id: 0
+        };
+
+        return current;
+    };
+
+    const AddIdentityDetails = function () {
+
+        const current = fillIdentityDetail();
+
+        if (current === undefined) return;
+
+        _HrIdentityDetail.push(current);
+
+        _listIdentityDetail.val(JSON.stringify(_HrIdentityDetail));
+
+        bindIdentityDetailTable();
+
+        clearFormIdentityAdding();
+    };
+
+    const bindIdentityDetailTable = function () {
+
+        const detailArr = _HrIdentityDetail.filter(z => z.rowStatus !== DeletedStatus);
+
+        const columns = [
+            { 'data': 'index' },
+            { 'data': 'segment1' },
+            { 'data': 'segment2' },
+            { 'data': 'segment3' },
+            { 'data': 'segment4' },
+            { 'data': 'idNumber' },
+            { 'data': 'dateOfExpiry' },
+            { 'data': 'cardNo' },
+            { 'data': 'notes' },
+            {
+                'data': null,
+                'searchable': false,
+                'ordering': false,
+                'sorting': false,
+                'render': function (d, t, row) {
+
+                    let rows = '';
+
+                    if (primaryEntityKeyId === 0 || trigger !== '@ERP.Front.Helpers.Enums.Common.FormTriggers.Show.ToString()') {
+
+                        rows += `<td><a href="javascript:void(0)" onclick="return DeleteIdentityDetail(${row.index})"><i class="mx-2 fas fa-trash-alt text-danger"></i></a>`;
+                        rows += `<a href="javascript:void(0)" onclick="return GetIdentityDetailRow(${row.index})"><i class="mx-2 fas fa-edit text-success"></i></a></td>`;
+                    }
+                    else {
+                        rows += '<td></td>';
+                    }
+
+                    return rows;
+                }
+            }
+        ];
+
+        const dtObj = {
+            data: detailArr,
+            retrieve: true,
+            language: dataTableLang,
+            columns: columns,
+            drawCallback: function (c, v, b) {}
+        };
+
+        setTimeout(function () {
+
+            _tblIdentityDetailSelector.dataTable().fnDestroy();
+            _tblIdentityDetailSelector.DataTable(dtObj).on('draw', function () { $('[data-toggle="tooltip"]').tooltip(); });
+
+        }, 100);
+    };
+
+    const DeleteIdentityDetail = function (index)  {
+
+        const current = _HrIdentityDetail.find(z => z.index === index);
+
+        const indexOfCurrent = _HrIdentityDetail.indexOf(current);
+
+        if (!current.id) {
+
+           _HrIdentityDetail.splice(indexOfCurrent, 1);
+
+        } else {
+
+            current.rowStatus = DeletedStatus;
+
+           _HrIdentityDetail.splice(indexOfCurrent, 1,current);
+        }
+
+        bindIdentityDetailTable();
+
+        _listIdentityDetail.val(_HrIdentityDetail.length === 0 ? '' : JSON.stringify(_HrIdentityDetail));
+
+    };
+
+    const LoadIdentityDetailData = function () {
+
+        $.ajax({
+            url: `${baseUrl}/HrPersons/GetAllPersonIdentityCardData`,
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${$_token}`
+            },
+            data: {
+                id: primaryEntityKeyId
+            }
+        }).done(function (data) {
+
+            _HrIdentityDetail = [...data.result];
+
+            tblCounterIdentityIndex = 0;
+
+            $.each(_HrIdentityDetail, function (i, item) {
+                item.index = ++tblCounterIdentityIndex;
+            });
+
+            bindIdentityDetailTable();
+
+            _listIdentityDetail.val(JSON.stringify(_HrIdentityDetail));
+
+        });
+
+    };
+
+    const GetIdentityDetailRow = function (tblIndex) {
+
+        clearFormIdentityAdding();
+
+        $('#btnAddIdentityDetailRow').hide();
+        $('#btnUpdateIdentityDetailRow').show();
+        $('#btnCancelIdentityDetailRow').show();
+
+        const current = _HrIdentityDetail.find(z => z.index === tblIndex);
+
+        $('#Segment1').val(current.segment1);
+        $('#Segment2').val(current.segment2);
+        $('#Segment3').val(current.segment3);
+        $('#Segment4').val(current.segment4);
+        $('#IdNumber').val(current.idNumber);
+        $('#CardNo').val(current.cardNo);
+        $('#CardNo').parents('.form-line').addClass('focused');
+        $('#identityCard #DateOfExpiry').val(current.dateOfExpiry);
+        $('#identityCard #IdentityCardNotes').val(current.notes);
+        $('#identityCard #IdentityCardNotes').parents('.form-line').addClass('focused');
+        $('#identityCard #DateOfExpiry').parents('.form-line').addClass('focused');
+
+        updatedIdentityDetailsRow = current;
+    };
+
+    const UpdateIdentityDetailsRow = function () {
+
+        let current = _HrIdentityDetail.find(z => z.index === updatedIdentityDetailsRow.index);
+
+        let indexOfCurrent = _HrIdentityDetail.indexOf(_HrIdentityDetail.find(z => z.index === updatedIdentityDetailsRow.index));
+
+        const newRow = fillIdentityDetail();
+
+        if (newRow === undefined) return;
+
+        newRow.index = current.index;
+        newRow.id = updatedIdentityDetailsRow.id;
+        newRow.rowStatus =  !updatedIdentityDetailsRow.id ? NewStatus : UpdatedStatus;
+
+        _HrIdentityDetail.splice(indexOfCurrent, 1,newRow);
+
+        $('#btnAddIdentityDetailRow').show();
+        $('#btnUpdateIdentityDetailRow').hide();
+        $('#btnCancelIdentityDetailRow').hide();
+
+        clearFormIdentityAdding();
+
+        _listIdentityDetail.val(JSON.stringify(_HrIdentityDetail));
+
+        setTimeout(function () {
+            bindIdentityDetailTable();
+        }, 100);
+    };
+
+    const clearFormIdentityAdding = function () {
+        $('#identityCard .card:first input,textarea').val('');
+        $('#identityCard .card:first select').val('').trigger('change');
+    };
+
+    const validatorIdentity = function () { };
+
+    $('#Segment1').on('change keyup', function (e) {
+
+        if ($(this).val().length > 3) {
+            $(this).val($(this).val().slice(0,3));
+        }
+
+        GetIdNumber();
+    });
+
+    $('#Segment2').on('change keyup', function (e) {
+
+        if ($(this).val().length > 4) {
+            $(this).val($(this).val().slice(0, 4));
+        }
+
+        GetIdNumber();
+    });
+
+    $('#Segment3').on('change keyup', function (e) {
+
+        if ($(this).val().length > 7)
+            $(this).val($(this).val().slice(0, 7));
+
+        GetIdNumber();
+    });
+
+    $('#Segment4').on('change keyup', function (e) {
+
+        if ($(this).val().length > 1)
+            $(this).val($(this).val().slice(0, 1));
+
+        GetIdNumber();
+    });
+
+    const GetIdNumber = function () {
+
+        let txt = '';
+
+        if ($('#Segment1').val())  txt += `${$('#Segment1').val()}-`;
+
+        if ($('#Segment2').val())  txt += `${$('#Segment2').val()}-`;
+
+        if ($('#Segment3').val())  txt += `${$('#Segment3').val()}-`;
+
+        if ($('#Segment4').val())  txt += `${$('#Segment4').val()}`;
+
+        $('#IdNumber').val(txt)
+
+        return txt;
+    };
+
+</script>
+
+<script name="SalaryElementsDetailss">
+
+    const _tblSalaryElementsDetailSelector = $('#tblSalaryElementsDetails'), _listSalaryElementsDetail = $('#SalaryElementsListStr');
+
+    let _HrSalaryElementsDetail = [], updatedSalaryElementsDetailsRow, tblCounterSalaryElementsIndex = 0 ;
+
+    const fillSalaryElementsDetail = function () {
+
+        if (validatorSalaryElements() === false) return;
+
+        const current = {
+            index: ++tblCounterSalaryElementsIndex,
+            amount: $('#Amount').val(),
+            pyElementId: $('#PyElementId').find(':selected').val(),
+            pyElementName: $('#PyElementId').find(':selected').text(),
+            startPeriodId: $('#StartPeriodId').find(':selected').val(),
+            startPeriodNameAr: $('#StartPeriodId').find(':selected').text(),
+            startPeriodNameEn: $('#StartPeriodId').find(':selected').text(),
+            endPeriodId: $('#EndPeriodId').find(':selected').val(),
+            endPeriodNameAr: $('#EndPeriodId').find(':selected').text(),
+            endPeriodNameEn: $('#EndPeriodId').find(':selected').text(),
+            notes: $('#salaryElements #Notes').val(),
+            startPeriod: {
+                startDate: $('#StartPeriodId').find(':selected').attr('data-start-date'),
+                endDate: $('#StartPeriodId').find(':selected').attr('data-end-date')
+            },
+            endPeriod: {
+                startDate: $('#StartPeriodId').find(':selected').attr('data-start-date'),
+                endDate: $('#StartPeriodId').find(':selected').attr('data-end-date')
+            },
+            rowStatus: NewStatus,
+            id: 0
+        };
+
+        return current;
+    };
+
+    const AddSalaryElementsDetails = function () {
+
+        const current = fillSalaryElementsDetail();
+
+        if (!current || !validateSalariesPeriods(current.index, current)) return;
+
+        _HrSalaryElementsDetail.push(current);
+
+        _listSalaryElementsDetail.val(JSON.stringify(_HrSalaryElementsDetail));
+
+        bindSalaryElementsDetailTable();
+
+        clearFormSalaryElementsAdding();
+    };
+
+    const bindSalaryElementsDetailTable = function () {
+
+        const detailArr = _HrSalaryElementsDetail.filter(z => z.rowStatus !== DeletedStatus);
+
+        const columns = [
+            { 'data': 'index' },
+            { 'data': 'pyElementName' },
+            {
+                'data': 'amount',
+                "render": $.fn.dataTable.render.number(',', '.', 2)
+
+            },
+            { 'data': lang === 'ar-EG' ? 'startPeriodNameAr' :'startPeriodNameEn'  },
+            { 'data': lang === 'ar-EG' ? 'endPeriodNameAr' :'endPeriodNameEn'  },
+            { 'data': 'notes' },
+            {
+                'data': null,
+                'searchable': false,
+                'ordering': false,
+                'sorting': false,
+                'render': function (d, t, row) {
+
+                    let rows = '';
+
+                    if (primaryEntityKeyId === 0 || trigger !== '@ERP.Front.Helpers.Enums.Common.FormTriggers.Show.ToString()') {
+
+                        rows += `<td><a href="javascript:void(0)" onclick="return DeleteSalaryElementsDetail(${row.index})"><i class="mx-2 fas fa-trash-alt text-danger"></i></a>`;
+                        rows += `<a href="javascript:void(0)" onclick="return GetSalaryElementsDetailRow(${row.index})"><i class="mx-2 fas fa-edit text-success"></i></a></td>`;
+                    }
+                    else {
+                        rows += '<td></td>';
+                    }
+
+                    return rows;
+                }
+            }
+        ];
+
+        const dtObj = {
+            data: detailArr,
+            retrieve: true,
+            language: dataTableLang,
+            columns: columns,
+            drawCallback: function (c, v, b) {}
+        };
+
+        setTimeout(function () {
+
+            _tblSalaryElementsDetailSelector.dataTable().fnDestroy();
+            _tblSalaryElementsDetailSelector.DataTable(dtObj).on('draw', function () { $('[data-toggle="tooltip"]').tooltip(); });
+
+        }, 100);
+    };
+
+    const DeleteSalaryElementsDetail = function (index)  {
+
+        const current = _HrSalaryElementsDetail.find(z => z.index === index);
+
+        const indexOfCurrent = _HrSalaryElementsDetail.indexOf(current);
+
+        if (!current.id) {
+
+           _HrSalaryElementsDetail.splice(indexOfCurrent, 1);
+
+        } else {
+
+            current.rowStatus = DeletedStatus;
+
+           _HrSalaryElementsDetail.splice(indexOfCurrent, 1,current);
+        }
+
+        bindSalaryElementsDetailTable();
+
+        _listSalaryElementsDetail.val(_HrSalaryElementsDetail.length === 0 ? '' : JSON.stringify(_HrSalaryElementsDetail));
+
+    };
+
+    const LoadSalaryElementsDetailData = function () {
+
+        $.ajax({
+            url: `${baseUrl}/HrPersons/GetAllPersonSalaryElementsData`,
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${$_token}`
+            },
+            data: {
+                id: primaryEntityKeyId
+            }
+        }).done(function (data) {
+
+            _HrSalaryElementsDetail = [...data.result];
+
+            tblCounterSalaryElementsIndex = 0;
+
+            $.each(_HrSalaryElementsDetail, function (i, item) {
+                item.index = ++tblCounterSalaryElementsIndex;
+            });
+
+            bindSalaryElementsDetailTable();
+
+            _listSalaryElementsDetail.val(JSON.stringify(_HrSalaryElementsDetail));
+
+        });
+
+    };
+
+    const GetSalaryElementsDetailRow = function (tblIndex) {
+
+        clearFormSalaryElementsAdding();
+
+        $('#btnAddSalaryElementsDetailRow').hide();
+        $('#btnUpdateSalaryElementsDetailRow').show();
+        $('#btnCancelSalaryElementsDetailRow').show();
+
+        const current = _HrSalaryElementsDetail.find(z => z.index === tblIndex);
+
+        $(`#PyElementId`).append($("<option selected='selected'></option>")
+            .val(current.pyElementId).text(current.pyElementName)).trigger('change');
+
+        $(`#StartPeriodId`).append($("<option selected='selected'></option>")
+            .val(current.startPeriodId)
+            .text(lang === 'ar-EG' ? current.startPeriodNameAr : current.startPeriodNameEn))
+            .trigger('change');
+
+        $(`#EndPeriodId`).append($("<option selected='selected'></option>")
+            .val(current.endPeriodId)
+            .text(lang === 'ar-EG' ? current.endPeriodNameAr : current.endPeriodNameEn))
+            .trigger('change');
+
+        $('#Amount').val(current.amount);
+        $('#salaryElements #Notes').val(current.notes);
+        $('#salaryElements #Notes').parents('.form-line').addClass('focused');
+
+        $('#Amount').prop('disabled', true);
+        $('#PyElementId').prop('disabled', true);
+        $('#StartPeriodId').prop('disabled', true);
+
+        if (current.endPeriodId) {
+            $('#EndPeriodId').prop('disabled', true);
+        }
+
+        $('#StartPeriodId').find(':selected').attr('data-start-date', current.startPeriod.startDate)
+        $('#StartPeriodId').find(':selected').attr('data-end-date', current.startPeriod.endDate)
+
+        if (current.endPeriod) {
+            $('#EndPeriodId').find(':selected').attr('data-start-date', current.endPeriod.startDate)
+            $('#EndPeriodId').find(':selected').attr('data-end-date', current.endPeriod.endDate)
+        }
+
+        updatedSalaryElementsDetailsRow = current;
+    };
+
+    const UpdateSalaryElementsDetailsRow = function () {
+
+        let current = _HrSalaryElementsDetail.find(z => z.index === updatedSalaryElementsDetailsRow.index);
+
+        let indexOfCurrent = _HrSalaryElementsDetail.indexOf(_HrSalaryElementsDetail.find(z => z.index === updatedSalaryElementsDetailsRow.index));
+
+        const newRow = fillSalaryElementsDetail();
+
+        if (!newRow || !validateSalariesPeriods(current.index, newRow)) return;
+
+        newRow.index = current.index;
+        newRow.id = updatedSalaryElementsDetailsRow.id;
+        newRow.rowStatus =  !updatedSalaryElementsDetailsRow.id ? NewStatus : UpdatedStatus;
+
+        _HrSalaryElementsDetail.splice(indexOfCurrent, 1,newRow);
+
+        $('#btnAddSalaryElementsDetailRow').show();
+        $('#btnUpdateSalaryElementsDetailRow').hide();
+        $('#btnCancelSalaryElementsDetailRow').hide();
+
+        clearFormSalaryElementsAdding();
+
+        _listSalaryElementsDetail.val(JSON.stringify(_HrSalaryElementsDetail));
+
+        setTimeout(function () {
+            bindSalaryElementsDetailTable();
+        }, 100);
+    };
+
+    const clearFormSalaryElementsAdding = function () {
+        $('#salaryElements .card:first input,textarea').val('');
+        $('#salaryElements .card:first select').val('').trigger('change');
+
+        $('#Amount').prop('disabled', false);
+        $('#PyElementId').prop('disabled', false);
+        $('#StartPeriodId').prop('disabled', false);
+        $('#EndPeriodId').prop('disabled', false);
+    };
+
+    const validatorSalaryElements = function () {
+
+        if (!$('#PyElementId').find(':selected').val()) {
+            toastr.warning('@HrPersons.PyElementId' + ' : ' + '@ERP.ResourcePack.Common.Settings.Required');
+            return false;
+        }
+
+        if (!$('#Amount').val()) {
+            toastr.warning('@HrPersons.Amount' + ' : ' + '@ERP.ResourcePack.Common.Settings.Required');
+            return false;
+        }
+
+        if (!$('#StartPeriodId').find(':selected').val()) {
+            toastr.warning('@HrPersons.StartPeriodId' + ' : ' + '@ERP.ResourcePack.Common.Settings.Required');
+            return false;
+        }
+
+    };
+
+    const validateSalariesPeriods = function (index, obj) {
+
+        const checkSameElement = _HrSalaryElementsDetail.find(item => item.pyElementId == obj.pyElementId && item.index != index);
+
+        if (checkSameElement && !checkSameElement.endPeriodId) {
+            toastr.warning('@HrPersons.ElemantSalaryRepeated');
+            return false;
+        }
+
+        const arrSalariesForSameElement = _HrSalaryElementsDetail.filter(item => item.pyElementId == obj.pyElementId && item.rowStatus != DeletedStatus);
+        const lastSalaryElement = arrSalariesForSameElement.pop();
+
+        if (lastSalaryElement && lastSalaryElement.endPeriod && obj.startPeriod) {
+
+            if (new Date(obj.startPeriod.startDate) < new Date(lastSalaryElement.endPeriod.endDate)) {
+                toastr.warning('@HrPersons.PeriodsConflict');
+                return false;
+            }
+        }
+
+        return true;
+    };
+
+    function printExc() {
+        $('.page-loader-wrapper').show();
+        $('#tblHrPersonsPrint_wrapper').parent().addClass('d-none');
+        const parmss = {
+            FirstName: $('#searchBox #FirstName').val(),
+            HireDate: $('#searchBox #HireDate').val(),
+            EmployeeNumber: $('#searchBox #EmployeeNumber').val(),
+            AccountNumber: $('#searchBox #AccountNumber').val(),
+            StatusLkpId: $('#searchBox #StatusLkpId').find(':selected').val(),
+            NationalityLkpId: $('#searchBox #NationalityLkpId').find(':selected').val(),
+            length: 1000000
+        };
+
+        const columns = [
+            {
+                "data": "result.data.id",
+                'render': function (data, type, row, meta) {
+                    return meta.row + meta.settings._iDisplayStart + 1;
+                }
+            },
+            {
+                "data": "EmployeeNumber",
+                "name": "EmployeeNumber",
+                "autoWidth": true
+            },
+            {
+                "data": "FullName",
+                "name": "FirstName",
+                "autoWidth": true
+            },
+            {
+                "data": "HireDate",
+                "name": "HireDate",
+                "autoWidth": true
+            },
+            {
+                "data": "EmailAddress",
+                "name": "EmailAddress",
+                "autoWidth": true
+            },
+            {
+                "data": null,
+                "autoWidth": true,
+                "render": function (d, t, row) {
+                    return row.FndStatusLkp ? (lang === 'ar-EG' ? row.FndStatusLkp.NameAr : row.FndStatusLkp.NameEn) : '';
+                }
+            },
+            {
+                "data": null,
+                "autoWidth": true,
+                "render": function (d, t, row) {
+                    return row.FndNationalityLkp ? (lang === 'ar-EG' ? row.FndNationalityLkp.NameAr : row.FndNationalityLkp.NameEn) : '';
+                }
+            }
+        ];
+
+        const dtObj = {
+            "language": dataTableLang,
+            "dom": 'Bfrtip',
+            "buttons": [
+                {
+                    extend: 'excel',
+                    messageTop: `${$('#FirstName').siblings().text()}: ${(parmss.FirstName) ? parmss.FirstName : '--'}, ${$('#HireDate').siblings().text()}: ${(parmss.HireDate) ? parmss.HireDate : '--'}, ${$('#EmployeeNumber').siblings().text()}: ${(parmss.EmployeeNumber) ? parmss.EmployeeNumber : '--'}, ${$('#AccountNumber').siblings().text()}: ${(parmss.AccountNumber) ? parmss.AccountNumber : '--'}, ${$('[for="StatusLkpId"]').text()}: ${(parmss.StatusLkpId) ? parmss.StatusLkpId : '--'}, ${$('[for="NationalityLkpId"]').text()}: ${(parmss.NationalityLkpId) ? parmss.NationalityLkpId : '--'}`
+                },
+
+            ],
+            "ajax": {
+                "url": _loadDataUrl,
+                "type": "POST",
+                "datatype": "json",
+                "data": parmss,
+                "complete": function (d) {
+                    _tblLoader.hide();
+                }
+            },
+            "columns": columns,
+
+            "initComplete": function () {
+                $('#tblHrPersonsPrint_wrapper button.dt-button').click();
+                $('#tblHrPersonsPrint_wrapper').parent().addClass('d-none');
+
+            }
+        };
+
+        $('#tblHrPersonsPrint').dataTable().fnDestroy();
+        $('#tblHrPersonsPrint').DataTable(dtObj).on('buttons-processing', function (e, indicator) { if (!indicator) { $('.page-loader-wrapper').hide() } });
+
+
+    }
+
+</script>
+

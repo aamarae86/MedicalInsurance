@@ -1,0 +1,280 @@
+﻿@using ERP.Web.UI.Controllers.Authentications
+@using ERP.ResourcePack.Authentications
+@using ERP.Authorization;
+@{
+    string permissionsStr = TempData["Permissions"].ToString();
+}
+    <script>
+    const _mainController = "Users"
+
+    $(function () {
+        LoadDataGrid();
+        $('#tblUsersPrint thead').html($('#tblUsers thead').html());
+        $('#tblUsersPrint thead tr :last-child').remove();
+    });
+
+    const _loadDataUrl = `${$PrefixHostName}/${_mainController}/@nameof(UsersController.LoadDataGrid)`;
+    const _tblSelector = $('#tblUsers');
+    const _tblLoader = $('#tblLoader');
+    const _txtNameSearch = $('#searchBox #Name');
+    const _txtSurNameSearch = $('#searchBox #SurName');
+    const _txtFullNameSearch = $('#searchBox #FullName');
+    const _txtEmailAddressSearch = $('#searchBox #EmailAddress');
+    const _txtUserNameSearch = $('#searchBox #UserName');
+
+    const _permissions = '@permissionsStr';
+    const _updatePermission = '@PermissionNames.Pages_Users_Update';
+    const _deletePermission = '@PermissionNames.Pages_Users_Delete';
+
+    var OnSuccess = function (response) {
+
+        if (response.success) {
+
+            if (response.customRestResult.trigger === '@ERP.Front.Helpers.Enums.Common.FormTriggers.Insert') {
+
+                toastr.success(response.customRestResult.message);
+
+                LoadDataGrid();
+
+                _mainModal.modal('hide');
+
+            } else if (response.customRestResult.trigger === '@ERP.Front.Helpers.Enums.Common.FormTriggers.Update') {
+
+                LoadDataGrid();
+
+                _mainModal.modal('hide');
+
+                toastr.success(response.customRestResult.message);
+            }
+
+        } else {
+            toastr.error(response.customRestResult.message);
+        }
+
+    };
+
+    var OnComplete = function (response) {
+                 downBtnLoader();
+    };
+
+    var OnFailure = function (response) {
+        toastr.error(response);
+        console.log(response);
+        downBtnLoader();
+    };
+
+    const LoadDataGrid = function () {
+
+        $('#tblLoader').show();
+
+        const parms = {
+            Name: _txtNameSearch.val(),
+            SurName: _txtSurNameSearch.val(),
+            FullName: _txtFullNameSearch.val(),
+            EmailAddress: _txtEmailAddressSearch.val(),
+            UserName: _txtUserNameSearch.val(),
+            FullName: _txtFullNameSearch.val(),
+        };
+
+        const columns = [
+            {
+                "data": "result.data.id",
+                'render': function (data, type, row, meta) {
+                    return meta.row + meta.settings._iDisplayStart + 1;
+                }
+            },
+            {
+                "data": "Name",
+                "name": "Name",
+                "autoWidth": true
+            },
+            {
+                "data": "SurName",
+                "name": "SurName",
+                "autoWidth": true
+            },
+            {
+                "data": "FullName",
+                "name": "FullName",
+                "autoWidth": true
+            },
+            {
+                "data": "EmailAddress",
+                "name": "EmailAddress",
+                "autoWidth": true
+            },
+            {
+                "data": "UserName",
+                "name": "UserName",
+                "autoWidth": true
+            },
+            {
+                "data": "IsActive",
+                "name": "IsActive",
+                "autoWidth": true,
+                "render": function (isActive,type,row) {
+                    if (isActive) return '<i class="fas fa-check text-success"></i>';
+
+                    return '<i class="fas fa-times text-danger"></i>';
+                }
+            }, {
+                "data": null,
+                "sortable": false,
+                "render": function (data, type, row) {
+
+                    let formAction = `${$PrefixHostName}/${_mainController}/@nameof(UsersController.UsersForm)`;
+                    let DeleteAction = `${$PrefixHostName}/${_mainController}/@nameof(UsersController.Delete)`;
+
+                    let formTitle = '@Users.Title';
+                    let btns = '';
+
+                    if (_permissions.includes(_updatePermission)) {
+                        btns += `<a href="javascript:void(0)" onclick="AjaxController.GetFormModal(${row.Id},'@ERP.Front.Helpers.Enums.Common.FormTriggers.Update','${formAction}','${formTitle}');" title="@ERP.ResourcePack.Common.Settings.Edit"><i class="mx-2 fas fa-edit text-info"></i></a>`;
+                    }
+
+                    btns += `<a href="javascript:void(0)" onclick="AjaxController.GetFormModal(${row.Id},'@ERP.Front.Helpers.Enums.Common.FormTriggers.Show','${formAction}','${formTitle}');" title="@ERP.ResourcePack.Common.Settings.Show"><i class="mx-2 fas fa-eye text-info"></i></a>`;
+
+                    if (_permissions.includes(_deletePermission)) {
+                        btns += `<a href="javascript:void(0)" onclick="AjaxController.DeleteMainTableRow(${row.Id},'${DeleteAction}');" title="@ERP.ResourcePack.Common.Settings.Delete"><i class="mx-2 fas fa-trash-alt text-danger"></i></a>`;
+                    }
+
+                    const _auditedPermission = '@PermissionNames.Pages_Users_Audit';
+
+                    if (_permissions.includes(_auditedPermission)) {
+
+                        row.permission = _auditedPermission;
+
+                        btns += GetAuditedButton(row);
+                    }
+
+                    return btns;
+                }
+            }
+        ];
+
+        const dtObj = {
+            "processing": true,
+            "serverSide": true,
+            "filter": false,
+            "orderMulti": false,
+            //"dom": 'Bfrtip',
+            //"buttons": [
+            //    'excelHtml5'
+            //],
+            "language": dataTableLang,
+            "ajax": {
+                "url": _loadDataUrl,
+                "type": "POST",
+                "datatype": "json",
+                "data": parms,
+                "complete": function () {
+                    _tblLoader.hide();
+                }
+            },
+            "columns": columns,
+            "initComplete": function () {
+                $('[data-toggle="tooltip"]').tooltip();
+            }
+            
+        };
+
+        _tblSelector.dataTable().fnDestroy();
+        _tblSelector.DataTable(dtObj).on('draw', function () { $('[data-toggle="tooltip"]').tooltip(); });
+        
+    };
+
+    $(document).ready(function () {
+        $('#Users').addClass('active');
+        //setIsActiveUserValue();
+    });
+
+    function printExc() {
+        $('.page-loader-wrapper').show();
+        const parmss = {
+            Name: _txtNameSearch.val(),
+            SurName: _txtSurNameSearch.val(),
+            FullName: _txtFullNameSearch.val(),
+            EmailAddress: _txtEmailAddressSearch.val(),
+            UserName: _txtUserNameSearch.val(),
+            FullName: _txtFullNameSearch.val(),
+            length:1000000
+        };
+
+        const columns = [
+            {
+                "data": "result.data.id",
+                'render': function (data, type, row, meta) {
+                    return meta.row + meta.settings._iDisplayStart + 1;
+                }
+            },
+            {
+                "data": "Name",
+                "name": "Name",
+                "autoWidth": true
+            },
+            {
+                "data": "SurName",
+                "name": "SurName",
+                "autoWidth": true
+            },
+            {
+                "data": "FullName",
+                "name": "FullName",
+                "autoWidth": true
+            },
+            {
+                "data": "EmailAddress",
+                "name": "EmailAddress",
+                "autoWidth": true
+            },
+            {
+                "data": "UserName",
+                "name": "UserName",
+                "autoWidth": true
+            },
+            {
+                "data": "IsActive",
+                "name": "IsActive",
+                "autoWidth": true,
+                "render": function (isActive,type,row) {
+                    if (isActive) return 'نعم';
+
+                    return 'لا';
+                }
+            }
+        ];
+
+        const dtObj = {
+            "dom": 'Bfrtip',
+            "buttons": [
+                {
+                    extend: 'excel',
+                    messageTop: `${$('#Name').siblings().text()}: ${(parmss.Name)? parmss.Name : '--'}, ${$('#SurName').siblings().text()}: ${(parmss.SurName)? parmss.SurName : '--'}, ${$('#FullName').siblings().text()}: ${(parmss.FullName)? parmss.FullName : '--'}, ${$('#EmailAddress').siblings().text()}: ${(parmss.EmailAddress)? parmss.EmailAddress : '--'}, ${$('#UserName').siblings().text()}: ${(parmss.UserName)? parmss.UserName : '--'}`
+                },
+            ],
+            "language": dataTableLang,
+            "ajax": {
+                "url": _loadDataUrl,
+                "type": "POST",
+                "datatype": "json",
+                "data": parmss,
+                "complete": function () {
+                    _tblLoader.hide();
+                }
+            },
+            "columns": columns,
+            "initComplete": function () {
+                
+                $('#tblUsersPrint_wrapper button.dt-button').click();
+            }
+            
+        };
+
+        $('#tblUsersPrint').dataTable().fnDestroy();
+        $('#tblUsersPrint').DataTable(dtObj).on( 'buttons-processing', function ( e, indicator ) {if ( !indicator ) {$('.page-loader-wrapper').hide()}});
+    }
+
+    const setIsActiveUserValue = function () {
+        $("#mainForm #IsActive").val($('#IsActiveAlt').is(':checked'));
+    }
+</script>

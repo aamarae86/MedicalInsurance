@@ -1,0 +1,182 @@
+﻿@using ERP.Web.UI.Models.ViewModels.Accounts
+@using ERP.Web.UI.Models.ViewModels.General
+@model ApMiscPaymentHeadersVM
+@{
+    string formTrigger = ViewBag.trigger;
+    string lang = Request.Cookies["Lang"] == null ? "ar-EG" : Request.Cookies["Lang"].Value.ToString();
+    string lkpKeyDdl = lang == "ar-EG" ? nameof(FndLookupValuesVM.NameAr) : nameof(FndLookupValuesVM.NameEn);
+    string bankAccKeyDdl = lang == "ar-EG" ? nameof(ApBankAccountsVM.BankAccountNameAr) : nameof(ApBankAccountsVM.BankAccountNameEn);
+    bool isFormDetail = Model != null && formTrigger == ERP.Front.Helpers.Enums.Common.FormTriggers.Show.ToString();
+}
+<div class="card">
+    <div class="header d-flex justify-content-start align-items-center">
+        <i class="fas fa-2x fa-chevron-down down-arr mr-2" data-toggle="collapse" data-target="#masterData"></i>
+        <h2><strong>@ERP.ResourcePack.Accounts.ApMiscPaymentHeaders.Title</strong></h2>
+    </div>
+    <div class="body collapse show" id="masterData">
+        @using (Ajax.BeginForm(nameof(ERP.Web.UI.Controllers.Accounts.ApMiscPaymentHeadersController.CreateApMiscPaymentHeaders), "ApMiscPaymentHeaders",
+            new AjaxOptions { HttpMethod = "POST", OnBegin = "OnBegin", OnSuccess = "OnSuccess", OnComplete = "OnComplete", OnFailure = "OnFailure" }, new { @id = "mainForm" }))
+        {
+            @Html.HiddenFor(z => z.Id)
+            @Html.HiddenFor(z => z.Lang, new { Value = lang })
+            @Html.HiddenFor(z => z.ListApMiscPaymentDetails)
+            @Html.HiddenFor(z => z.ListApMiscPaymentLines)
+            @Html.HiddenFor(z => z.PostedlkpId)
+            <div class="row clearfix">
+                <div class="col-md-3">
+                    <div class="form-group form-float">
+                        <div class="form-line">
+                            @Html.TextBoxFor(z => z.PaymentNumber, new { @readOnly = "readonly", @class = "from-control" })
+                            @Html.LabelFor(z => z.PaymentNumber, new { @class = "form-label" })
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="form-group form-float">
+                        <div class="form-line">
+                            @Html.TextBoxFor(z => z.MiscPaymentDate, getHtmlAttributes(isFormDetail, "form-control", "datepicker"))
+                            @Html.LabelFor(z => z.MiscPaymentDate, new { @class = "form-label" })
+
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="form-group form-float">
+                        <div class="form-line">
+                            @Html.TextBoxFor(z => z.Amount, getHtmlAttributes(isFormDetail, "form-control currency ", string.Empty))
+                            @Html.LabelFor(z => z.Amount, new { @class = "form-label" })
+                        </div>
+                        @Html.ValidationMessageFor(z => z.Amount)
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    @Html.LabelFor(z => z.BeneficiaryName, new { @class = "form-label" })
+                    <div class="form-group form-float">
+                        <div class="">
+                            @if (Model != null)
+                            {
+                                var list = new List<object> { new { BeneficiaryName = Model.BeneficiaryName, BankAccountNameAr = Model.BeneficiaryName, BankAccountNameEn = Model.BeneficiaryName } };
+                                var selectList = new SelectList(list, "BeneficiaryName", bankAccKeyDdl, Model.BeneficiaryName);
+
+                                @Html.DropDownListFor(z => z.BeneficiaryName, selectList, getHtmlAttributes(isFormDetail, "form-control", string.Empty))
+                            }
+                            else
+                            {
+                                @Html.DropDownListFor(z => z.BeneficiaryName, Enumerable.Empty<SelectListItem>(), getHtmlAttributes(isFormDetail, "form-control", string.Empty))
+                            }
+                        </div>
+                        @Html.ValidationMessageFor(z => z.BeneficiaryName)
+                    </div>
+                </div>
+          
+            </div>
+            <div class="row clearfix">
+                <div class="col-md-3">
+                    @Html.LabelFor(z => z.PaymentTypeLkpId, new { @class = "form-label" })
+                    <div class="form-group form-float">
+                        <div class="">
+                            @if (Model != null && Model.FndLookupValuesPaymentTypeLkp != null)
+                            {
+                                var list = new List<FndLookupValuesVM> { new FndLookupValuesVM { Id = (long)Model.PaymentTypeLkpId, NameAr = Model.FndLookupValuesPaymentTypeLkp.NameAr, NameEn = Model.FndLookupValuesPaymentTypeLkp.NameEn } };
+                                var selectList = new SelectList(list, "Id", lkpKeyDdl, Model.PaymentTypeLkpId);
+
+                                @Html.DropDownListFor(z => z.PaymentTypeLkpId, selectList, getHtmlAttributes(isFormDetail, "form-control", string.Empty))
+                            }
+                            else
+                            {
+                                @Html.DropDownListFor(z => z.PaymentTypeLkpId, Enumerable.Empty<SelectListItem>(), getHtmlAttributes(isFormDetail, "form-control", string.Empty))
+                            }
+                        </div>
+                        @Html.ValidationMessageFor(z => z.PaymentTypeLkpId)
+
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    @Html.LabelFor(z => z.BankAccountId, new { @class = "form-label" })
+                    <div class="form-group form-float">
+                        <div class="">
+                            @if (Model != null && Model.ApBankAccounts != null)
+                            {
+                                var list = new List<ApBankAccountsVM> { new ApBankAccountsVM { Id = (long)Model.BankAccountId, BankAccountNameAr = Model.ApBankAccounts.BankAccountNameAr, BankAccountNameEn = Model.ApBankAccounts.BankAccountNameEn } };
+                                var selectList = new SelectList(list, "Id", bankAccKeyDdl, Model.BankAccountId);
+
+                                @Html.DropDownListFor(z => z.BankAccountId, selectList, getHtmlAttributes(isFormDetail, "form-control", string.Empty))
+                            }
+                            else
+                            {
+                                @Html.DropDownListFor(z => z.BankAccountId, Enumerable.Empty<SelectListItem>(), getHtmlAttributes(isFormDetail, "form-control", string.Empty))
+                            }
+                        </div>
+                        @Html.ValidationMessageFor(z => z.BankAccountId)
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    @if (formTrigger == ERP.Front.Helpers.Enums.Common.FormTriggers.Show.ToString())
+                    {
+                        <p class="my-3">
+                            @if (Model.AccPayeeOnly)
+                            {
+                                <i class="fas fa-check text-success fa-2x"></i>
+                            }
+                            else
+                            {
+                                <i class="fas fa-times text-danger fa-2x"></i>
+                            }
+                            <span>@Html.LabelFor(z => z.AccPayeeOnly)</span>
+                        </p>
+                    }
+                    else if (formTrigger == ERP.Front.Helpers.Enums.Common.FormTriggers.Update.ToString())
+                    {
+                        <p class="my-3">
+                            <label>
+                                @if (Model.AccPayeeOnly)
+                                {
+                                    <input type="checkbox" onclick="mainForm.AccPayeeOnly.value = $('#AccPayeeOnlyAlt').is(':checked')" checked id="@nameof(Model.AccPayeeOnlyAlt)" name="@nameof(Model.AccPayeeOnlyAlt)" />
+                                }
+                                else
+                                {
+                                    <input type="checkbox" onclick="mainForm.AccPayeeOnly.value = $('#AccPayeeOnlyAlt').is(':checked')" id="@nameof(Model.AccPayeeOnlyAlt)" name="@nameof(Model.AccPayeeOnlyAlt)" />
+                                }
+                                <span>@Html.LabelFor(z => z.AccPayeeOnly)</span>
+                            </label>
+                        </p>
+                    }
+                    else
+                    {
+                        <p class="my-3">
+                            <label>
+                                <input type="checkbox" onclick="mainForm.AccPayeeOnly.value = $('#AccPayeeOnlyAlt').is(':checked')" id="@nameof(Model.AccPayeeOnlyAlt)" name="@nameof(Model.AccPayeeOnlyAlt)" checked />
+                                <span>@Html.LabelFor(z => z.AccPayeeOnly)</span>
+                            </label>
+                        </p>
+                    }
+
+                    <input type="hidden" id="@nameof(Model.AccPayeeOnly)" name="@nameof(Model.AccPayeeOnly)" value="@(formTrigger == ERP.Front.Helpers.Enums.Common.FormTriggers.Insert.ToString() ? "true" : Model.AccPayeeOnly.ToString())" />
+                </div>
+            </div>
+            <div class="row clearfix">
+                <div class="col-md-12">
+                    <div class="form-group form-float">
+                        <div class="form-line">
+                            @Html.TextAreaFor(z => z.Notes, new { @class = "form-control" })
+                            @Html.LabelFor(z => z.Notes, new { @class = "form-label" })
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+
+    </div>
+</div>
+
+@functions {
+    object getHtmlAttributes(bool Disabled, string CssClass, string CssClass2)
+    {
+        if (Disabled)
+        {
+            return new { @class = CssClass, Disabled = Disabled };
+        }
+        return new { @class = $"{CssClass} {CssClass2}" };
+    }
+}
+

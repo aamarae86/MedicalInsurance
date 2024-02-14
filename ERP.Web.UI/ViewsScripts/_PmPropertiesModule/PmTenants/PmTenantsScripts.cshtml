@@ -1,0 +1,421 @@
+﻿@using ERP.Web.UI.Controllers.PmPropertiesModule
+@using ERP.Authorization;
+@{
+    string encUpdateTrigger = ERP.Front.Helpers.Enums.Common.EncUpdate;
+    string encShowTrigger = ERP.Front.Helpers.Enums.Common.EncShow;
+    string permissionsStr = TempData["Permissions"].ToString();
+}
+
+<script>
+    const _mainController = "PmTenants", _apiAppService = "PmTenants";
+
+    $(function () {
+        LoadDataGrid();
+        $('#tblPmTenantsPrint thead').html($('#tblPmTenants thead').html());
+        $('#tblPmTenantsPrint thead tr :last-child').remove();
+        $('#PmTenants').addClass('active');
+    });
+
+    const _loadDataUrl = `${$PrefixHostName}/${_mainController}/@nameof(PmTenantsController.LoadDataGrid)`;
+    const _tblSelector = $('#tblPmTenants');
+    const _tblLoader = $('#tblLoader');
+    const _mainForm = $('#mainForm');
+
+    const _permissions = '@permissionsStr';
+    const _updatePermission = '@PermissionNames.Pages_PmTenants_Update';
+    const _deletePermission = '@PermissionNames.Pages_PmTenants_Delete';
+
+    $('#btnSubmition').on('click', function () {
+
+        _mainForm.submit();
+
+        if (_mainForm.valid()) {
+
+            $(this).hide();
+            $('#submitLoader').show();
+
+        } else {
+
+            $(this).show();
+            $('#submitLoader').hide();
+        }
+
+    });
+
+    var OnBegin = function (response) {
+        fireBtnLoader();
+    };
+
+    var OnSuccess = function (response) {
+
+        if (response.success) {
+
+            if (response.customRestResult.trigger === '@ERP.Front.Helpers.Enums.Common.FormTriggers.Insert') {
+
+                toastr.success(response.customRestResult.message);
+
+                setTimeout(function () {
+                    window.location.href = $PrefixHostName + '/PmTenants';
+                }, 200);
+
+            } else if (response.customRestResult.trigger === '@ERP.Front.Helpers.Enums.Common.FormTriggers.Update') {
+
+                toastr.success(response.customRestResult.message);
+
+                setTimeout(function () {
+                    window.location.href = $PrefixHostName + '/PmTenants';
+                }, 200);
+            }
+
+        } else {
+            toastr.error(response.customRestResult.message);
+        }
+
+    };
+
+    var OnComplete = function (response) {
+        downBtnLoader();
+    };
+
+    var OnFailure = function (response) {
+        toastr.error(response);
+        downBtnLoader();
+    };
+
+    const LoadDataGrid = function () {
+
+        const parms = {
+            Id: $('#searchBox #TenantName').find(':selected').val(),
+            HomePhoneNumber:$('#searchBox #HomePhoneNumber').val(),
+            StatusLkpId: $('#searchBox #StatusLkpId').find(':selected').val(),
+            IdNumber: $('#searchBox #IdNumber').val(),
+            CountryLkpId: $('#searchBox #CountryLkpId').val(),
+            CityLkpId: $('#searchBox #CityLkpId').find(':selected').val(),
+            NationalityLkpId: $('#searchBox #NationalityLkpId').find(':selected').val(),
+            PassportNumber: $('#searchBox #PassportNumber').val(),
+        };
+
+        const columns = [
+            {
+                "data": "result.data.id",
+                'render': function (data, type, row, meta) {
+                    return meta.row + meta.settings._iDisplayStart + 1;
+                }
+            },
+            {
+                "data": "TenantNumber",
+                "name": "TenantNumber",
+                "autoWidth": true
+            },
+
+            {
+                "data": null,
+                "autoWidth": true,
+                "render": function (d, t, row) {
+
+
+                    if (lang === 'ar-EG') return row.TenantNameAr;
+
+                    return row.TenantNameEn;
+                }
+            },
+
+            {
+                "data": "PassportNumber",
+                "name": "PassportNumber",
+                "autoWidth": true
+            },
+            {
+                "data": "HomePhoneNumber",
+                "name": "HomePhoneNumber",
+                "autoWidth": true
+            },
+            {
+                "data": null,
+                "autoWidth": true,
+                "render": function (d, t, row) {
+
+                    if (row.FndStatusLkp == null)
+                        return '';
+
+                    if (lang === 'ar-EG')
+                        return row.FndStatusLkp.NameAr;
+
+                    return row.FndStatusLkp.NameEn;
+                }
+            },
+            {
+                "data": null,
+                "autoWidth": true,
+                "render": function (d, t, row) {
+
+                    if (row.FndCityLkp == null)
+                        return '';
+
+                    if (lang === 'ar-EG')
+                        return row.FndCityLkp.NameAr;
+
+                    return row.FndCityLkp.NameEn;
+                }
+            },
+            {
+                "data": "IdNumber",
+                "name": "IdNumber",
+                "autoWidth": true
+            },
+            {
+                "data": null,
+                "autoWidth": true,
+                "render": function (d, t, row) {
+
+                    if (row.FndNationalityLkp == null)
+                        return '';
+
+                    if (lang === 'ar-EG')
+                        return row.FndNationalityLkp.NameAr;
+
+                    return row.FndNationalityLkp.NameEn;
+                }
+            },
+            {
+                "data": null,
+                "sortable": false,
+                "render": function (data, type, row) {
+
+                    let formAction = `${$PrefixHostName}/${_mainController}/@nameof(PmTenantsController.PmTenantsForm)`;
+                    let DeleteAction = `${$PrefixHostName}/${_mainController}/@nameof(PmTenantsController.Delete)`;
+
+                    let btns = '';
+
+                    if (_permissions.includes(_updatePermission)) {
+                        btns += `<a href="${$PrefixHostName}/PmTenants/FormView?id=${row.EncId}&t=@encUpdateTrigger" title="@ERP.ResourcePack.Common.Settings.Edit"><i class="mx-2 fas fa-edit text-info"></i></a>`;
+                    }
+
+                    btns += `<a href="${$PrefixHostName}/PmTenants/FormView?id=${row.EncId}&t=@encShowTrigger" title="@ERP.ResourcePack.Common.Settings.Show"><i class="mx-2 fas fa-eye text-info"></i></a>`;
+
+                    if (_permissions.includes(_deletePermission)) {
+                        btns += `<a href="javascript:void(0)" onclick="AjaxController.DeleteMainTableRow(${row.Id},'${DeleteAction}');" title="@ERP.ResourcePack.Common.Settings.Delete"><i class="mx-2 fas fa-trash-alt text-danger"></i></a>`;
+                    }
+
+                    const _auditedPermission = '@PermissionNames.Pages_PmTenants_Audit';
+
+                    if (_permissions.includes(_auditedPermission)) {
+
+                        row.permission = _auditedPermission;
+
+                        btns += GetAuditedButton(row);
+                    }
+
+                    return btns;
+                }
+            }
+        ];
+
+        const dtObj = {
+            "processing": true,
+            "serverSide": true,
+            "filter": false,
+            "orderMulti": false,
+            "language": dataTableLang,
+            "ajax": {
+                "url": _loadDataUrl,
+                "type": "POST",
+                "datatype": "json",
+                "data": parms,
+                "complete": function () { }
+            },
+            "columns": columns,
+            "initComplete": function () {
+                $('[data-toggle="tooltip"]').tooltip();
+            }
+
+        };
+
+        _tblSelector.dataTable().fnDestroy();
+        _tblSelector.DataTable(dtObj).on('draw', function () { $('[data-toggle="tooltip"]').tooltip(); });
+
+        setTimeout(function () {
+            $(".sorting_1").removeAttr('colspan');
+        }, 500);
+    };
+
+    $('#PassportCountryLkpId').select2(ReturnSelect2ObjectForLkpsTypes('@ERP.Front.Helpers.Enums.Common.FndLkpsTypes.Country.ToString()'));
+    $('#SpecialGenderLkpId').select2(ReturnSelect2ObjectForLkpsTypes('@ERP.Front.Helpers.Enums.Common.FndLkpsTypes.SpecialGender.ToString()'));
+    $('#NationalityLkpId').select2(ReturnSelect2ObjectForLkpsTypes('@ERP.Front.Helpers.Enums.Common.FndLkpsTypes.Nationality.ToString()'));
+    $('#MaritalStatusLkpId').select2(ReturnSelect2ObjectForLkpsTypes('@ERP.Front.Helpers.Enums.Common.FndLkpsTypes.MaritalStatus.ToString()'));
+    $('#PaymentMethodLkpId').select2(ReturnSelect2ObjectForLkpsTypes('@ERP.Front.Helpers.Enums.Common.FndLkpsTypes.PmTenantsPaymentMethod.ToString()'));
+    $('#StatusLkpId').select2(ReturnSelect2ObjectForLkpsTypes('@ERP.Front.Helpers.Enums.Common.FndLkpsTypes.PmTenantsStatues.ToString()'));
+    $('#CountryLkpId').select2(ReturnSelect2ObjectForLkpsTypes('@ERP.Front.Helpers.Enums.Common.FndLkpsTypes.Country.ToString()'));
+    $('#searchBox #CityLkpId').select2(ReturnSelect2ObjectForLkpsTypes('@ERP.Front.Helpers.Enums.Common.FndLkpsTypes.City.ToString()'));
+    $('#TenantName').select2(ReturnSelect2ObjectDefault(`${baseUrl}/PmTenants/GetPmTenantsSelect2`))
+
+    $('#CityLkpId').select2({
+        ajax: {
+            url: `${baseUrl}/FndLookupValues/GetFndLookupValuesWithParentIdSelect2`,
+            dataType: 'json',
+            headers: {
+                'Authorization': `Bearer ${$_token}`
+            },
+            data: function (params) {
+                params.page = params.page || 1;
+                return {
+                    parentId: $('#CountryLkpId').find(':selected').val() ? $('#CountryLkpId').find(':selected').val() : 0,
+                    type: '@ERP.Front.Helpers.Enums.Common.FndLkpsTypes.City.ToString()',
+                    pageSize: pageSize,
+                    pageNumber: params.page,
+                    searchTerm: params.term,
+                    lang: lang
+                };
+            },
+            processResults: function (data, params) {
+
+                params.page = params.page || 1;
+
+                return {
+                    results: data.result.results,
+                    pagination: {
+                        more: (params.page * pageSize) < data.result.tenant
+                    }
+                };
+            }
+        },
+        placeholder: select2Placeholder,
+        minimumInputLength: 0,
+        allowClear: true,
+        language: select2Lang
+    });
+
+    function printExc() {
+        $('.page-loader-wrapper').show();
+        $('#tblPmTenantsPrint_wrapper').parent().addClass('d-none');
+        const parmss = {
+            Id: $('#searchBox #TenantName').find(':selected').val(),
+            HomePhoneNumber: $('#searchBox #HomePhoneNumber').val(),
+            StatusLkpId: $('#searchBox #StatusLkpId').find(':selected').val(),
+            IdNumber: $('#searchBox #IdNumber').val(),
+            CityLkpId: $('#searchBox #CityLkpId').find(':selected').val(),
+            NationalityLkpId: $('#searchBox #NationalityLkpId').find(':selected').val(),
+            PassportNumber: $('#searchBox #PassportNumber').val(),
+            length: 1000000
+        };
+
+        const columns = [
+            {
+                "data": "result.data.id",
+                'render': function (data, type, row, meta) {
+                    return meta.row + meta.settings._iDisplayStart + 1;
+                }
+            },
+            {
+                "data": "TenantNumber",
+                "name": "TenantNumber",
+                "autoWidth": true
+            },
+
+            {
+                "data": null,
+                "autoWidth": true,
+                "render": function (d, t, row) {
+
+
+                    if (lang === 'ar-EG') return row.TenantNameAr;
+
+                    return row.TenantNameEn;
+                }
+            },
+
+            {
+                "data": "PassportNumber",
+                "name": "PassportNumber",
+                "autoWidth": true
+            },
+            {
+                "data": "HomePhoneNumber",
+                "name": "HomePhoneNumber",
+                "autoWidth": true
+            },
+            {
+                "data": null,
+                "autoWidth": true,
+                "render": function (d, t, row) {
+
+                    if (row.FndStatusLkp == null)
+                        return '';
+
+                    if (lang === 'ar-EG')
+                        return row.FndStatusLkp.NameAr;
+
+                    return row.FndStatusLkp.NameEn;
+                }
+            },
+            {
+                "data": null,
+                "autoWidth": true,
+                "render": function (d, t, row) {
+
+                    if (row.FndCityLkp == null)
+                        return '';
+
+                    if (lang === 'ar-EG')
+                        return row.FndCityLkp.NameAr;
+
+                    return row.FndCityLkp.NameEn;
+                }
+            },
+            {
+                "data": "IdNumber",
+                "name": "IdNumber",
+                "autoWidth": true
+            },
+            {
+                "data": null,
+                "autoWidth": true,
+                "render": function (d, t, row) {
+
+                    if (row.FndNationalityLkp == null)
+                        return '';
+
+                    if (lang === 'ar-EG')
+                        return row.FndNationalityLkp.NameAr;
+
+                    return row.FndNationalityLkp.NameEn;
+                }
+            },
+            
+        ];
+
+        const dtObj = {
+            "language": dataTableLang,
+            "dom": 'Bfrtip',
+            "buttons": [
+                {
+                    extend: 'excel',
+                    messageTop: `${$('[for="TenantName"]').text()}: ${(parmss.Id) ? parmss.Id : '--'}, ${$('#HomePhoneNumber').siblings().text()}: ${(parmss.HomePhoneNumber) ? parmss.HomePhoneNumber : '--'}, ${$('[for="StatusLkpId"]').text()}: ${(parmss.StatusLkpId) ? parmss.StatusLkpId : '--'}, ${$('#IdNumber').siblings().text()}: ${(parmss.IdNumber) ? parmss.IdNumber : '--'}, ${$('[for="CityLkpId"]').text()}: ${(parmss.CityLkpId) ? parmss.CityLkpId : '--'}, ${$('[for="NationalityLkpId"]').text()}: ${(parmss.NationalityLkpId) ? parmss.NationalityLkpId : '--'}, ${$('#PassportNumber').siblings().text()}: ${(parmss.PassportNumber) ? parmss.PassportNumber : '--'}`
+                },
+
+            ],
+            "ajax": {
+                "url": _loadDataUrl,
+                "type": "POST",
+                "datatype": "json",
+                "data": parmss,
+                "complete": function (d) {
+                    _tblLoader.hide();
+                }
+            },
+            "columns": columns,
+
+            "initComplete": function () {
+                $('#tblPmTenantsPrint_wrapper button.dt-button').click();
+                $('#tblPmTenantsPrint_wrapper').parent().addClass('d-none');
+
+            }
+        };
+
+        $('#tblPmTenantsPrint').dataTable().fnDestroy();
+        $('#tblPmTenantsPrint').DataTable(dtObj).on('buttons-processing', function (e, indicator) { if (!indicator) { $('.page-loader-wrapper').hide() } });
+
+
+    }
+
+</script>

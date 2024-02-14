@@ -1,0 +1,21 @@
+﻿@using ERP.ResourcePack.SpGuarantees
+@{
+    string insertTrigger = ERP.Front.Helpers.Enums.Common.FormTriggers.Insert.ToString();
+    string encInsertTrigger = ERP.Front.Helpers.Enums.Common.EncInsert;
+}
+<div class="table-responsive" style="overflow-y:hidden">
+    <table class="table table-bordered table-striped table-hover" id="tblSpCaseHistory" style="width:100%">
+        <thead>
+            <tr>
+                <th><i class="fas fa-hashtag"></i></th>
+                <th>@SpCaseHistory.OperationTypeLkpId</th>
+                <th>@SpCaseHistory.OprationDate</th>
+                <th>@SpCaseHistory.BeneficentNumber</th>
+                <th>@SpCaseHistory.BeneficentId</th>
+                <th>@SpCaseHistory.OperationNotes</th>
+                <th>@SpCaseHistory.CreatedBy</th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+</div>

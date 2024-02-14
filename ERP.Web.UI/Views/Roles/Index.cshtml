@@ -1,0 +1,11 @@
+﻿@{
+    ViewBag.Title = ERP.ResourcePack.Authentications.Roles.Title;
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@Html.Action(nameof(ERP.Web.UI.Controllers.Authentications.RolesController.RolesSearch))
+@Html.Action(nameof(ERP.Web.UI.Controllers.Authentications.RolesController.RolesData))
+
+@section scripts{
+    @Html.Partial("~/ViewsScripts/Roles/RolesScripts.cshtml")
+}

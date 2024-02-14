@@ -1,0 +1,417 @@
+﻿@model IvSaleHdVM
+@using ERP.Web.UI.Models.ViewModels.Sales
+@using ERP.Web.UI.Models.ViewModels.General
+@using ERP.Web.UI.Controllers.Pos
+@using ERP.Web.UI.Models.ViewModels.Sales
+@{
+
+    ViewBag.Title = ERP.ResourcePack.Sales.IvSaleHd.Title;
+    string formTrigger = ViewBag.trigger;
+    string lang = Request.Cookies["Lang"] == null ? "ar-EG" : Request.Cookies["Lang"].Value.ToString();
+    string lkpKeyDdl = lang == "ar-EG" ? nameof(FndLookupValuesVM.NameAr) : nameof(FndLookupValuesVM.NameEn);
+    bool isFormDetail = Model != null && formTrigger == ERP.Front.Helpers.Enums.Common.FormTriggers.Show.ToString();
+    string username = Session["userName"].ToString();
+}
+
+<style>
+    .ArCustomerId {
+        position: absolute;
+        background-color: rgb(255, 255, 255);
+        font-size: 12px;
+        margin: 0px 5px;
+        padding: 0px 10px;
+        font-weight: bold;
+        z-index: 2;
+        top: 0px;
+    }
+    .wedgit {
+        -webkit-box-shadow: 0px 3px 6px 0px rgb(0 0 0 / 20%);
+        -moz-box-shadow: 0px 3px 6px 0px rgba(0,0,0,0.2);
+        box-shadow: 0px 3px 6px 0px rgb(0 0 0 / 20%);
+        background-color: #fff;
+        border-radius: 5px;
+        padding: 20px 15px;
+        margin-bottom: 10px;
+    }
+
+    .activeBtn {
+        background-color: #4CAF50;
+        border: none;
+        color: white;
+        text-align: center;
+        text-decoration: none;
+        font-size: 16px;
+        transition-duration: 0.2s;
+        cursor: pointer;
+        height: 40px;
+        margin-top: 10px;
+        margin-bottom: 10px;
+        margin-left: 10px;
+        border-top-left-radius: 6px;
+        border-bottom-left-radius: 6px;
+        width: 120px;
+    }
+
+
+    .btnDeactivated {
+        background-color: white !important;
+        color: black !important;
+        border: 2px solid #008CBA !important;
+    }
+
+
+
+        .btnDeactivated:hover {
+            background-color: #008CBA !important;
+            color: white;
+        }
+
+
+    .deactiveBtn {
+        background-color: #4CAF50;
+        border: none;
+        color: white;
+        text-align: center;
+        text-decoration: none;
+        font-size: 16px;
+        transition-duration: 0.2s;
+        cursor: pointer;
+        height: 40px;
+        margin-top: 10px;
+        margin-bottom: 10px;
+        margin-right: 10px;
+        border-top-right-radius: 6px;
+        border-bottom-right-radius: 6px;
+        width: 120px;
+    }
+</style>
+<div class="card">
+    <div class="body">
+        <div class="header">
+            @*<div class="header d-flex justify-content-start align-items-center" style="padding:0px 0px;">
+                    <i class="fas fa-2x fa-chevron-down down-arr mr-2" data-toggle="collapse" data-target="#searchCollapse"></i>
+
+                    <h2><strong>@ERP.ResourcePack.Accounts.GlJeHeaders.MasterData</strong></h2>
+
+                </div>*@
+        </div>
+        <div class="body collapse show" id="searchCollapse">
+            <ul class="mt-2 nav nav-tabs tab-nav-right" role="tablist">
+                <li role="presentation" class="step-tap">
+                    <a class="show active" id="FormDetail-tab" data-toggle="tab" href="#FormDetail" role="tab">
+
+                        <span class="step-title">
+                            @ERP.ResourcePack.Accounts.GlJeHeaders.MasterData
+                        </span>
+                    </a>
+                </li>
+                <li role="presentation" class="step-tap">
+                    <a class="show" id="Comments-tab" data-toggle="tab" href="#CommentsData" role="tab">
+                        <span class="step-title">
+                            Comments 
+                        </span>
+                    </a>
+                </li>
+                <li role="presentation" class="step-tap">
+                    <a class="show" id="Evaluatesituation-tab" data-toggle="tab" href="#EvaluatesituationData" role="tab">
+
+                        <span class="step-title">
+                            @ERP.ResourcePack.Sales.IvSaleHd.RecentOrders
+                        </span>
+                    </a>
+                </li>
+            </ul>
+            <div class="tab-content">
+
+
+
+                <div role="tabpanel" class="active tab-pane fade in show" id="FormDetail">
+                    @using (Ajax.BeginForm(nameof(ERP.Web.UI.Controllers.Pos.IvPosHdController.PostIvPosHd), "IvSaleHd", new AjaxOptions { HttpMethod = "POST", OnBegin = "OnBegin", OnSuccess = "OnSuccess", OnComplete = "OnComplete", OnFailure = "OnFailure" }, new { @id = "mainForm" }))
+                    {
+                        @Html.HiddenFor(z => z.Id)
+                        @Html.HiddenFor(z => z.SaleHdDetailsListStr)
+                        @Html.HiddenFor(x => x.SaleDateToday)
+                        @Html.HiddenFor(x => x.StatusLkpId)
+                        @Html.HiddenFor(x => x.IsCash)
+                        @Html.HiddenFor(x => x.CurrencyId)
+                        @*@Html.HiddenFor(x => x.IvPriceListHdId)*@
+
+                        @Html.HiddenFor(z => z.FndTaxtypeId)
+                        @Html.HiddenFor(z => z.TrCost)
+                        @Html.HiddenFor(z => z.Percentage)
+
+                        @*@Html.HiddenFor(z => z.IvPriceListHdId)*@
+                        @Html.HiddenFor(z => z.IvWarehouseId)
+                        @Html.HiddenFor(z => z.FndSalesMenId)
+                        @Html.HiddenFor(z => z.IsPOS)
+                        @Html.HiddenFor(z => z.IvSaleNumber)
+
+                        @Html.HiddenFor(z => z.EncId)
+                        @Html.HiddenFor(x => x.Discount)
+                        @Html.HiddenFor(x => x.DeliveryCharges)
+
+                        @Html.HiddenFor(x => x.Comments)
+                        @Html.HiddenFor(x => x.PhoneNumber)
+
+                        <div class="row clearfix">
+                            <div class="col-md-9 p-0" style="margin-bottom:-23px">
+                                <div class="row row-flex">
+                                    <div class="col-md-4 p-r-5 p-l-5">
+
+                                        <div class="wedgit" style="padding:10px 15px">
+                                            <p>  @Html.Label("SalesMan", new { @class = "form-label" })</p>
+
+                                            <h5 style="color: #5CAB69" id="salesmenName"></h5>
+                                            @*<input type="text"  name="name" class="form-control" id="salesmenName" value="" disabled />*@
+                                        </div>
+                                    </div>
+
+
+
+
+
+
+
+                                    <div class="col-md-4 p-r-5 p-l-5">
+                                        <div class="wedgit" style="padding:10px 15px">
+
+                                            <p>@Html.LabelFor(z => z.IvSaleNumber, new { @class = "form-label" })</p>
+                                            <h5 style="color: #5CAB69" id="IvSaleNumber">@(Model!=null?Model.IvSaleNumber:"")</h5>
+                                            @*@Html.TextBoxFor(z => z.IvSaleNumber, getHtmlAttributes(true, "form-control", string.Empty))*@
+                                        </div>
+                                    </div>
+
+
+                                    <div class="col-md-4 p-r-5 p-l-5">
+                                        <div class="wedgit" style="padding:10px 15px">
+                                            <p> @Html.LabelFor(z => z.IvSaleDate, new { @class = "form-label label-required" })</p>
+                                            <h5 style="color: #5CAB69" id="IvSaleDate">@(Model!=null?Model.IvSaleDate:"")</h5>
+                                            @*@Html.TextBoxFor(z => z.IvSaleDate, new { @class = "form-control ", Value = Model == null ? DateTime.Now.ToString(ERP.Helpers.Core.Formatters.DateFormat) : Model.IvSaleDate, @disabled = true })*@
+                                            @*@Html.TextBoxFor(z => z.IvSaleDate, getHtmlAttributes(true, "form-control datepicker", string.Empty))*@
+                                        </div>
+                                        @Html.ValidationMessageFor(z => z.IvSaleDate)
+                                    </div>
+
+                                    @*@if (Model != null && Model.BankAccountId > 0)
+                        {
+                            <div class="col-md-4 p-r-5 p-l-5">
+                                <div class="wedgit" style="padding:10px 15px">
+                                    <p> @Html.Label("Bank Account", new { @class = "form-label label-required" })</p>
+                                    <h5 style="color: #5CAB69">@Model.ApBankAccounts??Model.ApBankAccounts.BankAccountNameEn</h5>
+
+                                </div>
+                                @Html.ValidationMessageFor(z => z.IvSaleDate)
+                            </div>
+                        }*@
+
+
+                                </div>
+                                <div class="row clearfix">
+
+                                    <div style="width:600px" hidden>
+                                        <div class="col-sm-12">
+                                            @Html.Label(ERP.ResourcePack.Sales.IvSaleHd.PaymentMethodLkpId, new { @class = "form-label" })
+                                            <div class="form-group form-float">
+                                                <div class="form-group">
+                                                    @if (Model != null && Model.PaymentMethodLkpId != null)
+                                                    {
+                                                        var list = new List<ERP.Web.UI.Models.ViewModels.General.FndLookupValuesVM> { new ERP.Web.UI.Models.ViewModels.General.FndLookupValuesVM { Id = (long)Model.PaymentMethodLkpId, NameAr = Model.FndLookupPaymentMethodLkp.NameAr, NameEn = Model.FndLookupPaymentMethodLkp.NameEn } };
+
+                                                        var selectList = new SelectList(list, "Id", lkpKeyDdl, Model.IvWarehouseId);
+
+                                                        @Html.DropDownListFor(z => z.PaymentMethodLkpId, selectList, getHtmlAttributes(isFormDetail, "form-control", string.Empty))
+                                                    }
+                                                    else
+                                                    {
+                                                        @Html.DropDownListFor(z => z.PaymentMethodLkpId, Enumerable.Empty<SelectListItem>(), new { @class = "form-control" })
+                                                    }
+                                                    @*@Html.DropDownListFor(z => z.PaymentMethodLkpId, Enumerable.Empty<SelectListItem>(), getHtmlAttributes((formTrigger=="Show"), "form-control", string.Empty))*@
+                                                </div>
+                                            </div>
+
+                                            <input type="text" id="IvPriceListHdText" hidden />
+                                        </div>
+
+                                       
+
+                                        @if (formTrigger == ERP.Front.Helpers.Enums.Common.FormTriggers.Show.ToString())
+                                        {
+                                            if (Model != null && Model.ApBankAccounts != null)
+                                            {
+                                                <div class="col-sm-12">
+                                                    <div class="form-group form-float">
+                                                        <div class="form-line">
+                                                            <input type="text" class="form-control" disabled id="BankText" name="BankText" value="@Model.ApBankAccounts.BankAccountNameEn" />
+
+                                                            @Html.LabelFor(z => z.ApBankAccounts, new { @class = "form-label" })
+                                                        </div>
+                                                    </div>
+                                                    @Html.ValidationMessageFor(z => z.CurrencyRate)
+                                                </div>
+                                            }
+
+                                        }
+                                        else
+                                        {
+                                            <div class="col-sm-12" id="bankAccountDiv">
+                                                @Html.Label(ERP.ResourcePack.Sales.IvSaleHd.BankAccounts, new { @class = "form-label" })
+                                                <div class="form-group form-float">
+                                                    <div class="form-group">
+                                                        @if (Model != null && Model.BankAccountId != null)
+                                                        {
+                                                            var list = new List<ERP.Web.UI.Models.ViewModels.General.FndLookupValuesVM> { new ERP.Web.UI.Models.ViewModels.General.FndLookupValuesVM { Id = (long)Model.PaymentMethodLkpId, NameAr = Model.FndLookupPaymentMethodLkp.NameAr, NameEn = Model.FndLookupPaymentMethodLkp.NameEn } };
+
+                                                            var selectList = new SelectList(list, "Id", lkpKeyDdl, Model.IvWarehouseId);
+
+                                                            @*@Html.DropDownListFor(z => z.BankAccountId, selectList, getHtmlAttributes(isFormDetail, "form-control", string.Empty))*@
+                                                            <input type="text" value="@Model.ApBankAccounts.BankAccountNameEn" disabled />
+                                                        }
+                                                        else
+                                                        {
+                                                            @Html.DropDownListFor(z => z.BankAccountId, Enumerable.Empty<SelectListItem>(), new { @class = "form-control" })
+                                                        }
+                                                        @*@Html.DropDownListFor(z => z.PaymentMethodLkpId, Enumerable.Empty<SelectListItem>(), getHtmlAttributes((formTrigger=="Show"), "form-control", string.Empty))*@
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                        }
+
+                                    </div>
+
+
+
+                                    <div class="col-sm-4">
+                                        @Html.LabelFor(z => z.ArCustomerId, new { @class = "form-label ArCustomerId" })
+                                        <div class="form-group form-float">
+                                            <div class="form-group">
+                                                @if (Model != null && Model.ArCustomerId != null)
+                                                {
+                                                    var list = new List<ERP.Web.UI.Models.ViewModels.General.FndLookupValuesVM> { new ERP.Web.UI.Models.ViewModels.General.FndLookupValuesVM { Id = Model.ArCustomerId, NameAr = Model.ArCustomers.CustomerNameAr, NameEn = Model.ArCustomers.CustomerNameEn } };
+
+                                                    var selectList = new SelectList(list, "Id", lkpKeyDdl, Model.ArCustomerId);
+
+                                                    @Html.DropDownListFor(z => z.ArCustomerId, selectList, getHtmlAttributes(isFormDetail, "form-control", string.Empty))
+                                                }
+                                                else
+                                                {
+                                                    @Html.DropDownListFor(z => z.ArCustomerId, Enumerable.Empty<SelectListItem>(), new { @class = "form-control" })
+                                                }
+
+                                                @*@Html.DropDownListFor(z => z.ArCustomerId, Enumerable.Empty<SelectListItem>(), getHtmlAttributes((formTrigger == "Show"), "form-control", string.Empty))*@
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-sm-4">
+                                        <div class="form-group form-float">
+                                            <div class="form-line focused">
+                                                @if (Model != null && Model.IvPriceListHdId != null && Model.IvPriceListHdId > 0)
+                                                {
+                                                    var list = new List<ERP.Web.UI.Models.ViewModels.General.FndLookupValuesVM> { new ERP.Web.UI.Models.ViewModels.General.FndLookupValuesVM { Id = Model.IvPriceListHdId, NameAr = Model.IvPriceListHd.PriceListName, NameEn = Model.IvPriceListHd.PriceListName } };
+
+                                                    var selectList = new SelectList(list, "Id", lkpKeyDdl, Model.IvPriceListHdId);
+
+                                                    @Html.DropDownListFor(z => z.IvPriceListHdId, selectList, getHtmlAttributes(isFormDetail, "form-control", string.Empty))
+                                                }
+                                                else
+                                                {
+                                                    @Html.DropDownListFor(z => z.IvPriceListHdId, Enumerable.Empty<SelectListItem>(), new { @class = "form-control" })
+                                                }
+                                                @Html.LabelFor(z => z.IvPriceListHdId, new { @class = "form-label ArCustomerId" })
+
+                                                @Html.ValidationMessageFor(z => z.IvPriceListHdId)
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-sm-4">
+
+                                        <div class="form-group form-float">
+                                            <div class="form-line focused">
+
+                                                <div style="float:right;">
+                                                    <button type="button" id="btn1" class="activeBtn" onclick="btnCash()">CASH</button>
+                                                    <button type="button" id="btn2" class="deactiveBtn btnDeactivated" onclick="btnCredit()">VISA CARD</button>
+
+                                                    <button type="button" id="btnPayment" class="deactiveBtn btnDeactivated"></button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+
+
+                                </div>
+                            </div>
+
+                        </div>
+
+                    }
+
+
+                </div>
+
+                <div role="tabpanel" class="tab-pane fade in" id="CommentsData">
+
+                    <div class="row no-gutters clearfix">
+                        <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+                            <div class="card">
+                                <div class="row clearfix">
+                                    <div class="col-sm-4">
+                                        <div class="form-group form-float">
+                                            <div class="form-line">
+                                                <input type="text" id="_PhoneNumber" value="@(Model!=null?Model.PhoneNumber:"")" class="form-control" />
+
+                                                <label class="form-label" for="_PhoneNumber">Phone Number</label>
+                                            </div>
+                                        </div>
+                                        @Html.ValidationMessageFor(z => z.LpoNo)
+                                    </div>
+
+
+                                </div>
+                                <div class="row clearfix">
+                                    <div class="col-sm-12">
+                                        <div class="form-group form-float">
+                                            <div class="form-line">
+                                                <textarea id="_Comments" class="form-control">@(Model!=null?Model.Comments:"")</textarea>
+                                                @*@Html.TextAreaFor(z => z.Comments, getHtmlAttributes(isFormDetail, "form-control", string.Empty))*@
+                                                <label class="form-label" for="_Comments">Comment</label>
+
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+                <div role="tabpanel" class="tab-pane fade in" id="EvaluatesituationData">
+
+                    @Html.Action(nameof(ERP.Web.UI.Controllers.Pos.IvPosHdController.IvPosHdData))
+
+                </div>
+
+
+            </div>
+            
+
+          
+            </div>
+        </div>
+</div>
+
+@functions {
+    object getHtmlAttributes(bool Disabled, string CssClass, string CssClass2)
+    {
+        if (Disabled)
+        {
+            return new { @class = CssClass, Disabled = Disabled };
+        }
+        return new { @class = $"{CssClass} {CssClass2}" };
+    }
+}
+
+

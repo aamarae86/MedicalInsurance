@@ -1,0 +1,755 @@
+﻿@using ERP.Web.UI.Controllers.Accounts
+@using ERP.Web.UI.Models.ViewModels.Accounts
+@using ERP.ResourcePack.Accounts
+@using ERP.Authorization;
+@{
+    string permissionsStr = TempData["Permissions"].ToString();
+    string encUpdateTrigger = ERP.Front.Helpers.Enums.Common.EncUpdate;
+    string encShowTrigger = ERP.Front.Helpers.Enums.Common.EncShow;
+}
+
+@if (permissionsStr.Contains(PermissionNames.Pages_GlJeHeaders_Post))
+{
+    <script>
+        const PostAjax = function (id) {
+
+            bootbox.confirm({
+                message: _booBoxMessagePosting,
+                buttons: bootBoxDefaultBtns,
+                callback: function (result) {
+
+                    if (result) {
+
+                        const data = {
+                            id: id,
+                            lang: lang,
+                            userId: 0
+                        };
+
+                        $.ajax({
+                            url: `${baseUrl}/GlJeHeaders/PostGlJeHeader`,
+                            type: 'POST',
+                            data: JSON.stringify(data),
+                            headers:
+                            {
+                                'Content-Type': 'application/json',
+                                'Authorization': `Bearer ${$_token}`
+                            },
+                        }).done(function (response) {
+                            console.log(response);
+                            if (response.result.finalStatues == 'F') {
+                                toastr.warning(response.result.reason);
+                            }
+                            else {
+                                toastr.success(response.result.reason);
+
+                                if (formView) {
+
+                                    setTimeout(function () {
+                                        window.location.href = $PrefixHostName + '/GlJeHeaders';
+                                    }, 100);
+
+                                } else {
+                                    LoadDataGrid();
+                                }
+                            }
+                        }).fail(function (response) {
+                            toastr.error(response);
+                        });
+                    }
+                }
+            });
+        };
+
+        const CopyGlJeHeader = function (id) {
+
+            bootbox.confirm({
+                message: _booBoxMessageCopying,
+                buttons: bootBoxDefaultBtns,
+                callback: function (result) {
+
+                    if (result) {
+
+                        const data = {
+                            id: id,
+                            lang: lang,
+                            userId: 0
+                        };
+
+                        $.ajax({
+                            url: `${baseUrl}/GlJeHeaders/CopyGlJeHeader`,
+                            type: 'POST',
+                            data: JSON.stringify(data),
+                            headers:
+                            {
+                                'Content-Type': 'application/json',
+                                'Authorization': `Bearer ${$_token}`
+                            },
+                        }).done(function (response) {
+
+                            if (response.result.finalStatues == 'F') {
+                                toastr.warning(response.result.reason);
+                            }
+                            else {
+                                toastr.success(response.result.reason);
+
+                                if (formView) {
+
+                                    setTimeout(function () {
+                                        window.location.href = $PrefixHostName + '/GlJeHeaders';
+                                    }, 100);
+
+                                } else {
+                                    LoadDataGrid();
+                                }
+                            }
+
+                        }).fail(function (response) {
+                            toastr.error(response);
+                        });
+                    }
+                }
+            });
+        };
+
+    </script>
+}
+else
+{
+    <script>
+        const PostAjax = function (id) { };
+        const CopyGlJeHeader = function (id) { };
+    </script>
+}
+
+<script>
+    const _mainController = "GlJeHeaders"
+
+    function getMaskValNum(val) {
+            if (typeof val == "string") {
+                return Number(val.replace(/,/g, ''));
+            } else {
+                return val;
+            }
+    }
+
+    $(function () {
+
+        $('.datepicker').on('change', function (e, date) {
+            $(this).siblings('label').focus();
+        });
+
+        $('#CurrencyId').parent('.form-line').removeClass('focused');
+
+        $('#GlJeHeaders').addClass('active');
+
+     });
+
+    const _loadDataUrl = `${$PrefixHostName}/${_mainController}/@nameof(GlJeHeadersController.LoadDataGrid)`;
+    const _tblSelector = $('#tblGlJeHeaders');
+    const _tblLoader = $('#tblLoader');
+    const _mainForm = $('#mainForm');
+
+    const _txtJeNameSearch = $('#searchBox #@nameof(GlJeHeadersVM.JeName)');
+    const _txtJeNumberSearch = $('#searchBox #@nameof(GlJeHeadersVM.JeNumber)');
+    const _txtJeDateStrSearch = $('#searchBox #@nameof(GlJeHeadersVM.JeDate)');
+    const _txtCurrencyIdSearch = $('#searchBox #@nameof(GlJeHeadersVM.CurrencyId)');
+    const _txtJeSourceLkpIdSearch = $('#searchBox #@nameof(GlJeHeadersVM.JeSourceLkpId)');
+    const _txtJeStatusLkpIdSearch = $('#searchBox #@nameof(GlJeHeadersVM.StatusLkpId)');
+    const _PostStatus = @Convert.ToInt64(ERP.Front.Helpers.Enums.Common.GlJeHeadersStatues.Posted);
+
+    const _permissions = '@permissionsStr';
+    const _updatePermission = '@PermissionNames.Pages_GlJeHeaders_Update';
+    const _deletePermission = '@PermissionNames.Pages_GlJeHeaders_Delete';
+    const _postPermission = '@PermissionNames.Pages_GlJeHeaders_Post';
+
+    let tblHeadersAdded = false;
+
+    $('#btnSubmition').on('click', function () {
+
+        if (_glHeaderDetails.length === 0) {
+            toastr.warning('@GlJeHeaders.FillDetailTable');
+            return;
+        }
+
+        _mainForm.submit();
+
+        if (_mainForm.valid()) {
+
+            $(this).hide();
+            $('#submitLoader').show();
+
+        } else {
+
+            $(this).show();
+            $('#submitLoader').hide();
+
+        }
+
+    });
+
+    var OnBegin = function (response) {
+        fireBtnLoader();
+    };
+
+    var OnSuccess = function (response) {
+
+        if (response.success) {
+
+            if (response.customRestResult.trigger === '@ERP.Front.Helpers.Enums.Common.FormTriggers.Insert') {
+
+                    toastr.success(response.customRestResult.message);
+
+                    setTimeout(function () {
+                        window.location.href = $PrefixHostName + '/GlJeHeaders';
+                    }, 200);
+
+
+            } else if (response.customRestResult.trigger === '@ERP.Front.Helpers.Enums.Common.FormTriggers.Update') {
+
+                if (response.result.validActionAfterPostStatus) {
+                        toastr.success(response.customRestResult.message);
+
+                         setTimeout(function () {
+                            window.location.href =  $PrefixHostName + '/GlJeHeaders';
+                        },200);
+                }
+                else {
+                    toastr.warning('!');
+                }
+
+            }
+
+        } else {
+               toastr.error(response.customRestResult.message);
+        }
+
+    };
+
+    var OnComplete = function (response) {
+        downBtnLoader();
+    };
+
+    var OnFailure = function (response) {
+        toastr.error(response);
+        console.log(response);
+        downBtnLoader();
+    };
+
+   const LoadDataGrid = function () {
+
+        $('#tblLoader').show();
+
+        const parms = {
+            JeDate :_txtJeDateStrSearch.val(),
+            JeName: _txtJeNameSearch.val(),
+            JeNumber: _txtJeNumberSearch.val(),
+            CurrencyId: _txtCurrencyIdSearch.find(':selected').val(),
+            JeSourceLkpId: _txtJeSourceLkpIdSearch.find(':selected').val(),
+            StatusLkpId: _txtJeStatusLkpIdSearch.find(':selected').val()
+        };
+
+       const columns = [
+           {
+               "data": "result.data.id",
+               'render': function (data, type, row, meta) {
+                   return meta.row + meta.settings._iDisplayStart + 1;
+               }
+           },
+           {
+               "data": "JeNumber",
+               "name": "JeNumber",
+               "autoWidth": true
+           },
+           {
+               "data": "JeName",
+               "name": "JeName",
+               "autoWidth": true
+           },
+           {
+               "data": "JeDate",
+               "name": "JeDate",
+               "autoWidth": true
+           },
+           {
+               "data": null,
+               "autoWidth": true,
+               "render": function (data, type, row) {
+                   return lang === 'ar-EG' ? row.GlPeriodsDetails.PeriodNameAr : row.GlPeriodsDetails.PeriodNameEn
+               }
+           },
+           {
+               "data": null,
+               "autoWidth": true,
+               "render": function (data, type, row) {
+                   return lang === 'ar-EG' ? row.JeSourceFndLookupValues.NameAr : row.JeSourceFndLookupValues.NameEn
+               }
+           },
+           {
+               "data": null,
+               "autoWidth": true,
+               "render": function (data, type, row) {
+                   return lang === 'ar-EG' ? row.StatusFndLookupValues.NameAr : row.StatusFndLookupValues.NameEn
+               }
+           },
+           {
+               "data": null,
+               "autoWidth": true,
+               "render": function (data, type, row) {
+                   return lang === 'ar-EG' ? row.Currency.DescriptionAr: row.Currency.DescriptionEn
+               }
+           },
+           {
+               "data": null,
+               "sortable": false,
+               "render": function (data, type, row) {
+
+                   let formAction = `${$PrefixHostName}/${_mainController}/@nameof(GlJeHeadersController.GlJeHeadersForm)`;
+                   let DeleteAction = `${$PrefixHostName}/${_mainController}/@nameof(GlJeHeadersController.Delete)`;
+
+                   let btns = '';
+
+                   if (_permissions.includes(_postPermission) & row.StatusLkpId != _PostStatus) {
+                       btns += `<a href="javascript:void(0)" onclick="PostAjax(${row.Id})" title="@ERP.ResourcePack.Common.Settings.Post"><i class="mx-2 fas fa-check-circle text-info"></i></a>`;
+                   }
+
+                  if (_permissions.includes(_updatePermission) && row.StatusLkpId != _PostStatus) {
+                       btns += `<a href="${$PrefixHostName}/GlJeHeaders/FormView?id=${row.EncId}&t=@encUpdateTrigger" title="@ERP.ResourcePack.Common.Settings.Edit"><i class="mx-2 fas fa-edit text-info"></i></a>`;
+                  }
+
+                   btns += `<a href="${$PrefixHostName}/GlJeHeaders/FormView?id=${row.EncId}&t=@encShowTrigger" title="@ERP.ResourcePack.Common.Settings.Show"><i class="mx-2 fas fa-eye text-info"></i></a>`;
+
+                   if (_permissions.includes(_updatePermission) && row.StatusLkpId != _PostStatus) {
+                       btns += `<a href="javascript:void(0)" onclick="AjaxController.DeleteMainTableRow(${row.Id},'${DeleteAction}');" title="@ERP.ResourcePack.Common.Settings.Delete"><i class="mx-2 fas fa-trash-alt text-danger"></i></a>`;
+                   }
+
+                   btns += `<a href="javascript:void(0);" onclick="return print('${$PrefixHostName}/GlJeHeaders/PrintGlJeScreen','${row.EncId}','${lang}')" title="@ERP.ResourcePack.Common.Settings.Print"><i class="mx-2 fas fa-print text-success"></i></a>`;
+
+                   const _auditedPermission = '@PermissionNames.Pages_GlJeHeaders_Audit';
+
+                   if (_permissions.includes(_auditedPermission)){
+
+                       row.permission = _auditedPermission;
+
+                       btns += GetAuditedButton(row);
+                   }
+
+                   return btns;
+               }
+           }
+       ];
+
+        const dtObj = {
+            "processing": true,
+            "serverSide": true,
+            "filter": false,
+            "orderMulti": false,
+            "language": dataTableLang,
+            "ajax": {
+                "url": _loadDataUrl,
+                "type": "POST",
+                "datatype": "json",
+                "data": parms,
+                "complete": function () {
+                      _tblLoader.hide();
+                }
+            },
+            "columns": columns,
+            "initComplete": function () {
+                $('[data-toggle="tooltip"]').tooltip();
+            }
+        };
+
+        _tblSelector.dataTable().fnDestroy();
+        _tblSelector.DataTable(dtObj).on('draw', function () { $('[data-toggle="tooltip"]').tooltip(); });
+
+        setTimeout(function () {
+            $(".sorting_1").removeAttr('colspan');
+        }, 500);
+
+    };
+
+    $('#searchBox #CurrencyId').select2(ReturnSelect2ObjectDefault(`${baseUrl}/Currency/GetCurrenciesSelect2`));
+    $('#CurrencyId').select2(ReturnSelect2ObjectDefault(`${baseUrl}/Currency/GetCurrenciesSelect2`));
+    $('#searchBox #StatusLkpId').select2(ReturnSelect2ObjectForLkpsTypes('@ERP.Front.Helpers.Enums.Common.FndLkpsTypes.GlJeHeadersStatues.ToString()'));
+    $('#searchBox #JeSourceLkpId').select2(ReturnSelect2ObjectForLkpsTypes('@ERP.Front.Helpers.Enums.Common.FndLkpsTypes.GlJeHeadersReferenceType.ToString()'));
+
+    $('#CurrencyId').on('change', function (e) {
+
+        const currency = $(this);
+        const rateTxt = $('#CurrencyRate');
+
+        if (currency === undefined || currency.find(':selected').val() === undefined) { }
+        else {
+
+            $.ajax({
+                url: `${baseUrl}/Currency/GetRate`,
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${$_token}`
+                },
+                data: {
+                    Id: currency.find(':selected').val(),
+                    date: ''
+                }
+            }).done(function (rate) {
+
+                let _inputSelector = $('#CurrencyRate');
+
+                _inputSelector.parent('.form-line').addClass('focused');
+
+                rateTxt.val(rate.result);
+
+            }).fail(function (response) {
+                toastr.error(response);
+            });
+        }
+    });
+
+</script>
+
+<script>
+
+    const _tblGlHeaderDetailSelector = $('#tblGlJeHeadersDetail');
+    const _tblGlHeaderDetailSelectorBody = $('#tblGlJeHeadersDetail tbody');
+    const _listGljeLinesDetails = $('#ListGljeLinesDetails');
+
+    let _glHeaderDetails = [], updatedRow, sumDebit = 0, sumCredit = 0, tblCounterIndex = 0;
+
+    const fillGlDetail = function () {
+
+        if (validateAmmounts() === false) {
+            toastr.warning('@GlJeHeaders.AmountNotValid');
+            return;
+        }
+
+        if (validateLines() === false) {
+            toastr.warning('@GlJeHeaders.FormDetailNotValid');
+            return;
+        }
+
+        const resultCodeComUtility = GetCodeComUtilites(__arrGlSelect2, 'AccId');
+
+        if (resultCodeComUtility === null) {
+            toastr.warning('@GlJeHeaders.FormDetailNotValid');
+            return;
+        }
+
+        const current = {
+            index: ++tblCounterIndex,
+            codeComUtilityIds: resultCodeComUtility.idsStr,
+            codeComUtilityTexts: resultCodeComUtility.textsStr,
+            debitAmount: $('#DebitAmount').val(),
+            creditAmount: $('#CreditAmount').val(),
+            notes: $('#Notes').val(),
+            rowStatus: NewStatus
+        };
+
+        return current;
+    };
+
+    const AddGlDetail = function () {
+
+        const current = fillGlDetail();
+
+        if (current === undefined) {
+             toastr.warning('@GlJeHeaders.FormDetailNotValid');
+             return;
+        }
+
+        _glHeaderDetails.push(current);
+
+        _listGljeLinesDetails.val(JSON.stringify(_glHeaderDetails));
+
+        bindglHeaderDetailsTable();
+
+        clearFormAdding();
+    };
+
+    const bindglHeaderDetailsTable = function () {
+
+        sumDebit = 0; sumCredit = 0;
+
+        let rows = '';
+
+        const detailArr = _glHeaderDetails.filter(z => z.rowStatus !== DeletedStatus);
+
+        $.each(detailArr, function (i, item) {
+
+            rows += '<tr>';
+
+            rows += `<td>${item.index}</td>`;
+            rows += `<td>${item.accountNumber ? item.accountNumber : ''}</td>`;
+            rows += `<td>${item.codeComUtilityTexts}</td>`;
+            rows += `<td>${Number(item.debitAmount).toLocaleString(undefined, optionsNumFormat)}</td>`;
+            rows += `<td>${Number(item.creditAmount).toLocaleString(undefined, optionsNumFormat)}</td>`;
+            rows += `<td>${item.notes}</td>`;
+
+            if (primaryEntityKeyId === 0 || trigger !== '@ERP.Front.Helpers.Enums.Common.FormTriggers.Show.ToString()') {
+                rows += `<td><a href="javascript:void(0)" onclick="return DeleteGlJeLineDetail(${item.index})"><i class="mx-2 fas fa-trash-alt text-danger"></i></a>`;
+                rows += `<a href="javascript:void(0)" onclick="return GetGlJeRow(${item.index})"><i class="mx-2 fas fa-edit text-success"></i></a></td>`;
+            } else {
+                rows += '<td></td>';
+            }
+
+            rows += '</tr>';
+        });
+
+         rows += '<tr>';
+         rows += `<td>#</td>`;
+         rows += `<td>#</td>`;
+         rows += `<td>--</td>`;
+
+
+        detailArr.map(z => sumDebit += parseFloat(getMaskValNum(z.debitAmount)));
+        detailArr.map(z => sumCredit += parseFloat(getMaskValNum(z.creditAmount)));
+        console.log(detailArr)
+
+        if (sumDebit === sumCredit) {
+            rows += `<td class="text-success">${sumDebit.toLocaleString()}</td>`;
+            rows += `<td class="text-success">${sumCredit.toLocaleString()}</td>`;
+        } else {
+
+            if (sumCredit > sumDebit) {
+                rows += `<td class="text-danger">${sumDebit.toLocaleString()} <small class="text-success"> + ${sumCredit - sumDebit}</small> </td>`;
+                rows += `<td class="text-danger">${sumCredit.toLocaleString()}</td>`;
+
+            } else if (sumDebit > sumCredit) {
+
+                rows += `<td class="text-danger">${sumDebit.toLocaleString()}  </td>`;
+                rows += `<td class="text-danger">${sumCredit.toLocaleString()} <small class="text-success"> + ${sumDebit - sumCredit}</small> </td>`;
+
+            } else {
+                 rows += `<td class="text-danger">${sumDebit.toLocaleString()} </td>`;
+                 rows += `<td class="text-danger">${sumCredit.toLocaleString()}</td>`;
+            }
+
+        }
+
+        rows += '</tr>';
+
+        _tblGlHeaderDetailSelectorBody.html(rows);
+        $('#tblGlJeHeadersDetail_wrapper th').removeClass('sorting');
+
+    };
+
+    const DeleteGlJeLineDetail = function (index) {
+
+        const current = _glHeaderDetails.find(z => z.index === index);
+
+        const indexOfCurrent = _glHeaderDetails.indexOf(current);
+
+        if (!current.glJeLineId) {
+
+           _glHeaderDetails.splice(indexOfCurrent, 1);
+
+        } else {
+
+            current.rowStatus = DeletedStatus;
+
+           _glHeaderDetails.splice(indexOfCurrent, 1,current);
+        }
+
+
+        bindglHeaderDetailsTable();
+
+        _listGljeLinesDetails.val(_glHeaderDetails.length === 0 ? '' : JSON.stringify(_glHeaderDetails));
+    };
+
+    const LoadDetailGlJeLinesData = function () {
+
+        $.ajax({
+            url: `${baseUrl}/GlJeHeaders/GetAllGlJeHeaderLinesDetails`,
+            method: 'GET',
+            headers: {
+                        'Authorization': `Bearer ${$_token}`
+            },
+            data: {
+                gljeheaderId: primaryEntityKeyId
+            }
+        }).done(function (data) {
+
+            _glHeaderDetails = [...data.result];
+
+            bindglHeaderDetailsTable();
+
+            _listGljeLinesDetails.val(JSON.stringify(_glHeaderDetails));
+
+            const newarr = data.result.reverse();
+
+            tblCounterIndex = newarr[0].index;
+
+        });
+
+    };
+
+    const validateAmmounts = function () {
+
+        const currentDebitAmmount = $('#DebitAmount').val();
+        const currentCreditAmmount = $('#CreditAmount').val();
+        const currentNotes = $('#Notes').val();
+
+        if (currentCreditAmmount === '' || currentDebitAmmount === '')
+            return false;
+    };
+
+    const validateLines = function () {
+
+        if ($('#AccId').find(':selected').val() === undefined || $('#AccId').find(':selected').val() === '')
+            return false;
+    };
+
+    const debitAmmountSetter = function () {
+
+        const currentVal = $('#DebitAmount').val();
+
+        if (currentVal <= 0)
+        {
+            $('#CreditAmount').attr('disabled',false);
+        }
+        else
+        {
+            $('#CreditAmount').attr('disabled',true);
+            $('#CreditAmount').val(0);
+            $('#CreditAmount').parent('.form-line').addClass('focused');
+        }
+    };
+
+    const creditAmmountSetter = function () {
+
+        const currentVal = $('#CreditAmount').val();
+
+        if (currentVal <= 0)
+        {
+            $('#DebitAmount').attr('disabled',false);
+        }
+        else
+        {
+            $('#DebitAmount').attr('disabled',true);
+            $('#DebitAmount').val(0);
+            $('#DebitAmount').parent('.form-line').addClass('focused');
+        }
+
+    };
+
+    const clearFormAdding = function () {
+
+        $('#first input').val('');
+        $('#first textarea').val('');
+
+        $('#DebitAmount').attr('disabled',false);
+        $('#CreditAmount').attr('disabled',false);
+
+        $('#first select:not(.slct2gl)').val('').trigger('change');
+
+    };
+
+    const GetGlJeRow = function (tblIndex) {
+
+        clearFormAdding();
+
+        $('#btnAddDetailRow').hide();
+        $('#btnUpdateDetailRow').show();
+        $('#btnCancelDetailRow').show();
+
+        const current = _glHeaderDetails.find(z => z.index === tblIndex);
+
+        BindCodeComUtilitesDropDowns(__arrGlSelect2, 'AccId', current.codeComUtilityIds, current.codeComUtilityTexts);
+
+        $('#DebitAmount').val(current.debitAmount);
+        $('#CreditAmount').val(current.creditAmount);
+        $('#Notes').val(current.notes);
+
+        $('#DebitAmount').parent('.form-line').addClass('focused');
+        $('#CreditAmount').parent('.form-line').addClass('focused');
+        $('#Notes').parent('.form-line').addClass('focused');
+
+        updatedRow = current;
+
+    };
+
+    const UpdateGlDetailRow = function () {
+
+        let current = _glHeaderDetails.find(z => z.index === updatedRow.index);
+
+        let indexOfCurrent = _glHeaderDetails.indexOf(_glHeaderDetails.find(z => z.index === updatedRow.index));
+
+       const newRow = fillGlDetail();
+
+        if (newRow === undefined) {
+             toastr.warning('@GlJeHeaders.FormDetailNotValid');
+             return;
+        }
+
+        newRow.index = current.index;
+        newRow.glJeLineId = updatedRow.glJeLineId;
+        newRow.rowStatus = !updatedRow.glJeLineId ? NewStatus : UpdatedStatus;
+
+        _glHeaderDetails.splice(indexOfCurrent, 1,newRow);
+
+        $('#btnAddDetailRow').show();
+        $('#btnUpdateDetailRow').hide();
+        $('#btnCancelDetailRow').hide();
+
+        clearFormAdding();
+
+        _listGljeLinesDetails.val(JSON.stringify(_glHeaderDetails));
+
+        bindglHeaderDetailsTable();
+    };
+
+    $('#DebitAmount').on('keyup', function () {
+
+        validateAmmounts();
+        debitAmmountSetter();
+
+    });
+
+    $('#CreditAmount').on('keyup', function () {
+
+        validateAmmounts();
+        creditAmmountSetter();
+
+    });
+
+    $('#JeDate').on('change', function () {
+
+        if ($(this).val() === '') return;
+
+        $.ajax({
+            url: `${baseUrl}/GlPeriodsDetails/GetPeriod`,
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${$_token}`
+            },
+            data: {
+                transDate:$(this).val()
+            }
+        }).done(function (data) {
+
+            const result = data.result;
+
+            if (result == null) {
+
+                toastr.warning('No Periods');
+                $('input,select,textarea').attr('disabled', true);
+
+                return;
+            }
+
+            $('#PeriodNameEn').val(lang === 'ar-EG' ? result.periodNameAr : result.periodNameEn);
+
+            $('#PeriodNameEn').parent('.form-line').addClass('focused');
+
+            $('#PeriodId').val(result.id);
+
+        })
+
+    });
+
+    const print = function (url,id,lang) {
+        const data = { id: id, lang : lang };
+        openModal(data, url);
+    };
+
+</script>

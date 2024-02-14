@@ -1,0 +1,149 @@
+﻿@using ERP.Authorization;
+@using ERP.Web.UI.Controllers.General
+@using ERP.ResourcePack.Accounts
+
+<script>
+
+    const _mainController = "FndLookupValues"
+
+    $(function () {
+        $('#FndLookupValues').addClass('active');
+        LoadDataGrid();
+    });
+
+    const _loadDataUrl = `${$PrefixHostName}/${_mainController}/@nameof(FndLookupValuesController.LoadDataGrid)`;
+    const _tblSelector = $('#tblFndLookupValues');
+
+    var OnBegin = function (response) {
+        fireBtnLoader();
+    };
+
+    var OnSuccess = function (response) {
+
+        if (response.success) {
+
+            if (response.customRestResult.trigger === '@ERP.Front.Helpers.Enums.Common.FormTriggers.Insert') {
+
+                toastr.success(response.customRestResult.message);
+
+                LoadDataGrid();
+
+                _mainModal.modal('hide');
+
+            } else if (response.customRestResult.trigger === '@ERP.Front.Helpers.Enums.Common.FormTriggers.Update') {
+
+                LoadDataGrid();
+
+                _mainModal.modal('hide');
+
+                toastr.success(response.customRestResult.message);
+            }
+
+        } else {
+            toastr.error(response.customRestResult.message);
+        }
+
+    };
+
+    var OnComplete = function (response) {
+
+        downBtnLoader();
+    };
+
+    var OnFailure = function (response) {
+        toastr.error(response);
+        downBtnLoader();
+    };
+
+    const LoadDataGrid = function () {
+
+        $('.page-loader-wrapper').show();
+
+        const parms = {
+            NameAr: $('#searchBox #NameAr').val(),
+            NameEn: $('#searchBox #NameEn').val(),
+            LookupCode: $('#searchBox #LookupCode').val(),
+            LookupType: $('#searchBox #LookupType').val()
+        };
+
+        $.ajax({
+            url: _loadDataUrl,
+            method: 'POST',
+            data: parms, 
+        }).done(function (data) {
+
+            drawTable(data);
+
+            $('.page-loader-wrapper').hide(100);
+
+
+        }).fail(function (error) {
+
+            toastr.error(error);
+
+            $('.page-loader-wrapper').hide(100);
+        });
+
+    };
+
+    const drawTable = function (data) {
+
+        const columns = [
+            {
+                "data": "result.data.id",
+                'render': function (data, type, row, meta) {
+                    return meta.row + meta.settings._iDisplayStart + 1;
+                }
+            },
+            {
+                "data": "NameAr",
+                "name": "NameAr",
+                "autoWidth": true
+            },
+            {
+                "data": "NameEn",
+                "name": "NameEn",
+                "autoWidth": true
+            },
+            {
+                "data": "LookupCode",
+                "name": "LookupCode",
+                "autoWidth": true
+            },
+            {
+                "data": "LookupType",
+                "name": "LookupType",
+                "autoWidth": true
+            },
+            {
+                "data": null,
+                "sortable": false,
+                "render": function (data, type, row) {
+
+                    let formAction = `${$PrefixHostName}/${_mainController}/@nameof(FndLookupValuesController.FndLookupValuesForm)`;
+
+                    let formTitle = '@ERP.ResourcePack.Common.FndLookupValues.Title';
+                    let btns = '';
+
+                    btns += `<a href="javascript:void(0)" onclick="AjaxController.GetFormModal(${row.Id},'@ERP.Front.Helpers.Enums.Common.FormTriggers.Update','${formAction}','${formTitle}');" title="@ERP.ResourcePack.Common.Settings.Edit"><i class="mx-2 fas fa-edit text-info"></i></a>`;
+
+                    return btns;
+                }
+            }
+        ];
+
+        const dtObj = {
+            data: data,
+            retreive: true,
+            columns: columns,
+            language: dataTableLang,
+            processData: true,
+            stateSave: true,
+            pagingType: 'input'
+        };
+
+        _tblSelector.dataTable().fnDestroy();
+        _tblSelector.DataTable(dtObj).on('draw', function () { $('[data-toggle="tooltip"]').tooltip(); });
+    };
+
+</script>

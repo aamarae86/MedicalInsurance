@@ -1,0 +1,12 @@
+﻿@{
+    ViewBag.Title = ERP.ResourcePack.AidModule.ScMaintenanceTechnicalReport.Title;
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@Html.Action(nameof(ERP.Web.UI.Controllers.AidModule.ScMaintenanceTechnicalReportController.ScMaintenanceTechnicalReportSearch))
+@Html.Action(nameof(ERP.Web.UI.Controllers.AidModule.ScMaintenanceTechnicalReportController.ScMaintenanceTechnicalReportData))
+
+@section scripts{
+    <script>let formView = false;</script>
+    @Html.Partial("~/ViewsScripts/_AidModule/ScMaintenanceTechnicalReport/ScMaintenanceTechnicalReportScripts.cshtml")
+}

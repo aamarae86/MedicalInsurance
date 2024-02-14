@@ -1,0 +1,88 @@
+﻿@using ERP.Web.UI.Controllers.Warehouses
+@using ERP.Web.UI.Models.ViewModels.Warehouses
+@{
+    ViewBag.Title = ERP.ResourcePack.Warehouses.PoPurchaseOrder.Title;
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    string formTrigger = ViewBag.trigger;
+    long? id = ViewData["Id"] == null ? null : (long?)Convert.ToInt32(ViewData["Id"]);
+    var detailObj = ViewData["DetailAsync"] == null ? null : ViewData["DetailAsync"] as PoPurchaseOrderVM;
+}
+
+<div class="row clearfix">
+    <div class="col-12">
+        <div class="card">
+            <div class="body">
+                <div class="header">
+                    <h2><strong>@ERP.ResourcePack.Accounts.GlJeHeaders.MasterData</strong></h2>
+                </div>
+                @Html.Action(nameof(PoPurchaseOrderController.PoPurchaseOrderForm), new { id = id, trigger = formTrigger, PoPurchaseOrderVM = detailObj })
+            </div>
+        </div>
+    </div>
+
+    <div class="col-12">
+        <div class="card">
+            <div class="body">
+                <div class="header">
+                    <h2><strong>@ERP.ResourcePack.Accounts.GlJeHeaders.DetailData</strong></h2>
+                </div>
+                <ul class="mt-2 nav nav-tabs tab-nav-right" role="tablist">
+                    <li role="presentation">
+                        <a href="#second" data-toggle="tab" class="show active">@ERP.ResourcePack.Warehouses.PoPurchaseOrder.Title2</a>
+                    </li>
+                </ul>
+                <div class="tab-content">
+                    <div role="tabpanel" class="tab-pane fade in active show" id="second">
+                        @Html.Action(nameof(PoPurchaseOrderController.PoPurchaseOrderFormDetail), new { id = id, trigger = formTrigger })
+                        @Html.Action(nameof(PoPurchaseOrderController.PoPurchaseOrderDataDetail))
+                    </div>
+                </div>
+                <div class="row clearfix"> <div class="col-md-12 text-center" id="btnContainer"></div></div>
+            </div>
+        </div>
+    </div>
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body">
+                <div class="text-center">
+                    @if (formTrigger != ERP.Front.Helpers.Enums.Common.FormTriggers.Show.ToString())
+                    {
+                        <button type="submit" id="btnSubmition" class="btn btn-info btn-lg m-l-15 waves-effect">@(formTrigger == ERP.Front.Helpers.Enums.Common.FormTriggers.Insert.ToString() ? ERP.ResourcePack.Common.Settings.BtnSave : ERP.ResourcePack.Common.Settings.BtnUpdate)</button>
+                        <div id="submitLoader" style="display:none">
+                            <div class="lds-roller"><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div></div>
+                        </div>
+                    }
+                    <a href="~/PoPurchaseOrder" class="btn btn-danger btn-lg m-l-15 waves-effect">@(ERP.ResourcePack.Common.Settings.BtnClose)</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section scripts{
+    <script>
+               let formView = true;
+            const primaryEntityKeyId =  @(id == null ? 0 : id);
+            const trigger = '@formTrigger';
+    </script>
+    <script src="~/Scripts/jquery.validate.min.js"></script>
+    <script src="~/Scripts/jquery.validate.unobtrusive.min.js"></script>
+    @Html.Partial("_ReportModal")
+    @Html.Partial("~/ViewsScripts/_Warehouses/PoPurchaseOrder/PoPurchaseOrderScripts.cshtml")
+    @if (id != null)
+    {
+        <script>
+            $(function () {
+                LoadPoPurchaseOrderDetailData();
+            });
+
+             if (primaryEntityKeyId && trigger === '@ERP.Front.Helpers.Enums.Common.FormTriggers.Show.ToString()' && @detailObj.StatusLkpId == 739) {
+               let btns = '';
+
+                btns += `<a href="javascript:void(0)" onclick="return PostAjax(@id)" class="btn btn-success">${'@ERP.ResourcePack.Common.Settings.Post'}</a>`;
+
+                $('#btnContainer').html(btns);
+             };
+        </script>
+    }
+}

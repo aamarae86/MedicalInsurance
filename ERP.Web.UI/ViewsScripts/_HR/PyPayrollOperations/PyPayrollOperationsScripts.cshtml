@@ -1,0 +1,790 @@
+﻿@using ERP.Web.UI.Controllers.HR
+@using ERP.Authorization;
+@{
+    string encUpdateTrigger = ERP.Front.Helpers.Enums.Common.EncUpdate;
+    string encShowTrigger = ERP.Front.Helpers.Enums.Common.EncShow;
+    string permissionsStr = TempData["Permissions"].ToString();
+}
+@if (permissionsStr.Contains(PermissionNames.Pages_PyPayrollOperations_Post))
+{
+    <script>
+        const PostAjax = function (id) {
+
+            bootbox.confirm({
+                message: _booBoxMessagePosting,
+                buttons: bootBoxDefaultBtns,
+                callback: function (result) {
+
+                    if (result) {
+
+                        const data = {
+                            id: id,
+                            lang: lang,
+                            userId: 0
+                        };
+
+                        $.ajax({
+                            url: `${baseUrl}/PyPayrollOperations/PostPyPayrollOperations`,
+                            type: 'POST',
+                            data: JSON.stringify(data),
+                            headers:
+                            {
+                                'Content-Type': 'application/json',
+                                'Authorization': `Bearer ${$_token}`
+                            },
+                        }).done(function (response) {
+
+                            if (response.result.finalStatues == 'F') {
+                                toastr.warning(response.result.reason);
+                            }
+                            else {
+                                toastr.success(response.result.reason);
+
+                                if (formView) {
+
+                                    setTimeout(function () {
+                                        window.location.href = $PrefixHostName + '/PyPayrollOperations';
+                                    }, 100);
+
+                                } else {
+                                    LoadDataGrid();
+                                }
+                            }
+
+                        }).fail(function (response) {
+                            toastr.error(response.responseText);
+                        });
+
+                    }
+
+                }
+            });
+
+
+        };
+        const ApprovalPyPayrollOperations = function (id) {
+
+            bootbox.confirm({
+                message: _booBoxMessagePosting,
+                buttons: bootBoxDefaultBtns,
+                callback: function (result) {
+
+                    if (result) {
+
+                        const data = {
+                            id: id,
+                            lang: lang,
+                            userId: 0
+                        };
+
+                        $.ajax({
+                            url: `${baseUrl}/PyPayrollOperations/ApprovalPyPayrollOperations`,
+                            type: 'POST',
+                            data: JSON.stringify(data),
+                            headers:
+                            {
+                                'Content-Type': 'application/json',
+                                'Authorization': `Bearer ${$_token}`
+                            },
+                        }).done(function (response) {
+
+                            if (response.result.finalStatues == 'F') {
+                                toastr.warning(response.result.reason);
+                            }
+                            else {
+                                toastr.success(response.result.reason);
+
+                                if (formView) {
+
+                                    setTimeout(function () {
+                                        window.location.href = $PrefixHostName + '/PyPayrollOperations';
+                                    }, 100);
+
+                                } else {
+                                    LoadDataGrid();
+                                }
+                            }
+
+                        }).fail(function (response) {
+                            toastr.error(response.responseText);
+                        });
+
+                    }
+
+                }
+            });
+
+
+        };
+        const UnApprovedPyPayrollOperations = function (id) {
+
+            bootbox.confirm({
+                message: _booBoxMessagePosting,
+                buttons: bootBoxDefaultBtns,
+                callback: function (result) {
+
+                    if (result) {
+
+                        const data = {
+                            id: id,
+                            lang: lang,
+                            userId: 0
+                        };
+
+                        $.ajax({
+                            url: `${baseUrl}/PyPayrollOperations/UnApprovedPyPayrollOperations`,
+                            type: 'POST',
+                            data: JSON.stringify(data),
+                            headers:
+                            {
+                                'Content-Type': 'application/json',
+                                'Authorization': `Bearer ${$_token}`
+                            },
+                        }).done(function (response) {
+
+                            if (response.result.finalStatues == 'F') {
+                                toastr.warning(response.result.reason);
+                            }
+                            else {
+                                toastr.success(response.result.reason);
+
+                                if (formView) {
+
+                                    setTimeout(function () {
+                                        window.location.href = $PrefixHostName + '/PyPayrollOperations';
+                                    }, 100);
+
+                                } else {
+                                    LoadDataGrid();
+                                }
+                            }
+
+                        }).fail(function (response) {
+                            toastr.error(response.responseText);
+                        });
+                    }
+                }
+            });
+        };
+    </script>
+}
+else
+{
+    <script>
+        const PostAjax = function (id) { };
+    </script>
+}
+<script>
+    const _mainController = "PyPayrollOperations"
+
+    $(function () {
+
+        LoadDataGrid();
+        $('#tblPyPayrollOperationsPrint thead').html($('#tblPyPayrollOperations thead').html());
+        $('#tblPyPayrollOperationsPrint thead tr :last-child').remove();
+        $('#PyPayrollOperations').addClass('active');
+
+        //$('#StartDate').parent('.form-line').addClass('focused');
+        //$('#EndDate').parent('.form-line').addClass('focused');
+        $('#OperationNumber').parent('.form-line').addClass('focused');
+    });
+
+    const _loadDataUrl = `${$PrefixHostName}/${_mainController}/@nameof(PyPayrollOperationsController.LoadDataGrid)`;
+    const _tblSelector = $('#tblPyPayrollOperations');
+    const _mainForm = $('#mainForm');
+
+    const _permissions = '@permissionsStr';
+    const _updatePermission = '@PermissionNames.Pages_PyPayrollOperations_Update';
+    const _deletePermission = '@PermissionNames.Pages_PyPayrollOperations_Delete';
+    const _postPermission = '@PermissionNames.Pages_PyPayrollOperations_Post';
+
+    $('#btnSubmition').on('click', function () {
+
+        _mainForm.submit();
+
+        if (_mainForm.valid()) {
+
+           $(this).prop('disabled', true);
+
+        } else {
+
+           $(this).prop('disabled',false);
+        }
+
+    });
+
+    var OnBegin = function (response) {
+        fireBtnLoader();
+    };
+
+    var OnSuccess = function (response) {
+
+        if (response.success) {
+
+            if (response.customRestResult.trigger === '@ERP.Front.Helpers.Enums.Common.FormTriggers.Insert') {
+
+                toastr.success(response.customRestResult.message);
+
+                setTimeout(function () {
+                    window.location.href = $PrefixHostName + '/PyPayrollOperations';
+                }, 200);
+
+            } else if (response.customRestResult.trigger === '@ERP.Front.Helpers.Enums.Common.FormTriggers.Update') {
+
+                toastr.success(response.customRestResult.message);
+
+                setTimeout(function () {
+                    window.location.href = $PrefixHostName + '/PyPayrollOperations';
+                }, 200);
+            }
+
+        } else {
+            $('#btnSubmition').prop('disabled',false);
+            toastr.error(response.customRestResult.message);
+        }
+    };
+
+    var OnComplete = function (response) {
+        downBtnLoader();
+        $('#btnSubmition').prop('disabled',false);
+    };
+
+    var OnFailure = function (response) {
+        toastr.error(response);
+        downBtnLoader();
+        $('#btnSubmition').prop('disabled',false);
+    };
+
+
+    const LoadDataGrid = function () {
+
+        const parms = {
+            HrPersonNumber: $('#searchBox #HrPersonNumber').find(':selected').text(),
+            HrPersonId: $('#searchBox #HrPersonId').find(':selected').val(),
+            PeriodId: $('#searchBox #PeriodId').find(':selected').val(),
+            PyPayrollTypeId: $('#searchBox #PyPayrollTypeId').find(':selected').val()
+        };
+
+        const columns = [
+            {
+                "data": "result.data.id",
+                'render': function (data, type, row, meta) {
+                    return meta.row + meta.settings._iDisplayStart + 1;
+                }
+            },
+            {
+                "data": "OperationNumber",
+                "name": "OperationNumber",
+                "autoWidth": true
+            },
+            {
+                "data": "OperationDate",
+                "name": "OperationDate",
+                "autoWidth": true
+            },
+            {
+                "data": "PyPayrollTypeId",
+                "name": "PyPayrollTypeId",
+                "autoWidth": true,
+                "render": function (data, t, row) {
+                    return row.PyPayrollTypes.PyPayrollTypeName;
+                }
+            },
+            {
+                "data": "PeriodId",
+                "name": "PeriodId",
+                "autoWidth": true,
+                "render": function (d,t,row) {
+                    return lang === 'ar-EG' ? row.Periods.periodNameAr : row.Periods.periodNameEn;
+                }
+            },
+            {
+                "data": "Notes",
+                "name": "Notes",
+                "autoWidth": true
+            },
+            {
+                "data": null,
+                "sortable": false,
+                "render": function (data, type, row) {
+
+                    const _newStatus = 844;
+                    let formAction = `${$PrefixHostName}/${_mainController}/@nameof(PyPayrollOperationsController.PyPayrollOperationsForm)`;
+                    let DeleteAction = `${$PrefixHostName}/${_mainController}/@nameof(PyPayrollOperationsController.Delete)`;
+
+                    let btns = '';
+
+                    if (_permissions.includes(_postPermission) && row.StatusLkpId == _newStatus) {
+                        btns += `<a href="javascript:void(0)" onclick="ApprovalPyPayrollOperations(${row.Id})" title="@ERP.ResourcePack.Common.Settings.Post"><i class="mx-2 fas fa-check text-info"></i></a>`;
+                    }
+
+                    if (_permissions.includes(_postPermission) && row.StatusLkpId == 845) {
+                        btns += `<a href="javascript:void(0)" onclick="UnApprovedPyPayrollOperations(${row.Id})" title="@ERP.ResourcePack.Common.Settings.UnPost"><i class="mx-2 fas fa-check text-danger"></i></a>`;
+                    }
+
+                    if (_permissions.includes(_updatePermission) && row.StatusLkpId == _newStatus) {
+                        btns += `<a href="${$PrefixHostName}/PyPayrollOperations/FormView?id=${row.EncId}&t=@encUpdateTrigger"  title="@ERP.ResourcePack.Common.Settings.Edit"><i class="mx-2 fas fa-edit text-info"></i></a>`;
+                    }
+
+                    if (_permissions.includes(_postPermission) && row.StatusLkpId == 845) {
+                        btns += `<a href="javascript:void(0)" onclick="PostAjax(${row.Id})"  title="@ERP.ResourcePack.Common.Settings.BtnPost"><i class="mx-2 fas fa-check-circle text-info"></i></a>`;
+                    }
+
+                    btns += `<a href="${$PrefixHostName}/PyPayrollOperations/PayrollOperationPerson?id=${row.EncId}"  title="@ERP.ResourcePack.HR.PyPayrollOperations.PayRollPersons"><i class="mx-2 fas fa-eye text-info"></i></a>`;
+
+                    if (_permissions.includes(_deletePermission) && row.StatusLkpId == _newStatus) {
+                        btns += `<a href="javascript:void(0)" onclick="AjaxController.DeleteMainTableRow(${row.Id},'${DeleteAction}');"  title="@ERP.ResourcePack.Common.Settings.Delete"><i class="mx-2 fas fa-trash-alt text-danger"></i></a>`;
+                    }
+
+                    const _auditedPermission = '@PermissionNames.Pages_PyPayrollOperations_Audit';
+
+                    if (_permissions.includes(_auditedPermission)) {
+
+                        row.permission = _auditedPermission;
+
+                        btns += GetAuditedButton(row);
+                    }
+
+                    return btns;
+                }
+            }
+        ];
+
+        const dtObj = {
+            "processing": true,
+            "serverSide": true,
+            "filter": false,
+            "orderMulti": false,
+            "language": dataTableLang,
+            "ajax": {
+                "url": _loadDataUrl,
+                "type": "POST",
+                "datatype": "json",
+                "data": parms,
+                "complete": function () {}
+            },
+            "columns": columns,
+            "initComplete": function () {
+                $('[data-toggle="tooltip"]').tooltip();
+            }
+
+        };
+
+        _tblSelector.dataTable().fnDestroy();
+        _tblSelector.DataTable(dtObj).on('draw', function () { $('[data-toggle="tooltip"]').tooltip(); });
+
+    };
+
+    $('#searchBox #HrPersonId').select2(ReturnSelect2ObjectDefault(`${baseUrl}/HrPersons/GetPersonsSelect2`));
+    $('#searchBox #HrPersonNumber').select2(ReturnSelect2ObjectDefault(`${baseUrl}/HrPersons/GetPersonsNumbersSelect2`));
+    $('#searchBox #PyPayrollTypeId').select2(ReturnSelect2ObjectDefault(`${baseUrl}/PyPayrollTypes/GetPyPayrollTypesSelect2`));
+    $('#PyPayrollTypeId').select2(ReturnSelect2ObjectDefault(`${baseUrl}/PyPayrollTypes/GetPyPayrollTypesSelect2`));
+
+    $('#HrPersonId').select2({
+        ajax: {
+            url: `${baseUrl}/PyPayrollOperations/GetPersonsForPayRollSelect2`,
+            dataType: 'json',
+            headers: {
+                'Authorization': `Bearer ${$_token}`
+            },
+            data: function (params) {
+                params.page = params.page || 1;
+                return {
+                    pyPayrollTypeId: $('#PyPayrollTypeId').find(':selected').val(),
+                    pageSize: pageSize,
+                    pageNumber: params.page,
+                    searchTerm: params.term,
+                    lang: lang
+                };
+            },
+            processResults: function (data, params) {
+
+                params.page = params.page || 1;
+
+                return {
+                    results: data.result.results,
+                    pagination: {
+                        more: (params.page * pageSize) < data.result.total
+                    }
+                };
+            }
+        },
+        placeholder: select2Placeholder,
+        minimumInputLength: 0,
+        allowClear: true,
+        language: select2Lang
+    });
+
+    $('#JobLkpId').select2({
+        ajax: {
+            url: `${baseUrl}/PyPayrollOperations/GetPersonsJobsForPayRollSelect2`,
+            dataType: 'json',
+            headers: {
+                'Authorization': `Bearer ${$_token}`
+            },
+            data: function (params) {
+                params.page = params.page || 1;
+                return {
+                    pyPayrollTypeId: $('#PyPayrollTypeId').find(':selected').val(),
+                    pageSize: pageSize,
+                    pageNumber: params.page,
+                    searchTerm: params.term,
+                    lang: lang
+                };
+            },
+            processResults: function (data, params) {
+
+                params.page = params.page || 1;
+
+                return {
+                    results: data.result.results,
+                    pagination: {
+                        more: (params.page * pageSize) < data.result.total
+                    }
+                };
+            }
+        },
+        placeholder: select2Placeholder,
+        minimumInputLength: 0,
+        allowClear: true,
+        language: select2Lang
+    });
+
+    $('#searchBox #PeriodId').select2({
+        ajax: {
+            url: `${baseUrl}/GlPeriodsDetails/GetGlPeriodsSelect2`,
+            dataType: 'json',
+            headers: {
+                'Authorization': `Bearer ${$_token}`
+            },
+            data: function (params) {
+                params.page = params.page || 1;
+                return {
+                    pageSize: pageSize,
+                    pageNumber: params.page,
+                    searchTerm: params.term,
+                    lang: lang
+                };
+            },
+            processResults: function (data, params) {
+
+                params.page = params.page || 1;
+
+                return {
+                    results: data.result.results,
+                    pagination: {
+                        more: (params.page * pageSize) < data.result.total
+                    }
+                };
+            }
+        },
+        placeholder: select2Placeholder,
+        minimumInputLength: 0,
+        allowClear: true,
+        language: select2Lang,
+        templateSelection: function (data, container) {
+
+            if (data.altText) {
+                    $('#searchBox #StartDate').val(data.altText.split('__')[0]);
+                    $('#searchBox #EndDate').val(data.altText.split('__')[1]);
+            }
+
+            return data.text;
+        }
+    });
+
+    $('#PeriodId').select2({
+        ajax: {
+            url: `${baseUrl}/GlPeriodsDetails/GetGlPeriodsSelect2`,
+            dataType: 'json',
+            headers: {
+                'Authorization': `Bearer ${$_token}`
+            },
+            data: function (params) {
+                params.page = params.page || 1;
+                return {
+                    pageSize: pageSize,
+                    pageNumber: params.page,
+                    searchTerm: params.term,
+                    lang: lang
+                };
+            },
+            processResults: function (data, params) {
+
+                params.page = params.page || 1;
+
+                return {
+                    results: data.result.results,
+                    pagination: {
+                        more: (params.page * pageSize) < data.result.total
+                    }
+                };
+            }
+        },
+        placeholder: select2Placeholder,
+        minimumInputLength: 0,
+        allowClear: true,
+        language: select2Lang,
+        templateSelection: function (data, container) {
+
+            if (data.altText) {
+                $('#StartDate').val(data.altText.split('__')[0]);
+                $('#EndDate').val(data.altText.split('__')[1]);
+            }
+
+            return data.text;
+        }
+    });
+
+    $('#HrPersonId').on('change', function (e) {
+
+        if ($(this).find(':selected').val()) {
+            $('#JobLkpId').prop('disabled', true);
+        } else {
+            $('#JobLkpId').prop('disabled', false);
+        }
+
+    });
+
+    $('#JobLkpId').on('change', function (e) {
+
+        if ($(this).find(':selected').val()) {
+            $('#HrPersonId').prop('disabled', true);
+        } else {
+            $('#HrPersonId').prop('disabled', false);
+        }
+
+    });
+
+    const LoadPyPayrollOperationsPersonsData = function (id) {
+
+        $.ajax({
+            url: `${baseUrl}/PyPayrollOperations/GetAllPyPayrollOperationsPersons`,
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${$_token}`
+            },
+            data: {
+                id: id
+            }
+        }).done(function (data) {
+
+            bindPyPayrollOperationsPersonsTable(data.result);
+
+            let sumTotal = 0;
+
+            $.each(data.result, function (index,item) {
+                sumTotal += (+item.payrollNetValue);
+            });
+
+            $('#PayrollTotalValue').val(sumTotal);
+            $('#PayrollTotalValue').parent('.form-line').addClass('focused');
+        });
+    };
+
+    const bindPyPayrollOperationsPersonsTable = function (data) {
+
+        const columns = [
+            {
+                "data": "result.data.id",
+                'render': function (data, type, row, meta) {
+                    return meta.row + meta.settings._iDisplayStart + 1;
+                }
+            },
+            { 'data': 'hrPersonNumber' },
+            { 'data': 'fullName' },
+            { 'data': 'payrollNetValue' },
+            {
+                'data': null,
+                'searchable': false,
+                'ordering': false,
+                'sorting': false,
+                'render': function (d, t, row) {
+                    return `<td><a href="javascript:void(0)" onclick="return GetPayRollPersonsDetails(${row.id})"><i class="mx-2 fas fa-eye text-info"></i></a></td>`;
+                }
+            }
+        ];
+
+        const dtObj = {
+            data: data,
+            retrieve: true,
+            language: dataTableLang,
+            columns: columns,
+            drawCallback: function (c, v, b) { }
+        };
+
+        $('#tblPayrollPersons').dataTable().fnDestroy();
+        $('#tblPayrollPersons').DataTable(dtObj).on('draw', function () { $('[data-toggle="tooltip"]').tooltip(); });
+    };
+
+    const GetPayRollPersonsDetails = function (id) {
+
+        $('.page-loader-wrapper').css("display", "block");
+
+        $.ajax({
+            url: `${baseUrl}/PyPayrollOperations/GetAllPyPayrollOperationsPersonsDetails`,
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${$_token}`
+            },
+            data: {
+                id: id
+            }
+        }).done(function (data) {
+
+            $('#main-modal .modal-dialog').css('max-width','80%');
+
+            _mainModalBody.html($('#payroll-operations-persons-details').html());
+
+            SetPayRollPersonDetailsInput(data.result[0], data.result.map(z => +z.payrollNetValue));
+
+            bindPyPayrollOperationsPersonsDetailsTable(data.result);
+
+            CalcTotalEarnsAndDeductionAmounts(data.result.map(z => +z.earningAmount), data.result.map(z => +z.deductionAmount));
+
+            _mainModal.modal(_mainModalOprions);
+
+            $('.page-loader-wrapper').css("display", "none");
+
+        });
+    };
+
+    const SetPayRollPersonDetailsInput = function (data,netAmounts) {
+
+        if (data) {
+
+            $('#payroll-persons-details #Period').val(lang === 'ar-EG' ? data.periodNameAr : data.periodNameEn);
+            $('#payroll-persons-details #BankLkpId').val(lang === 'ar-EG' ? data.bankNameAr : data.bankNameEn);
+            $('#payroll-persons-details #HrPersonNumber').val(data.hrPersonNumber);
+            $('#payroll-persons-details #HrPersonName').val(data.hrPersonName);
+            $('#payroll-persons-details #PyPayrollTypeName').val(data.pyPayrollTypeName);
+            $('#payroll-persons-details #StartDate').val(data.startDate);
+            $('#payroll-persons-details #EndDate').val(data.endDate);
+            $('#payroll-persons-details #AccountNumber').val(data.accountNumber);
+            $('#payroll-persons-details #PayrollNetValue').val(netAmounts.reduce((a, b) => +a + +b, 0));
+
+            $('#payroll-persons-details input').parent('.form-line').addClass('focused');
+        }
+    };
+
+    const bindPyPayrollOperationsPersonsDetailsTable = function (data) {
+
+        const columns = [
+            {
+                "data": "result.data.id",
+                'render': function (data, type, row, meta) {
+                    return meta.row + meta.settings._iDisplayStart + 1;
+                }
+            },
+            { 'data': 'sourceName' },
+            { 'data': 'earningAmount' },
+            { 'data': 'deductionAmount' },
+        ];
+
+        const dtObj = {
+            data: data,
+            retrieve: true,
+            language: dataTableLang,
+            columns: columns,
+            drawCallback: function (c, v, b) { }
+        };
+
+        $('#tblPayrollPersonsDetails').dataTable().fnDestroy();
+        $('#tblPayrollPersonsDetails').DataTable(dtObj).on('draw', function () { $('[data-toggle="tooltip"]').tooltip(); });
+    };
+
+    const CalcTotalEarnsAndDeductionAmounts = function (earnsAmounts, deductionAmounts) {
+
+        $('#TotalEarning').text(earnsAmounts.reduce((x,y) => x +y ,0));
+        $('#TotalDeduction').text(deductionAmounts.reduce((x, y) => x + y, 0));
+
+    };
+
+
+    function printExc() {
+        $('.page-loader-wrapper').show();
+
+        const parmss = {
+            HrPersonNumber: $('#searchBox #HrPersonNumber').find(':selected').text(),
+            HrPersonId: $('#searchBox #HrPersonId').find(':selected').val(),
+            PeriodId: $('#searchBox #PeriodId').find(':selected').val(),
+            PyPayrollTypeId: $('#searchBox #PyPayrollTypeId').find(':selected').val(),
+            length: 1000000
+        };
+
+        const columns = [
+            {
+                "data": "result.data.id",
+                'render': function (data, type, row, meta) {
+                    return meta.row + meta.settings._iDisplayStart + 1;
+                }
+            },
+            {
+                "data": "OperationNumber",
+                "name": "OperationNumber",
+                "autoWidth": true
+            },
+            {
+                "data": "OperationDate",
+                "name": "OperationDate",
+                "autoWidth": true
+            },
+            {
+                "data": "PyPayrollTypeId",
+                "name": "PyPayrollTypeId",
+                "autoWidth": true,
+                "render": function (data, t, row) {
+                    return row.PyPayrollTypes.PyPayrollTypeName;
+                }
+            },
+            {
+                "data": "PeriodId",
+                "name": "PeriodId",
+                "autoWidth": true,
+                "render": function (d,t,row) {
+                    return lang === 'ar-EG' ? row.Periods.periodNameAr : row.Periods.periodNameEn;
+                }
+            },
+            {
+                "data": "Notes",
+                "name": "Notes",
+                "autoWidth": true
+            }
+        ];
+
+        const dtObj = {
+            "language": dataTableLang,
+            "dom": 'Bfrtip',
+            "buttons": [
+                {
+                    extend: 'excel',
+                    messageTop: `${$('[for="HrPersonNumber"]').text()}: ${(parmss.HrPersonNumber) ? parmss.HrPersonNumber : '--'}, ${$('[for="HrPersonId"]').text()}: ${(parmss.HrPersonId) ? parmss.HrPersonId : '--'}, ${$('[for="PeriodId"]').text()}: ${(parmss.PeriodId) ? parmss.PeriodId : '--'}, ${$('[for="PyPayrollTypeId"]').text()}: ${(parmss.PyPayrollTypeId) ? parmss.PyPayrollTypeId : '--'}`
+                },
+
+            ],
+            "ajax": {
+                "url": _loadDataUrl,
+                "type": "POST",
+                "datatype": "json",
+                "data": parmss,
+                "complete": function (d) {
+                    _tblLoader.hide();
+                }
+            },
+            "columns": columns,
+
+            "initComplete": function () {
+                $('#tblPyPayrollOperationsPrint_wrapper button.dt-button').click();
+            }
+        };
+
+        $('#tblPyPayrollOperationsPrint').dataTable().fnDestroy();
+        $('#tblPyPayrollOperationsPrint').DataTable(dtObj).on('buttons-processing', function (e, indicator) { if (!indicator) { $('.page-loader-wrapper').hide() } });
+
+
+    }
+
+</script>
+
+
+

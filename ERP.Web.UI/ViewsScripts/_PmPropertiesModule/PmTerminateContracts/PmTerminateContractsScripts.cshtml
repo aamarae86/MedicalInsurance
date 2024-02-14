@@ -1,0 +1,373 @@
+﻿@using ERP.Authorization;
+@using ERP.Web.UI.Controllers.PmPropertiesModule
+@using ERP.ResourcePack.Accounts
+@{
+    string permissionsStr = TempData["Permissions"].ToString();
+}
+@if (permissionsStr.Contains(PermissionNames.Pages_PmTerminateContracts_Post))
+{
+    <script>
+
+        const ProcContract = function (id, typeKey) {
+
+            bootbox.confirm({
+                message: _booBoxMessageDeny,
+                buttons: bootBoxDefaultBtns,
+                callback: function (result) {
+
+                    if (result) {
+
+                        const data = { id: id, lang: lang };
+
+                        $.ajax({
+                            url: `${baseUrl}/PmContract/${typeKey}Contract`,
+                            type: 'POST',
+                            data: JSON.stringify(data),
+                            headers:
+                            {
+                                'Content-Type': 'application/json',
+                                'Authorization': `Bearer ${$_token}`
+                            },
+                        }).done(function (response) {
+
+                            if (response.result.finalStatues == 'F') {
+                                toastr.error(response.result.reason);
+                            }
+                            else {
+
+                                toastr.success(response.result.reason);
+                                setTimeout(function () {
+                                    window.location.href = $PrefixHostName + '/PmTerminateContracts';
+                                }, 200);
+                            }
+
+                        }).fail(function (response) {
+                            toastr.error(response);
+                        });
+                    }
+
+                }
+            });
+
+        };
+
+    </script>
+}
+else
+{
+    <script>
+        const ProcContract = function (id) { };
+    </script>
+}
+<script>
+    const _mainController = "PmTerminateContracts"
+
+    $(function () {
+        LoadDataGrid();
+        $('#tblPmTerminateContractsPrint thead').html($('#tblPmTerminateContracts thead').html());
+        $('#tblPmTerminateContractsPrint thead tr :last-child').remove();
+        $('#PmTerminateContracts').addClass('active');
+    });
+
+    const _loadDataUrl = `${$PrefixHostName}/${_mainController}/@nameof(PmTerminateContractsController.LoadDataGrid)`;
+    const _tblSelector = $('#tblPmTerminateContracts');
+    const _tblLoader = $('#tblLoader');
+    const _txtTerminationNumber = $('#searchBox #TerminationNumber');
+    const _txtTerminationDate = $('#searchBox #TerminationDate');
+    const _txtPmContractId = $('#searchBox #PmContractIdSearch');
+    const _txtStatusLkpId = $('#searchBox #StatusLkpIdSearch');
+    const _txtPmTenantId = $('#searchBox #PmTenantIdSearch');
+
+    const _permissions = '@permissionsStr';
+    const _updatePermission = '@PermissionNames.Pages_PmTerminateContracts_Update';
+    const _deletePermission = '@PermissionNames.Pages_PmTerminateContracts_Delete';
+    const _postPermission = '@PermissionNames.Pages_PmTerminateContracts_Post';
+
+    var OnBegin = function (response) {
+    fireBtnLoader();
+    };
+
+    var OnSuccess = function (response) {
+
+        if (response.success) {
+
+            if (response.customRestResult.trigger === '@ERP.Front.Helpers.Enums.Common.FormTriggers.Insert') {
+
+                toastr.success(response.customRestResult.message);
+
+                LoadDataGrid();
+
+                _mainModal.modal('hide');
+
+            } else if (response.customRestResult.trigger === '@ERP.Front.Helpers.Enums.Common.FormTriggers.Update') {
+
+                LoadDataGrid();
+
+                _mainModal.modal('hide');
+
+                toastr.success(response.customRestResult.message);
+            }
+
+        } else {
+            toastr.error(response.customRestResult.message);
+        }
+
+    };
+
+    var OnComplete = function (response) {
+        downBtnLoader();
+    };
+
+    var OnFailure = function (response) {
+        toastr.error(response);
+        console.log(response);
+        downBtnLoader();
+    };
+
+    const LoadDataGrid = function () {
+
+        $('#tblLoader').show();
+
+        const parms = {
+            TerminationNumber: _txtTerminationNumber.val(),
+            TerminationDate: _txtTerminationDate.val(),
+            PmContractId: _txtPmContractId.val(),
+            StatusLkpId: _txtStatusLkpId.val(),
+            PmTenantId: _txtPmTenantId.val()
+        };
+
+        const columns = [
+            {
+                "data": "result.data.id",
+                'render': function (data, type, row, meta) {
+                    return meta.row + meta.settings._iDisplayStart + 1;
+                }
+            },
+            {
+                "data": "TerminationNumber",
+                "name": "TerminationNumber",
+                "autoWidth": true
+            },
+            {
+                "data": "TerminationDate",
+                "name": "TerminationDate",
+                "autoWidth": true
+            }
+            ,
+            {
+                "data": null,
+                "autoWidth": true,
+                "render": function (d, t, row) {
+                    return row.PmContract ? row.PmContract.ContractNumber : '';
+                }
+            },
+            {
+                "data": null,
+                "autoWidth": true,
+                "render": function (d, t, row) {
+                    if (row.PmContract == null || row.PmContract.PmTenants == null) return '';
+
+                    return lang === 'ar-EG' ? row.PmContract.PmTenants.TenantNameAr : row.PmContract.PmTenants.TenantNameEn;
+                }
+            },
+            {
+                "data": null,
+                "autoWidth": true,
+                "render": function (d, t, row) {
+
+                    var rentAmt = row.PmContract ? $.fn.dataTable.render.number(',', '.', 2).display(row.PmContract.RentAmount) : 0
+                    return rentAmt;
+                }
+            },
+            {
+                "data": null,
+                "autoWidth": true,
+                "render": function (d, t, row) {
+                    return row.PmContract ? row.PmContract.ContractStartDate : '';
+                }
+            },
+            {
+                "data": null,
+                "autoWidth": true,
+                "render": function (d, t, row) {
+                    return row.PmContract ? row.PmContract.ContractEndDate : '';
+                }
+            },
+
+            {
+                "data": null,
+                "sortable": false,
+                "render": function (data, type, row) {
+
+                    let formAction = `${$PrefixHostName}/${_mainController}/@nameof(PmTerminateContractsController.PmTerminateContractsForm)`;
+                    let DeleteAction = `${$PrefixHostName}/${_mainController}/@nameof(PmTerminateContractsController.Delete)`;
+
+                    let formTitle = '@ArCustomers.PmTerminateContracts';
+                    let btns = '';
+
+                    if (_permissions.includes(_updatePermission) && row.StatusLkpId == @Convert.ToInt64(ERP.Front.Helpers.Enums.Common.PmTerminateContracts.New)) {
+                        btns += `<a href="javascript:void(0)" onclick="AjaxController.GetFormModal(${row.Id},'@ERP.Front.Helpers.Enums.Common.FormTriggers.Update','${formAction}','${formTitle}');" title="@ERP.ResourcePack.Common.Settings.Edit"><i class="mx-2 fas fa-edit text-info"></i></a>`;
+                    }
+
+                    btns += `<a href="javascript:void(0)" onclick="AjaxController.GetFormModal(${row.Id},'@ERP.Front.Helpers.Enums.Common.FormTriggers.Show','${formAction}','${formTitle}');" title="@ERP.ResourcePack.Common.Settings.Show"><i class="mx-2 fas fa-eye text-info"></i></a>`;
+
+                    if (_permissions.includes(_deletePermission) && row.StatusLkpId == @Convert.ToInt64(ERP.Front.Helpers.Enums.Common.PmTerminateContracts.New)) {
+                        btns += `<a href="javascript:void(0)" onclick="AjaxController.DeleteMainTableRow(${row.Id},'${DeleteAction}');" title="@ERP.ResourcePack.Common.Settings.Delete"><i class="mx-2 fas fa-trash-alt text-danger"></i></a>`;
+                    }
+
+                    if (_permissions.includes(_postPermission) && row.StatusLkpId == @Convert.ToInt64(ERP.Front.Helpers.Enums.Common.PmTerminateContracts.New)) {
+                        btns += `<a title="@ERP.ResourcePack.Common.Settings.ExpireContract" href="javascript:void(0)"  onclick="return ProcContract(${row.Id},'Expire')"><i class="mx-2 fas fa-eject text-danger"></i></a></td>`;
+                    }
+
+                    const _auditedPermission = '@PermissionNames.Pages_PmTerminateContracts_Audit';
+
+                    if (_permissions.includes(_auditedPermission)) {
+
+                        row.permission = _auditedPermission;
+
+                        btns += GetAuditedButton(row);
+                    }
+
+                    return btns;
+                }
+            }
+        ];
+
+        const dtObj = {
+            "processing": true,
+            "serverSide": true,
+            "filter": false,
+            "orderMulti": false,
+            "language": dataTableLang,
+            "ajax": {
+                "url": _loadDataUrl,
+                "type": "POST",
+                "datatype": "json",
+                "data": parms,
+                "complete": function () {
+                    _tblLoader.hide();
+                }
+            },
+            "columns": columns,
+            "initComplete": function () {
+                $('[data-toggle="tooltip"]').tooltip();
+            }
+        };
+
+        _tblSelector.dataTable().fnDestroy();
+        _tblSelector.DataTable(dtObj).on('draw', function () { $('[data-toggle="tooltip"]').tooltip(); });
+
+    };
+
+    $('#searchBox #StatusLkpIdSearch').select2(ReturnSelect2ObjectForLkpsTypes('@ERP.Front.Helpers.Enums.Common.FndLkpsTypes.PmTerminateContractsPost.ToString()'))
+    $('#searchBox #PmContractIdSearch').select2(ReturnSelect2ObjectDefault(`${baseUrl}/PmContract/GetPmContractSelect2`))
+    $('#searchBox #PmTenantIdSearch').select2(ReturnSelect2ObjectDefault(`${baseUrl}/PmTenants/GetPmTenantsSelect2`))
+
+    function printExc() {
+        $('.page-loader-wrapper').show();
+
+        const parmss = {
+            TerminationNumber: _txtTerminationNumber.val(),
+            TerminationDate: _txtTerminationDate.val(),
+            PmContractId: _txtPmContractId.val(),
+            StatusLkpId: _txtStatusLkpId.val(),
+            PmTenantId: _txtPmTenantId.val(),
+            length: 1000000
+        };
+
+        const columns = [
+            {
+                "data": "result.data.id",
+                'render': function (data, type, row, meta) {
+                    return meta.row + meta.settings._iDisplayStart + 1;
+                }
+            },
+            {
+                "data": "TerminationNumber",
+                "name": "TerminationNumber",
+                "autoWidth": true
+            },
+            {
+                "data": "TerminationDate",
+                "name": "TerminationDate",
+                "autoWidth": true
+            }
+            ,
+            {
+                "data": null,
+                "autoWidth": true,
+                "render": function (d, t, row) {
+                    return row.PmContract ? row.PmContract.ContractNumber : '';
+                }
+            },
+            {
+                "data": null,
+                "autoWidth": true,
+                "render": function (d, t, row) {
+                    if (row.PmContract == null || row.PmContract.PmTenants == null) return '';
+
+                    return lang === 'ar-EG' ? row.PmContract.PmTenants.TenantNameAr : row.PmContract.PmTenants.TenantNameAr;
+                }
+            },
+            {
+                "data": null,
+                "autoWidth": true,
+                "render": function (d, t, row) {
+
+                    var rentAmt = row.PmContract ? $.fn.dataTable.render.number(',', '.', 2).display(row.PmContract.RentAmount) : 0
+
+
+                    return rentAmt;
+                }
+            },
+            {
+                "data": null,
+                "autoWidth": true,
+                "render": function (d, t, row) {
+                    return row.PmContract ? row.PmContract.ContractStartDate : '';
+                }
+            },
+            {
+                "data": null,
+                "autoWidth": true,
+                "render": function (d, t, row) {
+                    return row.PmContract ? row.PmContract.ContractEndDate : '';
+                }
+            }
+        ];
+
+        const dtObj = {
+            "language": dataTableLang,
+            "dom": 'Bfrtip',
+            "buttons": [
+                {
+                    extend: 'excel',
+                    messageTop: `${$('#TerminationNumber').siblings().text()}: ${(parmss.TerminationNumber) ? parmss.TerminationNumber : '--'}, ${$('#TerminationDate').siblings().text()}: ${(parmss.TerminationDate) ? parmss.TerminationDate : '--'}, ${$('[for="PmContractId"]').text()}: ${(parmss.PmContractId) ? parmss.PmContractId : '--'}, ${$('[for="StatusLkpId"]').text()}: ${(parmss.StatusLkpId) ? parmss.StatusLkpId : '--'}, ${$('[for="PmTenantId"]').text()}: ${(parmss.PmTenantId) ? parmss.PmTenantId : '--'}`
+                },
+
+            ],
+            "ajax": {
+                "url": _loadDataUrl,
+                "type": "POST",
+                "datatype": "json",
+                "data": parmss,
+                "complete": function (d) {
+                    _tblLoader.hide();
+                }
+            },
+            "columns": columns,
+
+            "initComplete": function () {
+                $('#tblPmTerminateContractsPrint_wrapper button.dt-button').click();
+                $('#tblPmTerminateContractsPrint_wrapper').parent().addClass('d-none');
+
+            }
+        };
+
+        $('#tblPmTerminateContractsPrint').dataTable().fnDestroy();
+        $('#tblPmTerminateContractsPrint').DataTable(dtObj).on('buttons-processing', function (e, indicator) { if (!indicator) { $('.page-loader-wrapper').hide() } });
+
+
+    }
+
+</script>

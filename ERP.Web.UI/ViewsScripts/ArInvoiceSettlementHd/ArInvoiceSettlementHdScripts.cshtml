@@ -1,0 +1,889 @@
+﻿
+@using ERP.Web.UI.Controllers.AccountsExtend
+@using ERP.Authorization;
+@using ERP.Web.UI.Models.ViewModels.AccountsExtend
+@model ArInvoiceSettlementHdVM
+@{
+    string lang = Request.Cookies["Lang"] == null ? "ar-EG" : Request.Cookies["Lang"].Value.ToString();
+    string permissionsStr = TempData["Permissions"].ToString();
+    string encUpdateTrigger = ERP.Front.Helpers.Enums.Common.EncUpdate;
+    string encInsertTrigger = ERP.Front.Helpers.Enums.Common.EncInsert;
+    string encShowTrigger = ERP.Front.Helpers.Enums.Common.EncShow;
+    //string ExcessStatus = (Model == null || Model.FndExcessStatusLkp == null) ? string.Empty : (lang == "ar-EG" ? Model.FndExcessStatusLkp.NameAr : Model.FndExcessStatusLkp.NameEn);
+    //lang == "ar-EG" ? (Model == null ? "جديد" : Model.FndExcessStatusLkp.NameAr) : (Model == null ? "New" : Model.FndExcessStatusLkp.NameEn);
+}
+
+<script>
+    const _mainController = "ArInvoiceSettlementHd", _apiAppService = "ArInvoiceSettlementHd"
+
+    $(function () {
+        LoadDataGrid();
+        $('#ArInvoiceSettlementHdMenu').addClass('active');
+        $('#StatusLkpId').parent('.form-line').addClass('focused');
+    });
+
+    const _loadDataUrl = `${$PrefixHostName}/${_mainController}/@nameof(ArInvoiceSettlementHdController.LoadDataGrid)`;
+    const _tblSelector = $('#tblArInvoiceSettlementHd');
+    const _tblLoader = $('#tblLoader');
+
+    const _permissions = '@permissionsStr';
+    const _updatePermission = '@PermissionNames.Pages_ArInvoiceSettlementHd_Update';
+    const _deletePermission = '@PermissionNames.Pages_ArInvoiceSettlementHd_Delete';
+    const _postPermission  = '@PermissionNames.Pages_ArInvoiceSettlementHd_Post';
+    var OnBegin = function (response) {
+        fireBtnLoader();
+    };
+
+    var OnSuccess = function (response) {
+
+        $('#btnSubmition').prop('disabled', false);
+
+        if (response.success) {
+
+            if (response.customRestResult.trigger === '@ERP.Front.Helpers.Enums.Common.FormTriggers.Insert') {
+
+                toastr.success(response.customRestResult.message);
+
+                setTimeout(function () {
+                    window.location.href = $PrefixHostName + '/ArInvoiceSettlementHd';
+                }, 200);
+
+            }
+            else if (response.customRestResult.trigger === '@ERP.Front.Helpers.Enums.Common.FormTriggers.Update') {
+
+                toastr.success(response.customRestResult.message);
+
+                setTimeout(function () {
+                    window.location.href = $PrefixHostName + '/ArInvoiceSettlementHd';
+                }, 200);
+
+            }
+            else {
+                toastr.error(response.customRestResult.message);
+            }
+
+        } else {
+            toastr.error(response.error.message);
+        }
+
+    };
+
+    var OnComplete = function (response) {
+        downBtnLoader();
+    };
+
+    var OnFailure = function (response) {
+        toastr.error(response);
+        $('#btnSubmition').prop('disabled', false);
+    };
+
+
+
+    const LoadDataGrid = function () {
+
+        const params = {
+            //SettlementNumber
+            //StatusLkpId #
+            //SettlementAmount
+            //SettlementDate
+            //ArCustomerId #
+            SettlementNumber: $('#searchBox #SettlementNumber').val(),
+            StatusLkpId: $('#searchBox #StatusLkpId').find(':selected').val(),
+            SettlementAmount: $('#searchBox #SettlementAmount').val(),
+            SettlementDate: $('#searchBox #SettlementDate').val(),
+            ArCustomerId: $('#searchBox #ArCustomerId').find(':selected').val(),
+        };
+        //SettlementNumber
+        //StatusLkpId
+        //SettlementAmount
+        //SettlementDate
+        //ArCustomerId
+        const columns = [
+            {
+                "data": "result.data.id",
+                'render': function (data, type, row, meta) {
+                    return meta.row + meta.settings._iDisplayStart + 1;
+                }
+            },
+            {
+                "data": "SettlementNumber",
+                "name": "SettlementNumber",
+                "autoWidth": true
+            },
+            {
+                "data": null,
+                "autoWidth": true,
+                "render": function (d, t, row) {
+                    return row.FndStatusLkp ? (lang === 'ar-EG' ? row.FndStatusLkp.NameAr : row.FndStatusLkp.NameEn) : '';
+                }
+            },
+            {
+                "data": "SettlementAmount",
+                "name": "SettlementAmount",
+                "render": $.fn.dataTable.render.number(',', '.', 2),
+                "autoWidth": true
+            },
+            {
+                "data": "SettlementDate",
+                "name": "SettlementDate",
+                "autoWidth": true
+            },
+            {
+                "data": null,
+                "autoWidth": true,
+                "render": function (d, t, row) {
+                    return row.ArCustomers ? (lang === 'ar-EG' ? row.ArCustomers.CustomerNameAr : row.ArCustomers.CustomerNameEn) : '';
+                }
+            },
+            {
+                "data": null,
+                "sortable": false,
+                "render": function (data, type, row) {
+
+                    let formAction = `${$PrefixHostName}/${_mainController}/@nameof(ArInvoiceSettlementHdController.ArInvoiceSettlementHdForm)`;
+                    let DeleteAction = `${$PrefixHostName}/${_mainController}/@nameof(ArInvoiceSettlementHdController.Delete)`;
+
+                    let formTitle = '@ERP.ResourcePack.AccountsExtend.ArInvoiceSettlementHd.Title';
+                    let btns = '';
+                    if (_permissions.includes(_postPermission) & row.StatusLkpId == '11575') {
+                        btns += `<a href="javascript:void(0)" onclick="PostAjax(${row.Id})"  title="@ERP.ResourcePack.Common.Settings.Post"><i class="mx-2 fas fa-check-circle text-info"></i></a>`;
+                    }
+                    if (_permissions.includes(_updatePermission) & row.StatusLkpId == '11575') {
+                        btns += `<a href="${$PrefixHostName}/ArInvoiceSettlementHd/FormView?id=${row.EncId}&t=@encUpdateTrigger" title="@ERP.ResourcePack.Common.Settings.Edit"><i class="mx-2 fas fa-edit text-info"></i></a>`;
+                    }
+
+                    btns += `<a href="${$PrefixHostName}/ArInvoiceSettlementHd/FormView?id=${row.EncId}&t=@encShowTrigger" title="@ERP.ResourcePack.Common.Settings.Show"><i class="mx-2 fas fa-eye text-info"></i></a>`;
+
+                    if (_permissions.includes(_deletePermission) & row.StatusLkpId == '11575') {
+                        btns += `<a href="javascript:void(0)" onclick="AjaxController.DeleteMainTableRow(${row.Id},'${DeleteAction}');" title="@ERP.ResourcePack.Common.Settings.Delete"><i class="mx-2 fas fa-trash-alt text-danger"></i></a>`;
+                    }
+
+                    const _auditedPermission = '@PermissionNames.Pages_ArInvoiceSettlementHd_Audit';
+
+                    if (_permissions.includes(_auditedPermission)) {
+
+                        row.permission = _auditedPermission;
+
+                        btns += GetAuditedButton(row);
+                    }
+
+                    return btns;
+                }
+            }
+        ];
+
+        const dtObj = {
+            "processing": true,
+            "serverSide": true,
+            "filter": false,
+            "orderMulti": false,
+            "language": dataTableLang,
+            "ajax": {
+                "url": _loadDataUrl,
+                "type": "POST",
+                "datatype": "json",
+                "data": params,
+                "complete": function () {}
+            },
+            "columns": columns,
+            "initComplete": function () {
+                $('[data-toggle="tooltip"]').tooltip();
+            }
+
+        };
+
+        _tblSelector.dataTable().fnDestroy();
+        _tblSelector.DataTable(dtObj).on('draw', function () { $('[data-toggle="tooltip"]').tooltip(); });
+
+        setTimeout(function () {
+            $(".sorting_1").removeAttr('colspan');
+        }, 500);
+    };
+
+    $('#btnSubmition').on('click', function () {
+
+         if ($('#mainForm').valid()) {
+        //if (true) {
+            //$(this).prop('disabled', true);
+
+            $('#mainForm').submit();
+
+        } else {
+            $(this).prop('disabled', false);
+        }
+
+    });
+
+
+    const PostAjax = function (id) {
+
+        const data = {
+            id: id,
+            lang: lang,
+            userId: 0
+        };
+
+        $.ajax({
+            url: `${baseUrl}/ArInvoiceSettlementHd/PostArInvoiceSettlement`,
+            type: 'POST',
+            data: JSON.stringify(data),
+            headers:
+            {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${$_token}`
+            },
+        }).done(function (response) {
+            console.log(response);
+            if (response.result.finalStatues == 'F') {
+                toastr.warning(response.result.reason);
+            }
+            else {
+                toastr.success(response.result.reason);
+                if (formView) {
+
+                    setTimeout(function () {
+                        window.location.href = $PrefixHostName + '/ArInvoiceSettlementHd';
+                    }, 100);
+
+                } else {
+                    LoadDataGrid();
+                }
+            }
+        }).fail(function (response) {
+            toastr.error(response);
+        });
+    };
+
+    $('#searchBox #StatusLkpId').select2(ReturnSelect2ObjectForLkpsTypes('@ERP.Front.Helpers.Enums.Common.FndLkpsTypes.ArInvoiceSettlementHdStatus.ToString()'));
+    $('#ArCustomerId').select2(ReturnSelect2ObjectDefault(`${baseUrl}/ArCustomers/GetArCustomersSelect2`));
+    $('#DrSourceLkpId').select2(ReturnSelect2ObjectForLkpsTypes('@ERP.Front.Helpers.Enums.Common.FndLkpsTypes.ArInvoiceSettlementDrSource.ToString()'));
+    $('#CrSourceLkpId').select2(ReturnSelect2ObjectForLkpsTypes('@ERP.Front.Helpers.Enums.Common.FndLkpsTypes.ArInvoiceSettlementCrSource.ToString()'));
+    $('#ArCustomerId').on('select2:unselect', function (e) {
+        ClearAll();
+    });
+
+
+
+    $('#ArCustomerId').on('select2:select', function (data) {
+        ClearAll();
+        GetOutStanding($('#ArCustomerId').find(':selected').val());
+       
+    });
+    $('#DrSourceLkpId').on('select2:unselect', function (e) {
+        $(`#DrSourceId`).append($("<option selected='selected'></option > ")
+            .val('').text('')).trigger('change'); 
+        $('#DrDate').val('');
+        $('#DrAmount').val('');
+        $('#DrJobCard').val('');
+    });
+    $('#DrSourceLkpId').on('select2:select', function (data) {
+        $(`#DrSourceId`).append($("<option selected='selected'></option > ")
+            .val('').text('')).trigger('change');
+        $('#DrDate').val('');
+        $('#DrAmount').val('');
+        $('#DrJobCard').val('');
+        debugger;
+        if ($('#ArCustomerId').find(':selected').val()) {
+            if ($('#DrSourceLkpId').find(':selected').val() == '11573') {
+                Dr11573URL = `${baseUrl}/GlJeIntegrationHeaders/GetGlJeIntegration_Headers_Line_Dr_NumSelect2?ArCustomerId=` + $('#ArCustomerId').find(':selected').val();
+                $('#DrSourceId').select2(ReturnSelect2ObjectDefault(Dr11573URL));
+            } else if ($('#DrSourceLkpId').find(':selected').val() == '11574') {
+                Dr11574URL = `${baseUrl}/ArInvoiceHd/GetArInvoiceHd_ArInvoiceTr_NumSelect2?ArCustomerId=` + $('#ArCustomerId').find(':selected').val();
+                $('#DrSourceId').select2(ReturnSelect2ObjectDefault(Dr11574URL));
+            }
+            else {
+               /* sales*/
+                Dr31629URL = `${baseUrl}/IvSaleHd/GetIvSaleHd_IvSaleTr_NumSelect2?ArCustomerId=` + $('#ArCustomerId').find(':selected').val();
+                $('#DrSourceId').select2(ReturnSelect2ObjectDefault(Dr31629URL));
+            }
+        } else {
+            Dr11574URL = `${baseUrl}/ArInvoiceHd/GetArInvoiceHd_ArInvoiceTr_NumSelect2?ArCustomerId=0`;
+            $('#DrSourceId').select2(ReturnSelect2ObjectDefault(Dr11574URL));
+        }
+
+
+    });
+    $('#CrSourceLkpId').on('select2:unselect', function (e) {
+        debugger;
+        $(`#CrSourceId`).append($("<option selected='selected'></option > ")
+            .val('').text('')).trigger('change');
+        $('#CrDate').val('');
+        $('#CrAmount').val('');
+    });
+    $('#CrSourceLkpId').on('select2:select', function (data) {
+        debugger;
+        $(`#CrSourceId`).append($("<option selected='selected'></option > ")
+            .val('').text('')).trigger('change');
+        $('#CrDate').val('');
+        $('#CrAmount').val('');
+        if ($('#ArCustomerId').find(':selected').val()) {
+            if ($('#CrSourceLkpId').find(':selected').val() == '11571') {
+                Cr11571URL = `${baseUrl}/GlJeIntegrationHeaders/GetGlJeIntegration_Headers_Line_Cr_NumSelect2?ArCustomerId=` + $('#ArCustomerId').find(':selected').val();
+                $('#CrSourceId').select2(ReturnSelect2ObjectDefault(Cr11571URL));
+            } else if ($('#CrSourceLkpId').find(':selected').val() == '11572'){
+                Cr11572URL = `${baseUrl}/ArReceipts/GetArReceipts_ReceiptsOnAccount_NumSelect2?ArCustomerId=` + $('#ArCustomerId').find(':selected').val();
+                $('#CrSourceId').select2(ReturnSelect2ObjectDefault(Cr11572URL));
+            }
+            else{
+                Cr31630URL = `${baseUrl}/IvReturnSaleHd/GetReturnSale_NumSelect2?ArCustomerId=` + $('#ArCustomerId').find(':selected').val();
+                $('#CrSourceId').select2(ReturnSelect2ObjectDefault(Cr31630URL));
+
+            }
+        }
+        else {
+            Cr11572URL = `${baseUrl}/ArReceipts/GetArReceipts_ReceiptsOnAccount_NumSelect2?ArCustomerId=0`;
+            $('#CrSourceId').select2(ReturnSelect2ObjectDefault(Cr11572URL));
+        }
+    });
+    $('#CrSourceId').on('select2:unselect', function (e) {
+        $('#CrDate').val('');
+        $('#CrAmount').val('');
+    });
+    $('#CrSourceId').on('select2:select', function (data) {
+        debugger
+        $('#CrDate').val('');
+        $('#CrAmount').val('');
+        if (data.params.data.altText) {
+
+            const jsonData = JSON.parse(data.params.data.altText);
+            $('#CrDate').val(jsonData.Date);
+            $('#CrAmount').val(jsonData.Amount);
+        }
+
+    });
+    $('#DrSourceId').on('select2:unselect', function (e) {
+        $('#DrDate').val('');
+        $('#DrAmount').val('');
+        $('#DrJobCard').val('');
+    });
+    $('#DrSourceId').on('select2:select', function (data) {
+        $('#DrDate').val('');
+        $('#DrAmount').val('');
+        $('#DrJobCard').val('');
+        if (data.params.data.altText) {
+            const jsonData = JSON.parse(data.params.data.altText);
+            $('#DrDate').val(jsonData.Date);
+            $('#DrAmount').val(jsonData.Amount);
+            $('#DrJobCard').val(jsonData.SourceNo);
+        }
+
+    });
+
+    let Cr11571URL = 'GlJeIntegrationHeaders/GetGlJeIntegration_Headers_Line_Cr_NumSelect2?ArCustomerId=0';
+    let Cr11572URL = 'ArReceipts/GetArReceipts_ReceiptsOnAccount_NumSelect2?ArCustomerId=0';
+    let Cr31630URL = 'IvReturnSaleHd/GetReturnSale_NumSelect2?ArCustomerId=0';
+    let CrURL = `${baseUrl}/ArReceipts/GetArReceipts_ReceiptsOnAccount_NumSelect2?ArCustomerId=0`;
+    $('#CrSourceId').select2(ReturnSelect2ObjectDefault(CrURL));
+
+    let Dr31629URL = 'IvSaleHd/GetIvSaleHd_IvSaleTr_NumSelect2?ArCustomerId=0';
+    let Dr11573URL = 'GlJeIntegrationHeaders/GetGlJeIntegration_Headers_Line_Dr_NumSelect2?ArCustomerId=0';
+    let Cr11574URL = 'ArInvoiceHd / GetArInvoiceHd_ArInvoiceTr_NumSelect2?ArCustomerId=0';
+    let DrURL = `${baseUrl}/ArInvoiceHd/GetArInvoiceHd_ArInvoiceTr_NumSelect2?ArCustomerId=0`;
+    $('#DrSourceId').select2(ReturnSelect2ObjectDefault(DrURL));
+    const GetOutStanding = function (id) {
+
+        $.ajax({
+            url: `${baseUrl}/ArInvoiceSettlementHd/GetOutstanding`,
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${$_token}`
+            },
+            data: {
+                coustumerId: id
+            }
+        }).done(function (data) {
+
+            console.log(data.result);
+            $('#OutStanding').val(data.result);
+        });
+
+    };
+
+    const ClearAll = function () {
+        $(`#DrSourceLkpId`).append($("<option selected='selected'></option>")
+            .val('').text('')).trigger('change');
+        $(`#CrSourceLkpId`).append($("<option selected='selected'></option>")
+            .val('').text('')).trigger('change');
+        $(`#DrSourceId`).append($("<option selected='selected'></option > ")
+            .val('').text('')).trigger('change');
+        $(`#CrSourceId`).append($("<option selected='selected'></option > ")
+            .val('').text('')).trigger('change');
+        $('#CrDate').val('');
+        $('#CrAmount').val('');
+        $('#DrDate').val('');
+        $('#DrAmount').val('');
+        $('#DrJobCard').val('');
+    }
+
+</script>
+
+
+<script name="RecepitsAndJournales">
+
+    const _tblRecepitsAndJournalesDetailSelector = $('#tblRecepitsAndJournales'), _listRecepitsAndJournalesDetail = $('#ArInvoiceSettlementCrStr');
+
+    let _RecepitsAndJournalesDetail = [], updatedRecepitsAndJournalesDetailsRow, tblCounterRecepitsAndJournalesIndex = 0 ;
+
+    const fillRecepitsAndJournalesDetail = function () {
+
+         if (validatorRecepitsAndJournales() === false) return;
+
+        const current = {
+            index: ++tblCounterRecepitsAndJournalesIndex,
+            sourceLkpId: $('#CrSourceLkpId').find(':selected').val(),
+            crSourceLkp: $('#CrSourceLkpId').find(':selected').text(),
+            sourceId: $('#CrSourceId').find(':selected').val(),
+            crSource: $('#CrSourceId').find(':selected').text(),
+            amount: $('#CrAmount').val(),
+            crDate: $('#CrDate').val(),
+            rowStatus: NewStatus,
+            id: 0
+        };
+
+        return current;
+    };
+
+    const AddRecepitsAndJournalesDetails = function () {
+
+        const current = fillRecepitsAndJournalesDetail();
+
+        if (current === undefined) return;
+
+        if (_RecepitsAndJournalesDetail.find(x =>  x.sourceId === current.sourceId )) {
+
+            toastr.warning('@ERP.ResourcePack.AccountsExtend.ArInvoiceSettlementHd.Doublicated');
+            return false;
+        }
+
+        _RecepitsAndJournalesDetail.push(current);
+
+        _listRecepitsAndJournalesDetail.val(JSON.stringify(_RecepitsAndJournalesDetail));
+
+        bindRecepitsAndJournalesDetailTable();
+
+        clearFormRecepitsAndJournalesAdding();
+    };
+
+    const bindRecepitsAndJournalesDetailTable = function () {
+
+        const detailArr = _RecepitsAndJournalesDetail.filter(z => z.rowStatus !== DeletedStatus);
+        var TotalAmt = 0;
+        $.each(detailArr, function (i, item) {            
+            TotalAmt += Number(item.amount);
+        });
+
+        const columns = [
+            { 'data': 'index' },
+            { 'data': 'crSourceLkp' },
+            { 'data': 'crSource' },
+            { 'data': 'crDate' },
+            {
+                'data': 'amount',
+                "render": $.fn.dataTable.render.number(',', '.', 2)
+
+            },
+            {
+                'data': null,
+                'searchable': false,
+                'ordering': false,
+                'sorting': false,
+                'render': function (d, t, row) {
+
+                    let rows = '';
+
+                    if (primaryEntityKeyId === 0 || trigger !== '@ERP.Front.Helpers.Enums.Common.FormTriggers.Show.ToString()') {
+
+                        rows += `<td><a href="javascript:void(0)" onclick="return DeleteRecepitsAndJournalesDetail(${row.index})"><i class="mx-2 fas fa-trash-alt text-danger"></i></a>`;
+                        rows += `<a href="javascript:void(0)" onclick="return GetRecepitsAndJournalesDetailRow(${row.index})"><i class="mx-2 fas fa-edit text-success"></i></a></td>`;
+                    }
+                    else {
+                        rows += '<td></td>';
+                    }
+
+                    return rows;
+                }
+            }
+        ];
+
+        const dtObj = {
+            data: detailArr,
+            retrieve: true,
+            language: dataTableLang,
+            columns: columns,
+            drawCallback: function (c, v, b) {}
+        };
+
+        setTimeout(function () {
+
+            _tblRecepitsAndJournalesDetailSelector.dataTable().fnDestroy();
+            _tblRecepitsAndJournalesDetailSelector.DataTable(dtObj).on('draw', function () { $('[data-toggle="tooltip"]').tooltip(); });
+             
+            var totalrow = '<tfoot><tr ><td style = "text-align: right;" colspan="4">Total:</td><td style="text-align: left;">' + TotalAmt.toLocaleString(undefined, optionsNumFormat)+'</td></tr></tfoot>';
+            $(_tblRecepitsAndJournalesDetailSelector).find('tfoot').replaceWith(totalrow);
+
+        }, 100);
+    };
+
+    const DeleteRecepitsAndJournalesDetail = function (index)  {
+
+        const current = _RecepitsAndJournalesDetail.find(z => z.index === index);
+
+        const indexOfCurrent = _RecepitsAndJournalesDetail.indexOf(current);
+
+        if (!current.arInvoiceSettlementCrId) {
+
+           _RecepitsAndJournalesDetail.splice(indexOfCurrent, 1);
+
+        } else {
+
+            current.rowStatus = DeletedStatus;
+
+           _RecepitsAndJournalesDetail.splice(indexOfCurrent, 1,current);
+        }
+
+        bindRecepitsAndJournalesDetailTable();
+
+        _listRecepitsAndJournalesDetail.val(_RecepitsAndJournalesDetail.length === 0 ? '' : JSON.stringify(_RecepitsAndJournalesDetail));
+
+    };
+
+    const LoadRecepitsAndJournalesDetailData = function () {
+
+        $.ajax({
+            url: `${baseUrl}/ArInvoiceSettlementHd/GetAllArInvoiceSettlementCrs`,
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${$_token}`
+            },
+            data: {
+                invoiceSettlementHdId: primaryEntityKeyId,
+                lang : '@lang'
+            }
+        }).done(function (data) {
+
+            _RecepitsAndJournalesDetail = [...data.result];
+
+            tblCounterRecepitsAndJournalesIndex = 0;
+
+            $.each(_RecepitsAndJournalesDetail, function (i, item) {
+                item.index = ++tblCounterRecepitsAndJournalesIndex;
+            });
+
+            bindRecepitsAndJournalesDetailTable();
+
+            _listRecepitsAndJournalesDetail.val(JSON.stringify(_RecepitsAndJournalesDetail));
+
+        });
+
+    };
+
+    const GetRecepitsAndJournalesDetailRow = function (tblIndex) {
+
+        clearFormRecepitsAndJournalesAdding();
+
+        $('#btnAddRecepitsAndJournalesDetailRow').hide();
+        $('#btnUpdateRecepitsAndJournalesDetailRow').show();
+        $('#btnCancelRecepitsAndJournalesDetailRow').show();
+
+        const current = _RecepitsAndJournalesDetail.find(z => z.index === tblIndex);
+
+        $(`#CrSourceLkpId`).append($("<option selected='selected'></option>")
+            .val(current.sourceLkpId).text(current.crSourceLkp)).trigger('change');
+
+        $(`#CrSourceId`).append($("<option selected='selected'></option>")
+            .val(current.sourceId).text(current.crSource)).trigger('change');
+
+        $('#CrAmount').val(current.amount);
+        $('#CrDate').val(current.crDate);
+
+        updatedRecepitsAndJournalesDetailsRow = current;
+    };
+
+    const UpdateRecepitsAndJournalesDetailsRow = function () {
+
+        let current = _RecepitsAndJournalesDetail.find(z => z.index === updatedRecepitsAndJournalesDetailsRow.index);
+
+        let indexOfCurrent = _RecepitsAndJournalesDetail.indexOf(_RecepitsAndJournalesDetail.find(z => z.index === updatedRecepitsAndJournalesDetailsRow.index));
+
+        const newRow = fillRecepitsAndJournalesDetail();
+
+        if (newRow === undefined) return;
+
+        newRow.index = current.index;
+        //newRow.id = updatedRecepitsAndJournalesDetailsRow.id;
+        newRow.arInvoiceSettlementCrId = updatedRecepitsAndJournalesDetailsRow.arInvoiceSettlementCrId;
+        newRow.rowStatus = !updatedRecepitsAndJournalesDetailsRow.arInvoiceSettlementCrId ? NewStatus : UpdatedStatus;
+
+
+
+        _RecepitsAndJournalesDetail.splice(indexOfCurrent, 1,newRow);
+
+        $('#btnAddRecepitsAndJournalesDetailRow').show();
+        $('#btnUpdateRecepitsAndJournalesDetailRow').hide();
+        $('#btnCancelRecepitsAndJournalesDetailRow').hide();
+
+        clearFormRecepitsAndJournalesAdding();
+
+        _listRecepitsAndJournalesDetail.val(JSON.stringify(_RecepitsAndJournalesDetail));
+
+        setTimeout(function () {
+            bindRecepitsAndJournalesDetailTable();
+        }, 100);
+    };
+
+    const clearFormRecepitsAndJournalesAdding = function () {
+        $('#RecepitsAndJournales .card:first input,textarea').val('');
+        $('#RecepitsAndJournales .card:first select').val('').trigger('change');
+    };
+
+    const validatorRecepitsAndJournales = function () {
+
+        if (!$('#CrSourceLkpId').find(':selected').val()) {
+            toastr.warning('@ERP.ResourcePack.AccountsExtend.ArInvoiceSettlementHd.DrSourceLkpId' + ' : ' + '@ERP.ResourcePack.Common.Settings.Required');
+            return false;
+        }
+
+        if (!$('#CrSourceId').find(':selected').val()) {
+            toastr.warning('@ERP.ResourcePack.AccountsExtend.ArInvoiceSettlementHd.DrSourceId' + ' : ' + '@ERP.ResourcePack.Common.Settings.Required');
+            return false;
+        }
+    };
+</script>
+
+<script name="Invoices">
+
+    const _tblInvoicesDetailSelector = $('#tblInvoices'), _listInvoicesDetail = $('#ArInvoiceSettlementDrStr');
+
+    let _InvoicesDetail = [], updatedInvoicesDetailsRow, tblCounterInvoicesIndex = 0 ;
+
+    const fillInvoicesDetail = function () {
+
+         if (validatorInvoices() === false) return;
+
+        const current = {
+            index: ++tblCounterInvoicesIndex,
+            sourceLkpId: $('#DrSourceLkpId').find(':selected').val(),
+            drSourceLkp: $('#DrSourceLkpId').find(':selected').text(),
+            sourceId: $('#DrSourceId').find(':selected').val(),
+            drSource: $('#DrSourceId').find(':selected').text(),
+            amount: $('#DrAmount').val(),
+            drDate: $('#DrDate').val(),
+            drJobCard: $('#DrJobCard').val(),
+            rowStatus: NewStatus,
+            id: 0           
+
+        };
+
+       
+        return current;
+    };
+
+    const AddInvoicesDetails = function () {
+
+        const current = fillInvoicesDetail();
+
+        if (current === undefined) return;
+
+        if (_InvoicesDetail.find(x =>  x.sourceId === current.sourceId )) {
+
+            toastr.warning('@ERP.ResourcePack.AccountsExtend.ArInvoiceSettlementHd.Doublicated');
+            return false;
+        }
+
+        _InvoicesDetail.push(current);
+
+        _listInvoicesDetail.val(JSON.stringify(_InvoicesDetail));
+
+        bindInvoicesDetailTable();
+
+        clearFormInvoicesAdding();
+    };
+
+    const bindInvoicesDetailTable = function () {
+
+        const detailArr = _InvoicesDetail.filter(z => z.rowStatus !== DeletedStatus);
+
+        var TotalAmt = 0;
+        $.each(detailArr, function (i, item) {
+            TotalAmt += Number(item.amount);
+        });
+
+        const columns = [
+            { 'data': 'index' },
+            { 'data': 'drSourceLkp' },
+            { 'data': 'drSource' },
+            { 'data': 'drDate' },
+            { 'data': 'drJobCard' },
+            {
+                'data': 'amount',
+                "render": $.fn.dataTable.render.number(',', '.', 2)
+
+            },
+            {
+                'data': null,
+                'searchable': false,
+                'ordering': false,
+                'sorting': false,
+                'render': function (d, t, row) {
+
+                    let rows = '';
+
+                    if (primaryEntityKeyId === 0 || trigger !== '@ERP.Front.Helpers.Enums.Common.FormTriggers.Show.ToString()') {
+
+                        rows += `<td><a href="javascript:void(0)" onclick="return DeleteInvoicesDetail(${row.index})"><i class="mx-2 fas fa-trash-alt text-danger"></i></a>`;
+                        rows += `<a href="javascript:void(0)" onclick="return GetInvoicesDetailRow(${row.index})"><i class="mx-2 fas fa-edit text-success"></i></a></td>`;
+                    }
+                    else {
+                        rows += '<td></td>';
+                    }
+
+                    return rows;
+                }
+            }
+        ];
+
+        const dtObj = {
+            data: detailArr,
+            retrieve: true,
+            language: dataTableLang,
+            columns: columns,
+            drawCallback: function (c, v, b) {}
+        };
+
+        setTimeout(function () {
+
+            _tblInvoicesDetailSelector.dataTable().fnDestroy();
+            _tblInvoicesDetailSelector.DataTable(dtObj).on('draw', function () { $('[data-toggle="tooltip"]').tooltip(); });
+
+            var totalrow = '<tfoot><tr><td style = "text-align: right;" colspan="5">Total:</td><td style="text-align: left;">' + TotalAmt.toLocaleString(undefined, optionsNumFormat) + '</td></tr></tfoot>';
+            $(_tblInvoicesDetailSelector).find('tfoot').replaceWith(totalrow);
+
+        }, 100);
+    };
+
+    const DeleteInvoicesDetail = function (index)  {
+
+        const current = _InvoicesDetail.find(z => z.index === index);
+
+        const indexOfCurrent = _InvoicesDetail.indexOf(current);
+
+        if (!current.arInvoiceSettlementDrId) {
+           
+           _InvoicesDetail.splice(indexOfCurrent, 1);
+
+        } else {
+
+            current.rowStatus = DeletedStatus;
+
+           _InvoicesDetail.splice(indexOfCurrent, 1,current);
+        }
+
+        bindInvoicesDetailTable();
+
+        _listInvoicesDetail.val(_InvoicesDetail.length === 0 ? '' : JSON.stringify(_InvoicesDetail));
+
+    };
+
+    const LoadInvoicesDetailData = function () {
+
+        $.ajax({
+            url: `${baseUrl}/ArInvoiceSettlementHd/GetAllArInvoiceSettlementDrs`,
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${$_token}`
+            },
+            data: {
+                invoiceSettlementHdId: primaryEntityKeyId,
+                lang : '@lang'
+            }
+        }).done(function (data) {
+
+            _InvoicesDetail = [...data.result];
+
+            tblCounterInvoicesIndex = 0;
+
+            $.each(_InvoicesDetail, function (i, item) {
+                item.index = ++tblCounterInvoicesIndex;
+            });
+
+            bindInvoicesDetailTable();
+
+            _listInvoicesDetail.val(JSON.stringify(_InvoicesDetail));
+
+        });
+
+    };
+
+    const GetInvoicesDetailRow = function (tblIndex) {
+
+        clearFormInvoicesAdding();
+
+        $('#btnAddInvoicesDetailRow').hide();
+        $('#btnUpdateInvoicesDetailRow').show();
+        $('#btnCancelInvoicesDetailRow').show();
+
+        const current = _InvoicesDetail.find(z => z.index === tblIndex);
+
+        $(`#DrSourceLkpId`).append($("<option selected='selected'></option>")
+            .val(current.sourceLkpId).text(current.drSourceLkp)).trigger('change');
+
+        $(`#DrSourceId`).append($("<option selected='selected'></option>")
+            .val(current.sourceId).text(current.drSource)).trigger('change');
+
+        $('#DrAmount').val(current.amount);
+        $('#DrDate').val(current.drDate);
+        $('#DrJobCard').val(current.drJobCard);
+
+        updatedInvoicesDetailsRow = current;
+    };
+
+    const UpdateInvoicesDetailsRow = function () {
+
+        let current = _InvoicesDetail.find(z => z.index === updatedInvoicesDetailsRow.index);
+
+        let indexOfCurrent = _InvoicesDetail.indexOf(_InvoicesDetail.find(z => z.index === updatedInvoicesDetailsRow.index));
+
+        const newRow = fillInvoicesDetail();
+
+        if (newRow === undefined) return;
+
+        newRow.index = current.index;
+        /*newRow.id = updatedInvoicesDetailsRow.id;*/
+        newRow.arInvoiceSettlementDrId = updatedInvoicesDetailsRow.arInvoiceSettlementDrId;
+        newRow.rowStatus = !updatedInvoicesDetailsRow.arInvoiceSettlementDrId ? NewStatus : UpdatedStatus;
+      
+
+        _InvoicesDetail.splice(indexOfCurrent, 1,newRow);
+
+        $('#btnAddInvoicesDetailRow').show();
+        $('#btnUpdateInvoicesDetailRow').hide();
+        $('#btnCancelInvoicesDetailRow').hide();
+
+        clearFormInvoicesAdding();
+
+        _listInvoicesDetail.val(JSON.stringify(_InvoicesDetail));
+
+        setTimeout(function () {
+            bindInvoicesDetailTable();
+        }, 100);
+    };
+
+    const clearFormInvoicesAdding = function () {
+        $('#Invoices .card:first input,textarea').val('');
+        $('#Invoices .card:first select').val('').trigger('change');
+    };
+
+
+    const validatorInvoices = function () {
+
+        if (!$('#DrSourceLkpId').find(':selected').val()) {
+            toastr.warning('@ERP.ResourcePack.AccountsExtend.ArInvoiceSettlementHd.DrSourceLkpId' + ' : ' + '@ERP.ResourcePack.Common.Settings.Required');
+            return false;
+        }
+
+        if (!$('#DrSourceId').find(':selected').val()) {
+            toastr.warning('@ERP.ResourcePack.AccountsExtend.ArInvoiceSettlementHd.DrSourceId' + ' : ' + '@ERP.ResourcePack.Common.Settings.Required');
+            return false;
+        }
+    };
+</script>

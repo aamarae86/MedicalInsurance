@@ -1,0 +1,133 @@
+﻿@using ERP.Web.UI.Controllers.AidModule
+@using ERP.Web.UI.Models.ViewModels.AidModule
+@{
+    ViewBag.Title = ERP.ResourcePack.AidModule.ScPortalRequests.Title;
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    string formTrigger = ViewBag.trigger;
+    long? id = ViewData["Id"] == null ? null : (long?)Convert.ToInt32(ViewData["Id"]);
+    long? aidRequestId = ViewData["aidRequestId"] == null ? null : (long?)Convert.ToInt32(ViewData["aidRequestId"]);
+    var detailObj = ViewData["DetailAsync"] == null ? null : ViewData["DetailAsync"] as ScPortalRequestsVM;
+
+}
+
+<div class="row clearfix">
+    <div class="col-12">
+        @Html.Action(nameof(ScPortalRequestsController.ScPortalRequestsForm), new { id = id, trigger = formTrigger, ScPortalRequestsVM = detailObj })
+    </div>
+    <div class="col-12">
+        <div class="card">
+            <div class="body">
+                <ul class="mt-2 nav nav-tabs tab-nav-right" role="tablist">
+                    <li role="presentation">
+                        <a href="#visits" data-toggle="tab" class="show active">@ERP.ResourcePack.AidModule.ScPortalRequests.Title2</a>
+                    </li>
+                    <li role="presentation">
+                        <a href="#Incomes" data-toggle="tab" class="show">@ERP.ResourcePack.AidModule.ScPortalRequests.Incomes</a>
+                    </li>
+                    <li role="presentation">
+                        <a href="#Duties" data-toggle="tab" class="show">@ERP.ResourcePack.AidModule.ScPortalRequests.Duties</a>
+                    </li>
+                    <li role="presentation">
+                        <a href="#attachments" data-toggle="tab" class="show">@ERP.ResourcePack.AidModule.ScPortalRequests.Title3</a>
+                    </li>
+                </ul>
+                <div class="tab-content" id="MiscReceiptTaps">
+                    <div role="tabpanel" class="tab-pane fade in active show" id="visits">
+                        @Html.Action(nameof(ScPortalRequestsController.ScPortalRequestsFormDetail), new { id = id, trigger = formTrigger })
+                        @Html.Action(nameof(ScPortalRequestsController.ScPortalRequestsDataDetail))
+                    </div>
+                    <div role="tabpanel" class="tab-pane fade in" id="Incomes">
+                        @if (detailObj != null && detailObj.SourceLkpId == Convert.ToInt64(ERP.Front.Helpers.Enums.Common.ScPortalRequestsSource.Portal))
+                        {
+                            @Html.Action(nameof(ScPortalRequestsController.ScPortalRequestsFormDetail3), new { id = id, trigger = formTrigger })
+                        }
+                        @Html.Action(nameof(ScPortalRequestsController.ScPortalRequestsDataDetail3))
+                    </div>
+                    <div role="tabpanel" class="tab-pane fade in" id="Duties">
+                        @if (detailObj != null && detailObj.SourceLkpId == Convert.ToInt64(ERP.Front.Helpers.Enums.Common.ScPortalRequestsSource.Portal))
+                        {
+                            @Html.Action(nameof(ScPortalRequestsController.ScPortalRequestsFormDetail4), new { id = id, trigger = formTrigger })
+                        }
+                        @Html.Action(nameof(ScPortalRequestsController.ScPortalRequestsDataDetail4))
+                    </div>
+                    <div role="tabpanel" class="tab-pane fade in" id="attachments">
+                        <div id="attachmentFormContainer" style="display:none">
+                            @Html.Partial("_AttachmentForm")
+                        </div>
+                        @Html.Action(nameof(ScPortalRequestsController.ScPortalRequestsDataDetail2))
+                    </div>
+                </div>
+                <div class="row clearfix"> <div class="col-md-12 text-center" id="btnContainer"></div></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body">
+                <div class="text-center">
+                    @if (formTrigger != ERP.Front.Helpers.Enums.Common.FormTriggers.Show.ToString())
+                    {
+                        <button type="submit" id="btnSubmition" class="btn btn-info btn-lg m-l-15 waves-effect">@(formTrigger == ERP.Front.Helpers.Enums.Common.FormTriggers.Insert.ToString() ? ERP.ResourcePack.Common.Settings.BtnSave : ERP.ResourcePack.Common.Settings.BtnUpdate)</button>
+                        <div id="submitLoader" style="display:none">
+                            <div class="lds-roller"><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div></div>
+                        </div>
+                    }
+                    <a href="~/ScPortalRequests" class="btn btn-danger btn-lg m-l-15 waves-effect">@(ERP.ResourcePack.Common.Settings.BtnClose)</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+@section scripts{
+    <script>
+        const primaryEntityKeyId =  @(id == null ? 0 : id);
+        const aidRequestId =  @(aidRequestId == null ? 0 : aidRequestId);
+        const trigger = '@formTrigger';
+        const statusLkpId = @(detailObj == null ? Convert.ToInt64(ERP.Front.Helpers.Enums.Common.ScPortalRequests.New) : detailObj.StatusLkpId);
+        const sourceLkpId = @(detailObj == null ? 0 : detailObj.SourceLkpId);
+        let formView = true;
+
+    </script>
+    <script src="~/Scripts/jquery.validate.min.js"></script>
+    <script src="~/Scripts/jquery.validate.unobtrusive.min.js"></script>
+    @Html.Partial("~/ViewsScripts/_AidModule/ScPortalRequests/ScPortalRequestsScripts.cshtml")
+    @if (id != null)
+    {
+        <script>
+            $(function () {
+
+                LoadVisitsData();
+                LoadAttachmentsData();
+                BindPortalUserInfo();
+
+                if(@detailObj.SourceLkpId == @Convert.ToInt64(ERP.Front.Helpers.Enums.Common.ScPortalRequestsSource.Portal) || @detailObj.StatusLkpId != @Convert.ToInt64(ERP.Front.Helpers.Enums.Common.ScPortalRequests.New))
+                {
+                    LoadDutiesData();
+                    LoadIncomesData();
+                }
+
+                $('#NetValue').val(parseFloat($('#MonthlyIncomeAmount').val()) - parseFloat($('#MonthlyOutcomeAmount').val()));
+
+                if (primaryEntityKeyId && trigger === '@ERP.Front.Helpers.Enums.Common.FormTriggers.Show.ToString()' && @detailObj.StatusLkpId == @Convert.ToInt64(ERP.Front.Helpers.Enums.Common.ScPortalRequests.New)) {
+                    let btns = '';
+
+                    btns += `<a href="javascript:void(0)" onclick="return PostAjax(@id)" class="btn btn-success">${'@ERP.ResourcePack.Common.Settings.Post'}</a>`;
+                    btns += `<a href="javascript:void(0)" onclick="return RefuseAjax(@id)" class="btn btn-danger">${'@ERP.ResourcePack.Common.Settings.Refuse'}</a>`;
+
+                    $('#btnContainer').html(btns);
+
+                };
+            });
+        </script>
+    }
+    else
+    {
+        <script>
+            $('#PortalRequestDate').val('@DateTime.Now.ToString(ERP.Helpers.Core.Formatters.DateFormat)')
+        </script>
+    }
+}
+

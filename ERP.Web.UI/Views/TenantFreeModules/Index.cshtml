@@ -1,0 +1,29 @@
+﻿@{
+    ViewBag.Title = ERP.ResourcePack.Common.Menu.TenantModules;
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<style>
+    .shadow-rounded {
+        border-color: #21252945 !important;
+        border-radius: 10px !important;
+        box-shadow: 0 0 1rem 2px #0c0d0e2b !important;
+    }
+    .form-group .form-line .form-label {
+        top: -5px !important;
+    }
+
+    .error {
+        border: solid #b70000 1px !important;
+    }
+    .js-module-chk {
+        position: relative !important;
+    }
+</style>
+@Html.Action(nameof(ERP.Web.UI.Controllers.TenantFreeModulesController.TenantFreeModulesSearch))
+@Html.Action(nameof(ERP.Web.UI.Controllers.TenantFreeModulesController.TenantFreeModulesData))
+
+@section scripts{
+    @Html.Partial("~/ViewsScripts/TenantFreeModules/TenantFreeModulesScripts.cshtml")
+}
+ 

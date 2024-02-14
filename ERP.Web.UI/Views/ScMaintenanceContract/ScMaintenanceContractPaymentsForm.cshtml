@@ -1,0 +1,52 @@
+﻿@using ERP.Web.UI.Models.ViewModels.AidModule
+@model ScMaintenanceContractVM
+
+<div class="card" style="display:@( ViewBag.trigger ==ERP.Front.Helpers.Enums.Common.FormTriggers.Show.ToString() ? "none":"block" ) ">
+    <div class="body">
+        <div class="row clearfix">
+            <div class="col-md-4">
+                <div class="form-group form-float">
+                    <div class="form-line">
+                        @Html.TextBoxFor(z => z.PayemtNo, new { @class = "form-control", @type = "number", @min = 0 })
+                        @Html.LabelFor(z => z.PayemtNo, new { @class = "form-label" })
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="form-group form-float">
+                    <div class="form-line">
+                        @Html.TextBoxFor(z => z.MaturityDate, new { @class = "form-control datepicker" })
+                        @Html.LabelFor(z => z.MaturityDate, new { @class = "form-label" })
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="form-group form-float">
+                    <div class="form-line">
+                        @Html.TextBoxFor(z => z.Amount, new { @class = "form-control currency" })
+                        @Html.LabelFor(z => z.Amount, new { @class = "form-label" })
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row clearfix">
+            <div class="col-md-12">
+                <div class="form-group form-float">
+                    <div class="form-line">
+                        @Html.TextAreaFor(z => z.PaymentCondition, new { @class = "form-control" })
+                        @Html.LabelFor(z => z.PaymentCondition, new { @class = "form-label" })
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row clearfix">
+            <div class="col-sm-12 text-center">
+                <div class="form-group">
+                    <button id="btnAddPaymentsRow" onclick="return AddPayments()" class="btn btn-success">@ERP.ResourcePack.Common.Settings.BtnAddNew</button>
+                    <button style="display:none;" id="btnUpdatePaymentsRow" onclick="return UpdatePaymentsRow()" class="btn btn-info">@ERP.ResourcePack.Common.Settings.BtnUpdate</button>
+                    <button style="display:none;" id="btnCancelPaymentsRow" onclick="clearFormAdding(); $('#btnCancelPaymentsRow').hide();$('#btnUpdatePaymentsRow').hide();$('#btnAddPaymentsRow').show();" class="btn btn-danger">@ERP.ResourcePack.Common.Settings.BtnCancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

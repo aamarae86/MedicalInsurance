@@ -1,0 +1,172 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>netcoreapp2.2</TargetFramework>
+    <AssetTargetFallback>$(AssetTargetFallback);portable-net45+win8+wp8+wpa81;</AssetTargetFallback>
+    <RootNamespace>ERP</RootNamespace>
+    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+    <GenerateBindingRedirectsOutputType>true</GenerateBindingRedirectsOutputType>
+    <GenerateRuntimeConfigurationFiles>true</GenerateRuntimeConfigurationFiles>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Remove="EntityFrameworkCore\Repositories\IERPDynamicProcedureRepositoryBase.cs" />
+    <Compile Remove="Migrations\20180726102624_Upgrade_ABP_380.cs" />
+    <Compile Remove="Migrations\20180927062408_test.cs" />
+    <Compile Remove="Migrations\20190111071724_Upgraded_To_Abp_v4_1_0.cs" />
+    <Compile Remove="Migrations\20191223094736_Fix_Table_addFullAudited_GlAccDetails.cs" />
+    <Compile Remove="Migrations\20191223094736_Fix_Table_addFullAudited_GlAccDetails.Designer.cs" />
+    <Compile Remove="Migrations\20191225110913_AddingArCustomersTable.cs" />
+    <Compile Remove="Migrations\20191225110913_AddingArCustomersTable.Designer.cs" />
+    <Compile Remove="Migrations\20200126100208_add-tbl-FndUsers-FndUsersRelatives.cs" />
+    <Compile Remove="Migrations\20200126100208_add-tbl-FndUsers-FndUsersRelatives.Designer.cs" />
+    <Compile Remove="Migrations\20200126100403_add-tbl-FndUsers-FndUsersRelatives.cs" />
+    <Compile Remove="Migrations\20200126100403_add-tbl-FndUsers-FndUsersRelatives.Designer.cs" />
+    <Compile Remove="Migrations\20200126100531_add-tbl-FndUsers-FndUsersRelatives.cs" />
+    <Compile Remove="Migrations\20200126100531_add-tbl-FndUsers-FndUsersRelatives.Designer.cs" />
+    <Compile Remove="Migrations\20200126100628_add-tbl-FndUsers-FndUsersRelatives.cs" />
+    <Compile Remove="Migrations\20200126100628_add-tbl-FndUsers-FndUsersRelatives.Designer.cs" />
+    <Compile Remove="Migrations\20200126100807_add-tbl-FndUsers-FndUsersRelatives.cs" />
+    <Compile Remove="Migrations\20200126100807_add-tbl-FndUsers-FndUsersRelatives.Designer.cs" />
+    <Compile Remove="Migrations\20200126113022_add-tbl-FndSpell-2.cs" />
+    <Compile Remove="Migrations\20200126113022_add-tbl-FndSpell-2.Designer.cs" />
+    <Compile Remove="Migrations\20200126113114_add-tbl-FndSpell-2.cs" />
+    <Compile Remove="Migrations\20200126113114_add-tbl-FndSpell-2.Designer.cs" />
+    <Compile Remove="Migrations\20200126113314_add-tbl-FndSpell-2.cs" />
+    <Compile Remove="Migrations\20200126113314_add-tbl-FndSpell-2.Designer.cs" />
+    <Compile Remove="Migrations\20200114111834_fix_FndLookupValuesId_dlt-11.cs" />
+    <Compile Remove="Migrations\20200114111834_fix_FndLookupValuesId_dlt-11.Designer.cs" />
+    <Compile Remove="Migrations\20200127115208_relation.cs" />
+    <Compile Remove="Migrations\20200127115208_relation.Designer.cs" />
+    <Compile Remove="Migrations\20200127131929_add-table-ScCampains-ScCampainsDetails.cs" />
+    <Compile Remove="Migrations\20200127131929_add-table-ScCampains-ScCampainsDetails.Designer.cs" />
+    <Compile Remove="Migrations\20200210131953_committeeMemberDetailsTable.cs" />
+    <Compile Remove="Migrations\20200210131953_committeeMemberDetailsTable.Designer.cs" />
+    <Compile Remove="Migrations\20200211115834_parentInFndLookup.cs" />
+    <Compile Remove="Migrations\20200211115834_parentInFndLookup.Designer.cs" />
+    <Compile Remove="Migrations\20200211131842_PmOwners_Tables2.cs" />
+    <Compile Remove="Migrations\20200211131842_PmOwners_Tables2.Designer.cs" />
+    <Compile Remove="Migrations\20200225113710_StatusLkpIdInCommitteeDetails.cs" />
+    <Compile Remove="Migrations\20200225113710_StatusLkpIdInCommitteeDetails.Designer.cs" />
+    <Compile Remove="Migrations\20200301112922_PmOwners_BankAndCashIds_NotCodeComs_ItIsBankAccount.cs" />
+    <Compile Remove="Migrations\20200301112922_PmOwners_BankAndCashIds_NotCodeComs_ItIsBankAccount.Designer.cs" />
+    <Compile Remove="Migrations\20200302092525_addNewTblsGL_ACCOUNT_SELECTION___GL_TRIAL_BALANCES.cs" />
+    <Compile Remove="Migrations\20200302092525_addNewTblsGL_ACCOUNT_SELECTION___GL_TRIAL_BALANCES.Designer.cs" />
+    <Compile Remove="Migrations\20200311132007_updateRequestStudyAccountIdNotNull.cs" />
+    <Compile Remove="Migrations\20200311132007_updateRequestStudyAccountIdNotNull.Designer.cs" />
+    <Compile Remove="Migrations\20200322173650_SpBeneficents.cs" />
+    <Compile Remove="Migrations\20200322173650_SpBeneficents.Designer.cs" />
+    <Compile Remove="Migrations\20200330075408_ApInvoiceHdtbls.cs" />
+    <Compile Remove="Migrations\20200330075408_ApInvoiceHdtbls.Designer.cs" />
+    <Compile Remove="Migrations\20200331083835_BenefRelationWithLookUp.cs" />
+    <Compile Remove="Migrations\20200331083835_BenefRelationWithLookUp.Designer.cs" />
+    <Compile Remove="Migrations\20200421112513_addTblPyPayrollTypes.cs" />
+    <Compile Remove="Migrations\20200421112513_addTblPyPayrollTypes.Designer.cs" />
+    <Compile Remove="Migrations\20200428123418_addHrPersonsDeductionHd.cs" />
+    <Compile Remove="Migrations\20200428123418_addHrPersonsDeductionHd.Designer.cs" />
+    <Compile Remove="Migrations\20200611035505_FaAssetDeprnTablesCollections.cs" />
+    <Compile Remove="Migrations\20200611035505_FaAssetDeprnTablesCollections.Designer.cs" />
+    <Compile Remove="Migrations\20200716071312_fixScPortalRequest.cs" />
+    <Compile Remove="Migrations\20200716071312_fixScPortalRequest.Designer.cs" />
+    <Compile Remove="Migrations\20200720140110_addingTableGeneralUnPost.cs" />
+    <Compile Remove="Migrations\20200720140110_addingTableGeneralUnPost.Designer.cs" />
+    <Compile Remove="Migrations\20200722123109_attachmentNameForScMaintenanceTechnicalReport.cs" />
+    <Compile Remove="Migrations\20200722123109_attachmentNameForScMaintenanceTechnicalReport.Designer.cs" />
+    <Compile Remove="Migrations\20200723081030_addingRefuseReasonsToGeneralUnPost.cs" />
+    <Compile Remove="Migrations\20200723081030_addingRefuseReasonsToGeneralUnPost.Designer.cs" />
+    <Compile Remove="Migrations\20200723085914_ScMaintenanceQuotationsTbls.cs" />
+    <Compile Remove="Migrations\20200723085914_ScMaintenanceQuotationsTbls.Designer.cs" />
+    <Compile Remove="Migrations\20200726115759_ScMaintenanceContractTbls.cs" />
+    <Compile Remove="Migrations\20200726115759_ScMaintenanceContractTbls.Designer.cs" />
+    <Compile Remove="Migrations\20200726141033_adding4RelationsToGeneralUnPost.cs" />
+    <Compile Remove="Migrations\20200726141033_adding4RelationsToGeneralUnPost.Designer.cs" />
+    <Compile Remove="Migrations\20200727124357_editScCommitteeDetailsElectronicAid.cs" />
+    <Compile Remove="Migrations\20200727124357_editScCommitteeDetailsElectronicAid.Designer.cs" />
+    <Compile Remove="Migrations\20200728083109_ScMaintenancePaymentsTbl.cs" />
+    <Compile Remove="Migrations\20200728083109_ScMaintenancePaymentsTbl.Designer.cs" />
+    <Compile Remove="Migrations\20200729071428_editScFndAidRequestType.cs" />
+    <Compile Remove="Migrations\20200729071428_editScFndAidRequestType.Designer.cs" />
+    <Compile Remove="Migrations\20200729093022_editScMaintenanceTechnicalReport.cs" />
+    <Compile Remove="Migrations\20200729093022_editScMaintenanceTechnicalReport.Designer.cs" />
+    <Compile Remove="Migrations\20200729133111_editScMaintenanceContractPayments.cs" />
+    <Compile Remove="Migrations\20200729133111_editScMaintenanceContractPayments.Designer.cs" />
+    <Compile Remove="Migrations\20200729143002_editScCommitteeDetail63236.cs" />
+    <Compile Remove="Migrations\20200729143002_editScCommitteeDetail63236.Designer.cs" />
+    <Compile Remove="Migrations\20200803073329_editScMaintenancePayments.cs" />
+    <Compile Remove="Migrations\20200803073329_editScMaintenancePayments.Designer.cs" />
+    <Compile Remove="Migrations\20200803140109_addNewTblHrPersonAttachments.cs" />
+    <Compile Remove="Migrations\20200803140109_addNewTblHrPersonAttachments.Designer.cs" />
+    <Compile Remove="Migrations\20200809065701_editPortalUserRelatives.cs" />
+    <Compile Remove="Migrations\20200809065701_editPortalUserRelatives.Designer.cs" />
+    <Compile Remove="Migrations\20200809100803_editScMaintenanceContract.cs" />
+    <Compile Remove="Migrations\20200809100803_editScMaintenanceContract.Designer.cs" />
+    <Compile Remove="Migrations\20200809120201_addNewTblsSpPayments.cs" />
+    <Compile Remove="Migrations\20200809120201_addNewTblsSpPayments.Designer.cs" />
+    <Compile Remove="Migrations\20200810075108_editSpPayments.cs" />
+    <Compile Remove="Migrations\20200810075108_editSpPayments.Designer.cs" />
+    <Compile Remove="Migrations\20200810141500_SpPaymentSettingNewTbl.cs" />
+    <Compile Remove="Migrations\20200810141500_SpPaymentSettingNewTbl.Designer.cs" />
+    <Compile Remove="Migrations\20200811094731_editSpPaymentPersons.cs" />
+    <Compile Remove="Migrations\20200811094731_editSpPaymentPersons.Designer.cs" />
+    <Compile Remove="Migrations\20200811103439_addNewPropsHrPersons.cs" />
+    <Compile Remove="Migrations\20200811103439_addNewPropsHrPersons.Designer.cs" />
+    <Compile Remove="Migrations\20200812094206_editGlAccDetails.cs" />
+    <Compile Remove="Migrations\20200812094206_editGlAccDetails.Designer.cs" />
+    <Compile Remove="Migrations\20200813123528_editSpPaymentPersonDetails.cs" />
+    <Compile Remove="Migrations\20200813123528_editSpPaymentPersonDetails.Designer.cs" />
+    <Compile Remove="Migrations\20200823101916_addNewField_TaxPercentageLkpId_ApMiscPaymentLines_ApInvoiceTr.cs" />
+    <Compile Remove="Migrations\20200823101916_addNewField_TaxPercentageLkpId_ApMiscPaymentLines_ApInvoiceTr.Designer.cs" />
+    <Compile Remove="Migrations\20200823132407_addNewFieldTaxNoInApVendors.cs" />
+    <Compile Remove="Migrations\20200823132407_addNewFieldTaxNoInApVendors.Designer.cs" />
+    <Compile Remove="Migrations\20200823143311_RemoveUnusedPortalUserDataId.cs" />
+    <Compile Remove="Migrations\20200823143311_RemoveUnusedPortalUserDataId.Designer.cs" />
+    <Compile Remove="Migrations\20200823144141_RemoveUnusedPortalUserDataId2.cs" />
+    <Compile Remove="Migrations\20200823144141_RemoveUnusedPortalUserDataId2.Designer.cs" />
+    <Compile Remove="Migrations\20200823144539_RemoveUnusedPortalUserDataId3.cs" />
+    <Compile Remove="Migrations\20200823144539_RemoveUnusedPortalUserDataId3.Designer.cs" />
+    <Compile Remove="Migrations\20200824072807_RemoveUnusedPortalUserDataId4.cs" />
+    <Compile Remove="Migrations\20200824072807_RemoveUnusedPortalUserDataId4.Designer.cs" />
+    <Compile Remove="Migrations\20200825084419_AddPortalUserDataIdPortalRequests.cs" />
+    <Compile Remove="Migrations\20200825084419_AddPortalUserDataIdPortalRequests.Designer.cs" />
+    <Compile Remove="Migrations\20200825090333_AddPortalUserDataIdPortalRequests2.cs" />
+    <Compile Remove="Migrations\20200825090333_AddPortalUserDataIdPortalRequests2.Designer.cs" />
+    <Compile Remove="Migrations\20200825091638_AddPortalUserDataIdPortalRequests23.cs" />
+    <Compile Remove="Migrations\20200825091638_AddPortalUserDataIdPortalRequests23.Designer.cs" />
+    <Compile Remove="Migrations\20200825094943_AddPortalUserDataIdPortalRequests2321.cs" />
+    <Compile Remove="Migrations\20200825094943_AddPortalUserDataIdPortalRequests2321.Designer.cs" />
+    <Compile Remove="Migrations\20200825095255_AddPortalUserDataIdPortalRequests2320.cs" />
+    <Compile Remove="Migrations\20200825095255_AddPortalUserDataIdPortalRequests2320.Designer.cs" />
+    <Compile Remove="Migrations\20200825095444_AddPortalUserDataIdPortalRequests2325.cs" />
+    <Compile Remove="Migrations\20200825095444_AddPortalUserDataIdPortalRequests2325.Designer.cs" />
+    <Compile Remove="Migrations\20200927091112_FmContracts.cs" />
+    <Compile Remove="Migrations\20200927091112_FmContracts.Designer.cs" />
+    <Compile Remove="Migrations\20201011140004_crmMeetings.cs" />
+    <Compile Remove="Migrations\20201011140004_crmMeetings.Designer.cs" />
+    <Compile Remove="Migrations\20210715055532_CrmLeadsPrersons_editing.cs" />
+    <Compile Remove="Migrations\20210715055532_CrmLeadsPrersons_editing.Designer.cs" />
+    <Compile Remove="Migrations\20210715060833_CrmLeadsPrersons_Editing.cs" />
+    <Compile Remove="Migrations\20210715060833_CrmLeadsPrersons_Editing.Designer.cs" />
+    <Compile Remove="Migrations\20210809071017_ADD_FndCalendarMemo.cs" />
+    <Compile Remove="Migrations\20210809071017_ADD_FndCalendarMemo.Designer.cs" />
+    <Compile Remove="Migrations\20211013095420_Add_ArJobCardHd.cs" />
+    <Compile Remove="Migrations\20211013095420_Add_ArJobCardHd.Designer.cs" />
+    <Compile Remove="Migrations\20211013130107_FndSalesMenTable.cs" />
+    <Compile Remove="Migrations\20211013130107_FndSalesMenTable.Designer.cs" />
+    <Compile Remove="Migrations\20211107112704_Edit_ArJobCardHd.cs" />
+    <Compile Remove="Migrations\20211107112704_Edit_ArJobCardHd.Designer.cs" />
+    <Compile Remove="Migrations\20220211061948_Add_column_IvInventorySettingId_IvUserWarehousesPrivileges.cs" />
+    <Compile Remove="Migrations\20220211061948_Add_column_IvInventorySettingId_IvUserWarehousesPrivileges.Designer.cs" />
+    <Compile Remove="Migrations\20220616063055_Add_HrpersonTimeSheet.cs" />
+    <Compile Remove="Migrations\20220616063055_Add_HrpersonTimeSheet.Designer.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="2.2.4" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="2.2.4">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="2.2.4" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\ERP.Application\ERP.Application.csproj" />
+    <ProjectReference Include="..\ERP.Core\ERP.Core.csproj" />
+  </ItemGroup>
+</Project>

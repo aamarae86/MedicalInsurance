@@ -1,0 +1,42 @@
+﻿@{
+    ViewBag.Title = ERP.ResourcePack.Accounts.ArCustomers.ScPortalRequestMgrDecision;
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@Html.Action(nameof(ERP.Web.UI.Controllers.AidModule.ScPortalRequestMgrDecisionController.ScPortalRequestMgrDecisionSearch))
+@Html.Action(nameof(ERP.Web.UI.Controllers.AidModule.ScPortalRequestMgrDecisionController.ScPortalRequestMgrDecisionData))
+@Html.Partial("_ReportModal")
+
+    <div id="myModal-forEdit" class="modal fade" role="dialog">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4 class="modal-title">@ERP.ResourcePack.Accounts.ArCustomers.ScPortalRequestMgrDecision</h4>
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" id="ScPortalRequestMgrDecisionId" />
+                    <div class="col-sm-12">
+                        <label class="form-label">@ERP.ResourcePack.Accounts.ArCustomers.RefuseReason</label>
+                        <div class="form-group form-float">
+                            <div class="form-group">
+                                <textarea class="form-control" id="managerRefuseReason"></textarea>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-sm-12 text-center">
+                        <button type="button" onclick="return ManagerRefuseResaon()" class="btn btn-success mt-4" data-dismiss="modal">@ERP.ResourcePack.Common.Settings.Refuse</button>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-danger" data-dismiss="modal">@ERP.ResourcePack.Common.Settings.BtnClose</button>
+                </div>
+            </div>
+        </div>
+    </div>
+@section scripts{
+    <script>
+        let formView = false;
+    </script>
+    @Html.Partial("~/ViewsScripts/_AidModule/ScPortalRequestMgrDecision/ScPortalRequestMgrDecisionScripts.cshtml")
+}

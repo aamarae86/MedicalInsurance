@@ -1,0 +1,76 @@
+﻿@using ERP.Web.UI.Models.ViewModels.HR
+@using ERP.Web.UI.Models.ViewModels.General
+@model HrPaperRequestVM
+@{
+    ViewBag.Title = ERP.ResourcePack.HR.HrPersons.Title;
+    string formTrigger = ViewBag.trigger;
+    string lang = Request.Cookies["Lang"] == null ? "ar-EG" : Request.Cookies["Lang"].Value.ToString();
+    string lkpKeyDdl = lang == "ar-EG" ? nameof(FndLookupValuesVM.NameAr) : nameof(FndLookupValuesVM.NameEn);
+    bool isFormDetail = Model != null && formTrigger == ERP.Front.Helpers.Enums.Common.FormTriggers.Show.ToString();
+}
+
+<div class="card">
+    <div class="body">
+        @using (Ajax.BeginForm(nameof(ERP.Web.UI.Controllers.HR.HrPaperRequestController.PostHrPaperRequest), "HrPaperRequest", new AjaxOptions { HttpMethod = "POST", OnBegin = "OnBegin", OnSuccess = "OnSuccess", OnComplete = "OnComplete", OnFailure = "OnFailure" }, new { @id = "mainForm" }))
+        {
+            @Html.HiddenFor(z => z.Id)
+            @Html.HiddenFor(z => z.HrPaperRequestAttachmentdetailsListStr)
+
+            <div class="border-apply" style="padding:0rem 1rem;margin:1rem">
+                <div class="header d-flex justify-content-start align-items-center py-2">
+                    <i class="fas fa-2x fa-chevron-down down-arr mr-2" data-toggle="collapse" data-target="#first"></i>
+                    <p class="m-0">@ERP.ResourcePack.HR.HrPersons.EmployeeDetails</p>
+                    <hr />
+                </div>
+                <div class="collapse show" id="first">
+                    <div class="row clearfix">
+                        <div class="col-sm-8">
+                            <div class="row  clearfix">
+                                <div class="col-sm-6">
+                                    <div class="form-group form-float">
+                                        <div class="form-line">
+                                            @Html.TextBoxFor(z => z.PaperReqNumber, getHtmlAttributes(isFormDetail, "form-control", string.Empty))
+                                            @Html.LabelFor(z => z.PaperReqNumber, new { @class = "form-label label-required" })
+                                        </div>
+                                        @Html.ValidationMessageFor(z => z.PaperReqNumber)
+                                    </div>
+                                    <div class="form-group form-float">
+                                        <div class="form-line">
+                                            @Html.TextBoxFor(z => z.PaperReqDate, getHtmlAttributes(isFormDetail, "form-control", string.Empty))
+                                            @Html.LabelFor(z => z.PaperReqDate, new { @class = "form-label label-required" })
+                                        </div>
+                                        @Html.ValidationMessageFor(z => z.PaperReqDate)
+                                    </div>
+                                </div>
+                              
+                               
+
+
+
+                            </div>
+
+                        </div>
+                      
+                    </div>
+                 
+                </div>
+            </div>
+
+         
+
+        }
+
+    </div>
+</div>
+
+@functions {
+    object getHtmlAttributes(bool Disabled, string CssClass, string CssClass2)
+    {
+        if (Disabled)
+        {
+            return new { @class = CssClass, Disabled = Disabled };
+        }
+        return new { @class = $"{CssClass} {CssClass2}" };
+    }
+}
+

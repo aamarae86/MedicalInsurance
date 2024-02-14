@@ -1,0 +1,55 @@
+﻿<script>
+
+    $(function () {
+        $('#ReportsAidsCheck').addClass('active');
+
+        $('#CityLkpId').select2(ReturnSelect2ObjectForLkpsTypes('@ERP.Front.Helpers.Enums.Common.FndLkpsTypes.City'));
+        $('#AidRequestTypeLkpId').select2(ReturnSelect2ObjectForLkpsTypes('@ERP.Front.Helpers.Enums.Common.FndLkpsTypes.FndAidRequestType'));
+    });
+
+
+
+    const PrintScCommitteesCheckReport = function () {
+
+        $('.page-loader-wrapper').css('display', 'block');
+
+        $.ajax({
+            url: `${$PrefixHostName}/ReportsAids/PrintScCommitteesCheckReport`,
+            method: 'POST',
+            header: {
+                'Authorization':`bearer ${$_token}`
+            },
+            data: {
+                Lang: lang,
+                CityLkpId: $('#CityLkpId').find(':selected').val(),
+                CityLkp: $('#CityLkpId').find(':selected').text(),
+                RequestTypeLkpId: $('#AidRequestTypeLkpId').find(':selected').val(),
+                RequestTypeLkp: $('#AidRequestTypeLkpId').find(':selected').text(),
+                FromDate: $('#FromDate').val(),
+                ToDate: $('#ToDate').val()
+            }
+        }).done(function (data) {
+
+            if (data.length > 0) {
+
+              $('.page-loader-wrapper').css('display', 'none');
+                var src = formAction;
+
+              $('#bodyss').html('')
+              $('#bodyss').append('<iframe id="ifram1" style="width:100%;height:550px" src="' + src + '"></iframe>')
+              $('#model').modal('show');
+
+            }
+            else {
+                  $('.page-loader-wrapper').css('display', 'none');
+                  toastr.warning(NoData);
+            }
+
+        }).fail(function (response,x,r) {
+            toastr.error(response.responseText);
+        });
+
+    };
+
+
+</script>

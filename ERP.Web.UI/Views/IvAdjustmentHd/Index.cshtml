@@ -1,0 +1,13 @@
+﻿@{
+    ViewBag.Title = ERP.ResourcePack.Warehouses.IvAdjustmentHd.Title;
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@Html.Action(nameof(ERP.Web.UI.Controllers.Warehouses.IvAdjustmentHdController.IvAdjustmentHdSearch))
+@Html.Action(nameof(ERP.Web.UI.Controllers.Warehouses.IvAdjustmentHdController.IvAdjustmentHdData))
+
+@section scripts{
+    <script>let formView = false;</script>
+    @Html.Partial("~/ViewsScripts/_Warehouses/IvAdjustmentHd/IvAdjustmentHdScripts.cshtml")
+}
+

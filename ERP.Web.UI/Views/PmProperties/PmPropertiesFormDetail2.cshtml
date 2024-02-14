@@ -1,0 +1,65 @@
+﻿@using ERP.Web.UI.Models.ViewModels.PmPropertiesModule
+@using ERP.Web.UI.Models.ViewModels.Accounts
+@model PmPropertiesRevenueAccountsVM
+@{
+    string formTrigger = ViewBag.trigger;
+}
+
+<div class="card" style="display:@(formTrigger ==ERP.Front.Helpers.Enums.Common.FormTriggers.Show.ToString() ? "none":"block" ) ">
+    <div class="body">
+
+        <div class="border-apply" style="padding:0rem 1rem;margin:1rem">
+            <div class="header d-flex justify-content-start align-items-center p-0">
+                <i class="fas fa-2x fa-chevron-down down-arr mr-2" data-toggle="collapse" data-target="#percent"></i>
+                @ERP.ResourcePack.PmPropertiesModule.PmProperties.Percentage
+            </div>
+            <div class="collapse show" id="percent">
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="form-group form-float">
+                            <div class="form-line">
+                                @Html.TextBoxFor(z => z.Percentage, new { @class = "form-control", @type = "number", @min = 0, @max = 100 })
+                                @Html.LabelFor(z => z.Percentage, new { @class = "form-label" })
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="border-apply" style="padding:0rem 1rem;margin:1rem">
+            <div class="header d-flex justify-content-start align-items-center p-0">
+                <i class="fas fa-2x fa-chevron-down down-arr mr-2" data-toggle="collapse" data-target="#account1"></i>
+                @ERP.ResourcePack.PmPropertiesModule.PmProperties.Account
+            </div>
+
+            <div class="collapse show" id="account1">
+                <div class="row">
+                    @Html.Action(nameof(ERP.Web.UI.Controllers.Accounts.GlAccDetailsController.DrawGlAccController), "GlAccDetails",
+                             new { glAccHeadersVMs = ViewData["ListGlAccHeadersVM"] == null ? new List<GlAccHeadersVM>() : ViewData["ListGlAccHeadersVM"] as List<GlAccHeadersVM>, repeatTrigger = "" })
+                </div>
+            </div>
+        </div>
+        <div class="border-apply" style="padding:0rem 1rem;margin:1rem">
+            <div class="header d-flex justify-content-start align-items-center p-0">
+                <i class="fas fa-2x fa-chevron-down down-arr mr-2" data-toggle="collapse" data-target="#account2"></i>
+                @ERP.ResourcePack.PmPropertiesModule.PmProperties.AdvancedAccount
+            </div>
+            <div class="collapse show" id="account2">
+                <div class="row">
+                    @Html.Action(nameof(ERP.Web.UI.Controllers.Accounts.GlAccDetailsController.DrawGlAccController), "GlAccDetails",
+                             new { glAccHeadersVMs = ViewData["ListGlAccHeadersVM"] == null ? new List<GlAccHeadersVM>() : ViewData["ListGlAccHeadersVM"] as List<GlAccHeadersVM>, repeatTrigger = "advance" })
+                </div>
+            </div>
+        </div>
+
+        <div class="row clearfix">
+            <div class="col-sm-12 text-center">
+                <div class="form-group">
+                    <button id="btnAddRevenuesRow" onclick="return AddRevenues()" class="btn btn-success">@ERP.ResourcePack.Common.Settings.BtnAddNew</button>
+                    <button style="display:none;" id="btnUpdateRevenuesRow" onclick="return UpdateRevenuesRow()" class="btn btn-info">@ERP.ResourcePack.Common.Settings.BtnUpdate</button>
+                    <button style="display:none;" id="btnCancelRevenuesRow" onclick="clearFormAdding(); $('#btnCancelRevenuesRow').hide();$('#btnUpdateRevenuesRow').hide();$('#btnAddRevenuesRow').show();" class="btn btn-danger">@ERP.ResourcePack.Common.Settings.BtnCancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

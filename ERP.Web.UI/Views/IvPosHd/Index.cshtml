@@ -1,0 +1,116 @@
+﻿
+@using ERP.Web.UI.Controllers.Pos
+@using ERP.Web.UI.Models.ViewModels.Sales
+
+@{
+    //ViewBag.Title = ERP.ResourcePack.Sales.IvSaleHd.Title;
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    string formTrigger = ViewBag.trigger;
+    long? id = ViewData["Id"] == null ? null : (long?)Convert.ToInt32(ViewData["Id"]);
+    var detailObj = ViewData["DetailAsync"] == null ? null : ViewData["DetailAsync"] as IvSaleHdVM;
+}
+<style>
+    .wedgit {
+        min-height: 80px;
+    }
+</style>
+
+<div class="row" style="height:90%">
+    <div class="col-sm" style="width:25%">
+        @if (detailObj != null)
+        {
+            @Html.Action(nameof(IvPosHdController.IvPosHdForm), new { IvSaleHdVM = detailObj, FndLookupPaymentMethodLkp = detailObj.FndLookupPaymentMethodLkp, id = id, IvSaleDate = detailObj.IvSaleDate, ivSaleNumber = detailObj.IvSaleNumber, PaymentMethodLkpId = detailObj.PaymentMethodLkpId, PaymentMethod = detailObj.PaymentMethod, ArCustomerId = detailObj.ArCustomerId, ArCustomers = detailObj.ArCustomers, BankAccountId = detailObj.BankAccountId, ApBankAccounts = detailObj.ApBankAccounts, IvPriceListHdId = detailObj.IvPriceListHdId, IvPriceListHd = detailObj.IvPriceListHd, Discount = detailObj.Discount, DeliveryCharges = detailObj.DeliveryCharges, Comments = detailObj.Comments, PhoneNumber = detailObj.PhoneNumber, trigger = formTrigger })
+        }
+        else
+        {
+            @Html.Action(nameof(IvPosHdController.IvPosHdForm), new { IvSaleHdVM = detailObj, id = id, trigger = formTrigger })
+        }
+    </div>
+</div>
+<div style="height:100%">
+    <div class="row" style="height:90%">
+        <div style="width:25%">
+            @Html.Action(nameof(IvPosHdController.IvPosHdFormDetail), new { IvSaleHdVM = detailObj, id = id,  trigger = formTrigger })
+        </div>
+
+        <div style="width:75%">
+            <div class="card" style="margin-left:20px; margin-right:20px">
+                @Html.Action(nameof(IvPosHdController.IvPosHdDataDetail))
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <div class="row push-to-bottom text-center highlight" style="height:10%;" hidden>
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <div class="text-center">
+
+                        <div role="tabpanel" class="tab-pane fade in" id="EvaluatesituationData">
+
+                            @Html.Action(nameof(ERP.Web.UI.Controllers.Pos.IvPosHdController.IvPosHdData))
+
+                        </div>
+
+                        <div id="submitLoader" style="display:none">
+                            <div class="lds-roller"><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div></div>
+                        </div>
+
+
+
+                        @*<a href="~/IvSaleHd" class="btn btn-danger btn-lg m-l-15 waves-effect">@(ERP.ResourcePack.Common.Settings.BtnClose)</a>*@
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+</div>
+
+
+
+@section scripts{
+    <script>
+        const primaryEntityKeyId =  @(id == null ? 0 : id);
+        const trigger = '@formTrigger';
+        let formView = true;
+    </script>
+    <script src="~/Scripts/jquery.validate.min.js"></script>
+    <script src="~/Scripts/jquery.validate.unobtrusive.min.js"></script>
+    @Html.Partial("~/Views/IvPosHd/EditQtyModal.cshtml")
+    @Html.Partial("~/Views/IvPosHd/EditDiscountModal.cshtml")
+    @Html.Partial("~/ViewsScripts/POS/IvPosHd/IvPosHdScripts.cshtml")
+
+    @if (id != null)
+    {
+        <script>
+
+                $(function () {
+                    LoadDetailData();
+
+                });
+
+
+                if (primaryEntityKeyId && trigger === '@ERP.Front.Helpers.Enums.Common.FormTriggers.Show.ToString()' && @detailObj.StatusLkpId == @Convert.ToInt64(ERP.Front.Helpers.Enums.Common.HrPersonsDeductionHd.New) ) {
+
+                    let btns = '';
+
+                    btns += `<a href="javascript:void(0)" onclick="return PostAjax(@id)" class="btn btn-success">${'@ERP.ResourcePack.Common.Settings.Post'}</a>`;
+
+                    $('#btnContainer').html(btns);
+    };
+    $(document).ready(function () {
+        //Initialize your table
+        //var table = $('#tblIvSaleHd').dataTable();
+        ////Get the total rows
+        //alert(table.fnGetData().length);
+    });
+
+        </script>
+    }
+}

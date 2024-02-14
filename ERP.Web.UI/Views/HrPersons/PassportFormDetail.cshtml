@@ -1,0 +1,83 @@
+﻿@using ERP.Web.UI.Models.ViewModels.HR
+@model HrPersonsVM
+@{
+    string formTrigger = ViewBag.trigger;
+    string lang = Request.Cookies["Lang"] == null ? "ar-EG" : Request.Cookies["Lang"].Value.ToString();
+    bool isFormDetail = Model != null && formTrigger == ERP.Front.Helpers.Enums.Common.FormTriggers.Show.ToString();
+}
+<div class="card" style="display:@(formTrigger == ERP.Front.Helpers.Enums.Common.FormTriggers.Show.ToString() ? "none":"block" ) ">
+    <div class="body">
+        <div class="row clearfix">
+            <div class="col-sm-4">
+                @Html.LabelFor(z => z.PassportTypeLkpId, new { @class = "form-label" })
+                <div class="form-group form-float">
+                    <div class="form-group">
+                        @Html.DropDownListFor(z => z.PassportTypeLkpId, Enumerable.Empty<SelectListItem>(), new { @class = "form-control" })
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-4">
+                <div class="form-group form-float">
+                    <div class="form-line">
+                        @Html.TextBoxFor(z => z.PassportNumber, new { @class = "form-control" })
+                        @Html.LabelFor(z => z.PassportNumber, new { @class = "form-label" })
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-4">
+                @Html.LabelFor(z => z.CountryOfIssueLkpId, new { @class = "form-label" })
+                <div class="form-group form-float">
+                    <div class="form-group">
+                        @Html.DropDownListFor(z => z.CountryOfIssueLkpId, Enumerable.Empty<SelectListItem>(), new { @class = "form-control" })
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row clearfix">
+            <div class="col-sm-4">
+                <div class="form-group form-float">
+                    <div class="form-line">
+                        @Html.TextBoxFor(z => z.PlaceOfIssue, new { @class = "form-control" })
+                        @Html.LabelFor(z => z.PlaceOfIssue, new { @class = "form-label" })
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-4">
+                <div class="form-group form-float">
+                    <div class="form-line">
+                        @Html.TextBoxFor(z => z.DateOfIssue, new { @class = "form-control datepicker" })
+                        @Html.LabelFor(z => z.DateOfIssue, new { @class = "form-label" })
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-4">
+                <div class="form-group form-float">
+                    <div class="form-line">
+                        @Html.TextBoxFor(z => z.DateOfExpiry, new { @class = "form-control datepicker" })
+                        @Html.LabelFor(z => z.DateOfExpiry, new { @class = "form-label" })
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row clearfix">
+            <div class="col-sm-12">
+                <div class="form-group form-float">
+                    <div class="form-line">
+                        @Html.TextAreaFor(z => z.Notes, new { @class = "form-control" })
+                        @Html.LabelFor(z => z.Notes, new { @class = "form-label" })
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row clearfix text-center">
+            <div class="col-sm-4"></div>
+            <div class="col-sm-4">
+                <div class="form-group m-2">
+                    <button id="btnAddPassportDetailRow" onclick="return AddPassportDetails()" class="btn btn-success">@ERP.ResourcePack.Common.Settings.BtnAddNew</button>
+                    <button style="display:none;" id="btnUpdatePassportDetailRow" onclick="return UpdatePassportDetailsRow()" class="btn btn-info">@ERP.ResourcePack.Common.Settings.BtnUpdate</button>
+                    <button style="display:none;" id="btnCancelPassportDetailRow" onclick="clearFormPassportAdding(); $('#btnCancelPassportDetailRow').hide();$('#btnUpdatePassportDetailRow').hide();$('#btnAddPassportDetailRow').show();" class="btn btn-danger">@ERP.ResourcePack.Common.Settings.BtnCancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

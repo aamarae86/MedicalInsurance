@@ -1,0 +1,80 @@
+﻿@using ERP.Web.UI.Models.ViewModels.Accounts
+@model ArMiscReceiptDetailsVM
+@{
+    string formTrigger = ViewBag.trigger;
+    string lang = Request.Cookies["Lang"] == null ? "ar-EG" : Request.Cookies["Lang"].Value.ToString();
+    bool isFormDetail = Model != null && formTrigger == ERP.Front.Helpers.Enums.Common.FormTriggers.Show.ToString();
+}
+
+<div class="card" style="display:@( formTrigger ==ERP.Front.Helpers.Enums.Common.FormTriggers.Show.ToString() ? "none":"block" ) ">
+    <div class="body">
+        <div class="border-apply" style="padding:0rem 1rem;margin:1rem">
+            <div class="header d-flex justify-content-start align-items-center p-0">
+                <i class="fas fa-2x fa-chevron-down down-arr mr-2" data-toggle="collapse" data-target="#name"></i>
+                <hr />
+            </div>
+            <div class="collapse show" id="name">
+                <div class="row">
+                    <div class="col-md-3">
+                        <div class="form-group form-float">
+                            <div class="form-line">
+                                @Html.TextBoxFor(z => z.CheckNumber, getHtmlAttributes(isFormDetail, "form-control", string.Empty))
+                                @Html.LabelFor(z => z.CheckNumber, new { @class = "form-label" })
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="form-group form-float">
+                            <div class="form-line">
+                                @Html.TextBoxFor(z => z.MaturityDate, getHtmlAttributes(isFormDetail, "form-control", "datepicker"))
+                                @Html.LabelFor(z => z.MaturityDate, new { @class = "form-label" })
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-2">
+                        @Html.LabelFor(z => z.BankLkpId, new { @class = "form-label" })
+                        <div class="form-group form-float">
+                            <div>
+                                @Html.DropDownListFor(z => z.BankLkpId, Enumerable.Empty<SelectListItem>(), new { @class = "form-control" })
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-2">
+                        @Html.LabelFor(z => z.BankAccountdetailsId, new { @class = "form-label" })
+                        <div class="form-group form-float">
+                            <div>
+                                @Html.DropDownListFor(z => z.BankAccountdetailsId, Enumerable.Empty<SelectListItem>(), new { @class = "form-control" })
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-2">
+                        <div class="form-group form-float">
+                            <div class="form-line">
+                                @Html.TextBoxFor(z => z.AmountDetail, getHtmlAttributes(isFormDetail, "form-control currency", string.Empty))
+                                @Html.LabelFor(z => z.AmountDetail, new { @class = "form-label" })
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row clearfix">
+            <div class="col-sm-12 text-center">
+                <div class="form-group">
+                    <button id="btnAddMiscDetailRow" onclick="return AddMiscDetails()" class="btn btn-success">@ERP.ResourcePack.Common.Settings.BtnAddNew</button>
+                    <button style="display:none;" id="btnUpdateMiscDetailRow" onclick="return UpdateMiscRow()" class="btn btn-info">@ERP.ResourcePack.Common.Settings.BtnUpdate</button>
+                    <button style="display:none;" id="btnCancelMiscDetailRow" onclick="clearFormAdding(); $('#btnCancelMiscDetailRow').hide();$('#btnUpdateMiscDetailRow').hide();$('#btnAddMiscDetailRow').show();" class="btn btn-danger">@ERP.ResourcePack.Common.Settings.BtnCancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@functions {
+    object getHtmlAttributes(bool Disabled, string CssClass, string CssClass2)
+    {
+        if (Disabled) return new { @class = CssClass, Disabled = Disabled };
+        return new { @class = $"{CssClass} {CssClass2}" };
+    }
+}
+

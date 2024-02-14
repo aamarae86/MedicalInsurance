@@ -1,0 +1,15 @@
+﻿@{
+    ViewBag.Title = ERP.ResourcePack.Warehouses.PoPurchaseOrder.Title;
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@Html.Action(nameof(ERP.Web.UI.Controllers.Warehouses.PoPurchaseOrderController.PoPurchaseOrderSearch))
+@Html.Action(nameof(ERP.Web.UI.Controllers.Warehouses.PoPurchaseOrderController.PoPurchaseOrderData))
+@Html.Partial("_ReportModal")
+
+@section scripts{
+    <script>
+        let formView = false;
+    </script>
+    @Html.Partial("~/ViewsScripts/_Warehouses/PoPurchaseOrder/PoPurchaseOrderScripts.cshtml")
+}

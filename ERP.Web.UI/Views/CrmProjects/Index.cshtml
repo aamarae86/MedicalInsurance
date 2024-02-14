@@ -1,0 +1,12 @@
+﻿@{
+    ViewBag.Title = ERP.ResourcePack.CRM.projects.projects.Title;
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+<link href="~/lib/summernote/summernote-lite.min.css" rel="stylesheet" />
+
+@Html.Action(nameof(ERP.Web.UI.Controllers.CRM.CrmProjectsController.CrmProjectsSearch))
+@Html.Action(nameof(ERP.Web.UI.Controllers.CRM.CrmProjectsController.CrmProjectsData))
+
+@section scripts{
+    @Html.Partial("~/ViewsScripts/_CRM/CrmProjectsScripts.cshtml")
+}

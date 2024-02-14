@@ -1,0 +1,750 @@
+﻿@using ERP.ResourcePack.Accounts
+@using ERP.Web.UI.Controllers.Accounts
+@using ERP.Authorization;
+@{
+    string permissionsStr = TempData["Permissions"] != null ? TempData["Permissions"].ToString() : string.Empty;
+    string encUpdateTrigger = ERP.Front.Helpers.Enums.Common.EncUpdate;
+    string encInsertTrigger = ERP.Front.Helpers.Enums.Common.EncInsert;
+    string encShowTrigger = ERP.Front.Helpers.Enums.Common.EncShow;
+}
+
+@if (permissionsStr.Contains(PermissionNames.Pages_ArJobCardPaymentHd_Post))
+{
+    <script>
+
+        const PostArJobCardPayment = function (id) {
+
+            bootbox.confirm({
+                message: _booBoxMessagePosting,
+                buttons: bootBoxDefaultBtns,
+                callback: function (result) {
+
+                    if (result) {
+
+                        const data = {
+                            id: id,
+                            lang: lang
+                        };
+
+                        $.ajax({
+                            url: `${baseUrl}/ArJobCardPaymentHd/PostArJobCardPayment`,
+                            type: 'POST',
+                            data: JSON.stringify(data),
+                            headers:
+                            {
+                                'Content-Type': 'application/json',
+                                'Authorization': `Bearer ${$_token}`
+                            },
+                        }).done(function (response) {
+
+                            if (response.result.finalStatues == 'F') {
+                                toastr.warning(response.result.reason);
+                            }
+                            else {
+                                toastr.success(response.result.reason);
+                                setTimeout(function () {
+                                    window.location.href = $PrefixHostName + '/ArJobCardPaymentHd';
+                                }, 200);
+                            }
+                        }).fail(function (response) {
+                            toastr.error(response);
+                        });
+
+                    }
+                }
+            });
+        };
+
+    </script>
+}
+else
+{
+    <script>
+        const PostArJobCardPayment = function (id) { };
+    </script>
+}
+
+
+<script>
+    const _mainController = "ArJobCardPaymentHd"
+
+    $(function () {
+        LoadDataGrid();
+        $('#ArJobCardPaymentHd').addClass('active');
+                     
+
+    });
+
+    const _loadDataUrl = `${$PrefixHostName}/${_mainController}/@nameof(ArJobCardPaymentHdController.LoadDataGrid)`;
+    const _tblSelector = $('#tblArJobCardPaymentHd');
+    const _tblLoader = $('#tblLoader');
+
+    const _permissions = '@permissionsStr';
+    const _updatePermission = '@PermissionNames.Pages_ArJobCardPaymentHd_Update';
+    const _deletePermission = '@PermissionNames.Pages_ArJobCardPaymentHd_Delete';
+    const _postPermission = '@PermissionNames.Pages_ArJobCardPaymentHd_Post';
+    const _postStatus = @Convert.ToInt64(ERP.Front.Helpers.Enums.Common.ArJobCardPaymentHd.Posted);
+    const _newStatus = @Convert.ToInt64(ERP.Front.Helpers.Enums.Common.ArJobCardPaymentHd.New);
+    var detailObj = {};
+
+
+
+    var fillPrimaryDetails = function (response) {
+
+        $('input#CustomerNameEn').val(response.customerNameEn)
+        $('input#OriginalAmount').val(response.originalAmount)
+        $('input.sec-prop').parent('.form-line').addClass('focused')
+    };
+
+    var fillSecondaryDetails = function (response) {
+
+        $('input#PaymentDate').val(response.miscPaymentDate);
+        $('input#Amount').val(response.amount);
+        $('input#Notes').val(response.notes);
+        $('input.pry-prop').parent('.form-line').addClass('focused')
+    };
+
+    const ReturnSelect2ObjectWithMultiSelectorFromURL = function (url, selectorone, selectortwo) {
+
+
+
+        return {
+
+
+            ajax: {
+                url: url,
+                dataType: 'json',
+                headers: {
+                    'Authorization': `Bearer ${$_token}`
+                },
+                data: function (params) {
+                    params.page = params.page || 1;
+                    return {
+                        jobNumLkpId: $(`#${selectorone}`).find(':selected').text(),
+                        sourceTypeLkpId: $(`#${selectortwo}`).find(':selected').val(),
+                        invoiceId: $('#InvoiceNumberLkpId').find(':selected').val(),
+                        pageSize: pageSize,
+                        pageNumber: params.page,
+                        searchTerm: params.term,
+                        lang: lang
+                    };
+                },
+                processResults: function (data, params) {
+
+                    params.page = params.page || 1;
+
+                    return {
+                        results: data.result.results,
+                        pagination: {
+                            more: (params.page * pageSize) < data.result.total
+                        }
+                    };
+                }
+            },
+            placeholder: select2Placeholder,
+            minimumInputLength: 0,
+            allowClear: true,
+            language: select2Lang
+        };
+
+    };
+
+    var OnBegin = function (response) {
+
+        fireBtnLoader();
+    };
+
+    var OnSuccess = function (response) {
+
+        $('#btnSubmition').prop('disabled', false);
+
+        if (response.success) {
+
+            if (response.customRestResult.trigger === '@ERP.Front.Helpers.Enums.Common.FormTriggers.Insert') {
+
+                toastr.success(response.customRestResult.message);
+
+                setTimeout(function () {
+                    window.location.href = $PrefixHostName + '/ArJobCardPaymentHd';
+                }, 200);
+
+            }
+            else if (response.customRestResult.trigger === '@ERP.Front.Helpers.Enums.Common.FormTriggers.Update') {
+
+                toastr.success(response.customRestResult.message);
+
+                setTimeout(function () {
+                    window.location.href = $PrefixHostName + '/ArJobCardPaymentHd';
+                }, 200);
+
+            }
+            else {
+                toastr.error(response.customRestResult.message);
+            }
+
+        } else {
+                toastr.error(response.error.message);
+        }
+
+    };
+
+    var OnComplete = function (response) {
+        downBtnLoader();
+    };
+
+    var OnFailure = function (response) {
+        toastr.error(response);
+        downBtnLoader();
+    };
+
+    $('#SourceLkpId').on('select2:select', function (e) {
+        $('#InvoiceNumberLkpId').val('').trigger('change');
+
+        $('input.pry-prop').val('');
+    });
+
+    $('#InvoiceNumberLkpId').on('select2:select', function (e) {
+
+
+        $.ajax({
+            url: `${baseUrl}/ArJobCardPaymentHd/GetPaymentDetails`,
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${$_token}`
+            },
+            data: {
+                invoiceNum: $('#InvoiceNumberLkpId').find(':selected').text(),
+                invoiceId: $('#InvoiceNumberLkpId').find(':selected').val(),
+                sourceTypeLkpId: $('#SourceLkpId').find(':selected').val(),
+                jobNumLkpId: $('#JobNumberLkpId').find(':selected').text()
+            }
+        }).done(function (response) {
+
+            var data = response;
+
+            fillSecondaryDetails(response.result);
+
+
+        }).fail(function (response) {
+            toastr.error(response);
+        });
+    });
+
+    $('#JobNumberLkpId').on('select2:select', function (e) {
+
+
+        $.ajax({
+            url: `${baseUrl}/ArJobCardPaymentHd/GetArCustomersDetails`,
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${$_token}`
+            },
+            data: {
+                jobNumLkpId: $('#JobNumberLkpId').find(':selected').val()
+            }
+        }).done(function (response) {
+
+            var data = response;
+            clearFormArJobCardHeaderAdding(true);
+            fillPrimaryDetails(response.result[0]);           
+
+        }).fail(function (response) {
+            toastr.error(response);
+            
+        });
+    });
+
+
+    $('#btnSubmition').on('click', function () {
+
+        validatorHeaders();
+
+        if ($('#mainForm').valid()) {
+
+            $(this).prop('disabled', true);
+
+            $('#submitLoader').show();
+
+            $('#mainForm').submit();
+
+        } else {
+            $(this).prop('disabled', false);
+
+            $('#submitLoader').hide();
+        }
+
+    });
+
+    const LoadDataGrid = function () {
+
+        $('#tblLoader').show();
+
+        const params = {
+            TransactionDate: $('#searchBox #TransactionDate').val(),
+            StatusLkpId: $('#searchBox #StatusLkpId').find(':selected').val(),
+            JobNumberLkpId: $('#searchBox #JobNumberLkpId').find(':selected').text(),
+            CustomerLkpId: $('#searchBox #ArCustomerLkpId').find(':selected').val()
+        };
+
+
+
+        const columns = [
+            {
+                "data": "result.data.id",
+                'render': function (data, type, row, meta) {
+                    return meta.row + meta.settings._iDisplayStart + 1;
+                }
+            },
+            {
+                "data": "TransactionDate",
+                "name": "TransactionDate",
+                "autoWidth": true
+            },
+            {
+                "data": null,
+                "autoWidth": true,
+                "render": function (d, t, row) {
+                    if (row.ArJobCardHd == null) return '';
+
+                    return  row.ArJobCardHd.JobNumber;
+                }
+            },
+            {
+                "data": null,
+                "autoWidth": true,
+                "render": function (d, t, row) {
+                    if (row.ArCustomers == null) return '';
+
+                    return lang === 'ar-EG' ? row.ArCustomers.CustomerNameAr : row.ArCustomers.CustomerNameEn;
+                }
+            },
+            {
+                "data": null,
+                "autoWidth": true,
+                "render": function (d, t, row) {
+                    if (row.ArJobCardHd == null) return '';
+
+                    var OrigAmount = $.fn.dataTable.render.number(',', '.', 2).display(row.ArJobCardHd.OriginalAmount);
+
+
+                    return OrigAmount;
+                }
+            },
+            {
+                "data": null,
+                "autoWidth": true,
+                "render": function (d, t, row) {
+                    if (row.FndJobCardPaymenStatusLkp == null) return '';
+
+                    return lang === 'ar-EG' ? row.FndJobCardPaymenStatusLkp.NameAr : row.FndJobCardPaymenStatusLkp.NameEn;
+                }
+            },
+            {
+                "data": null,
+                "sortable": false,
+                "render": function (data, type, row) {
+
+                    let formAction = `SourceLkpIdourceLkpId{$PrefixHoSourceLkpIdtName}/${_mainController}/@nameof(ArJobCardPaymentHdController.ArJobCardPaymentHdForm)`;
+                    let DeleteAction = `${$PrefixHostName}/${_mainController}/@nameof(ArJobCardPaymentHdController.Delete)`;
+
+                    let formTitle = '@ERP.ResourcePack.Accounts.ArCustomers.ArInvoiceHd';
+                    let btns = '';
+
+
+
+                    if (_permissions.includes(_updatePermission) && row.StatusLkpId == _newStatus) {
+                        btns += `<a href="${$PrefixHostName}/ArJobCardPaymentHd/FormView?id=${row.EncId}&t=@encUpdateTrigger" title="@ERP.ResourcePack.Common.Settings.Edit"><i class="mx-2 fas fa-edit text-info"></i></a>`;
+                    }
+
+                    btns += `<a href="${$PrefixHostName}/ArJobCardPaymentHd/FormView?id=${row.EncId}&t=@encShowTrigger" title="@ERP.ResourcePack.Common.Settings.Show"><i class="mx-2 fas fa-eye text-info"></i></a>`;
+
+                    if (_permissions.includes(_deletePermission) && row.StatusLkpId == _newStatus) {
+                        btns += `<a href="javascript:void(0)" onclick="AjaxController.DeleteMainTableRow(${row.Id},'${DeleteAction}');" title="@ERP.ResourcePack.Common.Settings.Delete"><i class="mx-2 fas fa-trash-alt text-danger"></i></a>`;
+                    }
+
+                    if (_permissions.includes(_postPermission) & row.StatusLkpId == _newStatus) {
+                        btns += `<a href="javascript:void(0)" onclick="PostArJobCardPayment(${row.Id})"  title="@ERP.ResourcePack.Common.Settings.Post"><i class="mx-2 fas fa-check-circle text-info"></i></a>`;
+                    }
+
+                    btns += `<a href="javascript:void(0);" onclick="return print('${$PrefixHostName}/ArJobCardPaymentHd/PrintArJobCardPaymentHdScreen','${row.EncId}','${lang}')" title="@ERP.ResourcePack.Common.Settings.Print"><i class="mx-2 fas fa-print text-success"></i></a>`;
+
+                    const _auditedPermission = '@PermissionNames.Pages_ArJobCardPaymentHd_Audit';
+
+                    if (_permissions.includes(_auditedPermission)) {
+
+                        row.permission = _auditedPermission;
+
+                        btns += GetAuditedButton(row);
+                    }
+
+                    return btns;
+                }
+            }
+        ];
+
+        const dtObj = {
+            "processing": true,
+            "serverSide": true,
+            "filter": false,
+            "orderMulti": false,
+            "language": dataTableLang,
+            "ajax": {
+                "url": _loadDataUrl,
+                "type": "POST",
+                "datatype": "json",
+                "headers": {
+                    'Authorization': `Bearer ${$_token}`
+                },
+                "data": params,
+                "complete": function () {
+                      _tblLoader.hide();
+                }
+            },
+            "columns": columns,
+            "initComplete": function () {
+                $('[data-toggle="tooltip"]').tooltip();
+            }
+
+        };
+
+
+
+        _tblSelector.dataTable().fnDestroy();
+        _tblSelector.DataTable(dtObj).on('draw', function () { $('[data-toggle="tooltip"]').tooltip(); });
+
+        setTimeout(function () {
+            $(".sorting_1").removeAttr('colspan');
+        }, 500);
+    };
+
+
+    $('#searchBox #StatusLkpId').select2(ReturnSelect2ObjectForLkpsTypes('@ERP.Front.Helpers.Enums.Common.FndLkpsTypes.ArJobCardPaymentHdStatus.ToString()'));
+    $('#JobNumberLkpId').select2(ReturnSelect2ObjectDefault(`${baseUrl}/ArJobCardPaymentHd/GetArJobCardHdJobNumberSelect2`));
+    //$('#JobNumberLkpId').select2(ReturnSelect2ObjectDefault(`${baseUrl}/ArCustomers/GetArCustomersSelect2`));
+
+    $('#ArCustomerLkpId').select2(ReturnSelect2ObjectDefault(`${baseUrl}/ArCustomers/GetArCustomersSelect2`));
+    $('#SourceLkpId').select2(ReturnSelect2ObjectForLkpsTypes('@ERP.Front.Helpers.Enums.Common.FndLkpsTypes.ArJobCardPaymentTrSource.ToString()'));
+    $('#InvoiceNumberLkpId').select2(ReturnSelect2ObjectWithMultiSelectorFromURL(`${baseUrl}/ArJobCardPaymentHd/GetConditionalSelect2`, 'JobNumberLkpId', 'SourceLkpId'));
+
+
+    const print = function (url, id, lang) {
+
+        const data = { id: id, lang: lang };
+
+        openModal(data, url);
+    };
+
+
+</script>
+
+
+<script name="ArJobCardHeaderDetailss">
+
+    const _tblArJobCardHeaderDetailSelector = $('#tblArJobCardPaymentHdDetail'), _listArJobCardPaymentHdDetail = $('#ListArJobCardPaymentTr');
+
+    let _ArJobCardHeaderDetail = [], updatedArJobCardHeaderDetailsRow, tblCounterArJobCardHeaderIndex = 0 ;
+
+
+    const fillArJobCardHeaderDetail = function () {
+
+        if (validatorArJobCardPaymentDtl() === false) return;
+
+        const current = {
+            index: ++tblCounterArJobCardHeaderIndex,
+            sourceTypeLkpId: $('#SourceLkpId').find(':selected').val(),
+            sourceName: $('#SourceLkpId').find(':selected').text(),
+            invoiceNumberLkpId: $('#InvoiceNumberLkpId').find(':selected').val(),
+            invoiceNumber: $('#InvoiceNumberLkpId').find(':selected').text(),
+            paymentDate: $('input#PaymentDate').val(),
+            amount: Number($('input#Amount').val()),
+            notes: $('input#Notes').val(),
+            rowStatus: NewStatus,
+            sourceId: $('#InvoiceNumberLkpId').find(':selected').val(),
+            customerNameEn: $('#CustomerNameEn').val(),
+            originalAmount: Number($('#OriginalAmount').val()),
+            jobNumber: $('#JobNumberLkpId').find(':selected').text(),
+            jobNumberLkpId: $('#JobNumberLkpId').val()
+          /*  id: 0,*/
+          /*  arJobCardPaymentHdId : 0*/
+        };
+
+        $('#ArJobCardHdId').val($('#JobNumberLkpId').val())
+
+
+
+        return current;
+    };
+
+    const AddArJobCardHeaderDetails = function () {
+
+        const current = fillArJobCardHeaderDetail();
+
+        if (_ArJobCardHeaderDetail.find(x => x.jobNumberLkpId === current.jobNumberLkpId &&
+            x.invoiceNumberLkpId === current.invoiceNumberLkpId)) {
+
+            toastr.warning('JobNumber and InvoiceNumber Already Added');
+            return false;
+        }
+
+        if (current === undefined) return;
+
+        _ArJobCardHeaderDetail.push(current);
+
+        _listArJobCardPaymentHdDetail.val(JSON.stringify(_ArJobCardHeaderDetail));
+
+        bindArJobCardHeaderDetailTable();
+
+        clearFormArJobCardHeaderAdding(true);
+    };
+
+    const bindArJobCardHeaderDetailTable = function () {
+
+        const detailArr = _ArJobCardHeaderDetail.filter(z => z.rowStatus !== DeletedStatus);
+
+
+        const columns = [
+            { 'data': 'index' },
+            {
+                'data': 'sourceName',
+                "autoWidth": true,
+                "render": function (d, t, row) {
+
+                    if (row.sourceTypeLkpId == null) return '';
+
+                    var source = '';
+
+                    if (lang === 'ar-EG')
+                        source = row.sourceNameAr != undefined ? row.sourceNameAr : row.sourceName;
+                    else
+                        source = row.sourceNameEn != undefined ? row.sourceNameEn : row.sourceName;
+
+                    return source;
+                }
+
+            },
+            { 'data': 'sourceId' },
+            { 'data': 'invoiceNumber' },
+            { 'data': 'paymentDate' },
+            { 'data': 'notes' },
+            {
+                'data': 'amount',
+                "render": $.fn.dataTable.render.number(',', '.', 2)
+            },
+            {
+                'data': null,
+                'searchable': false,
+                'ordering': false,
+                'sorting': false,
+                'render': function (d, t, row) {
+
+                    let rows = '';
+
+                    if (primaryEntityKeyId === 0 || trigger !== '@ERP.Front.Helpers.Enums.Common.FormTriggers.Show.ToString()') {
+
+                        rows += `<td><a href="javascript:void(0)" onclick="return DeleteArJobCardHeaderDetail(${row.index})"><i class="mx-2 fas fa-trash-alt text-danger"></i></a>`;
+                        rows += `<a href="javascript:void(0)" onclick="return GetArJobCardHeaderDetailRow(${row.index})"><i class="mx-2 fas fa-edit text-success"></i></a></td>`;
+                    }
+                    else {
+                        rows += '<td></td>';
+                    }
+
+                    return rows;
+                }
+            }
+        ];
+
+        const dtObj = {
+            data: detailArr,
+            retrieve: true,
+            language: dataTableLang,
+            columns: columns,
+            drawCallback: function (c, v, b) {}
+        };
+
+        setTimeout(function () {
+
+            _tblArJobCardHeaderDetailSelector.dataTable().fnDestroy();
+            _tblArJobCardHeaderDetailSelector.DataTable(dtObj).on('draw', function () { $('[data-toggle="tooltip"]').tooltip(); });
+
+        }, 100);
+    };
+
+    const DeleteArJobCardHeaderDetail = function (index)  {
+
+        const current = _ArJobCardHeaderDetail.find(z => z.index === index);
+
+        const indexOfCurrent = _ArJobCardHeaderDetail.indexOf(current);
+
+        if (!current.id) {
+
+           _ArJobCardHeaderDetail.splice(indexOfCurrent, 1);
+
+        } else {
+
+            current.rowStatus = DeletedStatus;
+
+           _ArJobCardHeaderDetail.splice(indexOfCurrent, 1,current);
+        }
+
+        bindArJobCardHeaderDetailTable();
+
+        _listArJobCardPaymentHdDetail.val(_ArJobCardHeaderDetail.length === 0 ? '' : JSON.stringify(_ArJobCardHeaderDetail));
+
+    };
+
+    const LoadArJobCardHeaderDetailData = function () {
+
+        $.ajax({
+            url: `${baseUrl}/ArJobCardPaymentHd/GetAllArJobCardPaymentTrData`,
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${$_token}`
+            },
+            data: {
+                id: primaryEntityKeyId
+            }
+        }).done(function (data) {
+
+            _ArJobCardHeaderDetail = [...data.result];
+
+            tblCounterArJobCardHeaderIndex = 0;
+
+            $.each(_ArJobCardHeaderDetail, function (i, item) {
+                item.index = ++tblCounterArJobCardHeaderIndex;
+            });
+
+            bindArJobCardHeaderDetailTable();
+
+            _listArJobCardPaymentHdDetail.val(JSON.stringify(_ArJobCardHeaderDetail));
+
+        });
+
+    };
+
+    const GetArJobCardHeaderDetailRow = function (tblIndex) {
+
+        clearFormArJobCardHeaderAdding(true);
+
+        $('#btnAddDetailRow').hide();
+        $('#btnUpdateDetailRow').show();
+        $('#btnCancelDetailRow').show();
+
+        const current = _ArJobCardHeaderDetail.find(z => z.index === tblIndex);
+
+        $('input.sec-prop').parent('.form-line').addClass('focused')
+        $('input.pry-prop').parent('.form-line').addClass('focused')
+
+
+        $('input#CustomerNameEn').val(current.customerNameEn)
+        $('input#OriginalAmount').val(current.originalAmount)
+
+        $('#JobNumberLkpId').append($("<option selected='selected'></option>").val(current.jobNumberLkpId).text(current.jobNumber)).trigger('change');
+
+        var sourceName = current.sourceName == undefined ? (lang === 'ar-EG' ? current.sourceNameAr : current.sourceNameEn) : current.sourceName;
+
+        $('#SourceLkpId').append($("<option selected='selected'></option>").val(current.sourceTypeLkpId).text(sourceName)).trigger('change');
+
+
+        $('#InvoiceNumberLkpId').append($("<option selected='selected'></option>").val(current.invoiceNumberLkpId).text(current.invoiceNumber)).trigger('change');
+        //.val(current.invoiceNumberLkpId).trigger('change');
+        $('input#PaymentDate').val(current.paymentDate);
+        $('input#Amount').val(current.amount);
+        $('input#Notes').val(current.notes);
+
+
+
+        updatedArJobCardHeaderDetailsRow = current;
+    };
+
+    const UpdateArJobCardHeaderDetailsRow = function () {
+
+        let current = _ArJobCardHeaderDetail.find(z => z.index === updatedArJobCardHeaderDetailsRow.index);
+
+        let indexOfCurrent = _ArJobCardHeaderDetail.indexOf(_ArJobCardHeaderDetail.find(z => z.index === updatedArJobCardHeaderDetailsRow.index));
+
+        const newRow = fillArJobCardHeaderDetail();
+
+        if (newRow === undefined) return;
+
+        newRow.index = current.index;
+        newRow.arJobCardPaymentHdId = current.arJobCardPaymentHdId;
+        newRow.id = updatedArJobCardHeaderDetailsRow.id;
+        newRow.rowStatus =  !updatedArJobCardHeaderDetailsRow.id ? NewStatus : UpdatedStatus;
+
+        _ArJobCardHeaderDetail.splice(indexOfCurrent, 1,newRow);
+
+        $('#btnAddArJobCardHeaderDetailRow').show();
+        $('#btnUpdateArJobCardHeaderDetailRow').hide();
+        $('#btnCancelArJobCardHeaderDetailRow').hide();
+
+        clearFormArJobCardHeaderAdding(true);
+
+        _listArJobCardPaymentHdDetail.val(JSON.stringify(_ArJobCardHeaderDetail));
+
+        setTimeout(function () {
+            bindArJobCardHeaderDetailTable();
+        }, 100);
+    };
+
+    const clearFormArJobCardHeaderAdding = function (skip) {
+
+        if(!skip){
+            $('#JobNumberLkpId').val('').trigger('change');
+            $('input#CustomerNameEn').val('')
+            $('input#OriginalAmount').val('')
+        }
+
+
+        $('#SourceLkpId').val('').trigger('change');
+        $('#InvoiceNumberLkpId').val('').trigger('change');
+        $('input#PaymentDate').val('');
+        $('input#Amount').val('');
+        $('input#Notes').val('');
+
+    };
+
+    const validatorHeaders = function () {
+
+        if (!$('#TransactionDate').val()) {
+            toastr.warning('@ArJobCardPaymentHd.TransactionDate' + ' : ' + '@ERP.ResourcePack.Common.Settings.Required');
+            return false;
+        }
+
+    };
+
+    $('#JobNumberLkpId').on('select2:clear', function (e) {
+        clearFormArJobCardHeaderAdding(false);
+    });
+
+    const validatorArJobCardPaymentDtl = function () {
+
+
+        if (!$("#JobNumberLkpId").val()) {
+            toastr.warning('@ArJobCardPaymentHd.JobNumber' + ' : ' + '@ERP.ResourcePack.Common.Settings.Required');
+            return false;
+        }
+        if (!$("#SourceLkpId").val()) {
+            toastr.warning('@ArJobCardPaymentHd.SourceLkpId' + ' : ' + '@ERP.ResourcePack.Common.Settings.Required');
+            return false;
+        }
+
+        if (!$("#InvoiceNumberLkpId").val()) {
+            toastr.warning('@ArJobCardPaymentHd.InvoiceNumberLkpId' + ' : ' + '@ERP.ResourcePack.Common.Settings.Required');
+            return false;
+        }
+
+         if (!$('#PaymentDate').val()) {
+            toastr.warning('@ArJobCardPaymentHd.PaymentDate' + ' is Empty');
+            return false;
+        }
+
+        if (!$('#Amount').val()) {
+            toastr.warning('@ArJobCardPaymentHd.Amount' + ' is Empty');
+            return false;
+        }
+
+    };
+
+
+
+</script>

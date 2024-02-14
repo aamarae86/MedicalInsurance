@@ -1,0 +1,485 @@
+﻿@using ERP.Authorization;
+@using ERP.Web.UI.Controllers.Accounts;
+@using ERP.ResourcePack.Accounts;
+@{
+    string permissionsStr = TempData["Permissions"].ToString();
+    string encShowTrigger = ERP.Front.Helpers.Enums.Common.EncShow;
+}
+
+@if (permissionsStr.Contains(PermissionNames.Pages_ApPdcInterface_Post))
+{
+    <script>
+        const PostAjax = function (id) {
+
+            bootbox.confirm({
+                message: _booBoxMessagePosting,
+                buttons: bootBoxDefaultBtns,
+                callback: function (result) {
+
+                    if (result) {
+
+                        const data = {
+                            id: id,
+                            lang: lang,
+                            userId: 0
+                        };
+
+                        $.ajax({
+                            url: `${baseUrl}/ApPdcInterface/PostApPdcInterface`,
+                            type: 'POST',
+                            data: JSON.stringify(data),
+                            headers:
+                            {
+                                'Content-Type': 'application/json',
+                                'Authorization': `Bearer ${$_token}`
+                            },
+                        }).done(function (response) {
+
+                            if (response.result.finalStatues == 'F') {
+                                toastr.warning(response.result.reason);
+                            }
+                            else {
+                                toastr.success(response.result.reason);
+                                LoadDataGrid();
+                            }
+
+                        }).fail(function (response) {
+                            toastr.error(response);
+                        });
+
+                    }
+
+                }
+            });
+
+
+
+        };
+
+        const RetrieveAjax = function (id) {
+
+            bootbox.confirm({
+                message: _booBoxMessagePosting,
+                buttons: bootBoxDefaultBtns,
+                callback: function (result) {
+
+                    if (result) {
+
+                        const data = {
+                            id: id,
+                            lang: lang,
+                            userId: 0
+                        };
+
+                        $.ajax({
+                            url: `${baseUrl}/ApPdcInterface/RetrieveApPdcInterface`,
+                            type: 'POST',
+                            data: JSON.stringify(data),
+                            headers:
+                            {
+                                'Content-Type': 'application/json',
+                                'Authorization': `Bearer ${$_token}`
+                            },
+                        }).done(function (response) {
+
+                            if (response.result.finalStatues == 'F') {
+                                toastr.warning(response.result.reason);
+                            }
+                            else {
+                                toastr.success(response.result.reason);
+                                LoadDataGrid();
+                            }
+
+                        }).fail(function (response) {
+                            toastr.error(response);
+                        });
+
+                    }
+
+                }
+            });
+        };
+    </script>
+}
+else
+{
+    <script>
+        const PostAjax = function (id) { };
+        const RetrieveAjax = function (id) { };
+    </script>
+}
+
+<script>
+    const _mainController = "ApPdcInterface"
+
+    $(function () {
+        $('#tblApPdcInterfacePrint thead').html($('#tblApPdcInterface thead').html());
+        $('#tblApPdcInterfacePrint thead tr :last-child').remove();
+        $('#ApPdcInterface').addClass('active');
+    });
+
+    const _loadDataUrl = `${$PrefixHostName}/${_mainController}/@nameof(ApPdcInterfaceController.LoadDataGrid)`;
+    const _tblSelector = $('#tblApPdcInterface');
+    const _tblSelectorbody = $('#tblApPdcInterface tbody');
+    const _tblLoader = $('#tblLoader');
+    const _txtBankAccount = $('#searchBox #BankAccountIdSearch');
+    const _txtFromDate = $('#searchBox #FromDate');
+    const _txtToDate = $('#searchBox #ToDate');
+    const _txtCheckNumber = $('#searchBox #CheckNumber');
+    const _txtStatusLkpId = $('#searchBox #StatusLkpIdSearch');
+
+    const _permissions = '@permissionsStr';
+    const _updatePermission = '@PermissionNames.Pages_ApPdcInterface_Update';
+    const _deletePermission = '@PermissionNames.Pages_ApPdcInterface_Delete';
+    const _postPermission = '@PermissionNames.Pages_ApPdcInterface_Post';
+    const _StatusDelivered = @Convert.ToInt64(ERP.Front.Helpers.Enums.Common.FndApPdcInterfaceStatues.Delivered);
+
+    var OnBegin = function (response) {
+        fireBtnLoader();
+    };
+
+    var OnSuccess = function (response) {
+
+        if (response.success) {
+
+            if (response.customRestResult.trigger === '@ERP.Front.Helpers.Enums.Common.FormTriggers.Insert') {
+
+                toastr.success(response.customRestResult.message);
+
+                LoadDataGrid();
+
+                _mainModal.modal('hide');
+
+            }
+            else if (response.customRestResult.trigger === '@ERP.Front.Helpers.Enums.Common.FormTriggers.Update') {
+
+                LoadDataGrid();
+
+                _mainModal.modal('hide');
+
+                toastr.success(response.customRestResult.message);
+            }
+
+        }
+        else {
+            toastr.error(response.customRestResult.message);
+        }
+
+    };
+
+    var OnComplete = function (response) {
+
+        downBtnLoader();
+    };
+
+    var OnFailure = function (response) {
+        toastr.error(response);
+        console.log(response);
+        downBtnLoader();
+    };
+
+    const LoadDataGrid = function () {
+        const parms = {
+            BankAccountId: _txtBankAccount.val(),
+            FromDate: _txtFromDate.val(),
+            ToDate: _txtToDate.val(),
+            CheckNumber: _txtCheckNumber.val(),
+            StatusLkpId: _txtStatusLkpId.val()
+        };
+
+        if (!_txtStatusLkpId.val()) {
+            toastr.error('@ArPdcInterface.SelectStatus');
+            return;
+        }
+
+        $('#dataCollapse').show();
+        $('#tblLoader').show();
+
+        const columns = [
+            {
+                "data": "result.data.id",
+                'render': function (data, type, row, meta) {
+                    return meta.row + meta.settings._iDisplayStart + 1;
+                }
+            }
+            ,
+            {
+                "data": null,
+                "autoWidth": true,
+                "render": function (data, type, row) {
+
+                    if (!row.FndLookupValuesSourceCodeLkp) return '';
+
+                    if (lang === 'ar-EG') {
+
+                        if (row.SourceCodeLkpId && row.SourceCodeLkpId == 43 && row.SourceId)
+                            return `<a style="text-decoration:underline" href="${$PrefixHostName}/ApMiscPaymentHeaders/FormView?id=${row.encApMiscPaymenId}&t=@encShowTrigger" target="_blank">${row.FndLookupValuesSourceCodeLkp.NameAr}</a>`;
+                         else
+                            return  row.FndLookupValuesSourceCodeLkp.NameAr
+
+                    }
+
+                       if (row.SourceCodeLkpId && row.SourceCodeLkpId == 43 && row.SourceId)
+                            return `<a style="text-decoration:underline" href="${$PrefixHostName}/ApMiscPaymentHeaders/FormView?id=${row.encApMiscPaymenId}&t=@encShowTrigger" target="_blank">${row.FndLookupValuesSourceCodeLkp.NameEn}</a>`;
+                         else
+                            return  row.FndLookupValuesSourceCodeLkp.NameEn
+
+                }
+            }
+            ,
+            {
+                "data": "SourceNumber",
+                "name": "SourceNumber",
+                "autoWidth": true
+            },
+            {
+                "data": "CheckNumber",
+                "name": "CheckNumber",
+                "autoWidth": true
+            },
+            {
+                "data": "MaturityDate",
+                "name": "MaturityDate",
+                "autoWidth": true
+            },
+            {
+                "data": "Amount",
+                "name": "Amount",
+                "render": $.fn.dataTable.render.number(',', '.', 2),
+                "autoWidth": true
+            },
+            {
+                "data": null,
+                "autoWidth": true,
+                "render": function (data, type, row) {
+                    if (!row.ApBankAccounts) {
+                        return "";
+                    }
+                    if (lang === 'ar-EG')
+                        return row.ApBankAccounts.BankAccountNameAr;
+                    return row.ApBankAccounts.BankAccountNameEn;
+                }
+            },
+            {
+                "data": "Notes",
+                "name": "Notes",
+                "autoWidth": true
+            },
+            {
+                "data": null,
+                "autoWidth": true,
+                "render": function (data, type, row) {
+                    if (!row.FndLookupValuesChqReturnResonLKP) {
+                        return "";
+                    }
+                    if (lang === 'ar-EG')
+                        return row.FndLookupValuesChqReturnResonLKP.NameAr;
+                    return row.FndLookupValuesChqReturnResonLKP.NameEn;
+                }
+            },
+            {
+                "data": null,
+                "sortable": false,
+                "render": function (data, type, row) {
+
+                    let formAction = `${$PrefixHostName}/${_mainController}/@nameof(ApPdcInterfaceController.ApPdcInterfaceForm)`;
+                    let DeleteAction = `${$PrefixHostName}/${_mainController}/@nameof(ApPdcInterfaceController.Delete)`;
+
+                    let formTitle = '@ApPdcInterface.Title';
+                    let btns = '';
+
+                    if (_txtStatusLkpId.val() == _StatusDelivered & _permissions.includes(_updatePermission)) {
+                        btns += `<a href="javascript:void(0)" onclick="AjaxController.GetFormModal(${row.Id},'@ERP.Front.Helpers.Enums.Common.FormTriggers.Update','${formAction}','${formTitle}');" title="@ERP.ResourcePack.Common.Settings.Edit"> <i class="mx-2 fas fa-edit text-info"></i></a>`;
+                    }
+
+                    if (_txtStatusLkpId.val() == _StatusDelivered && _permissions.includes(_postPermission)) {
+                        btns += `<a href="javascript:void(0)" onclick="PostAjax(${row.Id})" title="@ERP.ResourcePack.Common.Settings.Post"><i class="mx-2 fas fa-check-circle text-info"></i></a>`;
+                    }
+
+                    if ((_txtStatusLkpId.val() == _StatusDelivered || _txtStatusLkpId.val() == 46) && _permissions.includes(_postPermission)) {
+                        btns += `<a href="javascript:void(0)" onclick="RetrieveAjax(${row.Id})" title="@ERP.ResourcePack.Common.Settings.Reverse"><i class="mx-2 fas fa-sync text-info"></i></a>`;
+                    }
+
+                    const _auditedPermission = '@PermissionNames.Pages_ApPdcInterface_Audit';
+
+                    if (_permissions.includes(_auditedPermission)) {
+
+                        row.permission = _auditedPermission;
+
+                        btns += GetAuditedButton(row);
+                    }
+
+                    return btns;
+                }
+            }
+        ];
+
+        const dtObj =
+        {
+            "processing": true,
+            "serverSide": true,
+            "filter": false,
+            "orderMulti": false,
+            "language": dataTableLang,
+            "ajax": {
+                "url": _loadDataUrl,
+                "type": "POST",
+                "datatype": "json",
+                "data": parms,
+                "complete": function (d) {
+                    _tblLoader.hide();
+                }
+            },
+            "columns": columns,
+
+            "drawCallback": function (c) {
+
+                var api = this.api();
+                //$(api.table().footer()).empty();
+                setTimeout(function () {
+                    _tblSelector.append(`<tr><td></td><td></td><td></td><td></td><td>@ArPdcInterface.TotalAmount :</td><td>${c.json.data[0].TotalAmount.toFixed(2).replace(/\d(?=(\d{3})+\.)/g, '$&,')}</td></tr>`);
+                }, 200)
+            },
+            "initComplete": function () {
+                $('[data-toggle="tooltip"]').tooltip();
+            }
+        };
+        _tblSelector.dataTable().fnDestroy();
+        _tblSelector.DataTable(dtObj).on('draw', function () { $('[data-toggle="tooltip"]').tooltip(); });
+    };
+
+    $('#searchBox #BankAccountIdSearch').select2(ReturnSelect2ObjectDefault(`${baseUrl}/ApBankAccounts/GetApBankAccountsSelect2`));
+
+    $('#searchBox #StatusLkpIdSearch').select2(ReturnSelect2ObjectForLkpsTypes('@ERP.Front.Helpers.Enums.Common.FndLkpsTypes.ApPdcInterfaceStatues.ToString()'));
+
+    function printExc() {
+        $('.page-loader-wrapper').show();
+        $('#tblApPdcInterfacePrint_wrapper').parent().addClass('d-none');
+        const parmss = {
+            BankAccountId: _txtBankAccount.val(),
+            FromDate: _txtFromDate.val(),
+            ToDate: _txtToDate.val(),
+            CheckNumber: _txtCheckNumber.val(),
+            StatusLkpId: _txtStatusLkpId.val(),
+            length: 1000000
+        };
+
+        const columns = [
+            {
+                "data": "result.data.id",
+                'render': function (data, type, row, meta) {
+                    return meta.row + meta.settings._iDisplayStart + 1;
+                }
+            }
+            ,
+            {
+                "data": null,
+                "autoWidth": true,
+                "render": function (data, type, row) {
+
+                    if (!row.FndLookupValuesSourceCodeLkp) return '';
+
+                    if (lang === 'ar-EG') {
+
+                        if (row.SourceCodeLkpId && row.SourceCodeLkpId == 43 && row.SourceId)
+                            return `<a style="text-decoration:underline" href="${$PrefixHostName}/ApMiscPaymentHeaders/FormView?id=${row.encApMiscPaymenId}&t=@encShowTrigger" target="_blank">${row.FndLookupValuesSourceCodeLkp.NameAr}</a>`;
+                         else
+                            return  row.FndLookupValuesSourceCodeLkp.NameAr
+
+                    }
+
+                       if (row.SourceCodeLkpId && row.SourceCodeLkpId == 43 && row.SourceId)
+                            return `<a style="text-decoration:underline" href="${$PrefixHostName}/ApMiscPaymentHeaders/FormView?id=${row.encApMiscPaymenId}&t=@encShowTrigger" target="_blank">${row.FndLookupValuesSourceCodeLkp.NameEn}</a>`;
+                         else
+                            return  row.FndLookupValuesSourceCodeLkp.NameEn
+
+                }
+            }
+            ,
+            {
+                "data": "SourceNumber",
+                "name": "SourceNumber",
+                "autoWidth": true
+            },
+            {
+                "data": "CheckNumber",
+                "name": "CheckNumber",
+                "autoWidth": true
+            },
+            {
+                "data": "MaturityDate",
+                "name": "MaturityDate",
+                "autoWidth": true
+            },
+            {
+                "data": "Amount",
+                "name": "Amount",
+                "render": $.fn.dataTable.render.number(',', '.', 2),
+                "autoWidth": true
+            },
+            {
+                "data": null,
+                "autoWidth": true,
+                "render": function (data, type, row) {
+                    if (!row.ApBankAccounts) {
+                        return "";
+                    }
+                    if (lang === 'ar-EG')
+                        return row.ApBankAccounts.BankAccountNameAr;
+                    return row.ApBankAccounts.BankAccountNameEn;
+                }
+            },
+            {
+                "data": "Notes",
+                "name": "Notes",
+                "autoWidth": true
+            },
+            {
+                "data": null,
+                "autoWidth": true,
+                "render": function (data, type, row) {
+                    if (!row.FndLookupValuesChqReturnResonLKP) {
+                        return "";
+                    }
+                    if (lang === 'ar-EG')
+                        return row.FndLookupValuesChqReturnResonLKP.NameAr;
+                    return row.FndLookupValuesChqReturnResonLKP.NameEn;
+                }
+            }
+        ];
+
+        const dtObj = {
+            "language": dataTableLang,
+            "dom": 'Bfrtip',
+            "buttons": [
+                {
+                    extend: 'excel',
+                    messageTop: `${$('#BankAccountId').siblings().text()}: ${(parmss.BankAccountId) ? parmss.BankAccountId : '--'}, ${$('#FromDate').siblings().text()}: ${(parmss.FromDate) ? parmss.FromDate : '--'}, ${$('#ToDate').siblings().text()}: ${(parmss.ToDate) ? parmss.ToDate : '--'}, ${$('#CheckNumber').siblings().text()}: ${(parmss.CheckNumber) ? parmss.CheckNumber : '--'}, ${$('#StatusLkpId').siblings().text()}: ${(parmss.StatusLkpId) ? parmss.StatusLkpId : '--'}`
+                },
+
+            ],
+            "ajax": {
+                "url": _loadDataUrl,
+                "type": "POST",
+                "datatype": "json",
+                "data": parmss,
+                "complete": function (d) {
+                    _tblLoader.hide();
+                }
+            },
+            "columns": columns,
+
+            "initComplete": function () {
+                $('#tblApPdcInterfacePrint_wrapper button.dt-button').click();
+                $('#tblApPdcInterfacePrint_wrapper').parent().addClass('d-none');
+
+            }
+        };
+
+        $('#tblApPdcInterfacePrint').dataTable().fnDestroy();
+        $('#tblApPdcInterfacePrint').DataTable(dtObj).on('buttons-processing', function (e, indicator) { if (!indicator) { $('.page-loader-wrapper').hide() } });
+
+
+    }
+
+</script>

@@ -1,0 +1,185 @@
+﻿@using ERP.Web.UI.Controllers.CharityBoxes
+@using ERP.ResourcePack.CharityBoxes
+@using ERP.Authorization;
+@{
+    string permissionsStr = TempData["Permissions"].ToString();
+}
+
+<script>
+    const _mainController = "TmCharityBoxCollectMembers"
+
+    $(function () {
+        LoadDataGrid();
+        $('#TmCharityBoxCollectMembers').addClass('active');
+    });
+
+    const _loadDataUrl = `${$PrefixHostName}/${_mainController}/@nameof(TmCharityBoxCollectMembersController.LoadDataGrid)`;
+    const _tblSelector = $('#tblTmCharityBoxCollectMembers');
+    const _tblSelectorbody = $('#tblTmCharityBoxCollectMembers tbody');
+    const _tblLoader = $('#tblLoader');
+    const _txtMemberNumber = $('#searchBox #MemberNumber');
+    const _txtMemberName = $('#searchBox #MemberName');
+    const _txtMemberCategoryLkpId = $('#searchBox #MemberCategoryLkpIdSearch');
+
+    const _permissions = '@permissionsStr';
+    const _updatePermission = '@PermissionNames.Pages_TmCharityBoxCollectMembers_Update';
+    const _deletePermission = '@PermissionNames.Pages_TmCharityBoxCollectMembers_Delete';
+
+    var OnBegin = function (response) {
+        fireBtnLoader();
+    };
+
+    var OnSuccess = function (response) {
+
+        if (response.success) {
+
+            if (response.customRestResult.trigger === '@ERP.Front.Helpers.Enums.Common.FormTriggers.Insert') {
+
+                toastr.success(response.customRestResult.message);
+
+                LoadDataGrid();
+
+                _mainModal.modal('hide');
+
+            } else if (response.customRestResult.trigger === '@ERP.Front.Helpers.Enums.Common.FormTriggers.Update') {
+
+                LoadDataGrid();
+
+                _mainModal.modal('hide');
+
+                toastr.success(response.customRestResult.message);
+            }
+
+        } else {
+            toastr.error(response.customRestResult.message);
+        }
+
+    };
+
+    var OnComplete = function (response) {
+        downBtnLoader();
+    };
+
+    var OnFailure = function (response) {
+        toastr.error(response);
+        downBtnLoader();
+    };
+
+    const LoadDataGrid = function () {
+
+        const parms = {
+            MemberNumber: _txtMemberNumber.val(),
+            MemberName: _txtMemberName.val(),
+            MemberCategoryLkpId: _txtMemberCategoryLkpId.val()
+        };
+
+        $('#dataCollapse').show();
+        $('#tblLoader').show();
+
+        const columns = [
+            {
+                "data": "result.data.id",
+                'render': function (data, type, row, meta) {
+                    return meta.row + meta.settings._iDisplayStart + 1;
+                }
+            },
+            {
+                "data": "MemberNumber",
+                "name": "MemberNumber",
+                "autoWidth": true
+            },
+            {
+                "data": "MemberName",
+                "name": "MemberName",
+                "autoWidth": true
+            },
+            {
+                "data": null,
+                "autoWidth": true,
+                "render": function (data, type, row) {
+
+                    if (row.FndMemberCategoryValues) {
+
+                        if (lang === 'ar-EG')
+                            return row.FndMemberCategoryValues.NameAr;
+                        else
+                            return row.FndMemberCategoryValues.NameEn;
+                    }
+                    return '';
+                }
+            },
+            {
+                "data": "IsActive",
+                "name": "IsActive",
+                "autoWidth": true,
+                "render": function (isActive) {
+
+                    if (isActive) return '<i class="fas fa-check text-success"></i>';
+
+                    return '<i class="fas fa-times text-danger"></i>';
+                }
+            },
+            {
+                "data": null,
+                "sortable": false,
+                "render": function (data, type, row) {
+
+                    let formAction = `${$PrefixHostName}/${_mainController}/@nameof(TmCharityBoxCollectMembersController.TmCharityBoxCollectMembersForm)`;
+                    let DeleteAction = `${$PrefixHostName}/${_mainController}/@nameof(TmCharityBoxCollectMembersController.Delete)`;
+
+                    let formTitle = '@TmCharityBoxCollectMembers.Title';
+                    let btns = '';
+
+                    if (_permissions.includes(_updatePermission)) {
+                        btns += `<a href="javascript:void(0)" onclick="AjaxController.GetFormModal(${row.Id},'@ERP.Front.Helpers.Enums.Common.FormTriggers.Update','${formAction}','${formTitle}');" title="@ERP.ResourcePack.Common.Settings.Edit"><i class="mx-2 fas fa-edit text-info"></i></a>`;
+                    }
+
+                    btns += `<a href="javascript:void(0)" onclick="AjaxController.GetFormModal(${row.Id},'@ERP.Front.Helpers.Enums.Common.FormTriggers.Show','${formAction}','${formTitle}');" title="@ERP.ResourcePack.Common.Settings.Show"><i class="mx-2 fas fa-eye text-info"></i></a>`;
+
+                    if (_permissions.includes(_deletePermission)) {
+                        btns += `<a href="javascript:void(0)" onclick="AjaxController.DeleteMainTableRow(${row.Id},'${DeleteAction}');" title="@ERP.ResourcePack.Common.Settings.Delete"><i class="mx-2 fas fa-trash-alt text-danger"></i></a>`;
+                    }
+
+                    const _auditedPermission = '@PermissionNames.Pages_TmCharityBoxCollectMembers_Audit';
+
+                    if (_permissions.includes(_auditedPermission)) {
+
+                        row.permission = _auditedPermission;
+
+                        btns += GetAuditedButton(row);
+                    }
+
+                    return btns;
+                }
+            }
+        ];
+
+        const dtObj = {
+            "processing": true,
+            "serverSide": true,
+            "filter": false,
+            "orderMulti": false,
+            "language": dataTableLang,
+            "ajax": {
+                "url": _loadDataUrl,
+                "type": "POST",
+                "datatype": "json",
+                "data": parms,
+                "complete": function (d) {
+                    _tblLoader.hide();
+                }
+            },
+            "columns": columns,
+
+
+            "initComplete": function () {
+                $('[data-toggle="tooltip"]').tooltip();
+            }
+        };
+        _tblSelector.dataTable().fnDestroy();
+        _tblSelector.DataTable(dtObj).on('draw', function () { $('[data-toggle="tooltip"]').tooltip(); });
+    };
+
+    $('#searchBox #MemberCategoryLkpIdSearch').select2(ReturnSelect2ObjectForLkpsTypes('@ERP.Front.Helpers.Enums.Common.FndLkpsTypes.TmMemberCategory.ToString()'))
+
+</script>

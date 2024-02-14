@@ -1,0 +1,476 @@
+﻿@using ERP.Web.UI.Controllers.Accounts
+@{
+    string permissionsStr = TempData["Permissions"].ToString();
+}
+
+@if (permissionsStr.Contains(ERP.Authorization.PermissionNames.Pages_ArSecurityDepositInterface_Post))
+{
+    <script>
+        const PostAjax = function (id) {
+
+            bootbox.confirm({
+                message: _booBoxMessagePosting,
+                buttons: bootBoxDefaultBtns,
+                callback: function (result) {
+
+                    if (result) {
+
+                        const data = {
+                            id: id,
+                            lang: lang,
+                            userId: 0
+                        };
+
+                        $.ajax({
+                            url: `${baseUrl}/ArSecurityDepositInterface/PostArSecurityDepositInterface`,
+                            type: 'POST',
+                            data: JSON.stringify(data),
+                            headers:
+                            {
+                                'Content-Type': 'application/json',
+                                'Authorization': `Bearer ${$_token}`
+                            },
+                        }).done(function (response) {
+
+                            if (response.result.finalStatues == 'F') {
+                                toastr.warning(response.result.reason);
+                            }
+                            else {
+                                toastr.success(response.result.reason);
+
+                                if (formView) {
+
+                                    setTimeout(function () {
+                                        window.location.href = $PrefixHostName + '/ArSecurityDepositInterface';
+                                    }, 100);
+
+                                } else {
+                                    LoadDataGrid();
+                                }
+                            }
+
+                        }).fail(function (response) {
+                            toastr.error(response.responseText);
+                        });
+
+                    }
+
+                }
+            });
+        };
+
+        const TransfareAjax = function (id) {
+
+            bootbox.confirm({
+                message: _booBoxMessagePosting,
+                buttons: bootBoxDefaultBtns,
+                callback: function (result) {
+
+                    if (result) {
+
+                        const data = {
+                            id: id,
+                            lang: lang,
+                            userId: 0
+                        };
+
+                        $.ajax({
+                            url: `${baseUrl}/ArSecurityDepositInterface/TransferArSecurityDepositInterface`,
+                            type: 'POST',
+                            data: JSON.stringify(data),
+                            headers:
+                            {
+                                'Content-Type': 'application/json',
+                                'Authorization': `Bearer ${$_token}`
+                            },
+                        }).done(function (response) {
+
+                            if (response.result.finalStatues == 'F') {
+                                toastr.warning(response.result.reason);
+                            }
+                            else {
+                                toastr.success(response.result.reason);
+
+                                if (formView) {
+
+                                    setTimeout(function () {
+                                        window.location.href = $PrefixHostName + '/ArSecurityDepositInterface';
+                                    }, 100);
+
+                                } else {
+                                    LoadDataGrid();
+                                }
+                            }
+
+                        }).fail(function (response) {
+                            toastr.error(response.responseText);
+                        });
+                    }
+                }
+            });
+        };
+    </script>
+}
+else
+{
+    <script>
+        const PostAjax = function (id) { };
+        const TransfareAjax = function (id) { };
+    </script>
+}
+
+<script>
+    const _mainController = "ArSecurityDepositInterface"
+    const _permissions = '@permissionsStr';
+
+    $(function () {
+
+        $('#tblArSecurityDepositInterfacePrint thead').html($('#tblArSecurityDepositInterface thead').html());
+        $('#tblArSecurityDepositInterfacePrint thead tr :last-child').remove();
+        $('#ArSecurityDepositInterface').addClass('active');
+
+        GetNewArSecurityDepositInterfaceStatusSelect2Option();
+    });
+
+    const _loadDataUrl = `${$PrefixHostName}/${_mainController}/@nameof(ArSecurityDepositInterfaceController.LoadDataGrid)`;
+    const _tblSelector = $('#tblArSecurityDepositInterface');
+    const _tblLoader = $('#tblLoader');
+
+    var OnBegin = function (response) {
+        fireBtnLoader();
+    };
+
+    var OnSuccess = function (response) {
+
+        if (response.success) {
+
+            if (response.customRestResult.trigger === '@ERP.Front.Helpers.Enums.Common.FormTriggers.Insert') {
+
+                    toastr.success(response.customRestResult.message);
+                LoadDataGrid();
+                $('#tblArSecurityDepositInterfacePrint thead').html($('#tblArSecurityDepositInterface thead').html());
+                $('#tblArSecurityDepositInterfacePrint thead tr :last-child').remove();
+                   _mainModal.modal('hide');
+
+
+            } else if (response.customRestResult.trigger === '@ERP.Front.Helpers.Enums.Common.FormTriggers.Update') {
+
+                    toastr.success(response.customRestResult.message);
+                LoadDataGrid();
+                $('#tblArSecurityDepositInterfacePrint thead').html($('#tblArSecurityDepositInterface thead').html());
+                $('#tblArSecurityDepositInterfacePrint thead tr :last-child').remove();
+                    _mainModal.modal('hide');
+
+                setTimeout(function () {
+                    window.location.reload();
+                },200)
+            }
+
+        } else {
+               toastr.error(response.customRestResult.message);
+        }
+
+    };
+
+    var OnComplete = function (response) {
+        downBtnLoader();
+    };
+
+    var OnFailure = function (response) {
+        toastr.error(response);
+        downBtnLoader();
+    };
+
+    const LoadDataGrid = function () {
+
+        $('#tblLoader').show();
+
+        if (!$('#searchBox #StatusLkpId').find(':selected').val()) {
+
+            toastr.warning('@ERP.ResourcePack.Accounts.ArSecurityDepositInterface.MustSelectStatus');
+            return;
+        }
+
+        const parms = {
+            FromDate: $('#searchBox #FromDate').val(),
+            ToDate: $('#searchBox #ToDate').val(),
+            StatusLkpId: $('#searchBox #StatusLkpId').find(':selected').val(),
+            ArCustomerId: $('#searchBox #ArCustomerId').find(':selected').val(),
+            SourceCodeLkpId: $('#searchBox #SourceCodeLkpId').find(':selected').val(),
+        };
+
+        const columns = [
+            {
+                "data": "result.data.id",
+                'render': function (data, type, row, meta) {
+                    return meta.row + meta.settings._iDisplayStart + 1;
+                }
+            },
+            {
+                "data": "SecurityDepositInterfaceNumber",
+                "name": "SecurityDepositInterfaceNumber",
+                "autoWidth": true
+            },
+            {
+                "data": null,
+                "autoWidth": true,
+                "render": function (d, t, row) {
+
+                    if (row.FndSourceCodeLkp == null) return '';
+
+                    if (lang === 'ar-EG') return row.FndSourceCodeLkp.NameAr;
+
+                    return row.FndSourceCodeLkp.NameEn;
+                }
+            },
+            {
+                "data": "SourceNo",
+                "name": "SourceNo",
+                "autoWidth": true
+            },
+            {
+                "data": "CreationTimeStr",
+                "name": "CreationTime",
+                "autoWidth": true,
+                "render": function (d, t, row) {
+                    return row.CreationTimeStr ? row.CreationTimeStr.split(' ')[0] : '';
+                }
+            },
+            {
+                "data": null,
+                "autoWidth": true,
+                "render": function (d, t, row) {
+
+                    if (row.ArCustomers == null) return '';
+
+                    return row.ArCustomers.CustomerNumber;
+                }
+            },
+            {
+                "data": null,
+                "autoWidth": true,
+                "render": function (d, t, row) {
+
+                    if (row.ArCustomers == null) return '';
+
+                    if (lang === 'ar-EG') return row.ArCustomers.CustomerNameAr;
+
+                    return row.ArCustomers.CustomerNameEn;
+                }
+            },
+            {
+                "data": "Amount",
+                "name": "Amount",
+                "autoWidth": true
+            },
+            {
+                "data": null,
+                "sortable": false,
+                "render": function (data, type, row) {
+
+                    let formAction = `${$PrefixHostName}/${_mainController}/@nameof(ArSecurityDepositInterfaceController.ArSecurityDepositInterfaceForm)`;
+
+                    let formTitle = '@ERP.ResourcePack.Accounts.ArSecurityDepositInterface.Title';
+                    let btns = '';
+
+                    if (row.StatusLkpId == @Convert.ToInt64(ERP.Front.Helpers.Enums.Common.ArSecurityDepositInterfacePost.New)) {
+
+                        btns += `<a href="javascript:void(0)" onclick="AjaxController.GetFormModal(${row.Id},'@ERP.Front.Helpers.Enums.Common.FormTriggers.Update','${formAction}','${formTitle}');" title="@ERP.ResourcePack.Common.Settings.Show"><i class="mx-2 fas fa-eye text-info"></i></a>`;
+
+                        if (_permissions.includes('@ERP.Authorization.PermissionNames.Pages_ArSecurityDepositInterface_Post')) {
+                          btns += `<a href="javascript:void(0)" onclick="return PostAjax(${row.Id})" title="@ERP.ResourcePack.Accounts.ArSecurityDepositInterface.InsuranceExchange"><i class="mx-2 fas fa-check-circle text-info"></i></a>`;
+                          btns += `<a href="javascript:void(0)" onclick="return TransfareAjax(${row.Id})" title="@ERP.ResourcePack.Accounts.ArSecurityDepositInterface.TransferToTenant"><i class="mx-2 fas fa-exchange-alt text-info"></i></a>`;
+                        }
+                    }
+
+                    btns += `<a href="javascript:void(0);" onclick="return print('${$PrefixHostName}/ArSecurityDepositInterface/PrintArSecurityDepositInterfaceScreen','${row.Id}','${lang}')" title="@ERP.ResourcePack.Common.Settings.Print"><i class="mx-2 fas fa-print text-success"></i></a>`;
+
+                    const _auditedPermission = '@ERP.Authorization.PermissionNames.Pages_ArSecurityDepositInterface_Audit';
+
+                    if (_permissions.includes(_auditedPermission)) {
+
+                        row.permission = _auditedPermission;
+
+                        btns += GetAuditedButton(row);
+                    }
+
+                    return btns;
+                }
+            }
+        ];
+
+        const dtObj = {
+            "processing": true,
+            "serverSide": true,
+            "filter": false,
+            "orderMulti": false,
+            "language": dataTableLang,
+            "ajax": {
+                "url": _loadDataUrl,
+                "type": "POST",
+                "datatype": "json",
+                "data": parms,
+                "complete": function () {
+                      _tblLoader.hide();
+                }
+            },
+            "columns": columns,
+            "initComplete": function () {
+                $('[data-toggle="tooltip"]').tooltip();
+            }
+
+        };
+
+        _tblSelector.dataTable().fnDestroy();
+        _tblSelector.DataTable(dtObj).on('draw', function () { $('[data-toggle="tooltip"]').tooltip(); });
+
+        setTimeout(function () {
+            $(".sorting_1").removeAttr('colspan');
+        }, 500);
+    };
+
+    $('#searchBox #ArCustomerId').select2(ReturnSelect2ObjectDefault(`${baseUrl}/ArCustomers/GetArCustomersSelect2`));
+
+    $('#searchBox #StatusLkpId').select2(ReturnSelect2ObjectForLkpsTypes('@ERP.Front.Helpers.Enums.Common.FndLkpsTypes.ArSecurityDepositInterfacePost.ToString()'));
+
+    $('#searchBox #SourceCodeLkpId').select2(ReturnSelect2ObjectForLkpsTypes('@ERP.Front.Helpers.Enums.Common.FndLkpsTypes.ArSecurityDepositInterfaceSource.ToString()'));
+
+    const GetNewArSecurityDepositInterfaceStatusSelect2Option = function () {
+
+        $.ajax({
+            url: `${baseUrl}/ArSecurityDepositInterface/GetNewArSecurityDepositInterfaceStatusSelect2Option`,
+            method: 'GET',
+            headers: {
+              'Authorization':`bearer ${$_token}`
+            }
+        }).done(function (response) {
+
+              $(`#searchBox #StatusLkpId`)
+                .append($("<option selected='selected'></option>")
+                .val(response.result.item2)
+                .text(response.result.item1)).trigger('change');
+
+            LoadDataGrid();
+
+        })
+
+    };
+
+    const print = function (url,id,lang) {
+        const data = { id: id, lang : lang };
+        openModal(data, url);
+    };
+
+
+    function printExc() {
+        $('.page-loader-wrapper').show();
+        $('#tblArSecurityDepositInterfacePrint_wrapper').parent().addClass('d-none');
+        const parmss = {
+            FromDate: $('#searchBox #FromDate').val(),
+            ToDate: $('#searchBox #ToDate').val(),
+            StatusLkpId: $('#searchBox #StatusLkpId').find(':selected').val(),
+            ArCustomerId: $('#searchBox #ArCustomerId').find(':selected').val(),
+            SourceCodeLkpId: $('#searchBox #SourceCodeLkpId').find(':selected').val(),
+            length: 1000000
+        };
+
+        const columns = [
+            {
+                "data": "result.data.id",
+                'render': function (data, type, row, meta) {
+                    return meta.row + meta.settings._iDisplayStart + 1;
+                }
+            },
+            {
+                "data": "SecurityDepositInterfaceNumber",
+                "name": "SecurityDepositInterfaceNumber",
+                "autoWidth": true
+            },
+            {
+                "data": null,
+                "autoWidth": true,
+                "render": function (d, t, row) {
+
+                    if (row.FndSourceCodeLkp == null) return '';
+
+                    if (lang === 'ar-EG') return row.FndSourceCodeLkp.NameAr;
+
+                    return row.FndSourceCodeLkp.NameEn;
+                }
+            },
+            {
+                "data": "SourceNo",
+                "name": "SourceNo",
+                "autoWidth": true
+            },
+            {
+                "data": "CreationTimeStr",
+                "name": "CreationTime",
+                "autoWidth": true,
+                "render": function (d, t, row) {
+                    return row.CreationTimeStr ? row.CreationTimeStr.split(' ')[0] : '';
+                }
+            },
+            {
+                "data": null,
+                "autoWidth": true,
+                "render": function (d, t, row) {
+
+                    if (row.ArCustomers == null) return '';
+
+                    return row.ArCustomers.CustomerNumber;
+                }
+            },
+            {
+                "data": null,
+                "autoWidth": true,
+                "render": function (d, t, row) {
+
+                    if (row.ArCustomers == null) return '';
+
+                    if (lang === 'ar-EG') return row.ArCustomers.CustomerNameAr;
+
+                    return row.ArCustomers.CustomerNameEn;
+                }
+            },
+            {
+                "data": "Amount",
+                "name": "Amount",
+                "autoWidth": true
+            }
+        ];
+
+        const dtObj = {
+            "language": dataTableLang,
+            "dom": 'Bfrtip',
+            "buttons": [
+                {
+                    extend: 'excel',
+                    messageTop: `${$('#FromDate').siblings().text()}: ${(parmss.FromDate) ? parmss.FromDate : '--'}, ${$('#ToDate').siblings().text()}: ${(parmss.ToDate) ? parmss.ToDate : '--'}, ${$('#StatusLkpId').siblings().text()}: ${(parmss.StatusLkpId) ? parmss.StatusLkpId : '--'}, ${$('#ArCustomerId').siblings().text()}: ${(parmss.ArCustomerId) ? parmss.ArCustomerId : '--'}, ${$('#SourceCodeLkpId').siblings().text()}: ${(parmss.SourceCodeLkpId) ? parmss.SourceCodeLkpId : '--'}`
+                },
+
+            ],
+            "ajax": {
+                "url": _loadDataUrl,
+                "type": "POST",
+                "datatype": "json",
+                "data": parmss,
+                "complete": function (d) {
+                    _tblLoader.hide();
+                }
+            },
+            "columns": columns,
+
+            "initComplete": function () {
+                $('#tblArSecurityDepositInterfacePrint_wrapper button.dt-button').click();
+            }
+        };
+
+        $('#tblArSecurityDepositInterfacePrint').dataTable().fnDestroy();
+        $('#tblArSecurityDepositInterfacePrint').DataTable(dtObj).on('buttons-processing', function (e, indicator) { if (!indicator) { $('.page-loader-wrapper').hide() } });
+
+
+    }
+
+</script>
+

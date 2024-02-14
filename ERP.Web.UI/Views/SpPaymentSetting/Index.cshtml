@@ -1,0 +1,12 @@
+﻿@{
+    ViewBag.Title = ERP.ResourcePack.SpGuarantees.SpPaymentSetting.Title;
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@Html.Action(nameof(ERP.Web.UI.Controllers.SpGuarantees.SpPaymentSettingController.SpPaymentSettingSearch))
+@Html.Action(nameof(ERP.Web.UI.Controllers.SpGuarantees.SpPaymentSettingController.SpPaymentSettingData))
+
+@section scripts{
+    @Html.Partial("~/ViewsScripts/_SpGuarantees/SpPaymentSetting/SpPaymentSettingScripts.cshtml")
+}
+

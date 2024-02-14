@@ -1,0 +1,15 @@
+﻿@{
+    ViewBag.Title = ERP.ResourcePack.SpGuarantees.SpCaseOperations.Title;
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@Html.Action(nameof(ERP.Web.UI.Controllers.SpGuarantees.SpCaseOperationsController.Search))
+@Html.Action(nameof(ERP.Web.UI.Controllers.SpGuarantees.SpCaseOperationsController.Form))
+@Html.Action(nameof(ERP.Web.UI.Controllers.SpGuarantees.SpCaseOperationsController.Data))
+
+@section scripts{
+    <script src="~/AssetsPack/assets/js/pages/forms/basic-form-elements.js"></script>
+    @Html.Partial("~/ViewsScripts/_SpGuarantees/SpCaseOperations/SpCaseOperationsScripts.cshtml")
+}
+
+

@@ -1,0 +1,264 @@
+﻿@using ERP.Web.UI.Controllers.CRM
+@using ERP.Authorization;
+@{
+    string encUpdateTrigger = ERP.Front.Helpers.Enums.Common.EncUpdate;
+    string encShowTrigger = ERP.Front.Helpers.Enums.Common.EncShow;
+    string permissionsStr = TempData["Permissions"].ToString();
+}
+
+<script>
+
+    const _mainController = "CrmContactUs", _apiAppService = "HrPersons";
+    $('#tblCrmContactUsPrint thead').html($('#tblCrmContactUs thead').html());
+    $('#tblCrmContactUsPrint thead tr :last-child').remove();
+    $(function () {
+        LoadDataGrid();
+
+        $('#CrmContactUs').addClass('active');
+
+        $('.summernote').summernote({
+            tabsize: 2,
+            height: 100,
+        });
+
+    });
+
+    const _loadDataUrl = `${$PrefixHostName}/${_mainController}/@nameof(CrmContactUsController.LoadDataGrid)`;
+    const _tblSelector = $('#tblCrmContactUs');
+    const _tblLoader = $('#tblLoader');
+    const _mainForm = $('#mainForm');
+
+    const _permissions = '@permissionsStr';
+    const _updatePermission = '@PermissionNames.Pages_CrmContactUs_Update';
+    const _deletePermission = '@PermissionNames.Pages_CrmContactUs_Delete';
+
+    $('#btnSubmition').on('click', function () {
+
+        if (!$('#ContentAr').val()) {
+            toastr.warning('@ERP.ResourcePack.CRM.CrmContactUs.CrmContactUs.ContentAr : @ERP.ResourcePack.Common.Settings.Required');
+            return;
+        }
+
+        if (!$('#ContentEn').val()) {
+            toastr.warning('@ERP.ResourcePack.CRM.CrmContactUs.CrmContactUs.ContentEn : @ERP.ResourcePack.Common.Settings.Required');
+            return;
+        }
+
+        _mainForm.submit();
+
+        if (_mainForm.valid()) {
+
+            $(this).attr('disabled',true);
+            $('#submitLoader').show();
+
+        } else {
+
+            $(this).attr('disabled', false);
+            $('#submitLoader').hide();
+        }
+
+    });
+
+    var OnBegin = function (response) {
+        fireBtnLoader();
+    };
+
+    var OnSuccess = function (response) {
+
+        if (response.success) {
+
+            if (response.customRestResult.trigger === '@ERP.Front.Helpers.Enums.Common.FormTriggers.Insert') {
+
+                toastr.success(response.customRestResult.message);
+
+                setTimeout(function () {
+                    window.location.href = $PrefixHostName + '/CrmContactUs';
+                }, 200);
+
+            } else if (response.customRestResult.trigger === '@ERP.Front.Helpers.Enums.Common.FormTriggers.Update') {
+
+                toastr.success(response.customRestResult.message);
+
+                setTimeout(function () {
+                    window.location.href = $PrefixHostName + '/CrmContactUs';
+                }, 200);
+            }
+
+        } else {
+            toastr.error(response.customRestResult.message);
+        }
+        $('#btnSubmition').attr('disabled', false);
+    };
+
+    var OnComplete = function (response) {
+        downBtnLoader();
+        $('#btnSubmition').attr('disabled', false);
+    };
+
+    var OnFailure = function (response) {
+        toastr.error(response);
+        downBtnLoader();
+        $('#btnSubmition').attr('disabled', false);
+    };
+
+    const LoadDataGrid = function () {
+
+        const parms = {
+            HeaderNameAr: $('#searchBox #HeaderNameAr').val(),
+            HeaderNameEn: $('#searchBox #HeaderNameEn').val(),
+            Email: $('#searchBox #Email').val(),
+        };
+
+        const columns = [
+            {
+                "data": "result.data.id",
+                'render': function (data, type, row, meta) {
+                    return meta.row + meta.settings._iDisplayStart + 1;
+                }
+            },
+            {
+                "data": "HeaderNameAr",
+                "name": "HeaderNameAr",
+                "autoWidth": true
+            },
+            {
+                "data": "HeaderNameEn",
+                "name": "HeaderNameEn",
+                "autoWidth": true
+            },
+            {
+                "data": "Email",
+                "name": "Email",
+                "autoWidth": true
+            },
+            {
+                "data": null,
+                "sortable": false,
+                "render": function (data, type, row) {
+
+                    let formAction = `${$PrefixHostName}/${_mainController}/@nameof(CrmContactUsController.CrmContactUsForm)`;
+                    let DeleteAction = `${$PrefixHostName}/${_mainController}/@nameof(CrmContactUsController.Delete)`;
+
+                    let btns = '';
+
+                    if (_permissions.includes(_updatePermission)) {
+                        btns += `<a href="${$PrefixHostName}/CrmContactUs/FormView?id=${row.EncId}&t=@encUpdateTrigger" title="@ERP.ResourcePack.Common.Settings.Edit"><i class="mx-2 fas fa-edit text-info"></i></a>`;
+                    }
+
+                    btns += `<a href="${$PrefixHostName}/CrmContactUs/FormView?id=${row.EncId}&t=@encShowTrigger" title="@ERP.ResourcePack.Common.Settings.Show"><i class="mx-2 fas fa-eye text-info"></i></a>`;
+
+                    if (_permissions.includes(_deletePermission)) {
+                        btns += `<a href="javascript:void(0)" onclick="AjaxController.DeleteMainTableRow(${row.Id},'${DeleteAction}');" title="@ERP.ResourcePack.Common.Settings.Delete"><i class="mx-2 fas fa-trash-alt text-danger"></i></a>`;
+                    }
+
+                    const _auditedPermission = '@PermissionNames.Pages_CrmContactUs_Audit';
+
+                    if (_permissions.includes(_auditedPermission)) {
+
+                        row.permission = _auditedPermission;
+
+                        btns += GetAuditedButton(row);
+                    }
+
+                    return btns;
+                }
+            }
+        ];
+
+        const dtObj = {
+            "processing": true,
+            "serverSide": true,
+            "filter": false,
+            "orderMulti": false,
+            "language": dataTableLang,
+            "ajax": {
+                "url": _loadDataUrl,
+                "type": "POST",
+                "datatype": "json",
+                "data": parms,
+                "complete": function () { }
+            },
+            "columns": columns,
+            "initComplete": function () {
+                $('[data-toggle="tooltip"]').tooltip();
+            }
+
+        };
+
+        _tblSelector.dataTable().fnDestroy();
+        _tblSelector.DataTable(dtObj).on('draw', function () { $('[data-toggle="tooltip"]').tooltip(); });
+
+        setTimeout(function () {
+            $(".sorting_1").removeAttr('colspan');
+        }, 500);
+    };
+
+    function printExc() {
+        $('.page-loader-wrapper').show();
+        $('#tblCrmContactUsPrint_wrapper').parent().addClass('d-none');
+        const parmss = {
+            HeaderNameAr: $('#searchBox #HeaderNameAr').val(),
+            HeaderNameEn: $('#searchBox #HeaderNameEn').val(),
+            Email: $('#searchBox #Email').val(),
+            length: 1000000
+        };
+
+        const columns = [
+            {
+                "data": "result.data.id",
+                'render': function (data, type, row, meta) {
+                    return meta.row + meta.settings._iDisplayStart + 1;
+                }
+            },
+            {
+                "data": "HeaderNameAr",
+                "name": "HeaderNameAr",
+                "autoWidth": true
+            },
+            {
+                "data": "HeaderNameEn",
+                "name": "HeaderNameEn",
+                "autoWidth": true
+            },
+            {
+                "data": "Email",
+                "name": "Email",
+                "autoWidth": true
+            }
+        ];
+
+        const dtObj = {
+            "language": dataTableLang,
+            "dom": 'Bfrtip',
+            "buttons": [
+                {
+                    extend: 'excel',
+                    messageTop: `${$('#HeaderNameAr').siblings().text()}: ${(parmss.HeaderNameAr) ? parmss.HeaderNameAr : '--'}, ${$('#HeaderNameEn').siblings().text()}: ${(parmss.HeaderNameEn) ? parmss.HeaderNameEn : '--'}, ${$('#Email').siblings().text()}: ${(parmss.Email) ? parmss.Email : '--'}`
+                },
+
+            ],
+            "ajax": {
+                "url": _loadDataUrl,
+                "type": "POST",
+                "datatype": "json",
+                "data": parmss,
+                "complete": function (d) {
+                    _tblLoader.hide();
+                }
+            },
+            "columns": columns,
+
+            "initComplete": function () {
+                $('#tblCrmContactUsPrint_wrapper button.dt-button').click();
+                $('#tblCrmContactUsPrint_wrapper').parent().addClass('d-none');
+
+            }
+        };
+
+        $('#tblCrmContactUsPrint').dataTable().fnDestroy();
+        $('#tblCrmContactUsPrint').DataTable(dtObj).on('buttons-processing', function (e, indicator) { if (!indicator) { $('.page-loader-wrapper').hide() } });
+
+
+    }
+
+</script>

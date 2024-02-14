@@ -1,0 +1,11 @@
+﻿@{
+    ViewBag.Title = ERP.ResourcePack.SpGuarantees.SpFamilies.Title;
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@Html.Action(nameof(ERP.Web.UI.Controllers.SpGuarantees.SpFamiliesController.SpFamiliesSearch))
+@Html.Action(nameof(ERP.Web.UI.Controllers.SpGuarantees.SpFamiliesController.SpFamiliesData))
+
+@section scripts{
+    @Html.Partial("~/ViewsScripts/_SpGuarantees/SpFamilies/SpFamiliesScripts.cshtml")
+}

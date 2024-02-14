@@ -1,0 +1,81 @@
+﻿@using ERP.Web.UI.Models.ViewModels.SpGuarantees
+@model SpBeneficentVM
+@{
+    string formTrigger = ViewBag.trigger;
+    string lang = Request.Cookies["Lang"] == null ? "ar-EG" : Request.Cookies["Lang"].Value.ToString();
+    bool isFormDetail = Model?.Id > 0 && formTrigger == ERP.Front.Helpers.Enums.Common.FormTriggers.Show.ToString();
+}
+
+<div class="card" style="display:@(formTrigger == ERP.Front.Helpers.Enums.Common.FormTriggers.Show.ToString() ? "none":"block" ) ">
+    <div class="body">
+        <div class="row clearfix">
+            <div class="col-sm-6">
+                <div class="form-group form-float">
+                    <div class="form-line">
+                        @Html.DropDownListFor(z => z.Bank_LkpId, Enumerable.Empty<SelectListItem>(), new { @class = "form-control" })
+                        @Html.LabelFor(z => z.Bank_LkpId, new { @class = "form-label" })
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-6">
+                <p>
+                        <label>
+                            <input type="checkbox" onclick="Bank_IsDefault.value = $('#IsDefaultAlt').is(':checked')" id="@nameof(Model.IsDefaultAlt)" name="@nameof(Model.IsDefaultAlt)" />
+                            <span>@Html.LabelFor(z => z.Bank_IsDefault)</span>
+                        </label>
+                </p>
+                <input type="hidden" id="@nameof(Model.Bank_IsDefault)" name="@nameof(Model.Bank_IsDefault)" />
+                @*<input type="hidden" id="@nameof(Model.Bank_IsDefault)" name="@nameof(Model.Bank_IsDefault)" value="@(formTrigger == ERP.Front.Helpers.Enums.Common.FormTriggers.Insert.ToString() ? "false" : Model.Bank_IsDefault.ToString())" />*@
+            </div>
+
+            @*<div class="col-sm-6">
+                <div class="form-group form-float">
+                    <div class="form-line">
+
+                        @Html.CheckBoxFor(z => z.Bank_IsDefault, new { @class = "form-control" })
+                        @Html.LabelFor(z => z.Bank_IsDefault, new { @class = "form-label" })
+                    </div>
+                </div>
+            </div>*@
+        </div>
+        <div class="row clearfix">
+            <div class="col-sm-6">
+                <div class="form-group form-float">
+                    <div class="form-line">
+                        @Html.TextBoxFor(z => z.Bank_AccountNumber, getHtmlAttributes(isFormDetail, "form-control", string.Empty))
+                        @Html.LabelFor(z => z.Bank_AccountNumber, new { @class = "form-label" })
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-6">
+                <div class="form-group form-float">
+                    <div class="form-line">
+                        @Html.TextBoxFor(z => z.Bank_AccountOwnerName, new { @class = "form-control" })
+                        @Html.LabelFor(z => z.Bank_AccountOwnerName, new { @class = "form-label" })
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row clearfix">
+            <div class="col-sm-12">
+                <div class="form-group m-2">
+                    <button id="btnAddSpBeneficentDetailRow" onclick="return AddSpBeneficentDetail()" class="btn btn-success">@ERP.ResourcePack.Common.Settings.BtnAddNew</button>
+                    <button style="display:none;" id="btnUpdateSpBeneficentDetailRow" onclick="return UpdateSpBeneficentDetailRow()" class="btn btn-info">@ERP.ResourcePack.Common.Settings.BtnUpdate</button>
+                    <button style="display:none;" id="btnCancelSpBeneficentDetailRow" onclick="CancelEditSpBeneficentDetailRow()" class="btn btn-danger">@ERP.ResourcePack.Common.Settings.BtnCancel</button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+@functions {
+    object getHtmlAttributes(bool Disabled, string CssClass, string CssClass2)
+    {
+        if (Disabled)
+        {
+            return new { @class = CssClass, Disabled = Disabled };
+        }
+        return new { @class = $"{CssClass} {CssClass2}" };
+    }
+}

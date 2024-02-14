@@ -1,0 +1,414 @@
+﻿@using ERP.Web.UI.Models.ViewModels.Accounts
+@using ERP.Web.UI.Models.ViewModels.General
+@model ArJobSurveyHdVM
+@{
+    string formTrigger = ViewBag.trigger;
+    string lang = Request.Cookies["Lang"] == null ? "ar-EG" : Request.Cookies["Lang"].Value.ToString();
+    string lkpKeyDdl = lang == "ar-EG" ? nameof(ERP.Web.UI.Models.ViewModels.General.FndLookupValuesVM.NameAr) : nameof(ERP.Web.UI.Models.ViewModels.General.FndLookupValuesVM.NameEn);
+    bool isFormDetail = Model != null && formTrigger == ERP.Front.Helpers.Enums.Common.FormTriggers.Show.ToString();
+}
+<div class="card">
+     
+    <div class="body">
+        @using (Ajax.BeginForm(nameof(ERP.Web.UI.Controllers.Accounts.ArJobSurveyHdController.CreateArJobSurveyHd), "ArJobSurveyHd",
+            new AjaxOptions { HttpMethod = "POST", OnBegin = "OnBegin", OnSuccess = "OnSuccess", OnComplete = "OnComplete", OnFailure = "OnFailure" }, new { @id = "mainForm" }))
+        {
+            @Html.HiddenFor(z => z.Id)
+            @Html.HiddenFor(z => z.ListArJobSurveyTr)
+            <div class="border-apply" style="padding:0rem 1rem;margin:1rem">
+                <div class="header d-flex justify-content-start align-items-center py-2">
+                    <i class="fas fa-2x fa-chevron-down down-arr mr-2" data-toggle="collapse" data-target="#first"></i>
+                    <p class="m-0">@ERP.ResourcePack.Accounts.ArJobSurveyHd.QuotationInfo</p>
+                    <hr />
+                </div>
+                <div class="collapse show" id="first">
+
+
+                    <div class="row clearfix">
+                        <div class="col-md-3">
+                            <div class="form-group form-float">
+                                <div class="form-line">
+                                    @Html.TextBoxFor(z => z.ClaimNo, getHtmlAttributes(true, "form-control", string.Empty))
+                                    @Html.LabelFor(z => z.ClaimNo, new { @class = "form-label" })
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-group form-float">
+                                <div class="form-line">
+                                    @Html.TextBoxFor(z => z.ClaimDate, getHtmlAttributes(isFormDetail, "form-control", "datepicker"))
+                                    @Html.LabelFor(z => z.ClaimDate, new { @class = "form-label label-required" })
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            @Html.LabelFor(z => z.ArJobSurveyStatusLkpId, new { @class = "form-label active" })
+                            <div class="form-group form-float">
+                                <div class="">
+                                    @if (Model != null && Model.ArJobSurveyStatusLkp != null)
+                                    {
+                                        var list = new List<FndLookupValuesVM> { new FndLookupValuesVM { Id = (long)Model.ArJobSurveyStatusLkpId, NameAr = Model.ArJobSurveyStatusLkp.NameAr, NameEn = Model.ArJobSurveyStatusLkp.NameEn } };
+                                        var selectList = new SelectList(list, "Id", lkpKeyDdl, Model.ArJobSurveyStatusLkpId);
+
+                                        @Html.DropDownListFor(z => z.ArJobSurveyStatusLkpId, selectList, getHtmlAttributes(true, "form-control  active", string.Empty))
+                                    }
+                                    else
+                                    {
+                                        @Html.DropDownListFor(z => z.ArJobSurveyStatusLkpId, new List<SelectListItem> { new SelectListItem { Value = "11550", Text = "جديد", Selected = true } }, getHtmlAttributes(true, "form-control", string.Empty))
+
+                                    }
+                                </div>
+                                @Html.ValidationMessageFor(z => z.ArJobSurveyStatusLkpId)
+                            </div>
+                        </div>
+                        <div class="col-sm-3">
+                            <div class="form-group form-float">
+                                <div class="form-line">
+                                    @Html.TextBoxFor(z => z.Attribute1, getNumberType(isFormDetail, "form-control", string.Empty))
+                                    @Html.LabelFor(z => z.Attribute1, new { @class = "form-label " })
+                                </div>
+                                @Html.ValidationMessageFor(z => z.Attribute1)
+                            </div>
+                        </div>
+
+                    </div>
+                    <div class="row clearfix">
+                        
+                            <div class="col-md-6">
+                                <div class="form-group form-float">
+                                    <div class="form-line">
+                                        @Html.TextAreaFor(z => z.Comments, getHtmlAttributes(isFormDetail, "form-control", string.Empty))
+                                        @Html.LabelFor(z => z.Comments, new { @class = "form-label" })
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                @if (formTrigger == ERP.Front.Helpers.Enums.Common.FormTriggers.Show.ToString())
+                                {
+                                    <p>
+                                        @if (Model.InsuredVehicle)
+                                        {
+                                            <i class="fas fa-check text-success fa-2x"></i>
+                                        }
+                                        else
+                                        {
+                                            <i class="fas fa-times text-danger fa-2x"></i>
+                                        }
+                                        <span>@Html.LabelFor(z => z.InsuredVehicle)</span>
+                                    </p>
+                                }
+                                else if (formTrigger == ERP.Front.Helpers.Enums.Common.FormTriggers.Update.ToString())
+                                {
+                                    <p>
+                                        <label>
+                                            @if (Model.InsuredVehicle)
+                                            {
+                                                <input type="checkbox" onclick="mainForm.InsuredVehicle.value = $('#InsuredVehicleAlt').is(':checked')" checked id="@nameof(Model.InsuredVehicleAlt)" name="@nameof(Model.InsuredVehicleAlt)" />
+                                            }
+                                            else
+                                            {
+                                                <input type="checkbox" onclick="mainForm.InsuredVehicle.value = $('#InsuredVehicleAlt').is(':checked')" id="@nameof(Model.InsuredVehicleAlt)" name="@nameof(Model.InsuredVehicleAlt)" />
+                                            }
+                                            <span>@Html.LabelFor(z => z.InsuredVehicle)</span>
+                                        </label>
+                                    </p>
+                                }
+                                else
+                                {
+                                    <p>
+                                        <label>
+                                            <input type="checkbox"  onclick="mainForm.InsuredVehicle.value = $('#InsuredVehicleAlt').is(':checked')" id="@nameof(Model.InsuredVehicleAlt)" name="@nameof(Model.InsuredVehicleAlt)" />
+                                            <span>@Html.LabelFor(z => z.InsuredVehicle)</span>
+                                        </label>
+                                    </p>
+                                }
+
+                                <input type="hidden" id="@nameof(Model.InsuredVehicle)" name="@nameof(Model.InsuredVehicle)" value="@(formTrigger == ERP.Front.Helpers.Enums.Common.FormTriggers.Insert.ToString() ? "false" : Model.InsuredVehicle.ToString())" />
+                            </div>
+                            <div class="col-md-3">
+                                @if (formTrigger == ERP.Front.Helpers.Enums.Common.FormTriggers.Show.ToString())
+                                {
+                                    <p>
+                                        @if (Model.TPVehicle)
+                                        {
+                                            <i class="fas fa-check text-success fa-2x"></i>
+                                        }
+                                        else
+                                        {
+                                            <i class="fas fa-times text-danger fa-2x"></i>
+                                        }
+                                        <span>@Html.LabelFor(z => z.TPVehicle)</span>
+                                    </p>
+                                }
+                                else if (formTrigger == ERP.Front.Helpers.Enums.Common.FormTriggers.Update.ToString())
+                                {
+                                    <p>
+                                        <label>
+                                            @if (Model.TPVehicle)
+                                            {
+                                                <input type="checkbox" onclick="mainForm.TPVehicle.value = $('#TPVehicleAlt').is(':checked')" checked id="@nameof(Model.TPVehicleAlt)" name="@nameof(Model.TPVehicleAlt)" />
+                                            }
+                                            else
+                                            {
+                                                <input type="checkbox" onclick="mainForm.TPVehicle.value = $('#TPVehicleAlt').is(':checked')" id="@nameof(Model.TPVehicleAlt)" name="@nameof(Model.TPVehicleAlt)" />
+                                            }
+                                            <span>@Html.LabelFor(z => z.TPVehicle)</span>
+                                        </label>
+                                    </p>
+                                }
+                                else
+                                {
+                                    <p>
+                                        <label>
+                                            <input type="checkbox" @*checked="$('#TPVehicle').val();"*@ onclick="mainForm.TPVehicle.value = $('#TPVehicleAlt').is(':checked')" id="@nameof(Model.TPVehicleAlt)" name="@nameof(Model.TPVehicleAlt)" />
+                                            <span>@Html.LabelFor(z => z.TPVehicle)</span>
+                                        </label>
+                                    </p>
+                                }
+
+                                <input type="hidden" id="@nameof(Model.TPVehicle)" name="@nameof(Model.TPVehicle)" value="@(formTrigger == ERP.Front.Helpers.Enums.Common.FormTriggers.Insert.ToString() ? "false" : Model.TPVehicle.ToString())" />
+                            </div>
+                        
+                    </div>
+                </div>
+            </div>
+
+            <div class="border-apply" style="padding:0rem 1rem;margin:1rem">
+                <div class="header d-flex justify-content-start align-items-center py-2">
+                    <i class="fas fa-2x fa-chevron-down down-arr mr-2" data-toggle="collapse" data-target="#second"></i>
+                    <p class="m-0">@ERP.ResourcePack.Accounts.ArJobCardHd.VehicleInfo</p>
+                    <hr />
+                </div>
+                <div class="collapse show" id="second">
+                    <div class="row clearfix">
+                        <div class="col-md-3">
+                            <div class="form-group form-float">
+                                <div class="form-line text-center">
+                                    @Html.TextBoxFor(z => z.PlateNo, getHtmlAttributes(isFormDetail, "form-control ", string.Empty))
+                                    @Html.LabelFor(z => z.PlateNo, new { @class = "form-label label-required" })
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-sm-3">
+                            @Html.LabelFor(z => z.VehicleEmirateLkpId, new { @class = "form-label" })
+                            <div class="form-group form-float">
+                                <div class="">
+                                    @if (Model != null && Model.VehicleEmirateLkp != null)
+                                    {
+                                        var list = new List<FndLookupValuesVM> { new FndLookupValuesVM { Id = (long)Model.VehicleEmirateLkpId, NameAr = Model.VehicleEmirateLkp.NameAr, NameEn = Model.VehicleEmirateLkp.NameEn } };
+                                        var selectList = new SelectList(list, "Id", lkpKeyDdl, Model.VehicleEmirateLkpId);
+
+                                        @Html.DropDownListFor(z => z.VehicleEmirateLkpId, selectList, getHtmlAttributes(isFormDetail, "form-control", string.Empty))
+                                    }
+                                    else
+                                    {
+                                        @Html.DropDownListFor(z => z.VehicleEmirateLkpId, Enumerable.Empty<SelectListItem>(), getHtmlAttributes(isFormDetail, "form-control", string.Empty))
+                                    }
+                                </div>
+                                @Html.ValidationMessageFor(z => z.VehicleEmirateLkpId)
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            @Html.LabelFor(z => z.VehicleMakeLkpId, new { @class = "form-label active" })
+                            <div class="form-group form-float">
+                                <div class="">
+                                    @if (Model != null && Model.ArJobCardVehicleMakeLkp != null)
+                                    {
+                                        var list = new List<FndLookupValuesVM> { new FndLookupValuesVM { Id = (long)Model.VehicleMakeLkpId, NameAr = Model.ArJobCardVehicleMakeLkp.NameAr, NameEn = Model.ArJobCardVehicleMakeLkp.NameEn } };
+                                        var selectList = new SelectList(list, "Id", lkpKeyDdl, Model.VehicleMakeLkpId);
+
+                                        @Html.DropDownListFor(z => z.VehicleMakeLkpId, selectList, getHtmlAttributes(isFormDetail, "form-control  active", string.Empty))
+                                    }
+                                    else
+                                    {
+                                        @Html.DropDownListFor(z => z.VehicleMakeLkpId, Enumerable.Empty<SelectListItem>(), getHtmlAttributes(isFormDetail, "form-control", string.Empty))
+
+                                    }
+                                </div>
+                                @Html.ValidationMessageFor(z => z.VehicleMakeLkpId)
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            @Html.LabelFor(z => z.VehicleModelLkpId, new { @class = "form-label active" })
+                            <div class="form-group form-float">
+                                <div class="">
+                                    @if (Model != null && Model.ArJobCardVehicleModelLkp != null)
+                                    {
+                                        var list = new List<FndLookupValuesVM> { new FndLookupValuesVM { Id = (long)Model.VehicleModelLkpId, NameAr = Model.ArJobCardVehicleModelLkp.NameAr, NameEn = Model.ArJobCardVehicleModelLkp.NameEn } };
+                                        var selectList = new SelectList(list, "Id", lkpKeyDdl, Model.VehicleModelLkpId);
+
+                                        @Html.DropDownListFor(z => z.VehicleModelLkpId, selectList, getHtmlAttributes(isFormDetail, "form-control  active", string.Empty))
+                                    }
+                                    else
+                                    { @Html.DropDownListFor(z => z.VehicleModelLkpId, Enumerable.Empty<SelectListItem>(), getHtmlAttributes(isFormDetail, "form-control", string.Empty))
+
+                                }
+                                </div>
+                                @Html.ValidationMessageFor(z => z.VehicleModelLkpId)
+                            </div>
+                        </div>
+
+
+                    </div>
+
+                    <div class="row clearfix">
+                        <div class="col-sm-3">
+                            @Html.LabelFor(z => z.VehicleColorLkpId, new { @class = "form-label" })
+                            <div class="form-group form-float">
+                                <div class="">
+                                    @if (Model != null && Model.VehicleColorLkp != null)
+                                    {
+                                        var list = new List<FndLookupValuesVM> { new FndLookupValuesVM { Id = (long)Model.VehicleColorLkpId, NameAr = Model.VehicleColorLkp.NameAr, NameEn = Model.VehicleColorLkp.NameEn } };
+                                        var selectList = new SelectList(list, "Id", lkpKeyDdl, Model.VehicleColorLkpId);
+
+                                        @Html.DropDownListFor(z => z.VehicleColorLkpId, selectList, getHtmlAttributes(isFormDetail, "form-control", string.Empty))
+                                    }
+                                    else
+                                    {
+                                        @Html.DropDownListFor(z => z.VehicleColorLkpId, Enumerable.Empty<SelectListItem>(), getHtmlAttributes(isFormDetail, "form-control", string.Empty))
+                                    }
+                                </div>
+                                @Html.ValidationMessageFor(z => z.VehicleColorLkpId)
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="border-apply" style="padding:0rem 1rem;margin:1rem">
+                <div class="header d-flex justify-content-start align-items-center py-2">
+                    <i class="fas fa-2x fa-chevron-down down-arr mr-2" data-toggle="collapse" data-target="#third"></i>
+                    <p class="m-0">@ERP.ResourcePack.Accounts.ArJobSurveyHd.ContractInfo</p>
+                    <hr />
+                </div>
+                <div class="collapse show" id="third">
+
+                    <div class="row clearfix">
+
+                        <div class="col-sm-3">
+                            @Html.LabelFor(z => z.JobTypeLkpId, new { @class = "form-label" })
+                            <div class="form-group form-float">
+                                <div class="">
+                                    @if (Model != null && Model.JobTypeLkp != null)
+                                    {
+                                        var list = new List<FndLookupValuesVM> { new FndLookupValuesVM { Id = (long)Model.JobTypeLkpId, NameAr = Model.JobTypeLkp.NameAr, NameEn = Model.JobTypeLkp.NameEn } };
+                                        var selectList = new SelectList(list, "Id", lkpKeyDdl, Model.JobTypeLkpId);
+
+                                        @Html.DropDownListFor(z => z.JobTypeLkpId, selectList, getHtmlAttributes(isFormDetail, "form-control", string.Empty))
+                                    }
+                                    else
+                                    {
+                                        @Html.DropDownListFor(z => z.JobTypeLkpId, Enumerable.Empty<SelectListItem>(), getHtmlAttributes(isFormDetail, "form-control", string.Empty))
+                                    }
+                                </div>
+
+                            </div>
+                        </div>
+                        <div class="col-sm-3">
+                            @Html.LabelFor(z => z.ArCustomerId, new { @class = "form-label" })
+                            <div class="form-group form-float">
+                                <div class="">
+                                    @if (Model != null && Model.ArCustomers != null)
+                                    {
+                                        var list = new List<FndLookupValuesVM> { new FndLookupValuesVM { Id = (long)Model.ArCustomerId, NameAr = Model.ArCustomers.CustomerNameAr, NameEn = Model.ArCustomers.CustomerNameEn } };
+                                        var selectList = new SelectList(list, "Id", lkpKeyDdl, Model.ArCustomerId);
+
+                                        @Html.DropDownListFor(z => z.ArCustomerId, selectList, getHtmlAttributes(isFormDetail, "form-control", string.Empty))
+                                    }
+                                    else
+                                    {
+                                        @Html.DropDownListFor(z => z.ArCustomerId, Enumerable.Empty<SelectListItem>(), getHtmlAttributes(isFormDetail, "form-control", string.Empty))
+                                    }
+                                </div>
+                                @*@Html.ValidationMessageFor(z => z.ArCustomerId)*@
+                            </div>
+                        </div>
+
+                        <div class="col-sm-3">
+                            <div class="form-group form-float">
+                                <div class="form-line">
+                                    @Html.TextBoxFor(z => z.ContactName, getHtmlAttributes(isFormDetail, "form-control", string.Empty))
+                                    @Html.LabelFor(z => z.ContactName, new { @class = "form-label " })
+                                </div>
+                                @Html.ValidationMessageFor(z => z.ContactName)
+                            </div>
+                        </div>
+                        <div class="col-sm-3">
+                            <div class="form-group form-float">
+                                <div class="form-line">
+                                    @Html.TextBoxFor(z => z.ContactNo, getHtmlAttributes(isFormDetail, "form-control", string.Empty))
+                                    @Html.LabelFor(z => z.ContactNo, new { @class = "form-label" })
+                                </div>
+                                @Html.ValidationMessageFor(z => z.ContactNo)
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row clearfix">
+
+                        <div class="col-sm-3">
+                            <div class="form-group form-float">
+                                <div class="form-line">
+                                    @Html.TextBoxFor(z => z.LabourCharges, getHtmlAttributes(isFormDetail, "form-control currency", string.Empty))
+                                    @Html.LabelFor(z => z.LabourCharges, new { @class = "form-label " })
+                                </div>
+                                @Html.ValidationMessageFor(z => z.LabourCharges)
+                            </div>
+                        </div>
+                        <div class="col-sm-3">
+                            <div class="form-group form-float">
+                                <div class="form-line">
+                                    @Html.TextBoxFor(z => z.EstimatedAmount, getHtmlAttributes(isFormDetail, "form-control currency", string.Empty))
+                                    @Html.LabelFor(z => z.EstimatedAmount, new { @class = "form-label " })
+                                </div>
+                                @Html.ValidationMessageFor(z => z.EstimatedAmount)
+                            </div>
+                        </div>
+                        <div class="col-sm-3">
+                            <div class="form-group form-float">
+                                <div class="form-line">
+                                    @Html.TextBoxFor(z => z.LumpsumAmount, getHtmlAttributes(isFormDetail, "form-control currency", string.Empty))
+                                    @Html.LabelFor(z => z.LumpsumAmount, new { @class = "form-label " })
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-sm-3">
+                            <div class="form-group form-float">
+                                <div class="form-line focused">
+                                    @Html.TextBoxFor(z => z.TotalAmount, getHtmlAttributes(true, "form-control currency", string.Empty))
+                                    @Html.LabelFor(z => z.TotalAmount, new { @class = "form-label " })
+                                </div>
+                            </div>
+                        </div>
+
+
+                    </div>
+
+                     
+
+
+                </div>
+            </div>
+        }
+
+    </div>
+            </div>
+
+            @functions {
+                object getHtmlAttributes(bool Disabled, string CssClass, string CssClass2)
+                {
+                    if (Disabled)
+                    {
+                        return new { @class = CssClass, Disabled = Disabled };
+                    }
+                    return new { @class = $"{CssClass} {CssClass2}" };
+                }
+                object getNumberType(bool Disabled, string CssClass, string CssClass2)
+                {
+                    if (Disabled)
+                    {
+                        return new { @class = CssClass, Disabled = Disabled, @type = "number" };
+                    }
+                    return new { @class = $"{CssClass} {CssClass2}", @type = "number" };
+                }
+            }

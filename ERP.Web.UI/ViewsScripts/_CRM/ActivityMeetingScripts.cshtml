@@ -1,0 +1,539 @@
+﻿@using ERP.ResourcePack.CRM.Meetings
+@using ERP.Web.UI.Controllers.CRM
+@using ERP.Authorization;
+@{
+    string encUpdateTrigger = ERP.Front.Helpers.Enums.Common.EncUpdate;
+    string encShowTrigger = ERP.Front.Helpers.Enums.Common.EncShow;
+    string permissionsStr = TempData["Permissions"].ToString();
+}
+
+ 
+
+
+<script>
+    const _mainController = "ActivityMeeting"
+
+    $(function () {
+
+        LoadDataGrid();
+
+        $('#ActivityMeeting').addClass('active');
+
+        //$('#mainForm #StatusLkpId').parent('.form-line').addClass('focused');
+        //$('#mainForm #AdditionNumber').parent('.form-line').addClass('focused');
+        //$('#mainForm #AdditionName').parent('.form-line').addClass('focused');
+        //$('#units #Amount').parent('.form-line').addClass('focused');
+
+    });
+
+    const _loadDataUrl = `${$PrefixHostName}/${_mainController}/@nameof(ActivityMeetingController.LoadDataGrid)`;
+    const _tblSelector = $('#tblActivityMeeting');
+    const _tblLoader = $('#tblLoader');
+    const _mainForm = $('#mainForm');
+
+    const _permissions = '@permissionsStr';
+    const _updatePermission = '@PermissionNames.Pages_CrmLeadsPersons_Update';
+    const _deletePermission = '@PermissionNames.Pages_CrmLeadsPersons_Delete';
+    @*const _postPermission = '@PermissionNames.Pages_ActivityMeeting_Post';*@
+
+    //$('#btnSubmition').on('click', function () {
+
+    //    if (formValidator()) {
+    //        _mainForm.submit();
+    //    }
+    //});
+
+
+    //$('#mainForm11').on('submit', function (e) {
+    //    e.preventDefault();
+    //    alert("");
+    //    if ($('#mainForm11').valid()) {
+
+    //        setTimeout(function () {
+    //            window.location.href = `/ActivityMeeting/FormView?id=&t=ohY6agOArKMhinIh5af4rw,,&LeadContactId=${getUrlParameter('LeadContactId')}&Name=${getUrlParameter('Name')}&type=${getUrlParameter('type')}`;
+    //        }, 200);
+    //    } else {
+    //        e.preventDefault();
+    //    }
+    //});
+
+
+
+
+
+
+
+
+
+    var OnBegin = function (response) {
+        fireBtnLoader();
+    };
+
+    var OnSuccess = function (response) {
+
+        if (response.success) {
+
+            if (response.customRestResult.trigger === '@ERP.Front.Helpers.Enums.Common.FormTriggers.Insert') {
+
+                toastr.success(response.customRestResult.message);
+
+                setTimeout(function () {
+                    //window.location.href = $PrefixHostName + '/ActivityMeeting';
+                    window.location.href = `/ActivityMeeting/FormView?id=&t=ohY6agOArKMhinIh5af4rw,,&LeadContactId=${getUrlParameter('LeadContactId')}&Name=${getUrlParameter('Name')}&type=${getUrlParameter('type')}`;
+
+
+                }, 200);
+
+            } else if (response.customRestResult.trigger === '@ERP.Front.Helpers.Enums.Common.FormTriggers.Update') {
+
+                toastr.success(response.customRestResult.message);
+
+                setTimeout(function () {
+                    //window.location.href = $PrefixHostName + '/ActivityMeeting';
+                    window.location.href = `/ActivityMeeting/FormView?id=&t=ohY6agOArKMhinIh5af4rw,,&LeadContactId=${getUrlParameter('LeadContactId')}&Name=${getUrlParameter('Name')}&type=${getUrlParameter('type')}`;
+
+
+                }, 200);
+            }
+
+        } else {
+            $('#btnSubmition').prop('disabled',false);
+            toastr.error(response.customRestResult.message);
+        }
+    };
+
+    var OnComplete = function (response) {
+        downBtnLoader();
+        $('#btnSubmition').prop('disabled',false);
+    };
+
+    var OnFailure = function (response) {
+        toastr.error(response);
+        downBtnLoader();
+        $('#btnSubmition').prop('disabled',false);
+    };
+
+    const LoadDataGrid = function () {
+
+        $('#tblLoader').show();
+
+        const parms = {
+           // RelatedToLkpId: $('#searchBox #RelatedToLkpId').find(':selected').val(),
+            CrmLeadsPersonsId: $('#CrmLeadsPersonsId').val(),
+            //Title: $('#Title').val(),
+            //Location: $('#Location ').val()
+
+        };
+
+        const columns = [
+            {
+                "data": "result.data.id",
+                'render': function (data, type, row, meta) {
+                    return meta.row + meta.settings._iDisplayStart + 1;
+                }
+            },
+            {
+                "data": "Title",
+                "name": "Title",
+                "autoWidth": true
+            },
+            {
+                "data": "PartiReminderLkpVal",
+                "name": "PartiReminderLkpVal",
+                "autoWidth": true
+            },
+
+            {
+                "name": "RelatedToLkpVal",
+                "data": "RelatedToLkpVal",
+                "autoWidth": true
+            },
+
+
+            {
+                "name": "CrmLeadsPersonsVal",
+                "data": "CrmLeadsPersonsVal",
+                "autoWidth": true
+            },
+            {
+                "data": null,
+                "sortable": false,
+                "render": function (data, type, row) {
+
+                    let formAction = `${$PrefixHostName}/${_mainController}/@nameof(ActivityMeetingController.ActivityMeetingForm)`;
+                    let DeleteAction = `${$PrefixHostName}/${_mainController}/@nameof(ActivityMeetingController.Delete)`;
+
+                    let btns = '';
+
+                    @*if (_permissions.includes(_postPermission)  ) {
+                        btns += `<a href="javascript:void(0)" onclick="PostAjax(${row.Id})" title="@ERP.ResourcePack.Common.Settings.Post"><i class="mx-2 fas fa-check-circle text-info"></i></a>`;
+                    }*@
+
+                    if (_permissions.includes(_updatePermission)  ) {
+                        @*btns += `<a href="${$PrefixHostName}/ActivityMeeting/FormView?id=${row.EncId}&t=@encUpdateTrigger"  title="@ERP.ResourcePack.Common.Settings.Edit"><i class="mx-2 fas fa-edit text-info"></i></a>`;*@
+
+
+                        btns += `<a href="${$PrefixHostName}/ActivityMeeting/FormView?id=${row.EncId}&t=@encUpdateTrigger&LeadContactId=${row.CrmLeadsPersonsId}&Name=${row.CrmLeadsPersonsVal}&type=${getUrlParameter('type')}"  title="@ERP.ResourcePack.Common.Settings.Edit"><i class="mx-2 fas fa-edit text-info"></i></a>`;
+
+
+                    }
+
+                    @*btns += `<a href="${$PrefixHostName}/ActivityMeeting/FormView?id=${row.EncId}&t=@encShowTrigger"  title="@ERP.ResourcePack.Common.Settings.Show"><i class="mx-2 fas fa-eye text-info"></i></a>`;*@
+
+                    if (_permissions.includes(_deletePermission)  ) {
+                        btns += `<a href="javascript:void(0)" onclick="AjaxController.DeleteMainTableRow(${row.Id},'${DeleteAction}');"  title="@ERP.ResourcePack.Common.Settings.Delete"><i class="mx-2 fas fa-trash-alt text-danger"></i></a>`;
+                    }
+
+                    @*const _auditedPermission = '@PermissionNames.Pages_ActivityMeeting_Audit';
+
+                    if (_permissions.includes(_auditedPermission)) {
+
+                        row.permission = _auditedPermission;
+
+                        btns += GetAuditedButton(row);
+                    }*@
+
+                    return btns;
+                }
+            }
+        ];
+
+        const dtObj = {
+            "processing": true,
+            "serverSide": true,
+            "filter": false,
+            "orderMulti": false,
+            "language": dataTableLang,
+            "ajax": {
+                "url": _loadDataUrl,
+                "type": "POST",
+                "datatype": "json",
+                "data": parms,
+                "complete": function () {
+                    _tblLoader.hide();
+                }
+            },
+            "columns": columns,
+            "initComplete": function () {
+                $('[data-toggle="tooltip"]').tooltip();
+            }
+
+        };
+
+        _tblSelector.dataTable().fnDestroy();
+        _tblSelector.DataTable(dtObj).on('draw', function () { $('[data-toggle="tooltip"]').tooltip(); });
+
+    };
+
+
+
+
+
+    $('#CrmDealsId').select2(ReturnSelect2ObjectDefault(`${baseUrl}/ActivityMeeting/GetCrmDealsSelect2`));
+
+    //$('#RelatedToLkpId').select2(ReturnSelect2ObjectForLkpsTypes('CrmLeadsPersonsType'));
+  
+    $('#PartiReminderLkpId').select2(ReturnSelect2ObjectForLkpsTypes('ActivityMeetingPartRemember'));
+
+
+ 
+ 
+    $('#RelatedToLkpId0').select2();
+    $('#CrmLeadsPersonsId0').select2();
+
+    //$('#CrmLeadsPersonsId').select2({
+    //    ajax: {
+    //        url: `${baseUrl}/ActivityCall/GetCrmLeadsPersons_ByTypeSelect2`,
+    //        dataType: 'json',
+    //        headers: {
+    //            'Authorization': `Bearer ${$_token}`
+    //        },
+    //        data: function (params) {
+    //            params.page = params.page || 1;
+    //            return {
+    //                TypeLkpId: $('#RelatedToLkpId').find(':selected').val(),
+    //                pageSize: pageSize,
+    //                pageNumber: params.page,
+    //                searchTerm: params.term,
+    //                lang: lang
+    //            };
+    //        },
+    //        processResults: function (data, params) {
+
+    //            params.page = params.page || 1;
+
+    //            return {
+    //                results: data.result.results,
+    //                pagination: {
+    //                    more: (params.page * pageSize) < data.result.total
+    //                }
+    //            };
+    //        }
+    //    },
+    //    placeholder: select2Placeholder,
+    //    minimumInputLength: 0,
+    //    allowClear: true,
+    //    language: select2Lang
+    //});
+
+    $('#RelatedToLkpId').on('change', function (e) {
+        $('#CrmLeadsPersonsId').val('').trigger('change');
+    });
+
+    $('#RelatedToLkpId1').on('change', function (e) {
+        $('#CrmLeadsPersonsId1').val('').trigger('change');
+    });
+
+
+     const formValidator = function () {
+
+
+         if ( !$('#RelatedToLkpId0').find(':selected').val() ) {
+             $(this).focus();
+            toastr.warning('@ERP.ResourcePack.CRM.Meetings.activityMeeting.RelatedToLkpId ' + ' : ' + '@ERP.ResourcePack.Common.Settings.Required')
+            return false;
+         }
+
+         if (!$('#CrmLeadsPersonsId0').find(':selected').val() ) {
+             $(this).focus();
+            toastr.warning('@ERP.ResourcePack.CRM.Meetings.activityMeeting.CrmLeadsPersonsId ' + ' : ' + '@ERP.ResourcePack.Common.Settings.Required')
+            return false;
+         }
+
+         if (!$('#PartiReminderLkpId').find(':selected').val() ) {
+             $(this).focus();
+            toastr.warning('@ERP.ResourcePack.CRM.Meetings.activityMeeting.PartiReminderLkpId ' + ' : ' + '@ERP.ResourcePack.Common.Settings.Required')
+            return false;
+         }
+
+
+        return true;
+    };
+
+
+
+
+
+
+
+
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+<script id="units">
+
+    const _tblmeetingDataSelector = $('#tblUnits');
+    const _tblmeetingDataSelectorBody = $('#tblUnits tbody');
+    const _meetingListStr = $('#ActivityMeetingParticipantStr');
+
+    let _meetingArr = [], tblMeetingCounterIndex = 0,updatedMettingRow;
+
+    const fillUnitObject = function () {
+
+        if (validateUnits() === false) return;
+
+        const current = {
+            index: ++tblMeetingCounterIndex,
+            relatedToLkpId: $('#RelatedToLkpId1').find(':selected').val(),
+
+            relatedToLkpVal: $('#RelatedToLkpId1').find(':selected').text(),
+
+            
+        
+            crmLeadsPersonsId: $('#CrmLeadsPersonsId1').find(':selected').val(),
+            crmLeadsPersonsVal: $('#CrmLeadsPersonsId1').find(':selected').text(),
+      
+            ActivityMeetingId: 0,
+
+            rowStatus: NewStatus
+        };
+
+        return current;
+    };
+
+    const AddUnits = function () {
+
+        const current = fillUnitObject();
+
+        if (current === undefined) return;
+
+        _meetingArr.push(current);
+
+        _meetingListStr.val(JSON.stringify(_meetingArr));
+
+        clearFormUnits();
+
+        bindUnitsTable();
+    };
+
+    const bindUnitsTable = function () {
+
+        let rows = '';
+
+        const detailArr = _meetingArr.filter(z => z.rowStatus !== DeletedStatus);
+
+        $.each(detailArr, function (i, item) {
+
+            rows += '<tr>';
+
+            rows += `<td>${item.index}</td>`;
+            rows += `<td>${!item.relatedToLkpVal ? '' : item.relatedToLkpVal}</td>`;
+            rows += `<td>${!item.crmLeadsPersonsVal ? '' : item.crmLeadsPersonsVal}</td>`;
+           
+
+            if (primaryEntityKeyId === 0 || trigger !== '@ERP.Front.Helpers.Enums.Common.FormTriggers.Show.ToString()') {
+                rows += `<td><a href="javascript:void(0)" onclick="return DeleteUnitRow(${item.index})"><i class="mx-2 fas fa-trash-alt text-danger"></i></a>`;
+                rows += `<a href="javascript:void(0)" onclick="return GetUnitRowDetail(${item.index})"><i class="mx-2 fas fa-edit text-success"></i></a></td>`;
+            } else {
+                rows += '<td></td>';
+            }
+            rows += '</tr>';
+        });
+        setTimeout(function () {
+            $(".js-meeting-tbl-body").html(rows);
+        }, 100);
+    };
+
+    const DeleteUnitRow = function (index) {
+
+        const current = _meetingArr.find(z => z.index === index);
+
+        const indexOfCurrent = _meetingArr.indexOf(current);
+
+        if (!current.id) {
+
+           _meetingArr.splice(indexOfCurrent, 1);
+
+        } else {
+
+            current.rowStatus = DeletedStatus;
+
+           _meetingArr.splice(indexOfCurrent, 1,current);
+        }
+
+        bindUnitsTable();
+
+        _meetingListStr.val(_meetingArr.length === 0 ? '' : JSON.stringify(_meetingArr));
+    };
+
+    const LoadUnitsData = function () {
+
+        $('#tblLoaderDetail').show();
+
+        $.ajax({
+            url: `${baseUrl}/ActivityMeeting/GetDetailAsync`,
+            method: 'GET',
+            headers: {
+                        'Authorization': `Bearer ${$_token}`
+            },
+            data: {
+                id: primaryEntityKeyId
+            }
+        }).done(function (data) {
+
+            _meetingArr = [...data.result];
+
+            $.each(_meetingArr, function (i, item) {
+                item.index = ++tblMeetingCounterIndex;
+            });
+
+            bindUnitsTable();
+
+            _meetingListStr.val(JSON.stringify(_meetingArr));
+
+        });
+
+    };
+
+    const GetUnitRowDetail = function (tblIndex) {
+
+        clearFormUnits();
+
+        const current = _meetingArr.find(z => z.index === tblIndex);
+
+        
+
+        $('#btnAddUnitRow').hide();
+        $('#btnUpdateUnitRow').show();
+        $('#btnCancelUnitRow').show();
+
+
+
+        $(`#RelatedToLkpId1`)
+        .append($("<option selected='selected'></option>")
+            .val(current.relatedToLkpId)
+            .text(current.relatedToLkpVal))
+            .trigger('change');
+
+        $(`#CrmLeadsPersonsId1`)
+        .append($("<option selected='selected'></option>")
+            .val(current.crmLeadsPersonsId)
+            .text(current.crmLeadsPersonsVal))
+            .trigger('change');
+         
+        updatedMettingRow = current;
+
+    };
+
+    const UpdateUnitsRow = function () {
+
+        let current = _meetingArr.find(z => z.index === updatedMettingRow.index);
+
+        let indexOfCurrent = _meetingArr.indexOf(current);
+
+        const newRow = fillUnitObject();
+
+        if (newRow === undefined) return;
+
+        newRow.id = updatedMettingRow.id;
+        newRow.rowStatus = !updatedMettingRow.id ? NewStatus : UpdatedStatus;
+
+        _meetingArr.splice(indexOfCurrent, 1,newRow);
+
+        $('#btnAddUnitRow').show();
+        $('#btnUpdateUnitRow').hide();
+        $('#btnCancelUnitRow').hide();
+
+        clearFormUnits();
+
+        _meetingListStr.val(JSON.stringify(_meetingArr));
+
+        bindUnitsTable();
+    };
+
+
+    const clearFormUnits = function () {
+
+        $('#units .card select').val('').trigger('change');
+        $('#units .card input').val('');
+        $('#units .card textarea').val('');
+
+    };
+
+    const validateUnits = function () {
+
+        
+        if (!$('#RelatedToLkpId1').find(':selected').val()) {
+            toastr.warning('@activityMeeting.RelatedToLkpId' + ' : ' + '@ERP.ResourcePack.Common.Settings.Required')
+            return false;
+        }
+
+        if (!$('#CrmLeadsPersonsId1').find(':selected').val()) {
+            toastr.warning('@activityMeeting.CrmLeadsPersonsId' + ' : ' + '@ERP.ResourcePack.Common.Settings.Required')
+            return false;
+        }
+        return true;
+    };
+
+
+</script>

@@ -1,0 +1,13 @@
+﻿@{
+    ViewBag.Title = ERP.ResourcePack.Accounts.ArJobSurveyHd.Title;
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@Html.Action(nameof(ERP.Web.UI.Controllers.Accounts.ArJobSurveyHdController.ArJobSurveyHdSearch))
+@Html.Action(nameof(ERP.Web.UI.Controllers.Accounts.ArJobSurveyHdController.ArJobSurveyHdData))
+@Html.Partial("_ReportModal")
+
+@section scripts{
+    <script>let formView = false;</script>
+    @Html.Partial("~/ViewsScripts/ArJobSurveyHd/ArJobSurveyHdScripts.cshtml")
+}

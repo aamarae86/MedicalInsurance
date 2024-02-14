@@ -1,0 +1,1292 @@
+﻿@using ERP.Web.UI.Controllers.AccountsExtend
+@using ERP.Web.UI.Models.ViewModels.AccountsExtend
+@using ERP.ResourcePack.AccountsExtend
+@using ERP.Authorization;
+@{
+    string permissionsStr = TempData["Permissions"].ToString();
+    string encUpdateTrigger = ERP.Front.Helpers.Enums.Common.EncUpdate;
+    string encShowTrigger = ERP.Front.Helpers.Enums.Common.EncShow;
+    string lang = Request.Cookies["Lang"] == null ? "ar-EG" : Request.Cookies["Lang"].Value.ToString();
+}
+
+@if (permissionsStr.Contains(PermissionNames.Pages_GlJeIntegrationHeaders_Post))
+{
+    <script>
+        const PostAjax = function (id) {
+
+            bootbox.confirm({
+                message: _booBoxMessagePosting,
+                buttons: bootBoxDefaultBtns,
+                callback: function (result) {
+
+                    if (result) {
+
+                        const data = {
+                            id: id,
+                            lang: lang,
+                            userId: 0
+                        };
+
+                        $.ajax({
+                            url: `${baseUrl}/GlJeIntegrationHeaders/PostGlJeIntegrationHeaders`,
+                            type: 'POST',
+                            data: JSON.stringify(data),
+                            headers:
+                            {
+                                'Content-Type': 'application/json',
+                                'Authorization': `Bearer ${$_token}`
+                            },
+                        }).done(function (response) {
+
+                            if (response.result.finalStatues == 'F') {
+                                toastr.warning(response.result.reason);
+                            }
+                            else {
+                                toastr.success(response.result.reason);
+
+                                if (formView) {
+
+                                    setTimeout(function () {
+                                        window.location.href = $PrefixHostName + '/GlJeIntegrationHeaders';
+                                    }, 100);
+
+                                } else {
+                                    LoadDataGrid();
+                                }
+                            }
+                        }).fail(function (response) {
+                            toastr.error(response);
+                        });
+                    }
+                }
+            });
+        };
+    </script>
+}
+else
+{
+    <script>
+        const PostAjax = function (id) { };
+    </script>
+}
+
+<script>
+    $(function () {
+
+        if (!$(".Js-datepicker-today").val()) {
+            $(".Js-datepicker-today").datepicker("setDate", new Date())
+                .datepicker({ autoclose: true }).parent().addClass('focused')
+            $(".datepicker-dropdown ").hide()
+        }
+
+      
+
+        //$('.Js-datepicker-today').on('change', function (e, date) {
+        //    $(this).siblings('label').focus();
+        //});
+
+
+        
+
+        $('#CurrencyId').parent('.form-line').removeClass('focused');
+
+        $('#GlJeIntegrationHeaders').addClass('active');
+
+        LoadDataGrid();
+    });
+
+    const _mainController = "GlJeIntegrationHeaders";
+    const _loadDataUrl = `${$PrefixHostName}/${_mainController}/@nameof(GlJeIntegrationHeadersController.LoadDataGrid)`;
+    const _tblSelector = $('#tblGlJeIntegrationHeaders');
+    const _mainForm = $('#mainForm');
+
+    const _permissions = '@permissionsStr';
+    const _updatePermission = '@PermissionNames.Pages_GlJeIntegrationHeaders_Update';
+    const _deletePermission = '@PermissionNames.Pages_GlJeIntegrationHeaders_Delete';
+    const _postPermission = '@PermissionNames.Pages_GlJeIntegrationHeaders_Post';
+    const _PostStatus = @Convert.ToInt64(ERP.Front.Helpers.Enums.Common.GlJeIntegrationHeaders.Posted);
+
+    const getMaskValNum = function (val) {
+        return typeof val == "string" ? Number(val.replace(/,/g, '')) : val;
+    };
+
+    $('#btnSubmition').on('click', function () {
+
+        _mainForm.submit();
+
+        if (_mainForm.valid()) {
+
+            $(this).prop('disabled',true);
+
+        } else {
+
+            $(this).prop('disabled', false);
+        }
+
+    });
+
+    var OnBegin = function (response) {
+        fireBtnLoader();
+    };
+
+    var OnSuccess = function (response) {
+
+        if (response.success) {
+
+            if (response.customRestResult.trigger === '@ERP.Front.Helpers.Enums.Common.FormTriggers.Insert') {
+
+                toastr.success(response.customRestResult.message);
+
+                setTimeout(function () {
+                    window.location.href = $PrefixHostName + '/GlJeIntegrationHeaders';
+                }, 200);
+
+
+            } else if (response.customRestResult.trigger === '@ERP.Front.Helpers.Enums.Common.FormTriggers.Update') {
+
+
+                toastr.success(response.customRestResult.message);
+
+                setTimeout(function () {
+                    window.location.href = $PrefixHostName + '/GlJeIntegrationHeaders';
+                }, 200);
+            }
+
+        } else {
+            toastr.error(response.customRestResult.message);
+        }
+
+        $('#btnSubmition').prop('disabled', false);
+    };
+
+    var OnComplete = function (response) {
+        downBtnLoader();
+        $('#btnSubmition').prop('disabled', false);
+    };
+
+    var OnFailure = function (response) {
+        toastr.error(response);
+        $('#btnSubmition').prop('disabled', false);
+    };
+
+   const LoadDataGrid = function () {
+
+        const parms = {
+            GlJeIntegrationDate: $('#searchBox #GlJeIntegrationDate').val(),
+            GlJeIntegrationNumber: $('#searchBox #GlJeIntegrationNumber').val(),
+            JeName: $('#searchBox #JeName').val(),
+            CurrencyId: $('#searchBox #CurrencyId').find(':selected').val(),
+            StatusLkpId: $('#searchBox #StatusLkpId').find(':selected').val(),
+            GlJeIntegrationSourceLkpId: $('#searchBox #GlJeIntegrationSourceLkpId').find(':selected').val()
+        };
+
+       const columns = [
+           {
+               "data": "result.data.id",
+               'render': function (data, type, row, meta) {
+                   return meta.row + meta.settings._iDisplayStart + 1;
+               }
+           },
+           {
+               "data": "GlJeIntegrationNumber",
+               "name": "GlJeIntegrationNumber",
+               "autoWidth": true
+           },
+           {
+               "data": "JeName",
+               "name": "JeName",
+               "autoWidth": true
+           },
+           {
+               "data": "GlJeIntegrationDate",
+               "name": "GlJeIntegrationDate",
+               "autoWidth": true
+           },
+           {
+               "data": null,
+               "autoWidth": true,
+               "render": function (data, type, row) {
+                   return lang === 'ar-EG' ? row.GlPeriodsDetails.periodNameAr : row.GlPeriodsDetails.periodNameEn
+               }
+           },
+           {
+               "data": null,
+               "autoWidth": true,
+               "render": function (data, type, row) {
+                   return row.FndGlJeIntegrationSourceLkp ? (lang === 'ar-EG' ? row.FndGlJeIntegrationSourceLkp.NameAr : row.FndGlJeIntegrationSourceLkp.NameEn) : '';
+               }
+           },
+           {
+               "data": null,
+               "autoWidth": true,
+               "render": function (data, type, row) {
+                   return lang === 'ar-EG' ? row.FndStatusLkp.NameAr : row.FndStatusLkp.NameEn
+               }
+           },
+           {
+               "data": null,
+               "autoWidth": true,
+               "render": function (data, type, row) {
+                   return lang === 'ar-EG' ? row.Currency.DescriptionAr: row.Currency.DescriptionEn
+               }
+           },
+           {
+               "data": null,
+               "sortable": false,
+               "render": function (data, type, row) {
+
+                   let formAction = `${$PrefixHostName}/${_mainController}/@nameof(GlJeIntegrationHeadersController.GlJeIntegrationHeadersForm)`;
+                   let DeleteAction = `${$PrefixHostName}/${_mainController}/@nameof(GlJeIntegrationHeadersController.Delete)`;
+
+                   let btns = '';
+
+                   if (_permissions.includes(_postPermission) & row.StatusLkpId != _PostStatus) {
+                       btns += `<a href="javascript:void(0)" onclick="PostAjax(${row.Id})" title="@ERP.ResourcePack.Common.Settings.Post"><i class="mx-2 fas fa-check-circle text-info"></i></a>`;
+                   }
+
+                  if (_permissions.includes(_updatePermission) && row.StatusLkpId != _PostStatus) {
+                       btns += `<a href="${$PrefixHostName}/GlJeIntegrationHeaders/FormView?id=${row.EncId}&t=@encUpdateTrigger" title="@ERP.ResourcePack.Common.Settings.Edit"><i class="mx-2 fas fa-edit text-info"></i></a>`;
+                  }
+
+                   btns += `<a href="${$PrefixHostName}/GlJeIntegrationHeaders/FormView?id=${row.EncId}&t=@encShowTrigger" title="@ERP.ResourcePack.Common.Settings.Show"><i class="mx-2 fas fa-eye text-info"></i></a>`;
+
+                   if (_permissions.includes(_updatePermission) && row.StatusLkpId != _PostStatus) {
+                       btns += `<a href="javascript:void(0)" onclick="AjaxController.DeleteMainTableRow(${row.Id},'${DeleteAction}');" title="@ERP.ResourcePack.Common.Settings.Delete"><i class="mx-2 fas fa-trash-alt text-danger"></i></a>`;
+                   }
+
+                  // btns += `<a href="javascript:void(0);" onclick="return print('${$PrefixHostName}/GlJeIntegrationHeaders/PrintGlJeScreen','${row.EncId}','${lang}')" title="@ERP.ResourcePack.Common.Settings.Print"><i class="mx-2 fas fa-print text-success"></i></a>`;
+
+                   const _auditedPermission = '@PermissionNames.Pages_GlJeIntegrationHeaders_Audit';
+
+                   if (_permissions.includes(_auditedPermission)){
+
+                       row.permission = _auditedPermission;
+
+                       btns += GetAuditedButton(row);
+                   }
+
+                   return btns;
+               }
+           }
+       ];
+
+        const dtObj = {
+            "processing": true,
+            "serverSide": true,
+            "filter": false,
+            "orderMulti": false,
+            "language": dataTableLang,
+            "ajax": {
+                "url": _loadDataUrl,
+                "type": "POST",
+                "datatype": "json",
+                "data": parms,
+                "complete": function () { }
+            },
+            "columns": columns,
+            "initComplete": function () {
+                $('[data-toggle="tooltip"]').tooltip();
+            }
+        };
+
+        _tblSelector.dataTable().fnDestroy();
+        _tblSelector.DataTable(dtObj).on('draw', function () { $('[data-toggle="tooltip"]').tooltip(); });
+
+        setTimeout(function () {
+            $(".sorting_1").removeAttr('colspan');
+        }, 500);
+
+    };
+
+    $('#searchBox #CurrencyId').select2(ReturnSelect2ObjectDefault(`${baseUrl}/Currency/GetCurrenciesSelect2`));
+
+    $('#searchBox #StatusLkpId').select2(ReturnSelect2ObjectForLkpsTypes('@ERP.Front.Helpers.Enums.Common.FndLkpsTypes.GlJeIntegrationHeadersStatues.ToString()'));
+    $('#searchBox #GlJeIntegrationSourceLkpId').select2(ReturnSelect2ObjectForLkpsTypes('@ERP.Front.Helpers.Enums.Common.FndLkpsTypes.GlJeIntegrationHeadersSource.ToString()'));
+
+    $('#CurrencyId').select2(ReturnSelect2ObjectDefault(`${baseUrl}/Currency/GetCurrenciesSelect2`));
+    $('#ArCustomerId').select2({
+        ajax: {
+            url: `${baseUrl}/ArCustomers/GetArCustomersSelect2`,
+            dataType: 'json',
+            headers: {
+                'Authorization': `Bearer ${$_token}`
+            },
+            data: function (params) {
+                params.page = params.page || 1;
+                return {
+                    pageSize: pageSize,
+                    pageNumber: params.page,
+                    searchTerm: params.term,
+                    lang: lang
+                };
+            },
+            processResults: function (data, params) {
+
+                params.page = params.page || 1;
+
+                return {
+                    results: data.result.results,
+                    pagination: {
+                        more: (params.page * pageSize) < data.result.total
+                    }
+                };
+            }
+        },
+        placeholder: select2Placeholder,
+        minimumInputLength: 0,
+        allowClear: true,
+        language: select2Lang,
+        templateSelection: function (data, container) {
+
+            if (data.altText) {
+                $('#CustomerNumber').parent('.form-line').addClass('focused');
+                $(`#CustomerNumber`).val(data.altText);
+            }
+
+            return data.text;
+        }
+    });
+    $('#ApVendorId').select2({
+        ajax: {
+            url: `${baseUrl}/ApVendors/GetVendorsSelect2`,
+            dataType: 'json',
+            headers: {
+                'Authorization': `Bearer ${$_token}`
+            },
+            data: function (params) {
+                params.page = params.page || 1;
+                return {
+                    pageSize: pageSize,
+                    pageNumber: params.page,
+                    searchTerm: params.term,
+                    lang: lang
+                };
+            },
+            processResults: function (data, params) {
+
+                params.page = params.page || 1;
+
+                return {
+                    results: data.result.results,
+                    pagination: {
+                        more: (params.page * pageSize) < data.result.total
+                    }
+                };
+            }
+        },
+        placeholder: select2Placeholder,
+        minimumInputLength: 0,
+        allowClear: true,
+        language: select2Lang,
+        templateSelection: function (data, container) {
+
+            if (data.altText) {
+                $('#VendorNumber').parent('.form-line').addClass('focused');
+                $(`#VendorNumber`).val(data.altText);
+            }
+
+            return data.text;
+        }
+    });
+
+    $('#CurrencyId').on('change', function (e) {
+
+        const currency = $(this);
+        const rateTxt = $('#CurrencyRate');
+
+        if (currency === undefined || currency.find(':selected').val() === undefined) { }
+        else {
+
+            $.ajax({
+                url: `${baseUrl}/Currency/GetRate`,
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${$_token}`
+                },
+                data: {
+                    Id: currency.find(':selected').val(),
+                    date: ''
+                }
+            }).done(function (rate) {
+
+                let _inputSelector = $('#CurrencyRate');
+
+                _inputSelector.parent('.form-line').addClass('focused');
+
+                rateTxt.val(rate.result);
+
+            }).fail(function (response) {
+                toastr.error(response);
+            });
+        }
+    });
+
+    $('#GlJeIntegrationDate').on('change', function () {
+
+        if (!$(this).val()) return;
+
+        $.ajax({
+            url: `${baseUrl}/GlPeriodsDetails/GetPeriod`,
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${$_token}`
+            },
+            data: {
+                transDate: $(this).val()
+            }
+        }).done(function (data) {
+
+            const result = data.result;
+
+            if (result == null) {
+
+                toastr.warning('No Periods');
+
+              //  $('input,select,textarea').not('#GlJeIntegrationDate').attr('disabled', true);
+                $('#GlJeIntegrationDate').attr('disabled', true);
+
+                return;
+            }
+
+            $('#GlPeriodsDetails_periodNameAr').val(lang === 'ar-EG' ? result.periodNameAr : result.periodNameEn);
+            $('#GlPeriodsDetails_periodNameEn').val(lang === 'ar-EG' ? result.periodNameAr : result.periodNameEn);
+
+            $('#GlPeriodsDetails_periodNameAr').parent('.form-line').addClass('focused');
+            $('#GlPeriodsDetails_periodNameEn').parent('.form-line').addClass('focused');
+
+            $('#PeriodId').val(result.id);
+
+        })
+
+    });
+
+    //
+    $.ajax({
+        url: `${baseUrl}/Currency/GetCurrenciesSelect2?pageSize=100&pageNumber=1&lang=${lang}`,
+        type: 'GET',
+        headers: {
+            'Authorization': `Bearer ${$_token}`
+        },
+        dataType: 'json', 
+        success: function (res) {
+            console.log(res.result.results[0]);
+            res.result.results.forEach(function (item, index) {
+                if (item.additional=="True") {
+                    SetSelect2value('CurrencyId', item.id, item.text)
+                }
+            });
+        }
+    });
+
+
+
+
+</script>
+
+<script name="AccountLines">
+
+    const _tblAccountLineSelector = $('#tblAccountLines');
+    const _accountLinesListStr = $('#AccountLinesListStr');
+
+    let _arrAccountLines = [], updatedAccountLineRow, sumAccountLineDebit = 0, sumAccountLineCredit = 0, tblAccountLineCounterIndex = 0;
+
+    const fillAccountLines = function () {
+
+        const resultCodeComUtility = GetCodeComUtilites(__arrGlSelect2, 'AccId');
+
+        if (resultCodeComUtility === null) {
+            toastr.warning('@GlJeIntegrationHeaders.AccountLines : @ERP.ResourcePack.Common.Settings.Required');
+            return;
+        }
+
+        const current = {
+            index: ++tblAccountLineCounterIndex,
+            codeComUtilityIds: resultCodeComUtility.idsStr,
+            codeComUtilityTexts: resultCodeComUtility.textsStr,
+            accountNumber:'',
+            debitAmount: $('#accounts-lines #DebitAmount').val(),
+            creditAmount: $('#accounts-lines #CreditAmount').val(),
+            jeIntegrationLineNotes: $('#accounts-lines #GlJeIntegrationNotes').val(),
+            rowStatus: NewStatus
+        };
+
+        return current;
+    };
+
+    const AddAccountLine = function () {
+
+        const current = fillAccountLines();
+
+        if (!current) {
+             toastr.warning('!');
+             return;
+        }
+
+        _arrAccountLines.push(current);
+
+        _accountLinesListStr.val(JSON.stringify(_arrAccountLines));
+
+        BindAccountLinesTable();
+
+        ClearDetailForm('accounts-lines');
+    };
+
+    const BindAccountLinesTable = function () {
+
+        const detailArr = _arrAccountLines.filter(z => z.rowStatus !== DeletedStatus);
+
+        const columns = [
+            { 'data': 'index' },
+            { 'data': 'accountNumber' },
+            { 'data': 'codeComUtilityTexts' },
+            {
+                'data': 'debitAmount',
+                "render": $.fn.dataTable.render.number(',', '.', 2)
+
+            },
+            {
+                'data': 'creditAmount',
+                "render": $.fn.dataTable.render.number(',', '.', 2)
+            },
+            { 'data': 'jeIntegrationLineNotes' },
+            {
+                'data': null,
+                'searchable': false,
+                'ordering': false,
+                'sorting': false,
+                'render': function (d, t, row) {
+
+                    let rows = '';
+
+                    if (primaryEntityKeyId === 0 || trigger !== '@ERP.Front.Helpers.Enums.Common.FormTriggers.Show.ToString()') {
+
+                        rows += `<td><a href="javascript:void(0)" onclick="return DeleteAcccountLine(${row.index})"><i class="mx-2 fas fa-trash-alt text-danger"></i></a>`;
+                        rows += `<a href="javascript:void(0)" onclick="return GetAccountLineRow(${row.index})"><i class="mx-2 fas fa-edit text-success"></i></a></td>`;
+                    }
+                    else {
+                        rows += '<td></td>';
+                    }
+
+                    return rows;
+                }
+            }
+        ];
+
+        const dtObj = {
+            data: detailArr,
+            retrieve: true,
+            language: dataTableLang,
+            columns: columns,
+            drawCallback: function (c, v, b) {
+
+                let rows = '';
+
+                sumAccountLineDebit = 0; sumAccountLineCredit = 0;
+
+                detailArr.map(z => sumAccountLineDebit += parseFloat(getMaskValNum(z.debitAmount)));
+                detailArr.map(z => sumAccountLineCredit += parseFloat(getMaskValNum(z.creditAmount)));
+
+                rows += '<tr>';
+                rows += `<td>#</td>`;
+                rows += `<td>#</td>`;
+                rows += `<td>--</td>`;
+
+                if (sumAccountLineDebit === sumAccountLineCredit) {
+                    rows += `<td class="text-success">${sumAccountLineDebit.toLocaleString()}</td>`;
+                    rows += `<td class="text-success">${sumAccountLineCredit.toLocaleString()}</td>`;
+                } else {
+
+                    if (sumAccountLineCredit > sumAccountLineDebit) {
+                        rows += `<td class="text-danger">${sumAccountLineDebit.toLocaleString()} <small class="text-success"> + ${sumAccountLineCredit - sumAccountLineDebit}</small> </td>`;
+                        rows += `<td class="text-danger">${sumAccountLineCredit.toLocaleString()}</td>`;
+
+                    } else if (sumAccountLineDebit > sumAccountLineCredit) {
+
+                        rows += `<td class="text-danger">${sumAccountLineDebit.toLocaleString()}  </td>`;
+                        rows += `<td class="text-danger">${sumAccountLineCredit.toLocaleString()} <small class="text-success"> + ${sumAccountLineDebit - sumAccountLineCredit}</small> </td>`;
+
+                    } else {
+                        rows += `<td class="text-danger">${sumAccountLineDebit.toLocaleString()} </td>`;
+                        rows += `<td class="text-danger">${sumAccountLineCredit.toLocaleString()}</td>`;
+                    }
+
+                }
+
+                $('#tblAccountLines tfoot').html(rows);
+
+            }
+        };
+
+        setTimeout(function () {
+
+            _tblAccountLineSelector.dataTable().fnDestroy();
+            _tblAccountLineSelector.DataTable(dtObj).on('draw', function () { $('[data-toggle="tooltip"]').tooltip(); });
+
+        }, 100);
+
+    };
+
+    const DeleteAcccountLine = function (index) {
+
+        const current = _arrAccountLines.find(z => z.index === index);
+
+        const indexOfCurrent = _arrAccountLines.indexOf(current);
+
+        if (!current.id) {
+
+           _arrAccountLines.splice(indexOfCurrent, 1);
+
+        } else {
+
+            current.rowStatus = DeletedStatus;
+
+           _arrAccountLines.splice(indexOfCurrent, 1,current);
+        }
+
+
+        BindAccountLinesTable();
+
+        _accountLinesListStr.val(_arrAccountLines.length === 0 ? '' : JSON.stringify(_arrAccountLines));
+    };
+
+    const LoadAccountLineData = function () {
+
+        $.ajax({
+            url: `${baseUrl}/GlJeIntegrationHeaders/GetAllAccountLineData`,
+            method: 'GET',
+            headers: {
+                        'Authorization': `Bearer ${$_token}`
+            },
+            data: {
+                id: primaryEntityKeyId,
+                lang : "@lang"
+            }
+        }).done(function (data) {
+
+            _arrAccountLines = [...data.result];
+
+            tblAccountLineCounterIndex = 0;
+
+            _arrAccountLines.forEach(function (item, index) {
+                item.index = ++tblAccountLineCounterIndex;
+            });
+
+            BindAccountLinesTable();
+
+            _accountLinesListStr.val(JSON.stringify(_arrAccountLines));
+        });
+
+    };
+
+    const debitAmmountSetter = function (selector) {
+
+        const creditSelector = $(`#${selector} #CreditAmount`);
+
+        const currentVal = $(`#${selector} #DebitAmount`).val();
+
+        if (currentVal <= 0)
+        {
+            creditSelector.attr('disabled',false);
+        }
+        else
+        {
+            creditSelector.attr('disabled',true);
+            creditSelector.val(0);
+            creditSelector.parent('.form-line').addClass('focused');
+        }
+    };
+
+    const creditAmmountSetter = function (selector) {
+
+        const debitSelector = $(`#${selector} #DebitAmount`);
+
+        const currentVal = $(`#${selector} #CreditAmount`).val();
+
+        if (currentVal <= 0)
+        {
+            debitSelector.attr('disabled',false);
+        }
+        else
+        {
+            debitSelector.attr('disabled',true);
+            debitSelector.val(0);
+            debitSelector.parent('.form-line').addClass('focused');
+        }
+
+    };
+
+    const GetAccountLineRow = function (tblIndex) {
+
+        $('#btnAddAccountLineRow').hide();
+        $('#btnUpdateAccountLineRow').show();
+        $('#btnCancelAccountLineRow').show();
+
+        const current = _arrAccountLines.find(z => z.index === tblIndex);
+
+        BindCodeComUtilitesDropDowns(__arrGlSelect2, 'AccId', current.codeComUtilityIds, current.codeComUtilityTexts);
+
+        $('#accounts-lines #DebitAmount').val(current.debitAmount);
+        $('#accounts-lines #CreditAmount').val(current.creditAmount);
+        $('#accounts-lines #GlJeIntegrationNotes').val(current.glJeIntegrationNotes);
+
+        $('#accounts-lines #DebitAmount').parent('.form-line').addClass('focused');
+        $('#accounts-lines #CreditAmount').parent('.form-line').addClass('focused');
+        $('#accounts-lines #GlJeIntegrationNotes').parent('.form-line').addClass('focused');
+
+        updatedAccountLineRow = current;
+
+    };
+
+    const UpdateAccountLineRow = function () {
+
+        let current = _arrAccountLines.find(z => z.index === updatedAccountLineRow.index);
+
+        let indexOfCurrent = _arrAccountLines.indexOf(current);
+
+       const newRow = fillAccountLines();
+
+        if (!newRow) {
+             toastr.warning('!!');
+             return;
+        }
+
+        newRow.id = updatedAccountLineRow.id;
+        newRow.index = current.index;
+        newRow.rowStatus = !updatedAccountLineRow.id ? NewStatus : UpdatedStatus;
+
+        _arrAccountLines.splice(indexOfCurrent, 1,newRow);
+
+        $('#btnAddAccountLineRow').show();
+        $('#btnUpdateAccountLineRow').hide();
+        $('#btnCancelAccountLineRow').hide();
+
+        ClearDetailForm('accounts-lines');
+
+        _accountLinesListStr.val(JSON.stringify(_arrAccountLines));
+
+        BindAccountLinesTable();
+    };
+
+    $('#accounts-lines #DebitAmount').on('keyup', function () {
+        debitAmmountSetter('accounts-lines');
+    });
+
+    $('#accounts-lines #CreditAmount').on('keyup', function () {
+        creditAmmountSetter('accounts-lines');
+    });
+
+</script>
+
+<script name="CustomerLines">
+
+    const _tblCustomerLineSelector = $('#tblCustomerLines');
+    const _CustomerLinesListStr = $('#CustomerLinesListStr');
+
+    let _arrCustomerLines = [], updatedCustomerLineRow, sumCustomerLineDebit = 0, sumCustomerLineCredit = 0, tblCustomerLineCounterIndex = 0;
+
+    const fillCustomerLines = function () {
+
+        if (ValidataCustomer() == false) return;
+
+        const current = {
+            index: ++tblCustomerLineCounterIndex,
+            arCustomerId: $('#ArCustomerId').find(':selected').val(),
+            customerNameAr: $('#ArCustomerId').find(':selected').text(),
+            customerNameEn: $('#ArCustomerId').find(':selected').text(),
+            customerNumber: $('#CustomerNumber').val(),
+            debitAmount: $('#customers-lines #DebitAmount').val(),
+            creditAmount: $('#customers-lines #CreditAmount').val(),
+            jeIntegrationLineNotes: $('#customers-lines #GlJeIntegrationNotes').val(),
+            rowStatus: NewStatus
+        };
+
+        return current;
+    };
+
+    const AddCustomerLine = function () {
+
+        const current = fillCustomerLines();
+
+        if (!current) return;
+
+        _arrCustomerLines.push(current);
+
+        _CustomerLinesListStr.val(JSON.stringify(_arrCustomerLines));
+
+        BindCustomerLinesTable();
+
+        ClearDetailForm('customers-lines');
+    };
+
+    const BindCustomerLinesTable = function () {
+
+        const detailArr = _arrCustomerLines.filter(z => z.rowStatus !== DeletedStatus);
+
+        const columns = [
+            { 'data': 'index' },
+            { 'data': 'customerNumber' },
+            { 'data': lang === 'ar-EG' ? 'customerNameAr' : 'customerNameEn' },
+            {
+                'data': 'debitAmount',
+                "render": $.fn.dataTable.render.number(',', '.', 2)
+            },
+            {
+                'data': 'creditAmount',
+                "render": $.fn.dataTable.render.number(',', '.', 2)
+            },
+            { 'data': 'jeIntegrationLineNotes' },
+            {
+                'data': null,
+                'searchable': false,
+                'ordering': false,
+                'sorting': false,
+                'render': function (d, t, row) {
+
+                    let rows = '';
+
+                    if (primaryEntityKeyId === 0 || trigger !== '@ERP.Front.Helpers.Enums.Common.FormTriggers.Show.ToString()') {
+
+                        rows += `<td><a href="javascript:void(0)" onclick="return DeleteCustomerLine(${row.index})"><i class="mx-2 fas fa-trash-alt text-danger"></i></a>`;
+                        rows += `<a href="javascript:void(0)" onclick="return GetCustomerLineRow(${row.index})"><i class="mx-2 fas fa-edit text-success"></i></a></td>`;
+                    }
+                    else {
+                        rows += '<td></td>';
+                    }
+
+                    return rows;
+                }
+            }
+        ];
+
+        const dtObj = {
+            data: detailArr,
+            retrieve: true,
+            language: dataTableLang,
+            columns: columns,
+            drawCallback: function (c, v, b) {
+
+                let rows = '';
+
+                sumCustomerLineDebit = 0; sumCustomerLineCredit = 0;
+
+                detailArr.map(z => sumCustomerLineDebit += parseFloat(getMaskValNum(z.debitAmount)));
+                detailArr.map(z => sumCustomerLineCredit += parseFloat(getMaskValNum(z.creditAmount)));
+
+                rows += '<tr>';
+                rows += `<td>#</td>`;
+                rows += `<td>#</td>`;
+                rows += `<td>--</td>`;
+
+                if (sumCustomerLineDebit === sumCustomerLineCredit) {
+                    rows += `<td class="text-success">${sumCustomerLineDebit.toLocaleString()}</td>`;
+                    rows += `<td class="text-success">${sumCustomerLineCredit.toLocaleString()}</td>`;
+                } else {
+
+                    if (sumCustomerLineCredit > sumCustomerLineDebit) {
+                        rows += `<td class="text-danger">${sumCustomerLineDebit.toLocaleString()} <small class="text-success"> + ${sumCustomerLineCredit - sumCustomerLineDebit}</small> </td>`;
+                        rows += `<td class="text-danger">${sumCustomerLineCredit.toLocaleString()}</td>`;
+
+                    } else if (sumCustomerLineDebit > sumCustomerLineCredit) {
+
+                        rows += `<td class="text-danger">${sumCustomerLineDebit.toLocaleString()}  </td>`;
+                        rows += `<td class="text-danger">${sumCustomerLineCredit.toLocaleString()} <small class="text-success"> + ${sumCustomerLineDebit - sumCustomerLineCredit}</small> </td>`;
+
+                    } else {
+                        rows += `<td class="text-danger">${sumCustomerLineDebit.toLocaleString()} </td>`;
+                        rows += `<td class="text-danger">${sumCustomerLineCredit.toLocaleString()}</td>`;
+                    }
+
+                }
+
+                $('#tblCustomerLines tfoot').html(rows);
+
+            }
+        };
+
+        setTimeout(function () {
+
+            _tblCustomerLineSelector.dataTable().fnDestroy();
+            _tblCustomerLineSelector.DataTable(dtObj).on('draw', function () { $('[data-toggle="tooltip"]').tooltip(); });
+
+        }, 100);
+
+    };
+
+    const DeleteCustomerLine = function (index) {
+
+        const current = _arrCustomerLines.find(z => z.index === index);
+
+        const indexOfCurrent = _arrCustomerLines.indexOf(current);
+
+        if (!current.id) {
+
+           _arrCustomerLines.splice(indexOfCurrent, 1);
+
+        } else {
+
+            current.rowStatus = DeletedStatus;
+
+           _arrCustomerLines.splice(indexOfCurrent, 1,current);
+        }
+
+
+        BindCustomerLinesTable();
+
+        _CustomerLinesListStr.val(_arrCustomerLines.length === 0 ? '' : JSON.stringify(_arrCustomerLines));
+    };
+
+    const LoadCustomerLinesData = function () {
+
+        $.ajax({
+            url: `${baseUrl}/GlJeIntegrationHeaders/GetAllCustomerLineData`,
+            method: 'GET',
+            headers: {
+                        'Authorization': `Bearer ${$_token}`
+            },
+            data: {
+                id: primaryEntityKeyId
+            }
+        }).done(function (data) {
+
+            _arrCustomerLines = [...data.result];
+
+            tblCustomerLineCounterIndex = 0;
+
+            _arrCustomerLines.forEach(function (item, index) {
+                item.index = ++tblCustomerLineCounterIndex;
+            });
+
+            BindCustomerLinesTable();
+
+            _CustomerLinesListStr.val(JSON.stringify(_arrCustomerLines));
+        });
+
+    };
+
+    const GetCustomerLineRow = function (tblIndex) {
+
+        $('#btnAddCustomerLineRow').hide();
+        $('#btnUpdateCustomerLineRow').show();
+        $('#btnCancelCustomerLineRow').show();
+
+        const current = _arrCustomerLines.find(z => z.index === tblIndex);
+
+        $('#customers-lines #CustomerNumber').val(current.customerNumber);
+        $('#customers-lines #DebitAmount').val(current.debitAmount);
+        $('#customers-lines #CreditAmount').val(current.creditAmount);
+        $('#customers-lines #GlJeIntegrationNotes').val(current.glJeIntegrationNotes);
+
+        $(`#ArCustomerId`).append($("<option selected='selected'></option>")
+            .val(current.arCustomerId).text((lang === 'ar-EG' ? current.customerNameAr : current.customerNameEn))).trigger('change');
+
+        $('#customers-lines #CustomerNumber').parent('.form-line').addClass('focused');
+        $('#customers-lines #DebitAmount').parent('.form-line').addClass('focused');
+        $('#customers-lines #CreditAmount').parent('.form-line').addClass('focused');
+        $('#customers-lines #GlJeIntegrationNotes').parent('.form-line').addClass('focused');
+
+        updatedCustomerLineRow = current;
+    };
+
+    const UpdateCustomerLineRow = function () {
+
+        let current = _arrCustomerLines.find(z => z.index === updatedCustomerLineRow.index);
+
+        let indexOfCurrent = _arrCustomerLines.indexOf(current);
+
+       const newRow = fillCustomerLines();
+
+        if (!newRow) return;
+
+        newRow.id = updatedCustomerLineRow.id;
+        newRow.index = current.index;
+        newRow.rowStatus = !updatedCustomerLineRow.id ? NewStatus : UpdatedStatus;
+
+        _arrCustomerLines.splice(indexOfCurrent, 1,newRow);
+
+        $('#btnAddCustomerLineRow').show();
+        $('#btnUpdateCustomerLineRow').hide();
+        $('#btnCancelCustomerLineRow').hide();
+
+        ClearDetailForm('customers-lines');
+
+        _CustomerLinesListStr.val(JSON.stringify(_arrCustomerLines));
+
+        BindCustomerLinesTable();
+    };
+
+    const ValidataCustomer = function () {
+
+        if (!$('#ArCustomerId').find(':selected').val()) {
+            toastr.warning('@GlJeIntegrationHeaders.CustomerLines : @ERP.ResourcePack.Common.Settings.Required');
+            return false;
+        }
+
+        return true;
+    };
+
+    $('#customers-lines #DebitAmount').on('keyup', function () {
+        debitAmmountSetter('customers-lines');
+    });
+
+    $('#customers-lines #CreditAmount').on('keyup', function () {
+        creditAmmountSetter('customers-lines');
+    });
+
+</script>
+
+<script name="VendorLines">
+
+    const _tblVendorLineSelector = $('#tblVendorLines');
+    const _VendorLinesListStr = $('#VendorLinesListStr');
+
+    let _arrVendorLines = [], updatedVendorLineRow, sumVendorLineDebit = 0, sumVendorLineCredit = 0, tblVendorLineCounterIndex = 0;
+
+    const fillVendorLines = function () {
+
+        if (ValidataVendor() == false) return;
+
+        const current = {
+            index: ++tblVendorLineCounterIndex,
+            apVendorId: $('#ApVendorId').find(':selected').val(),
+            vendorNameAr: $('#ApVendorId').find(':selected').text(),
+            vendorNameEn: $('#ApVendorId').find(':selected').text(),
+            vendorNumber: $('#VendorNumber').val(),
+            debitAmount: $('#vendors-lines #DebitAmount').val(),
+            creditAmount: $('#vendors-lines #CreditAmount').val(),
+            jeIntegrationLineNotes: $('#vendors-lines #GlJeIntegrationNotes').val(),
+            rowStatus: NewStatus
+        };
+
+        return current;
+    };
+
+    const AddVendorLine = function () {
+
+        const current = fillVendorLines();
+
+        if (!current) return;
+
+        _arrVendorLines.push(current);
+
+        _VendorLinesListStr.val(JSON.stringify(_arrVendorLines));
+
+        BindVendorLinesTable();
+
+        ClearDetailForm('vendors-lines');
+    };
+
+    const BindVendorLinesTable = function () {
+
+        const detailArr = _arrVendorLines.filter(z => z.rowStatus !== DeletedStatus);
+
+        const columns = [
+            { 'data': 'index' },
+            { 'data': 'vendorNumber' },
+            { 'data': lang === 'ar-EG' ? 'vendorNameAr' : 'vendorNameEn' },
+            {
+                'data': 'debitAmount',
+                "render": $.fn.dataTable.render.number(',', '.', 2)
+            },
+            {
+                'data': 'creditAmount',
+                "render": $.fn.dataTable.render.number(',', '.', 2)
+            },
+            { 'data': 'jeIntegrationLineNotes' },
+            {
+                'data': null,
+                'searchable': false,
+                'ordering': false,
+                'sorting': false,
+                'render': function (d, t, row) {
+
+                    let rows = '';
+
+                    if (primaryEntityKeyId === 0 || trigger !== '@ERP.Front.Helpers.Enums.Common.FormTriggers.Show.ToString()') {
+
+                        rows += `<td><a href="javascript:void(0)" onclick="return DeleteVendorLine(${row.index})"><i class="mx-2 fas fa-trash-alt text-danger"></i></a>`;
+                        rows += `<a href="javascript:void(0)" onclick="return GetVendorLineRow(${row.index})"><i class="mx-2 fas fa-edit text-success"></i></a></td>`;
+                    }
+                    else {
+                        rows += '<td></td>';
+                    }
+
+                    return rows;
+                }
+            }
+        ];
+
+        const dtObj = {
+            data: detailArr,
+            retrieve: true,
+            language: dataTableLang,
+            columns: columns,
+            drawCallback: function (c, v, b) {
+
+                let rows = '';
+
+                sumVendorLineDebit = 0; sumVendorLineCredit = 0;
+
+                detailArr.map(z => sumVendorLineDebit += parseFloat(getMaskValNum(z.debitAmount)));
+                detailArr.map(z => sumVendorLineCredit += parseFloat(getMaskValNum(z.creditAmount)));
+
+                rows += '<tr>';
+                rows += `<td>#</td>`;
+                rows += `<td>#</td>`;
+                rows += `<td>--</td>`;
+
+                if (sumVendorLineDebit === sumVendorLineCredit) {
+                    rows += `<td class="text-success">${sumVendorLineDebit.toLocaleString()}</td>`;
+                    rows += `<td class="text-success">${sumVendorLineCredit.toLocaleString()}</td>`;
+                } else {
+
+                    if (sumVendorLineCredit > sumVendorLineDebit) {
+                        rows += `<td class="text-danger">${sumVendorLineDebit.toLocaleString()} <small class="text-success"> + ${sumVendorLineCredit - sumVendorLineDebit}</small> </td>`;
+                        rows += `<td class="text-danger">${sumVendorLineCredit.toLocaleString()}</td>`;
+
+                    } else if (sumVendorLineDebit > sumVendorLineCredit) {
+
+                        rows += `<td class="text-danger">${sumVendorLineDebit.toLocaleString()}  </td>`;
+                        rows += `<td class="text-danger">${sumVendorLineCredit.toLocaleString()} <small class="text-success"> + ${sumVendorLineDebit - sumVendorLineCredit}</small> </td>`;
+
+                    } else {
+                        rows += `<td class="text-danger">${sumVendorLineDebit.toLocaleString()} </td>`;
+                        rows += `<td class="text-danger">${sumVendorLineCredit.toLocaleString()}</td>`;
+                    }
+
+                }
+
+                $('#tblVendorLines tfoot').html(rows);
+
+            }
+        };
+
+        setTimeout(function () {
+
+            _tblVendorLineSelector.dataTable().fnDestroy();
+            _tblVendorLineSelector.DataTable(dtObj).on('draw', function () { $('[data-toggle="tooltip"]').tooltip(); });
+
+        }, 100);
+
+    };
+
+    const DeleteVendorLine = function (index) {
+
+        const current = _arrVendorLines.find(z => z.index === index);
+
+        const indexOfCurrent = _arrVendorLines.indexOf(current);
+
+        if (!current.id) {
+
+           _arrVendorLines.splice(indexOfCurrent, 1);
+
+        } else {
+
+            current.rowStatus = DeletedStatus;
+
+           _arrVendorLines.splice(indexOfCurrent, 1,current);
+        }
+
+
+        BindVendorLinesTable();
+
+        _VendorLinesListStr.val(_arrVendorLines.length === 0 ? '' : JSON.stringify(_arrVendorLines));
+    };
+
+    const LoadVendorLinesData = function () {
+
+        $.ajax({
+            url: `${baseUrl}/GlJeIntegrationHeaders/GetAllVendorLineData`,
+            method: 'GET',
+            headers: {
+                        'Authorization': `Bearer ${$_token}`
+            },
+            data: {
+                id: primaryEntityKeyId
+            }
+        }).done(function (data) {
+
+            _arrVendorLines = [...data.result];
+
+            tblVendorLineCounterIndex = 0;
+
+            _arrVendorLines.forEach(function (item, index) {
+                item.index = ++tblVendorLineCounterIndex;
+            });
+
+            BindVendorLinesTable();
+
+            _VendorLinesListStr.val(JSON.stringify(_arrVendorLines));
+        });
+
+    };
+
+    const GetVendorLineRow = function (tblIndex) {
+
+        $('#btnAddVendorLineRow').hide();
+        $('#btnUpdateVendorLineRow').show();
+        $('#btnCancelVendorLineRow').show();
+
+        const current = _arrVendorLines.find(z => z.index === tblIndex);
+
+        $('#vendors-lines #VendorNumber').val(current.VendorNumber);
+        $('#vendors-lines #DebitAmount').val(current.debitAmount);
+        $('#vendors-lines #CreditAmount').val(current.creditAmount);
+        $('#vendors-lines #GlJeIntegrationNotes').val(current.glJeIntegrationNotes);
+
+        $(`#ApVendorId`).append($("<option selected='selected'></option>")
+            .val(current.apVendorId).text((lang === 'ar-EG' ? current.vendorNameAr : current.vendorNameEn))).trigger('change');
+
+        $('#vendors-lines #VendorNumber').parent('.form-line').addClass('focused');
+        $('#vendors-lines #DebitAmount').parent('.form-line').addClass('focused');
+        $('#vendors-lines #CreditAmount').parent('.form-line').addClass('focused');
+        $('#vendors-lines #GlJeIntegrationNotes').parent('.form-line').addClass('focused');
+
+        updatedVendorLineRow = current;
+    };
+
+    const UpdateVendorLineRow = function () {
+
+        let current = _arrVendorLines.find(z => z.index === updatedVendorLineRow.index);
+
+        let indexOfCurrent = _arrVendorLines.indexOf(current);
+
+       const newRow = fillVendorLines();
+
+        if (!newRow) return;
+
+        newRow.id = updatedVendorLineRow.id;
+        newRow.index = current.index;
+        newRow.rowStatus = !updatedVendorLineRow.id ? NewStatus : UpdatedStatus;
+
+        _arrVendorLines.splice(indexOfCurrent, 1,newRow);
+
+        $('#btnAddVendorLineRow').show();
+        $('#btnUpdateVendorLineRow').hide();
+        $('#btnCancelVendorLineRow').hide();
+
+        ClearDetailForm('vendors-lines');
+
+        _VendorLinesListStr.val(JSON.stringify(_arrVendorLines));
+
+        BindVendorLinesTable();
+    };
+
+    const ValidataVendor = function () {
+
+        if (!$('#ApVendorId').find(':selected').val()) {
+            toastr.warning('@GlJeIntegrationHeaders.VendorLines : @ERP.ResourcePack.Common.Settings.Required');
+            return false;
+        }
+
+        return true;
+    };
+
+    $('#vendors-lines #DebitAmount').on('keyup', function () {
+        debitAmmountSetter('vendors-lines');
+    });
+
+    $('#vendors-lines #CreditAmount').on('keyup', function () {
+        creditAmmountSetter('vendors-lines');
+    });
+
+</script>

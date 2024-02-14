@@ -1,0 +1,563 @@
+﻿@using ERP.ResourcePack.SpGuarantees
+@using ERP.Web.UI.Controllers.SpGuarantees
+@using ERP.Authorization;
+@{
+    string permissionsStr = TempData["Permissions"].ToString();
+    string encUpdateTrigger = ERP.Front.Helpers.Enums.Common.EncUpdate;
+    string encInsertTrigger = ERP.Front.Helpers.Enums.Common.EncInsert;
+    string encShowTrigger = ERP.Front.Helpers.Enums.Common.EncShow;
+}
+
+@if (permissionsStr.Contains(PermissionNames.Pages_SpPayments_Post))
+{
+    <script>
+        const PostAjax = function (id) {
+
+            bootbox.confirm({
+                message: _booBoxMessagePosting,
+                buttons: bootBoxDefaultBtns,
+                callback: function (result) {
+
+                    if (result) {
+
+                        const data = {
+                            id: id,
+                            lang: lang,
+                            userId: 0
+                        };
+
+                        $.ajax({
+                            url: `${baseUrl}/SpPayments/SpPaymentsPost`,
+                            type: 'POST',
+                            data: JSON.stringify(data),
+                            headers:
+                            {
+                                'Content-Type': 'application/json',
+                                'Authorization': `Bearer ${$_token}`
+                            },
+                        }).done(function (response) {
+
+                            if (response.result.finalStatues == 'F') {
+                                toastr.warning(response.result.reason);
+                            }
+                            else {
+                                toastr.success(response.result.reason);
+
+                                if (formView) {
+
+                                    setTimeout(function () {
+                                        window.location.href = $PrefixHostName + '/SpPayments';
+                                    }, 100);
+
+                                } else {
+                                    LoadDataGrid();
+                                }
+                            }
+
+                        }).fail(function (response) {
+                            toastr.error(response.responseText);
+                        });
+
+                    }
+
+                }
+            });
+
+
+        };
+
+        const ApproveAjax = function (id) {
+
+            bootbox.confirm({
+                message: _booBoxMessagePosting,
+                buttons: bootBoxDefaultBtns,
+                callback: function (result) {
+
+                    if (result) {
+
+                        const data = {
+                            id: id,
+                            lang: lang,
+                            userId: 0
+                        };
+
+                        $.ajax({
+                            url: `${baseUrl}/SpPayments/SpPaymentsApprove`,
+                            type: 'POST',
+                            data: JSON.stringify(data),
+                            headers:
+                            {
+                                'Content-Type': 'application/json',
+                                'Authorization': `Bearer ${$_token}`
+                            },
+                        }).done(function (response) {
+
+                            if (response.result.finalStatues == 'F') {
+                                toastr.warning(response.result.reason);
+                            }
+                            else {
+                                toastr.success(response.result.reason);
+
+                                if (formView) {
+
+                                    setTimeout(function () {
+                                        window.location.href = $PrefixHostName + '/SpPayments';
+                                    }, 100);
+
+                                } else {
+                                    LoadDataGrid();
+                                }
+                            }
+
+                        }).fail(function (response) {
+                            toastr.error(response.responseText);
+                        });
+
+                    }
+                }
+            });
+        };
+
+        const UnApproveAjax = function (id) {
+
+            bootbox.confirm({
+                message: _booBoxMessagePosting,
+                buttons: bootBoxDefaultBtns,
+                callback: function (result) {
+
+                    if (result) {
+
+                        const data = {
+                            id: id,
+                            lang: lang,
+                            userId: 0
+                        };
+
+                        $.ajax({
+                            url: `${baseUrl}/SpPayments/SpPaymentsUnApprove`,
+                            type: 'POST',
+                            data: JSON.stringify(data),
+                            headers:
+                            {
+                                'Content-Type': 'application/json',
+                                'Authorization': `Bearer ${$_token}`
+                            },
+                        }).done(function (response) {
+
+                            if (response.result.finalStatues == 'F') {
+                                toastr.warning(response.result.reason);
+                            }
+                            else {
+                                toastr.success(response.result.reason);
+
+                                if (formView) {
+
+                                    setTimeout(function () {
+                                        window.location.href = $PrefixHostName + '/SpPayments';
+                                    }, 100);
+
+                                } else {
+                                    LoadDataGrid();
+                                }
+                            }
+
+                        }).fail(function (response) {
+                            toastr.error(response.responseText);
+                        });
+
+                    }
+                }
+            });
+        };
+    </script>
+}
+else
+{
+<script>
+    const PostAjax = function (id) { };
+    const ApproveAjax = function (id) { };
+    const UnApproveAjax = function (id) { };
+</script>
+}
+
+<script>
+    const _mainController = "SpPayments", _apiAppService = "SpPayments"
+    const _newStatus = @Convert.ToInt64(ERP.Front.Helpers.Enums.Common.SpPayments.New);
+
+    $(function () {
+        LoadDataGrid();
+
+        $('#SpPayments').addClass('active');
+        $('#CaseNumber').parent('.form-line').addClass('focused');
+    });
+
+    const _loadDataUrl = `${$PrefixHostName}/${_mainController}/@nameof(SpPaymentsController.LoadDataGrid)`;
+    const _tblSelector = $('#tblSpPayments');
+
+    const _permissions = '@permissionsStr';
+    const _updatePermission = '@PermissionNames.Pages_SpPayments_Update';
+    const _deletePermission = '@PermissionNames.Pages_SpPayments_Delete';
+    const _postPermission = '@PermissionNames.Pages_SpPayments_Post';
+
+    var OnBegin = function (response) {
+        fireBtnLoader();
+    };
+
+    var OnSuccess = function (response) {
+
+        $('#btnSubmition').prop('disabled', false);
+
+        if (response.success) {
+
+            if (response.customRestResult.trigger === '@ERP.Front.Helpers.Enums.Common.FormTriggers.Insert') {
+
+                toastr.success(response.customRestResult.message);
+
+                setTimeout(function () {
+                    window.location.href = $PrefixHostName + '/SpPayments';
+                }, 200);
+
+            }
+            else if (response.customRestResult.trigger === '@ERP.Front.Helpers.Enums.Common.FormTriggers.Update') {
+
+                toastr.success(response.customRestResult.message);
+
+                setTimeout(function () {
+                    window.location.href = $PrefixHostName + '/SpPayments';
+                }, 200);
+
+            }
+            else {
+                toastr.error(response.customRestResult.message);
+            }
+
+        } else {
+            toastr.error(response.error.message);
+        }
+
+    };
+
+    var OnComplete = function (response) {
+        downBtnLoader();
+    };
+
+    var OnFailure = function (response) {
+        toastr.error(response);
+        downBtnLoader();
+    };
+
+    const LoadDataGrid = function () {
+
+        const params = {
+            PaymentNumber: $('#searchBox #PaymentNumber').val(),
+            StatusLkpId: $('#searchBox #StatusLkpId').find(':selected').val(),
+            SpCasesId: $('#searchBox #SpCaseId').find(':selected').val()
+        };
+
+        const columns = [
+            {
+                "data": "result.data.id",
+                'render': function (data, type, row, meta) {
+                    return meta.row + meta.settings._iDisplayStart + 1;
+                }
+            },
+            {
+                "data": "PaymentNumber",
+                "name": "PaymentNumber",
+                "autoWidth": true
+            },
+            {
+                "data": "PaymentName",
+                "name": "PaymentName",
+                "autoWidth": true
+            },
+            {
+                "data": null,
+                "autoWidth": true,
+                "render": function (d, t, row) {
+                    return lang === 'ar-EG' ? row.FromPeriod.periodNameAr : row.FromPeriod.periodNameEn;
+                }
+            },
+            {
+                "data": null,
+                "autoWidth": true,
+                "render": function (d, t, row) {
+                    return lang === 'ar-EG' ? row.ToPeriod.periodNameAr : row.ToPeriod.periodNameEn;
+                }
+            },
+            {
+                "data": null,
+                "autoWidth": true,
+                "render": function (d, t, row) {
+                    return row.SpCases ? row.SpCases.CaseName : '';
+                }
+            },
+            {
+                "data": null,
+                "autoWidth": true,
+                "render": function (d, t, row) {
+                    return row.FndSponsorCategoryLkp ? (lang === 'ar-EG' ? row.FndSponsorCategoryLkp.NameAr : row.FndSponsorCategoryLkp.NameEn) : '';
+                }
+            },
+            {
+                "data": null,
+                "autoWidth": true,
+                "render": function (d, t, row) {
+                    return lang === 'ar-EG' ? row.FndStatusLkp.NameAr : row.FndStatusLkp.NameEn;
+                }
+            },
+            {
+                "data": null,
+                "sortable": false,
+                "render": function (data, type, row) {
+
+                    let formAction = `${$PrefixHostName}/${_mainController}/@nameof(SpPaymentsController.SpPaymentsForm)`;
+                    let DeleteAction = `${$PrefixHostName}/${_mainController}/@nameof(SpPaymentsController.Delete)`;
+
+                    let formTitle = '@ERP.ResourcePack.SpGuarantees.SpPayments.Title';
+                    let btns = '';
+
+                    if (_permissions.includes(_postPermission) && row.StatusLkpId == _newStatus) {
+                         btns += `<a href="javascript:void(0)" onclick="ApproveAjax(${row.Id})" title="@ERP.ResourcePack.Common.Settings.Approve"><i class="mx-2 fas fa-check-circle text-success"></i></a>`;
+                    }
+
+                    if (_permissions.includes(_postPermission) && row.StatusLkpId == 10986) {
+                        btns += `<a href="javascript:void(0)" onclick="UnApproveAjax(${row.Id})" title="@ERP.ResourcePack.Common.Settings.UnApprove"><i class="mx-2 fas fa-minus-circle text-danger"></i></a>`;
+                    }
+
+                    if (_permissions.includes(_postPermission) && row.StatusLkpId == 10986) {
+                        btns += `<a href="javascript:void(0)" onclick="PostAjax(${row.Id})" title="@ERP.ResourcePack.Common.Settings.Post"><i class="mx-2 fas fa-check-circle text-info"></i></a>`;
+                    }
+
+                    if (_permissions.includes(_updatePermission) && row.StatusLkpId == _newStatus) {
+                        btns += `<a href="${$PrefixHostName}/SpPayments/FormView?id=${row.EncId}&t=@encUpdateTrigger" title="@ERP.ResourcePack.Common.Settings.Edit"><i class="mx-2 fas fa-edit text-info"></i></a>`;
+                    }
+
+                    btns += `<a href="${$PrefixHostName}/SpPayments/FormView?id=${row.EncId}&t=@encShowTrigger" title="@ERP.ResourcePack.Common.Settings.Show"><i class="mx-2 fas fa-eye text-info"></i></a>`;
+
+                    if (_permissions.includes(_deletePermission) && row.StatusLkpId == _newStatus) {
+                        btns += `<a href="javascript:void(0)" onclick="AjaxController.DeleteMainTableRow(${row.Id},'${DeleteAction}');" title="@ERP.ResourcePack.Common.Settings.Delete"><i class="mx-2 fas fa-trash-alt text-danger"></i></a>`;
+                    }
+
+                    const _auditedPermission = '@PermissionNames.Pages_SpPayments_Audit';
+
+                    if (_permissions.includes(_auditedPermission)) {
+
+                        row.permission = _auditedPermission;
+
+                        btns += GetAuditedButton(row);
+                    }
+
+                    return btns;
+                }
+            }
+        ];
+
+        const dtObj = {
+            "processing": true,
+            "serverSide": true,
+            "filter": false,
+            "orderMulti": false,
+            "language": dataTableLang,
+            "ajax": {
+                "url": _loadDataUrl,
+                "type": "POST",
+                "datatype": "json",
+                "data": params,
+                "complete": function () {}
+            },
+            "columns": columns,
+            "initComplete": function () {
+                $('[data-toggle="tooltip"]').tooltip();
+            }
+
+        };
+
+        _tblSelector.dataTable().fnDestroy();
+        _tblSelector.DataTable(dtObj).on('draw', function () { $('[data-toggle="tooltip"]').tooltip(); });
+
+        setTimeout(function () {
+            $(".sorting_1").removeAttr('colspan');
+        }, 500);
+    };
+
+    $('#btnSubmition').on('click', function () {
+
+        if ($('#mainForm').valid()) {
+
+            $(this).prop('disabled', true);
+
+            $('#submitLoader').show();
+
+            $('#mainForm').submit();
+
+        } else {
+            $(this).prop('disabled', false);
+
+            $('#submitLoader').hide();
+        }
+
+    });
+
+    $('#searchBox #StatusLkpId').select2(ReturnSelect2ObjectForLkpsTypes('@ERP.Front.Helpers.Enums.Common.FndLkpsTypes.SpPaymentStatusLkp.ToString()'));
+    $('#SponsorCategoryLkpId').select2(ReturnSelect2ObjectForLkpsTypes('@ERP.Front.Helpers.Enums.Common.FndLkpsTypes.SponsorCategory.ToString()'));
+    $('#SpCaseId').select2(ReturnSelect2ObjectDefault(`${baseUrl}/SpCases/GetSpCasesSelect2`));
+    $('#FromPeriodId').select2(ReturnSelect2ObjectDefault(`${baseUrl}/GlPeriodsDetails/GetGlPeriodsSelect2`));
+    $('#ToPeriodId').select2(ReturnSelect2ObjectDefault(`${baseUrl}/GlPeriodsDetails/GetGlPeriodsSelect2`));
+
+    $('#SpCaseId').on('select2:select', function (data) {
+
+        const obj = data.params.data;
+
+        if (obj.altText)  $('#CaseNumber').val(obj.altText);
+
+    });
+
+</script>
+
+<script name="detailssssssssssss">
+
+    const bindSpPaymentsPersonTable = function (detailArr) {
+
+        const columns = [
+            { 'data': 'index' },
+            { 'data': 'caseNumber' },
+            { 'data': 'caseName' },
+            { 'data': lang === 'ar-EG' ? 'sponsorCategoryAr' : 'sponsorCategoryEn' },
+            {
+                'data': lang === 'ar-EG' ? 'caseStatusAr' : 'caseStatusEn'
+            },
+            { 'data': 'totalAmount' },
+            {
+                'data': null,
+                'searchable': false,
+                'ordering': false,
+                'sorting': false,
+                'render': function (d, t, row) {
+                    return `<td><a href="javascript:void(0)" onclick="return GetSpPaymentsPersonDetail(${row.id},'${row.caseNumber}','${row.caseName}')"><i class="mx-2 fas fa-eye text-info"></i></a></td>`;
+                }
+            }
+        ];
+
+        const dtObj = {
+            data: detailArr,
+            retrieve: true,
+            language: dataTableLang,
+            columns: columns,
+            drawCallback: function (c, v, b) { }
+        };
+
+        setTimeout(function () {
+
+            $('#tblSpPaymentsPerson').dataTable().fnDestroy();
+            $('#tblSpPaymentsPerson').DataTable(dtObj).on('draw', function () { $('[data-toggle="tooltip"]').tooltip(); });
+
+        }, 100);
+ 
+    };
+
+    const LoadSpPaymentsPersonData = function () {
+
+        $.ajax({
+            url: `${baseUrl}/SpPayments/GetSpPaymentsPersonData`,
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${$_token}`
+            },
+            data: {
+                id: primaryEntityKeyId
+            }
+        }).done(function (data) {
+
+            $.each(data.result, function (i, item) {  item.index = ++i;    });
+
+            bindSpPaymentsPersonTable([...data.result]);
+
+            $('#Total').val([...data.result].map(item => +item.totalAmount).reduce((x,y) => x + y , 0));
+        });
+    };
+
+    // -------------------------------------------------
+
+    const bindSpPaymentsPersonDetailTable = function (detailArr) {
+
+        const columns = [
+            { 'data': 'index' },
+            { 'data': lang === 'ar-EG' ? 'periodAr' : 'periodEn' },
+            { 'data': 'startDate' },
+            { 'data': 'endDate' },
+            { 'data': lang === 'ar-EG' ? 'statusAr' : 'statusEn' },
+            { 'data': 'contractAmount' },
+            { 'data': 'caseName' },
+            { 'data': 'contractStartDate' },
+            { 'data': 'contractEndDate' }
+        ];
+
+        const dtObj = {
+            data: detailArr,
+            retrieve: true,
+            language: dataTableLang,
+            columns: columns,
+            drawCallback: function (c, v, b) { }
+        };
+
+        setTimeout(function () {
+
+            $('#tblSpPaymentsPersonDetails').dataTable().fnDestroy();
+            $('#tblSpPaymentsPersonDetails').DataTable(dtObj).on('draw', function () { $('[data-toggle="tooltip"]').tooltip(); });
+
+        }, 100);
+
+    };
+
+    const GetSpPaymentsPersonDetail = function (id, caseNumber, caseName) {
+
+        $('.page-loader-wrapper').css("display", "block");
+
+        $.ajax({
+            url: `${baseUrl}/SpPayments/GetSpPaymentsPersonDetailsData`,
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${$_token}`
+            },
+            data: {  id: id  }
+        }).done(function (data) {
+
+            _mainModalBody.empty();
+
+            $.each(data.result, function (i, item) {
+                item.index = ++i;
+            });
+
+            bindSpPaymentsPersonDetailTable([...data.result]);
+
+            $('#main-modal .modal-dialog').css('max-width','90%');
+
+            _mainModalTitle.text('@ERP.ResourcePack.SpGuarantees.SpPayments.SpPaymentsPersonDetails');
+            _mainModalBody.html($('#paymentsPersonsDetails').html());
+            _mainModal.modal(_mainModalOprions);
+
+            $('#main-modal #CaseNumberDetails').val(caseNumber);
+            $('#main-modal #CaseNumberDetails').parent('.form-line').addClass('focused');
+
+            $('#main-modal #CaseNameDetails').val(caseName);
+            $('#main-modal #CaseNameDetails').parent('.form-line').addClass('focused');
+
+            $('#main-modal #PaymentNameDetails').val($('#mainForm #PaymentName').val());
+            $('#main-modal #PaymentNameDetails').parent('.form-line').addClass('focused');
+
+            $('#main-modal #FromPeriodIdDetails').val($('#mainForm #FromPeriodId').find(':selected').text());
+            $('#main-modal #FromPeriodIdDetails').parent('.form-line').addClass('focused');
+
+            $('#main-modal #ToPeriodIdDetails').val($('#mainForm #ToPeriodId').find(':selected').text());
+            $('#main-modal #ToPeriodIdDetails').parent('.form-line').addClass('focused');
+
+            $('.page-loader-wrapper').css("display", "none");
+        }).fail(function (response) {
+
+            toastr.error(response);
+            $('.page-loader-wrapper').css("display", "none");
+        });
+    };
+
+</script>

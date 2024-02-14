@@ -1,0 +1,123 @@
+﻿
+@using ERP.Web.UI.Controllers.PmPropertiesModule
+@using ERP.Web.UI.Models.ViewModels.PmPropertiesModule
+
+@using ERP.Web.UI.Controllers.Accounts
+@using ERP.Web.UI.Models.ViewModels.Accounts
+
+@{
+    ViewBag.Title = ERP.ResourcePack.PmPropertiesModule.FmContracts.Title;
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    string formTrigger = ViewBag.trigger;
+    long? id = ViewData["Id"] == null ? null : (long?)Convert.ToInt32(ViewData["Id"]);
+    bool isFormDetail = Model != null && formTrigger == ERP.Front.Helpers.Enums.Common.FormTriggers.Show.ToString();
+
+    var detailObj = ViewData["DetailAsync"] == null ? null : ViewData["DetailAsync"] as FmContractsVM;
+
+
+
+}
+
+<div class="row clearfix">
+
+    <div class="col-12">
+        @Html.Action(nameof(FmContractsController.FmContractsForm), new
+        {
+            id = id,
+            trigger = formTrigger,
+       FmContractsVM = detailObj
+       ,
+            glAccHeadersVMs = ViewData["ListGlAccHeadersVM"] == null ?
+                    new List<GlAccHeadersVM>() :
+                    ViewData["ListGlAccHeadersVM"] as List<GlAccHeadersVM>
+   })
+    </div>
+
+
+
+
+
+
+
+    <div class="col-12">
+        <div class="card">
+            <div class="body">
+                <ul class="mt-2 nav nav-tabs tab-nav-right" role="tablist">
+                    <li role="presentation">
+                        <a href="#detail" data-toggle="tab" class="show active">@ERP.ResourcePack.PmPropertiesModule.FmContracts.FmBuildingsContracts</a>
+                    </li>
+                    <li role="presentation">
+                        <a href="#details2" data-toggle="tab" class="show ">@ERP.ResourcePack.PmPropertiesModule.FmContracts.FmContractVisits</a>
+                    </li>
+                </ul>
+                <div class="tab-content">
+                    <div role="tabpanel" class="tab-pane fade in active show" id="detail">
+                        @Html.Action(nameof(FmContractsController.FmContractsFormDetail), new { id = id, trigger = formTrigger })
+                        @Html.Action(nameof(FmContractsController.FmContractsDataDetail))
+                    </div>
+                    <div role="tabpanel" class="tab-pane fade in  show" id="details2">
+                        @Html.Action(nameof(FmContractsController.FmContractsFormDetail2), new { id = id, trigger = formTrigger })
+                        @Html.Action(nameof(FmContractsController.FmContractsDataDetail2))
+                    </div>
+                </div>
+                <div class="row clearfix"> <div class="col-md-12 text-center" id="btnContainer"></div></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body">
+                <div class="text-center">
+                    @if (formTrigger != ERP.Front.Helpers.Enums.Common.FormTriggers.Show.ToString())
+                    {
+                        <button type="submit" id="btnSubmition" class="btn btn-info btn-lg m-l-15 waves-effect">@(formTrigger == ERP.Front.Helpers.Enums.Common.FormTriggers.Insert.ToString() ? ERP.ResourcePack.Common.Settings.BtnSave : ERP.ResourcePack.Common.Settings.BtnUpdate)</button>
+                        <div id="submitLoader" style="display:none">
+                            <div class="lds-roller"><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div></div>
+                        </div>
+                    }
+                    <a href="~/FmContracts" class="btn btn-danger btn-lg m-l-15 waves-effect">@(ERP.ResourcePack.Common.Settings.BtnClose)</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section scripts{
+    <script>
+        const primaryEntityKeyId =  @(id??0);
+        const trigger = '@formTrigger';
+        let formView = true;
+    </script>
+    <script src="~/Scripts/jquery.validate.min.js"></script>
+    <script src="~/Scripts/jquery.validate.unobtrusive.min.js"></script>
+    @Html.Partial("~/ViewsScripts/FmContracts/FmContractsScripts.cshtml")
+
+    @Html.Partial("~/ViewsScripts/GlAccDetails/GlAccDetailsScripts.cshtml", ViewData["repeatTrigger"] = "")
+    @Html.Partial("~/ViewsScripts/GlAccDetails/GlAccDetailsScripts.cshtml", ViewData["repeatTrigger"] = "adv")
+    @Html.Partial("~/ViewsScripts/GlAccDetails/GlAccDetailsScriptManager.cshtml")
+
+    @if (id != null)
+    {
+
+<script>
+
+                $(function () {
+                    LoadDetailData();
+                    LoadDetailData2();
+                });
+
+                if (primaryEntityKeyId && trigger === '@ERP.Front.Helpers.Enums.Common.FormTriggers.Show.ToString()' && @detailObj.StatusLkpId ==  11039 ) {
+
+                    let btns = '';
+
+                    btns += `<a href="javascript:void(0)" onclick="return PostAjax(@id)" class="btn btn-success">${'@ERP.ResourcePack.Common.Settings.Post'}</a>`;
+
+                    $('#btnContainer').html(btns);
+            };
+     
+     
+</script>
+    }
+}
+

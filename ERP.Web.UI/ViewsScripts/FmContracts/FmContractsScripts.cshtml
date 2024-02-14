@@ -1,0 +1,883 @@
+﻿
+@using ERP.ResourcePack.PmPropertiesModule
+@using ERP.Web.UI.Controllers.PmPropertiesModule
+@using ERP.Authorization;
+@{
+    string permissionsStr = TempData["Permissions"].ToString();
+    string encUpdateTrigger = ERP.Front.Helpers.Enums.Common.EncUpdate;
+    string encInsertTrigger = ERP.Front.Helpers.Enums.Common.EncInsert;
+    string encShowTrigger = ERP.Front.Helpers.Enums.Common.EncShow;
+}
+
+@if (permissionsStr.Contains(PermissionNames.Pages_FmContracts_Post))
+{
+    <script>
+        const PostAjax = function (id) {
+
+            bootbox.confirm({
+                message: _booBoxMessagePosting,
+                buttons: bootBoxDefaultBtns,
+                callback: function (result) {
+
+                    if (result) {
+
+                        const data = {
+                            id: id,
+                            lang: lang,
+                            userId: 0
+                        };
+
+                        $.ajax({
+                            url: `${baseUrl}/FmContracts/PostFmContract`,
+                            type: 'POST',
+                            data: JSON.stringify(data),
+                            headers:
+                            {
+                                'Content-Type': 'application/json',
+                                'Authorization': `Bearer ${$_token}`
+                            },
+                        }).done(function (response) {
+
+                            if (response.result.finalStatues == 'F') {
+                                toastr.warning(response.result.reason);
+                            }
+                            else {
+                                toastr.success(response.result.reason);
+
+                                if (formView) {
+
+                                    setTimeout(function () {
+                                        window.location.href = $PrefixHostName + '/FmContracts';
+                                    }, 100);
+
+                                } else {
+                                    LoadDataGrid();
+                                }
+                            }
+
+                        }).fail(function (response) {
+                            toastr.error(response.responseText);
+                        });
+
+                    }
+
+                }
+            });
+
+
+        };
+    </script>
+}
+else
+{
+    <script>
+        const PostAjax = function (id) { };
+    </script>
+}
+
+<script>
+    const _mainController = "FmContracts"
+    const _newStatus = 11039;
+
+    $(function () {
+
+        LoadDataGrid();
+
+        if (formView && primaryEntityKeyId) {
+            BindCodeComUtilitesDropDowns(__arrGlSelect2, 'AccId', $('#codeComUtilityIds').val(), $('#codeComUtilityTexts').val());
+            BindCodeComUtilitesDropDowns(adv__arrGlSelect2, 'advAccId', $('#codeComUtilityIds_alt1').val(), $('#codeComUtilityTexts_alt1').val());
+        }
+
+
+        $('#MaintenanceContracts').addClass('active');
+
+        $('#Notes').parent('.form-line').addClass('focused');
+        $('#Amount').parent('.form-line').addClass('focused');
+    });
+
+    const _loadDataUrl = `${$PrefixHostName}/${_mainController}/@nameof(FmContractsController.LoadDataGrid)`;
+    const _tblSelector = $('#tblFmContracts');
+
+    const _permissions = '@permissionsStr';
+    const _updatePermission = '@PermissionNames.Pages_FmContracts_Update';
+    const _deletePermission = '@PermissionNames.Pages_FmContracts_Delete';
+    const _postPermission = '@PermissionNames.Pages_FmContracts_Post';
+
+    var OnBegin = function (response) {
+        fireBtnLoader();
+    };
+
+    var OnSuccess = function (response) {
+
+        $('#btnSubmition').prop('disabled', false);
+
+        if (response.success) {
+
+            if (response.customRestResult.trigger === '@ERP.Front.Helpers.Enums.Common.FormTriggers.Insert') {
+
+                toastr.success(response.customRestResult.message);
+
+                setTimeout(function () {
+                    window.location.href = $PrefixHostName + '/FmContracts';
+                }, 200);
+
+            }
+            else if (response.customRestResult.trigger === '@ERP.Front.Helpers.Enums.Common.FormTriggers.Update') {
+
+                toastr.success(response.customRestResult.message);
+
+                setTimeout(function () {
+                    window.location.href = $PrefixHostName + '/FmContracts';
+                }, 200);
+
+            }
+            else {
+                toastr.error(response.customRestResult.message);
+            }
+
+        } else {
+            toastr.error(response.error.message);
+        }
+
+    };
+
+    var OnComplete = function (response) {
+        downBtnLoader();
+    };
+
+    var OnFailure = function (response) {
+        toastr.error(response);
+        downBtnLoader();
+    };
+
+
+    const FormValidation = function () {
+        if (!$('#ListFmContractVisitsStr').val()) {
+                toastr.warning('@FmContracts.FmContractVisits' + ' : ' + '@ERP.ResourcePack.Common.Settings.Required');
+                return false;
+           }
+
+        if (!$('#ListFmBuildingsContractsStr').val()) {
+                toastr.warning('@FmContracts.FmBuildingsContracts' + ' : ' + '@ERP.ResourcePack.Common.Settings.Required');
+                return false;
+            }
+    };
+
+
+
+    const LoadDataGrid = function () {
+
+
+        const params = {
+            StatusLkpId: $('#StatusLkpId').find(':selected').val(),
+            ContractNumber: $('#ContractNumber').find(':selected').text(),
+            ContractDate: $('#ContractDate').val(),
+            VendorId: $('#VendorId').find(':selected').val(),
+        };
+
+        const columns = [
+            {
+                "data": "result.data.id",
+                'render': function (data, type, row, meta) {
+                    return meta.row + meta.settings._iDisplayStart + 1;
+                }
+            },
+            {
+                "data": "ContractNumber",
+                "name": "ContractNumber",
+                "autoWidth": true
+            },
+            {
+                "data": "StatusLkpValue",
+                "name": "StatusLkpValue",
+                "autoWidth": true
+            },
+
+            {
+                "data": "ContractDate",
+                "name": "ContractDate",
+                "autoWidth": true
+            },
+
+
+            {
+                "data": "VendorValue",
+                "name": "VendorValue",
+                "autoWidth": true
+            },
+
+            {
+                "data": "StartDate",
+                "name": "StartDate",
+                "autoWidth": true
+            },
+            {
+                "data": "EndDate",
+                "name": "EndDate",
+                "autoWidth": true
+            },
+
+
+
+
+
+
+            {
+                "data": null,
+                "sortable": false,
+                "render": function (data, type, row) {
+
+                    let formAction = `${$PrefixHostName}/${_mainController}/@nameof(FmContractsController.FmContractsForm)`;
+                    let DeleteAction = `${$PrefixHostName}/${_mainController}/@nameof(FmContractsController.Delete)`;
+
+                    let btns = '';
+
+                    if (_permissions.includes(_postPermission) & row.StatusLkpId == _newStatus) {
+                        btns += `<a href="javascript:void(0)" onclick="PostAjax(${row.Id})"  title="@ERP.ResourcePack.Common.Settings.Post"><i class="mx-2 fas fa-check-circle text-info"></i></a>`;
+                    }
+
+                    if (_permissions.includes(_updatePermission) & row.StatusLkpId == _newStatus ) {
+                       btns += `<a href="${$PrefixHostName}/FmContracts/FormView?id=${row.EncId}&t=@encUpdateTrigger"  title="@ERP.ResourcePack.Common.Settings.Edit"><i class="mx-2 fas fa-edit text-info"></i></a>`;
+                    }
+
+                    btns += `<a href="${$PrefixHostName}/FmContracts/FormView?id=${row.EncId}&t=@encShowTrigger"  title="@ERP.ResourcePack.Common.Settings.Show"><i class="mx-2 fas fa-eye text-info"></i></a>`;
+
+                    if (_permissions.includes(_deletePermission) & row.StatusLkpId == _newStatus  ) {
+                       btns += `<a href="javascript:void(0)" onclick="AjaxController.DeleteMainTableRow(${row.Id},'${DeleteAction}');"  title="@ERP.ResourcePack.Common.Settings.Delete"><i class="mx-2 fas fa-trash-alt text-danger"></i></a>`;
+                    }
+
+
+                    const _auditedPermission = '@PermissionNames.Pages_FmContracts_Audit';
+
+                    if (_permissions.includes(_auditedPermission)) {
+
+                        row.permission = _auditedPermission;
+
+                        btns += GetAuditedButton(row);
+                    }
+                    return btns;
+                }
+            }
+        ];
+
+
+        const dtObj = {
+            "processing": true,
+            "serverSide": true,
+            "filter": false,
+            "orderMulti": false,
+            "language": dataTableLang,
+            "ajax": {
+                "url": _loadDataUrl,
+                "type": "POST",
+                "datatype": "json",
+                "data": params,
+                "complete": function () {}
+            },
+            "columns": columns,
+            "initComplete": function () {
+                $('[data-toggle="tooltip"]').tooltip();
+            }
+
+        };
+
+        _tblSelector.dataTable().fnDestroy();
+        _tblSelector.DataTable(dtObj).on('draw', function () { $('[data-toggle="tooltip"]').tooltip(); });
+
+        setTimeout(function () {
+            $(".sorting_1").removeAttr('colspan');
+        }, 500);
+    };
+
+    function CalculateRentalAmount() {
+        var StartEnd_DateRes = SubtractDateAndGetDays($("#StartDate"), $("#EndDate"))
+        var RentAmountVal = $('#AnnualAmount').val() / 365 * (1 + StartEnd_DateRes);
+        $('#RentAmount').val(parseFloat(RentAmountVal).toFixed(2))
+        $('#RentAmount0').val(parseFloat(RentAmountVal).toFixed(2))
+    };
+
+
+    $('#AnnualAmount').change(function () {
+        CalculateRentalAmount();
+    });
+
+
+    $('#StartDate').change(function () {
+        CalculateRentalAmount();
+    });
+
+    $('#EndDate').change(function () {
+        CalculateRentalAmount();
+    });
+
+
+
+
+    $('#btnSubmition').on('click', function () {
+
+         const resultCodeComUtility = GetCodeComUtilites(__arrGlSelect2, 'AccId');
+         const resultCodeComUtility1 = GetCodeComUtilites(adv__arrGlSelect2, 'advAccId');
+
+        if (resultCodeComUtility === null) {
+            toastr.warning('@ERP.ResourcePack.Accounts.GlJeHeaders.FormDetailNotValid');
+            return;
+        }
+
+        if (resultCodeComUtility1 === null) {
+            toastr.warning('@ERP.ResourcePack.Accounts.GlJeHeaders.FormDetailNotValid');
+            return;
+        }
+
+        $('#mainForm #@nameof(Model.codeComUtilityIds)').val(resultCodeComUtility.idsStr);
+        $('#mainForm #@nameof(Model.codeComUtilityTexts)').val(resultCodeComUtility.textsStr);
+
+        $('#mainForm #@nameof(Model.codeComUtilityIds_alt1)').val(resultCodeComUtility1.idsStr);
+        $('#mainForm #@nameof(Model.codeComUtilityTexts_alt1)').val(resultCodeComUtility1.textsStr);
+
+      //  var amountValue = _visitsDetails.map(item => item.amount).reduce((a1, a2) => +a1 + +a2, 0);
+        @*if (+$('#RentAmount').val() != +(amountValue)) {
+            toastr.warning('@FmContracts.RentalAmountValidation');
+            return false;
+        }*@
+
+         
+        if (FormValidation() === false) return;
+         
+        if ($('#mainForm').valid()) {
+
+            $(this).prop('disabled', true);
+
+            $('#submitLoader').show();
+
+            $('#mainForm').submit();
+
+        } else {
+            $(this).prop('disabled', false);
+
+            $('#submitLoader').hide();
+        }
+
+
+
+
+
+
+
+
+
+
+
+
+
+        }
+
+     );////////////////////////
+
+    $('#searchBox #StatusLkpId').select2(ReturnSelect2ObjectForLkpsTypes('FmContractsStatues'));
+    $('#PaymentTypeLkpId').select2(ReturnSelect2ObjectForLkpsTypes('FmContractsPaymentType'));
+    $('#PmPropertiesId').select2(ReturnSelect2ObjectDefault(`${baseUrl}/PmProperties/GetPmPropertiesSelect2`));
+    $('#VendorId').select2(ReturnSelect2ObjectDefault(`${baseUrl}/ApVendors/GetVendorsSelect2`));
+    $('#EngineerId').select2(ReturnSelect2ObjectDefault(`${baseUrl}/FmContracts/GetEngineersSelect2`));
+
+    if (!formView) {
+        $('#ContractNumber').select2(ReturnSelect2ObjectDefault(`${baseUrl}/FmContracts/GetContractNumbersSelect2`));
+
+    }
+
+
+
+    //$('#HrPersonId').select2(ReturnSelect2ObjectDefault(`${baseUrl}/HrPersons/GetPersonsSelect2`));
+    //$('#PeriodId').select2(ReturnSelect2ObjectDefault(`${baseUrl}/GlPeriodsDetails/GetGlPeriodsSelect2`));
+
+</script>
+
+<script name="detailsss">
+
+ 
+
+
+    const _tblDetailSelector = $('#tblDetail'), _listDetail = $('#ListFmBuildingsContractsStr');
+
+    let _visitsDetails = [], updatedDetailsRow, tblCounterIndex = 0 ;
+
+    const fillDetail = function () {
+
+        if (validator() === false) return;
+
+        const current = {
+            index: ++tblCounterIndex,
+            contractId: $('#ContractId').find(':selected').val(),
+            contractText : $('#ContractId').find(':selected').text(),
+            amount: $('#Amount').val(),
+
+            pmPropertiesId: $('#PmPropertiesId').find(':selected').val(),
+            pmPropertiesName: $('#PmPropertiesId').find(':selected').text(),
+
+            comments: $('.js-comments').val(),
+            rowStatus: NewStatus,
+            id: 0
+        };
+
+        return current;
+    };
+
+    const AddDetails = function () {
+        //debugger;
+        const current = fillDetail();
+
+        if (current === undefined) return;
+
+        _visitsDetails.push(current);
+
+        _listDetail.val(JSON.stringify(_visitsDetails));
+
+        bindDetailTable();
+         
+        clearFormAdding();
+    };
+
+    const bindDetailTable = function () {
+
+        const detailArr = _visitsDetails.filter(z => z.rowStatus !== DeletedStatus);
+
+        console.log(detailArr);
+
+        const columns = [
+            { 'data': 'index' },
+            //{ 'data': 'contractText' },
+            { 'data': 'pmPropertiesName' },
+            {
+                'data': 'amount',
+                "render": $.fn.dataTable.render.number(',', '.', 2)
+            },
+            { 'data': 'comments' },
+            {
+                'data': null,
+                'searchable': false,
+                'ordering': false,
+                'sorting': false,
+                'render': function (d, t, row) {
+
+                    let rows = '';
+
+                    if (primaryEntityKeyId === 0 || trigger !== '@ERP.Front.Helpers.Enums.Common.FormTriggers.Show.ToString()') {
+
+                        rows += `<td><a href="javascript:void(0)" onclick="return DeleteDetail(${row.index})"><i class="mx-2 fas fa-trash-alt text-danger"></i></a>`;
+                        rows += `<a href="javascript:void(0)" onclick="return GetDetailRow(${row.index})"><i class="mx-2 fas fa-edit text-success"></i></a></td>`;
+                    }
+                    else {
+                        rows += '<td></td>';
+                    }
+
+                    return rows;
+                }
+            }
+        ];
+
+        const dtObj = {
+            data: detailArr,
+            retrieve: true,
+            language: dataTableLang,
+            columns: columns,
+ 
+            drawCallback: function (c, v, b) {
+                if (detailArr.length > 0) {
+
+                    var total = detailArr.map(item => +item.amount).reduce((x, y) => x + y, 0);
+                    total = (total).toLocaleString(undefined, optionsNumFormat);
+
+                    $('#tbldetail tfoot th:eq(2)').html(total);
+
+                } else {
+                    $('#tbldetail tfoot th:eq(2)').html(0);
+                }
+    }
+ 
+        };
+
+        setTimeout(function () {
+
+            $('#tbldetail').dataTable().fnDestroy();
+            $('#tbldetail').DataTable(dtObj).on('draw', function () { $('[data-toggle="tooltip"]').tooltip(); });
+
+        }, 100);
+    };
+
+    const DeleteDetail = function (index)  {
+
+        const current = _visitsDetails.find(z => z.index === index);
+
+        const indexOfCurrent = _visitsDetails.indexOf(current);
+
+        if (!current.id) {
+
+           _visitsDetails.splice(indexOfCurrent, 1);
+
+        } else {
+
+            current.rowStatus = DeletedStatus;
+
+           _visitsDetails.splice(indexOfCurrent, 1,current);
+        }
+
+        bindDetailTable();
+
+        _listDetail.val(_visitsDetails.length === 0 ? '' : JSON.stringify(_visitsDetails));
+
+    };
+
+    const LoadDetailData = function () {
+
+        $.ajax({
+            url: `${baseUrl}/FmContracts/GetAllFmBuildingsContractsData`,
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${$_token}`
+            },
+            data: {
+                id: primaryEntityKeyId
+            }
+        }).done(function (data) {
+
+            _visitsDetails = [...data.result];
+
+            tblCounterIndex = 0;
+
+            $.each(_visitsDetails, function (i, item) {
+                item.index = ++tblCounterIndex;
+            });
+
+            bindDetailTable();
+
+            _listDetail.val(JSON.stringify(_visitsDetails));
+
+            
+
+        });
+
+    };
+
+    const GetDetailRow = function (tblIndex) {
+        //debugger;
+
+        clearFormAdding();
+         
+        $('#btnAddLineRow').hide();
+        $('#btnUpdateLineRow').show();
+        $('#btnCancelLineRow').show();
+
+        const current = _visitsDetails.find(z => z.index === tblIndex);
+
+        $(`#ContractId`).append($("<option selected='selected'></option>")
+            .val(current.contractId).text(current.contractText)).trigger('change');
+
+        $(`#PmPropertiesId`).append($("<option selected='selected'></option>")
+            .val(current.pmPropertiesId).text(current.pmPropertiesName)) .trigger('change');
+
+        $('#Amount').val(current.amount);
+        $('.js-comments').val(current.comments);
+        $('.js-comments').parents('.form-line').addClass('focused');
+
+        updatedDetailsRow = current;
+    };
+
+    const UpdateDetailsRow = function () {
+        //debugger;
+        let current = _visitsDetails.find(z => z.index === updatedDetailsRow.index);
+
+        let indexOfCurrent = _visitsDetails.indexOf(_visitsDetails.find(z => z.index === updatedDetailsRow.index));
+
+        const newRow = fillDetail();
+
+        if (newRow === undefined) return;
+
+        newRow.index = current.index;
+        newRow.id = updatedDetailsRow.id;
+        newRow.rowStatus =  !updatedDetailsRow.id ? NewStatus : UpdatedStatus;
+
+        _visitsDetails.splice(indexOfCurrent, 1,newRow);
+
+        $('#btnAddLineRow').show();
+        $('#btnUpdateLineRow').hide();
+        $('#btnCancelLineRow').hide();
+
+        clearFormAdding();
+
+        _listDetail.val(JSON.stringify(_visitsDetails));
+
+        setTimeout(function () {
+            bindDetailTable();
+        }, 100);
+    };
+
+    const clearFormAdding = function () {
+        //$('#detail .card:first input,textarea').val('');
+        $('#detail').find('input,textarea').val(''); 
+
+        $('#detail .card:first select').val('').trigger('change');
+    };
+
+    const validator = function () {
+
+        if (!$('#PmPropertiesId').find(':selected').val()) {
+            toastr.warning('@FmContracts.PmPropertiesId' + ' : ' + '@ERP.ResourcePack.Common.Settings.Required');
+            return false;
+        }
+
+        if (!$('#Amount').val()) { 
+            toastr.warning('@FmContracts.Amount' + ' : ' + '@ERP.ResourcePack.Common.Settings.Required');
+            return false;
+        }
+
+
+        //var amountValue = _visitsDetails.map(item => item.amount).reduce((a1, a2) => +a1 + +a2, 0);
+
+        //if ( +$('#RentAmount').val() != +(amountValue + $("#Amount").val()) ) {
+        //    toastr.warning(' الاجمالي يجب ان يساوي المبلغ النهائي');
+        //    return false;
+        //}
+    };
+
+
+
+</script>
+
+ 
+
+
+
+<script name="detailsss2">
+
+    const _tbldetail2Selector2 = $('#tbldetail2'), _listDetail2 = $('#ListFmContractVisitsStr');
+
+    let _visitsDetails2 = [], updatedDetailsRow2, tblCounterIndex2 = 0 ;
+
+    const fillDetail2 = function () {
+
+        if (validator2() === false) return;
+
+        const current2 = {
+            index: ++tblCounterIndex2,
+            contractId: $('#ContractId').find(':selected').val(),
+            contractText : $('#ContractId').find(':selected').text(),
+            visitNumber: $('#VisitNumber').val(),
+
+            visitDate: $('#VisitDate').val(),
+
+            engineerId: $('#EngineerId').find(':selected').val(),
+            engineerName: $('#EngineerId').find(':selected').text(),
+
+            comments: $('.js-comments2').val(),
+            rowStatus: NewStatus,
+            id: 0
+        };
+
+        return current2;
+    };
+
+    const AddDetail2 = function () {
+        //debugger;
+        const current2 = fillDetail2();
+
+        if (current2 === undefined) return;
+
+        _visitsDetails2.push(current2);
+
+        _listDetail2.val(JSON.stringify(_visitsDetails2));
+
+        bindDetailTable2();
+
+        clearFormAdding2();
+    };
+
+    const bindDetailTable2 = function () {
+
+        const detailArr2 = _visitsDetails2.filter(z => z.rowStatus !== DeletedStatus);
+
+        const columns = [
+            { 'data': 'index' },
+          
+            { 'data': 'visitNumber' },
+            { 'data': 'visitDate' },
+            { 'data': 'engineerName' },
+            { 'data': 'comments' },
+            {
+                'data': null,
+                'searchable': false,
+                'ordering': false,
+                'sorting': false,
+                'render': function (d, t, row) {
+
+                    let rows = '';
+
+                    if (primaryEntityKeyId === 0 || trigger !== '@ERP.Front.Helpers.Enums.Common.FormTriggers.Show.ToString()') {
+
+                        rows += `<td><a href="javascript:void(0)" onclick="return DeleteDetail2(${row.index})"><i class="mx-2 fas fa-trash-alt text-danger"></i></a>`;
+                        rows += `<a href="javascript:void(0)" onclick="return GetDetailRow2(${row.index})"><i class="mx-2 fas fa-edit text-success"></i></a></td>`;
+                    }
+                    else {
+                        rows += '<td></td>';
+                    }
+
+                    return rows;
+                }
+            }
+        ];
+
+        const dtObj = {
+            data: detailArr2,
+            retrieve: true,
+            language: dataTableLang,
+            columns: columns,
+            drawCallback: function (c, v, b) {}
+        };
+
+        setTimeout(function () {
+
+            $('#tbldetail2').dataTable().fnDestroy();
+            $('#tbldetail2').DataTable(dtObj).on('draw', function () { $('[data-toggle="tooltip"]').tooltip(); });
+
+        }, 100);
+    };
+
+    const DeleteDetail2 = function (index)  {
+
+        const current2 = _visitsDetails2.find(z => z.index === index);
+
+        const indexOfcurrent2 = _visitsDetails2.indexOf(current2);
+
+        if (!current2.id) {
+
+           _visitsDetails2.splice(indexOfcurrent2, 1);
+
+        } else {
+
+            current2.rowStatus = DeletedStatus;
+
+           _visitsDetails2.splice(indexOfcurrent2, 1,current2);
+        }
+
+        bindDetailTable2();
+
+        _listDetail2.val(_visitsDetails2.length === 0 ? '' : JSON.stringify(_visitsDetails2));
+
+    };
+
+    const LoadDetailData2 = function () {
+        //debugger;
+        $.ajax({
+            url: `${baseUrl}/FmContracts/GetAllFmContractVisitsData`,
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${$_token}`
+            },
+            data: {
+                id: primaryEntityKeyId
+            }
+        }).done(function (data) {
+
+            _visitsDetails2 = [...data.result];
+
+            tblCounterIndex2 = 0;
+
+            $.each(_visitsDetails2, function (i, item) {
+                item.index = ++tblCounterIndex2;
+            });
+
+            bindDetailTable2();
+
+            _listDetail2.val(JSON.stringify(_visitsDetails2));
+
+        });
+
+    };
+
+    const GetDetailRow2 = function (tblIndex) {
+
+        clearFormAdding2();
+        //debugger;
+        $('#btnAddLineRow2').hide();
+        $('#btnUpdateLineRow2').show();
+        $('#btnCancelLineRow2').show();
+
+        const current2 = _visitsDetails2.find(z => z.index === tblIndex);
+        $('#VisitNumber').val(current2.visitNumber);
+        $('#VisitDate').val(current2.visitDate);
+        $(`#EngineerId`).append($("<option selected='selected'></option>")
+            .val(current2.engineerId).text(current2.engineerName)).trigger('change');
+        $('.js-comments2').val(current2.comments);
+
+        $('#VisitNumber').parents('.form-line').addClass('focused');
+        $('#VisitDate').parents('.form-line').addClass('focused');
+        $('.js-comments2').parents('.form-line').addClass('focused');
+
+
+        updatedDetailsRow2 = current2;
+    };
+
+    const UpdateDetailsRow2 = function () {
+
+        let current2 = _visitsDetails2.find(z => z.index === updatedDetailsRow2.index);
+
+        let indexOfcurrent2 = _visitsDetails2.indexOf(_visitsDetails2.find(z => z.index === updatedDetailsRow2.index));
+
+        const newRow = fillDetail2();
+
+        if (newRow === undefined) return;
+
+        newRow.index = current2.index;
+        newRow.id = updatedDetailsRow2.id;
+        newRow.rowStatus =  !updatedDetailsRow2.id ? NewStatus : UpdatedStatus;
+
+        _visitsDetails2.splice(indexOfcurrent2, 1,newRow);
+
+        $('#btnAddLineRow2').show();
+        $('#btnUpdateLineRow2').hide();
+        $('#btnCancelLineRow2').hide();
+
+        clearFormAdding2();
+
+        _listDetail2.val(JSON.stringify(_visitsDetails2));
+
+        setTimeout(function () {
+            bindDetailTable2();
+        }, 100);
+    };
+
+    const clearFormAdding2 = function () {
+        //$('#details2 .card:first input,textarea').val('');
+        $('#details2').find('input,textarea').val(''); 
+        $('#details2 .card:first select').val('').trigger('change');
+    };
+
+    const validator2 = function () {
+
+        if (!$('#VisitNumber').val()) {
+            toastr.warning('@FmContracts.VisitNumber' + ' : ' + '@ERP.ResourcePack.Common.Settings.Required');
+            return false;
+        }
+
+        if (!$('#EngineerId').find(':selected').val()) {
+            toastr.warning('@FmContracts.EngineerId' + ' : ' + '@ERP.ResourcePack.Common.Settings.Required');
+            return false;
+        }
+
+        if (!$('#VisitDate').val()) {
+            toastr.warning('@FmContracts.VisitDate' + ' : ' + '@ERP.ResourcePack.Common.Settings.Required');
+            return false;
+        }
+
+    };
+
+</script>
+
+
+
+
+
+
+
+
+
+
+

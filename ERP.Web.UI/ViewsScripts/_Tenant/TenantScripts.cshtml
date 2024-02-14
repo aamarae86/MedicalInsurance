@@ -1,0 +1,212 @@
+﻿@using ERP.Web.UI.Controllers.Authentications
+@using ERP.ResourcePack.Authentications
+@using ERP.Authorization;
+<script>
+    $(function () {
+        $('#Tenant').addClass('active');
+        LoadDataGrid();
+    });
+    const PrintAccountStatementReport = function () {
+
+        if ($('#Id').val()&&$('#TenantId').val()&&$('#TenantNameAr').val()&&$('#TenantNameEn').val()&&$('#BoxNo').val()&&$('#Tel').val()&&$('#Fax').val()&&$('#WebSite').val()&&$('#Email').val()) {
+            
+
+            //if ($('#TaxRegNo').val().length > 0) {
+            //    if ($('#TaxRegNo').val().split('').length < 15 || $('#TaxRegNo').val().split('').length > 15) {
+            //        toastr.error('Tax Registration No' + ' : ' + '15 digit')
+            //        return;
+            //    }
+            //}
+
+            $('.page-loader-wrapper').css('display', 'block');
+
+            $.ajax({
+                url: `${baseUrl}/TenantData/PostTenantDetailDto`,
+                type: "Post",
+                data: JSON.stringify({
+                    Id: $('#Id').val(),
+                    TenantId: $('#TenantId').val(),
+                    LogoPath: $('#LogoPath').val(),
+                    TenantNameAr: $('#TenantNameAr').val(),
+                    TenantNameEn: $('#TenantNameEn').val(),
+                    BoxNo: $('#BoxNo').val(),
+                    Tel: $('#Tel').val(),
+                    Fax: $('#Fax').val(),
+                    WebSite: $('#WebSite').val(),
+                    ManagerName: $('#ManagerName').val(),
+                    RepManagerName: $('#RepManagerName').val(),
+                    Email: $('#Email').val(),
+                    Filepath: $('#Filepath').val(),
+                    TaxRegNo: $('#TaxRegNo').val(),
+                    baseCurrency: $('#BaseCurrency').find(':selected').val()
+                }),
+                headers: {
+                    'Authorization': `Bearer ${$_token}`,
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json'
+                },
+                success: function (data) {
+                    $('.page-loader-wrapper').css('display', 'none');
+                    if (data.result) {
+                        toastr.success('@ERP.ResourcePack.Common.Settings.UpdatedSuccessfully');
+                    }
+                }
+            });
+        } else {
+            toastr.error('@ERP.ResourcePack.Accounts.ReportsAccounts.EnterData');
+        }
+
+    };
+
+    $('#BaseCurrency').select2(ReturnSelect2ObjectDefault(`${baseUrl}/Currency/GetCurrenciesSelect2`));
+
+
+
+
+
+
+
+
+
+
+       const LoadDataGrid = function () {
+           const _mainController = `Users`;
+    const _loadDataUrl = `${$PrefixHostName}/${_mainController}/@nameof(UsersController.LoadDataGrid)`;
+    const _tblSelector = $('#tblUsers');
+    const _tblLoader = $('#tblLoader');
+        $('#tblLoader').show();
+
+        const parms = {  };
+
+        const columns = [
+            {
+                "data": "result.data.id",
+                'render': function (data, type, row, meta) {
+                    return meta.row + meta.settings._iDisplayStart + 1;
+                }
+            },
+            {
+                "data": "Name",
+                "name": "Name",
+                "autoWidth": true
+            },
+            {
+                "data": "SurName",
+                "name": "SurName",
+                "autoWidth": true
+            },
+            {
+                "data": "FullName",
+                "name": "FullName",
+                "autoWidth": true
+            },
+            {
+                "data": "EmailAddress",
+                "name": "EmailAddress",
+                "autoWidth": true
+            },
+            {
+                "data": "UserName",
+                "name": "UserName",
+                "autoWidth": true
+            },
+            {
+                "data": "SubEndDate",
+                "name": "SubEndDate",
+                "autoWidth": true,
+                "render": function (SubEndDate, type, row) {
+                    return `<span id="${row.Id}">${SubEndDate}</span>`;
+                }
+            },              
+            {
+                "data": "UserValue",
+                "name": "UserValue",
+                "autoWidth": true,
+                "render": function (UserValue,type,row) {
+                    return `<span id="${row.Id}">${UserValue}</span>` ;
+                }
+            },
+
+                {
+                "data": "IsActive",
+                "name": "IsActive",
+                "autoWidth": true,
+                "render": function (isActive,type,row) {
+                    if (isActive) return '<i class="fas fa-check text-success"></i>';
+
+                    return '<i class="fas fa-times text-danger"></i>';
+                }
+            }, {
+                "data": null,
+                "sortable": false,
+                "render": function (data, type, row) {
+
+                    let formAction = `${$PrefixHostName}/${_mainController}/@nameof(UsersController.UsersForm)`;
+                    let DeleteAction = `${$PrefixHostName}/${_mainController}/@nameof(UsersController.Delete)`;
+
+                    let formTitle = '@Users.Title';
+                    let btns = '';
+                    btns += `  <input class="form-check-input"  type="checkbox" 
+                                 data-price="${row.UserValue}" 
+                                 data-userName="${row.UserName}" 
+                                 data-Email="${row.EmailAddress}"
+                                 data-SubEndDate="${row.SubEndDate}"
+                                 value="${row.Id}" name="usersCHK">`;
+
+                   
+
+                    return btns;
+                }
+            }
+        ];
+
+        const dtObj = {
+            "processing": true,
+            "serverSide": true,
+            "filter": false,
+            "order": [[1, "asc"]],
+            "orderMulti": false,
+            //"dom": 'Bfrtip',
+            //"buttons": [
+            //    'excelHtml5'
+            //],
+            "language": dataTableLang,
+            "ajax": {
+                "url": _loadDataUrl,
+                "type": "POST",
+                "datatype": "json",
+                "data": parms,
+                "complete": function () {
+                    _tblLoader.hide();
+                }
+            },
+            "columns": columns,
+            "initComplete": function () {
+                $('[data-toggle="tooltip"]').tooltip();
+            }
+
+        };
+
+        _tblSelector.dataTable().fnDestroy();
+        _tblSelector.DataTable(dtObj).on('draw', function () { $('[data-toggle="tooltip"]').tooltip(); });
+       
+    };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</script>

@@ -1,0 +1,87 @@
+﻿@using ERP.ResourcePack.Accounts
+@model List<ERP.Web.UI.Models.ViewModels.Accounts.GlAccHeadersVM>
+@{
+    ViewBag.Title = ReportsAccounts.GlAccSelection;
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="card">
+    <div class="header d-flex justify-content-start align-items-center">
+        <i class="fas fa-2x fa-chevron-down down-arr mr-2" data-toggle="collapse" data-target="#searchCollapse"></i>
+        <h2><strong>@ReportsAccounts.GlAccSelection</strong></h2>
+    </div>
+    <div class="body  collapse show" id="searchCollapse">
+        <div class="row clearfi x">
+            <div class="col-md-5">
+                @Html.Action(nameof(ERP.Web.UI.Controllers.Accounts.GlAccDetailsController.DrawGlAccController), "GlAccDetails",
+                new { glAccHeadersVMs = Model, repeatTrigger = "" })
+            </div>
+            <div class="col-md-5">
+                @Html.Action(nameof(ERP.Web.UI.Controllers.Accounts.GlAccDetailsController.DrawGlAccController), "GlAccDetails",
+                new { glAccHeadersVMs = Model, repeatTrigger = "alt" })
+            </div>
+            <div class="col-md-2" id="check-boxes-container"></div>
+        </div>
+        <div class="row clearfix">
+            <div class="col-md-5">
+                <div class="row">
+                    <div class="col-md-4">
+                        <label class="form-label" for="FromPeriod">@ReportsAccounts.FromPeriod</label>
+                        <div class="form-group form-float">
+                            <div class="form-group">
+                                <select class="form-control" name="FromPeriod" id="FromPeriod"></select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label" for="ToPeriod">@ReportsAccounts.ToPeriod</label>
+                        <div class="form-group form-float">
+                            <div class="form-group">
+                                <select class="form-control" name="ToPeriod" id="ToPeriod"></select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label" for="Levels">@ReportsAccounts.Levels</label>
+                        <div class="form-group form-float">
+                            <div class="form-group">
+                                <select class="form-control" name="Levels" id="Levels"></select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-7">
+                <div class="row clearfix">
+                    <div class="col-md-3">
+                        <div class="form-group" style="margin-top:15px">
+                            <button onclick="return ProcessData()" class="btn btn-success">@ReportsAccounts.DataProcessing <i class="fas fa-spinner"></i></button>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="form-group" style="margin-top:15px">
+                            <button class="btn btn-info" onclick="return GetBalanceReport('BalanceReview')">@ReportsAccounts.BalanceReview <i class="fas fa-search-dollar"></i></button>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="form-group" style="margin-top:15px">
+                            <button class="btn btn-info" onclick="return GetBalanceReport('Budget')">@ReportsAccounts.Budget <i class="fas fa-money-check"></i></button>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="form-group" style="margin-top:15px">
+                            <button class="btn btn-info" onclick="return GetBalanceReport('ListIncomes')">@ReportsAccounts.ListIncomes <i class="fas fa-money-bill"></i></button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+@section scripts{
+    @Html.Partial("~/ViewsScripts/GlAccDetails/GlAccDetailsScripts.cshtml", ViewData["repeatTrigger"] = "")
+    @Html.Partial("~/ViewsScripts/GlAccDetails/GlAccDetailsScripts.cshtml", ViewData["repeatTrigger"] = "alt")
+    @Html.Partial("~/ViewsScripts/_ReportsAccounts/GlAccSelectionScriptManager.cshtml")
+    @Html.Partial("~/ViewsScripts/GlAccDetails/GlAccDetailsScriptManager.cshtml")
+    @Html.Partial("_ReportModal")
+}

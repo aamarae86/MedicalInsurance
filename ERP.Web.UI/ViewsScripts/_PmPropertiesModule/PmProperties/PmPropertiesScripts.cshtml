@@ -1,0 +1,1106 @@
+﻿@using ERP.ResourcePack.PmPropertiesModule
+@using ERP.Web.UI.Controllers.PmPropertiesModule
+@using ERP.Authorization;
+@{
+    string encUpdateTrigger = ERP.Front.Helpers.Enums.Common.EncUpdate;
+    string encShowTrigger = ERP.Front.Helpers.Enums.Common.EncShow;
+    string permissionsStr = TempData["Permissions"].ToString();
+}
+<script>
+    const _mainController = "PmProperties", _apiAppService = "PmProperties"
+
+    $(function () {
+
+        LoadDataGrid();
+        $('#tblPmPropertiesPrint thead').html($('#tblPmProperties thead').html());
+        $('#tblPmPropertiesPrint thead tr :last-child').remove();
+        $('#PmProperties').addClass('active');
+
+        $('#PropertyNumber').parent('.form-line').addClass('focused');
+
+    });
+
+    const _loadDataUrl = `${$PrefixHostName}/${_mainController}/@nameof(PmPropertiesController.LoadDataGrid)`;
+    const _tblSelector = $('#tblPmProperties');
+    const _tblLoader = $('#tblLoader');
+    const _mainForm = $('#mainForm');
+
+    const _permissions = '@permissionsStr';
+    const _updatePermission = '@PermissionNames.Pages_PmProperties_Update';
+    const _deletePermission = '@PermissionNames.Pages_PmProperties_Delete';
+
+    $('#btnSubmition').on('click', function () {
+
+        if (_revenuesArr.length === 0) {
+
+            toastr.warning(`@PmProperties.Account , @PmProperties.AdvancedAccount : @ERP.ResourcePack.Common.Settings.Required`);
+            return;
+        }
+
+        if (_revenuesArr.length > 0 && validateRevenuesPercentage() != 100) {
+
+            toastr.warning('@PmProperties.RevenuesPercentMustBe100');
+            return;
+        }
+
+        _unitsListStr.val(JSON.stringify(_unitsArr));
+
+        _mainForm.submit();
+
+        if (_mainForm.valid()) {
+
+           $(this).prop('disabled', true);
+
+        } else {
+
+           $(this).prop('disabled',false);
+        }
+
+    });
+
+    var OnBegin = function (response) {
+        fireBtnLoader();
+    };
+
+    var OnSuccess = function (response) {
+
+        if (response.success) {
+
+            if (response.customRestResult.trigger === '@ERP.Front.Helpers.Enums.Common.FormTriggers.Insert') {
+
+                toastr.success(response.customRestResult.message);
+
+                setTimeout(function () {
+                    window.location.href = $PrefixHostName + '/PmProperties';
+                }, 200);
+
+            } else if (response.customRestResult.trigger === '@ERP.Front.Helpers.Enums.Common.FormTriggers.Update') {
+
+                toastr.success(response.customRestResult.message);
+
+                setTimeout(function () {
+                    window.location.href = $PrefixHostName + '/PmProperties';
+                }, 200);
+            }
+
+        } else {
+            $('#btnSubmition').prop('disabled',false);
+            toastr.error(response.customRestResult.message);
+        }
+
+    };
+
+    var OnComplete = function (response) {
+        downBtnLoader();
+        $('#btnSubmition').prop('disabled',false);
+    };
+
+    var OnFailure = function (response) {
+        toastr.error(response);
+        downBtnLoader();
+        $('#btnSubmition').prop('disabled',false);
+    };
+
+    const LoadDataGrid = function () {
+
+        $('#tblLoader').show();
+
+        const parms = {
+            PropertyId: $('#searchBox #PropertyId').find(':selected').val(),
+            StatusLkpId: $('#searchBox #StatusLkpId').find(':selected').val(),
+            CityLkpId: $('#searchBox #CityLkpId').find(':selected').val(),
+            PmOwnerId: $('#searchBox #PmOwnerId').find(':selected').val()
+        };
+
+        const columns = [
+            {
+                "data": "result.data.id",
+                'render': function (data, type, row, meta) {
+                    return meta.row + meta.settings._iDisplayStart + 1;
+                }
+            },
+            {
+                "data": "PropertyNumber",
+                "name": "PropertyNumber",
+                "autoWidth": true
+            },
+            {
+                "data": "PropertyNameAr",
+                "name": "PropertyNameAr",
+                "autoWidth": true
+            },
+            {
+                "data": "PropertyNameEn",
+                "name": "PropertyNameEn",
+                "autoWidth": true
+            },
+            {
+                "data": null,
+                "autoWidth": true,
+                "render": function (d, t, row) {
+
+                    if (row.PmOwners == null) return '';
+
+                    if (lang === 'ar-EG') return row.PmOwners.OwnerNameAr;
+
+                    return row.PmOwners.OwnerNameEn;
+                }
+            },
+            {
+                "data": null,
+                "autoWidth": true,
+                "render": function (d, t, row) {
+
+                    if (row.FndStatusLkp == null) return '';
+
+                    if (lang === 'ar-EG') return row.FndStatusLkp.NameAr;
+
+                    return row.FndStatusLkp.NameEn;
+                }
+            },
+            {
+                "data": null,
+                "autoWidth": true,
+                "render": function (d, t, row) {
+
+                    if (row.FndCityLkp == null) return '';
+
+                    if (lang === 'ar-EG') return row.FndCityLkp.NameAr;
+
+                    return row.FndCityLkp.NameEn;
+                }
+            },
+            {
+                "data": "Region",
+                "name": "Region",
+                "autoWidth": true
+            },
+            {
+                "data": null,
+                "sortable": false,
+                "render": function (data, type, row) {
+
+                    let formAction = `${$PrefixHostName}/${_mainController}/@nameof(PmPropertiesController.PmPropertiesForm)`;
+                    let DeleteAction = `${$PrefixHostName}/${_mainController}/@nameof(PmPropertiesController.Delete)`;
+
+                    let btns = '';
+
+                    if (_permissions.includes(_updatePermission)) {
+                        btns += `<a href="${$PrefixHostName}/PmProperties/FormView?id=${row.EncId}&t=@encUpdateTrigger"  title="@ERP.ResourcePack.Common.Settings.Edit"><i class="mx-2 fas fa-edit text-info"></i></a>`;
+                    }
+
+                    btns += `<a href="${$PrefixHostName}/PmProperties/FormView?id=${row.EncId}&t=@encShowTrigger"  title="@ERP.ResourcePack.Common.Settings.Show"><i class="mx-2 fas fa-eye text-info"></i></a>`;
+
+                    if (_permissions.includes(_deletePermission)) {
+                        btns += `<a href="javascript:void(0)" onclick="AjaxController.DeleteMainTableRow(${row.Id},'${DeleteAction}');"  title="@ERP.ResourcePack.Common.Settings.Delete"><i class="mx-2 fas fa-trash-alt text-danger"></i></a>`;
+                    }
+
+                    const _auditedPermission = '@ERP.Authorization.PermissionNames.Pages_PmProperties_Audit';
+
+                    if (_permissions.includes(_auditedPermission)) {
+
+                        row.permission = _auditedPermission;
+
+                        btns += GetAuditedButton(row);
+                    }
+
+                    return btns;
+                }
+            }
+        ];
+
+        const dtObj = {
+            "processing": true,
+            "serverSide": true,
+            "filter": false,
+            "orderMulti": false,
+            "language": dataTableLang,
+            "ajax": {
+                "url": _loadDataUrl,
+                "type": "POST",
+                "datatype": "json",
+                "data": parms,
+                "complete": function () {
+                    _tblLoader.hide();
+                }
+            },
+            "columns": columns,
+            "initComplete": function () {
+                $('[data-toggle="tooltip"]').tooltip();
+            }
+
+        };
+
+        _tblSelector.dataTable().fnDestroy();
+        _tblSelector.DataTable(dtObj).on('draw', function () { $('[data-toggle="tooltip"]').tooltip(); });
+
+        setTimeout(function () {
+            $(".sorting_1").removeAttr('colspan');
+        }, 500);
+    };
+
+    $('#mainForm #BankAccountId').select2( ReturnSelect2ObjectCustomParams(`${baseUrl}/ApBankAccounts/GetUserAccessedApBankAccountsSelect2`, { bankLkpId:@Convert.ToInt64(ERP.Front.Helpers.Enums.Common.BankType.Bank)}) );
+
+    $('#PmOwnerId').select2(ReturnSelect2ObjectDefault(`${baseUrl}/PmOwners/GetPmOwnersSelect2`));
+
+    $('#searchBox #PropertyId').select2(ReturnSelect2ObjectDefault(`${baseUrl}/PmProperties/GetPmPropertiesSelect2`));
+
+    $('#searchBox  #StatusLkpId').select2(ReturnSelect2ObjectForLkpsTypes('@ERP.Front.Helpers.Enums.Common.FndLkpsTypes.PmPropertiesStatues.ToString()'));
+
+    $('#StatusLkpId').select2(ReturnSelect2ObjectForLkpsTypes('@ERP.Front.Helpers.Enums.Common.FndLkpsTypes.PmPropertiesStatues.ToString()'));
+
+    $('#CommissionTypeLkpId').select2(ReturnSelect2ObjectForLkpsTypes('@ERP.Front.Helpers.Enums.Common.FndLkpsTypes.PmPropertiesCommissionType.ToString()'));
+
+    $('#CountryLkpId').select2(ReturnSelect2ObjectForLkpsTypes('@ERP.Front.Helpers.Enums.Common.FndLkpsTypes.Country.ToString()'));
+
+    $('#PmPurposeLkpId').select2(ReturnSelect2ObjectForLkpsTypes('@ERP.Front.Helpers.Enums.Common.FndLkpsTypes.PmPropertiesPurpose.ToString()'));
+
+    $('#searchBox #CityLkpId').select2(ReturnSelect2ObjectForLkpsTypes('@ERP.Front.Helpers.Enums.Common.FndLkpsTypes.City.ToString()'));
+
+    $('#units #PmUnitTypeLkpId').select2(ReturnSelect2ObjectForLkpsTypes('@ERP.Front.Helpers.Enums.Common.FndLkpsTypes.PmPropertiesUnitsUnitType.ToString()'));
+    $('#units #PmUnitDescLkpId').select2(ReturnSelect2ObjectForLkpsTypes('@ERP.Front.Helpers.Enums.Common.FndLkpsTypes.PmUnitDescLkp.ToString()'));
+
+    $('#units #ViewLkpId').select2(ReturnSelect2ObjectForLkpsTypes('@ERP.Front.Helpers.Enums.Common.FndLkpsTypes.PmPropertiesUnitsView.ToString()'));
+
+    $('#units #FinishesLkpId').select2(ReturnSelect2ObjectForLkpsTypes('@ERP.Front.Helpers.Enums.Common.FndLkpsTypes.PmPropertiesUnitsFinishes.ToString()'));
+
+    $('#mainForm #CityLkpId').select2(ReturnSelect2ObjectForLkpsTypesWithParent('@ERP.Front.Helpers.Enums.Common.FndLkpsTypes.City.ToString()','CountryLkpId'));
+
+</script>
+
+<script id="units">
+
+    const _tblUnitsSelector = $('#tblUnits');
+    const _tblUnitsSelectorBody = $('#tblUnits tbody');
+    const _unitsListStr = $('#UnitsListStr');
+
+    let _unitsArr = [], tblUnitsCounterIndex = 0,updatedUnitRow;
+
+    const fillUnitObject = function () {
+
+        if (validateUnits() === false) return;
+
+        const current = {
+            index: ++tblUnitsCounterIndex,
+            pmUnitTypeLkpId:$('#PmUnitTypeLkpId').find(':selected').val(),
+            pmUnitTypeLkp:$('#PmUnitTypeLkpId').find(':selected').text(),
+            unitNo:$('#UnitNo').val(),
+            floorLevel:$('#FloorLevel').val(),
+            electricityNumber:$('#ElectricityNumber').val(),
+            sewerageNumber:$('#SewerageNumber').val(),
+            areaSize:$('#AreaSize').val(),
+            yearlyRent:$('#YearlyRent').val(),
+            viewLkpId:$('#ViewLkpId').find(':selected').val(),
+            viewLkp: $('#ViewLkpId').find(':selected').text(),
+            finishesLkpId:$('#FinishesLkpId').find(':selected').val(),
+            finishesLkp: $('#FinishesLkpId').find(':selected').text(),
+            pmUnitDescLkpId: $('#PmUnitDescLkpId').find(':selected').val(),
+            pmUnitDescLkpNameAr: $('#PmUnitDescLkpId').find(':selected').text(),
+            pmUnitDescLkpNameEn: $('#PmUnitDescLkpId').find(':selected').text(),
+            PropertyId:0,
+            rowStatus: NewStatus
+        };
+
+        return current;
+    };
+
+    const AddUnits = function () {
+
+        const current = fillUnitObject();
+
+        if (current === undefined) return;
+
+        _unitsArr.push(current);
+
+        _unitsListStr.val(JSON.stringify(_unitsArr));
+
+        clearFormUnits();
+
+        bindUnitsTable();
+    };
+
+    const bindUnitsTable = function () {
+
+        let rows = '';
+
+        const detailArr = _unitsArr.filter(z => z.rowStatus !== DeletedStatus);
+
+        $.each(detailArr, function (i, item) {
+
+            rows += '<tr>';
+
+            rows += `<td>${item.index}</td>`;
+            rows += `<td>${item.pmUnitTypeLkp}</td>`;
+            rows += `<td>${item.pmUnitDescLkpId ? (lang === 'ar-EG' ? item.pmUnitDescLkpNameAr : item.pmUnitDescLkpNameEn) :'' }</td>`;
+            rows += `<td>${!item.unitNo ? '' : item.unitNo}</td>`;
+            rows += `<td>${!item.floorLevel ? '' : item.floorLevel}</td>`;
+            rows += `<td>${primaryEntityKeyId ? (item.fndStatusLkp ? item.fndStatusLkp : '@PmProperties.PmPropertiesUnitsStatuesVacant' ) : '@PmProperties.PmPropertiesUnitsStatuesVacant'}</td>`;
+            rows += `<td>${!item.areaSize ? '' : item.areaSize}</td>`;
+            rows += `<td>${item.yearlyRent}</td>`;
+            rows += `<td>${!item.viewLkp ? '' : item.viewLkp}</td>`;
+            rows += `<td>${item.finishesLkp}</td>`;
+            rows += `<td>${item.electricityNumber}</td>`;
+            rows += `<td>${item.sewerageNumber}</td>`;
+
+            rows += `<td><a href="javascript:void(0)" onclick="return GetUnitsAttachmentsModal(${item.index})"><i class="mx-2 fas ${trigger === '@ERP.Front.Helpers.Enums.Common.FormTriggers.Show.ToString()' ? 'fa-eye' : 'fa-plus-circle' }  text-success"></i></a>`
+
+            if (primaryEntityKeyId === 0 || trigger !== '@ERP.Front.Helpers.Enums.Common.FormTriggers.Show.ToString()') {
+                rows += `<a href="javascript:void(0)" onclick="return DeleteUnitRow(${item.index})"><i class="mx-2 fas fa-trash-alt text-danger"></i></a>`;
+                rows += `<a href="javascript:void(0)" onclick="return GetUnitRowDetail(${item.index})"><i class="mx-2 fas fa-edit text-success"></i></a>`;
+            }
+
+            rows += '</td>';
+
+            rows += '</tr>';
+        });
+
+        setTimeout(function () {
+            _tblUnitsSelectorBody.html(rows);
+        }, 100);
+
+    };
+
+    const DeleteUnitRow = function (index) {
+
+        const current = _unitsArr.find(z => z.index === index);
+
+        const indexOfCurrent = _unitsArr.indexOf(current);
+
+        if (!current.id) {
+
+           _unitsArr.splice(indexOfCurrent, 1);
+
+        } else {
+
+            current.rowStatus = DeletedStatus;
+
+           _unitsArr.splice(indexOfCurrent, 1,current);
+        }
+
+        bindUnitsTable();
+
+        _unitsListStr.val(_unitsArr.length === 0 ? '' : JSON.stringify(_unitsArr));
+    };
+
+    const LoadUnitsData = function () {
+
+        $('#tblLoaderDetail').show();
+
+        $.ajax({
+            url: `${baseUrl}/PmProperties/GetAllPmPropertiesUnits`,
+            method: 'GET',
+            headers: {
+                        'Authorization': `Bearer ${$_token}`
+            },
+            data: {
+                id: primaryEntityKeyId
+            }
+        }).done(function (data) {
+
+            _unitsArr = [...data.result];
+
+            $.each(_unitsArr, function (i, item) {
+                item.index = ++tblUnitsCounterIndex;
+            });
+
+            bindUnitsTable();
+
+            _unitsListStr.val(JSON.stringify(_unitsArr));
+
+        });
+
+    };
+
+    const GetUnitRowDetail = function (tblIndex) {
+
+        clearFormUnits();
+
+        const current = _unitsArr.find(z => z.index === tblIndex);
+
+        $('#btnAddUnitRow').hide();
+        $('#btnUpdateUnitRow').show();
+        $('#btnCancelUnitRow').show();
+
+        $('#units #SewerageNumber').val(current.sewerageNumber);
+        $('#units #ElectricityNumber').val(current.electricityNumber);
+        $('#units #YearlyRent').val(current.yearlyRent);
+        $('#units #AreaSize').val(current.areaSize);
+        $('#units #FloorLevel').val(current.floorLevel);
+        $('#units #UnitNo').val(current.unitNo);
+
+        $(`#units #PmUnitTypeLkpId`)
+        .append($("<option selected='selected'></option>")
+        .val(current.pmUnitTypeLkpId)
+        .text(current.pmUnitTypeLkp))
+            .trigger('change');
+
+        $(`#units #PmUnitDescLkpId`)
+            .append($("<option selected='selected'></option>")
+                .val(current.pmUnitDescLkpId)
+                .text((lang === 'ar-EG' ? current.pmUnitTypeLkpNameAr : current.pmUnitTypeLkpNameEn)))
+            .trigger('change');
+
+        $(`#units #ViewLkpId`)
+        .append($("<option selected='selected'></option>")
+        .val(current.viewLkpId)
+        .text(current.viewLkp))
+            .trigger('change');
+
+        $(`#units #FinishesLkpId`)
+        .append($("<option selected='selected'></option>")
+        .val(current.finishesLkpId)
+        .text(current.finishesLkp))
+        .trigger('change');
+
+
+        $('#units #SewerageNumber').parent('.form-line').addClass('focused');
+        $('#units #ElectricityNumber').parent('.form-line').addClass('focused');
+        $('#units #YearlyRent').parent('.form-line').addClass('focused');
+        $('#units #AreaSize').parent('.form-line').addClass('focused');
+        $('#units #FloorLevel').parent('.form-line').addClass('focused');
+        $('#units #UnitNo').parent('.form-line').addClass('focused');
+
+        updatedUnitRow = current;
+
+    };
+
+    const UpdateUnitsRow = function () {
+
+        let current = _unitsArr.find(z => z.index === updatedUnitRow.index);
+
+        let indexOfCurrent = _unitsArr.indexOf(current);
+
+        const newRow = fillUnitObject();
+
+        if (newRow === undefined) return;
+
+        newRow.id = updatedUnitRow.id;
+        newRow.rowStatus = !updatedUnitRow.id ? NewStatus : UpdatedStatus;
+
+        _unitsArr.splice(indexOfCurrent, 1,newRow);
+
+        $('#btnAddUnitRow').show();
+        $('#btnUpdateUnitRow').hide();
+        $('#btnCancelUnitRow').hide();
+
+        clearFormUnits();
+
+        _unitsListStr.val(JSON.stringify(_unitsArr));
+
+        bindUnitsTable();
+    };
+
+    const clearFormUnits = function () {
+
+        $('#units .card select').val('').trigger('change');
+        $('#units .card input').val('');
+        $('#units .card textarea').val('');
+
+    };
+
+    const validateUnits = function () {
+
+        if (!$('#units #YearlyRent').val()) {
+            toastr.warning('@PmProperties.YearlyRent' + ' : ' + '@ERP.ResourcePack.Common.Settings.Required')
+            return false;
+        }
+
+         if (!$('#units #UnitNo').val()) {
+            toastr.warning('@PmProperties.UnitNo' + ' : ' + '@ERP.ResourcePack.Common.Settings.Required')
+            return false;
+        }
+
+        if (!$('#units #PmUnitTypeLkpId').find(':selected').val()) {
+            toastr.warning('@PmProperties.PmUnitTypeLkpId' + ' : ' + '@ERP.ResourcePack.Common.Settings.Required')
+            return false;
+        }
+
+
+        return true;
+    };
+
+</script>
+
+<script id="revenues">
+
+    const _tblRevenuesSelector = $('#tblRevenues');
+    const _tblRevenuesSelectorBody = $('#tblRevenues tbody');
+    const _revenuesListStr = $('#RevenuesListStr');
+
+    let _revenuesArr = [], tblRevenuesCounterIndex = 0 , updatedRevenuesRow;
+
+    const fillRevenuesObject = function () {
+
+        if (validateRevenues() === false)  return;
+
+        const resultCodeComUtility = GetCodeComUtilites(__arrGlSelect2, 'AccId');
+        const resultCodeComUtilityTax = GetCodeComUtilites(advance__arrGlSelect2, 'advanceAccId');
+
+        if (resultCodeComUtility === null) {
+            toastr.warning('@PmProperties.Account' + ' : '  + '@ERP.ResourcePack.Common.Settings.Required');
+            return;
+        }
+
+        if (resultCodeComUtilityTax === null) {
+            toastr.warning('@PmProperties.AdvancedAccount' + ' : '  + '@ERP.ResourcePack.Common.Settings.Required');
+            return;
+        }
+
+        const current = {
+            index: ++tblRevenuesCounterIndex,
+            codeComUtilityIds: resultCodeComUtility.idsStr,
+            codeComUtilityTexts: resultCodeComUtility.textsStr,
+            codeComUtilityIds_alt1: resultCodeComUtilityTax.idsStr,
+            codeComUtilityTexts_alt1: resultCodeComUtilityTax.textsStr,
+            percentage: $('#revenues #Percentage').val(),
+            rowStatus: NewStatus
+        };
+
+        return current;
+    };
+
+    const AddRevenues = function () {
+
+        const current = fillRevenuesObject();
+
+        if (current === undefined) return;
+
+        _revenuesArr.push(current);
+
+        _revenuesListStr.val(JSON.stringify(_revenuesArr));
+
+        bindRevenuesTable();
+
+        clearFormRevenues();
+    };
+
+    const UpdateRevenuesRow = function () {
+
+        let current = _revenuesArr.find(z => z.index === updatedRevenuesRow.index);
+
+        let indexOfCurrent = _revenuesArr.indexOf(current);
+
+        const newRow = fillRevenuesObject();
+
+        if (newRow === undefined) return;
+
+        newRow.id = updatedRevenuesRow.id;
+        newRow.rowStatus =  !updatedRevenuesRow.id ? NewStatus : UpdatedStatus;
+
+        _revenuesArr.splice(indexOfCurrent, 1,newRow);
+
+        $('#btnAddRevenuesRow').show();
+        $('#btnUpdateRevenuesRow').hide();
+        $('#btnCancelRevenuesRow').hide();
+
+        clearFormRevenues();
+
+        _revenuesListStr.val(JSON.stringify(_revenuesArr));
+
+        bindRevenuesTable();
+    };
+
+    const bindRevenuesTable = function () {
+
+        let rows = '';
+
+        const detailArr = _revenuesArr.filter(z => z.rowStatus !== DeletedStatus);
+
+        $.each(detailArr, function (i, item) {
+
+            rows += '<tr>';
+            rows += `<td>${item.index}</td>`;
+
+            rows += '<td> <ul class="list-group">';
+            rows += '<li class="list-group-item text-center text-info">';
+            rows +=`<strong style="font-weight:800;color:#343434">@PmProperties.Account</strong> :: ${item.codeComUtilityTexts}`
+            rows += '</li>';
+
+            rows += '<li class="list-group-item text-center text-info">';
+            rows +=`<strong style="font-weight:800;color:#343434">@PmProperties.AdvancedAccount</strong> :: ${item.codeComUtilityTexts_alt1}`
+             rows += '</li>';
+            rows += '</td> </ul>';
+
+            rows += `<td>${item.percentage} <small> %</small></td>`;
+
+            if (primaryEntityKeyId === 0 || trigger !== '@ERP.Front.Helpers.Enums.Common.FormTriggers.Show.ToString()') {
+                rows += `<td><a href="javascript:void(0)" onclick="return DeleteRevenuesRow(${item.index})"><i class="mx-2 fas fa-trash-alt text-danger"></i></a>`;
+                rows += `<a href="javascript:void(0)" onclick="return GetRevenuesRow(${item.index})"><i class="mx-2 fas fa-edit text-success"></i></a></td>`;
+            } else {
+                rows += '<td></td>';
+            }
+
+            rows += '</tr>';
+        });
+
+        setTimeout(function () {
+            _tblRevenuesSelectorBody.html(rows);
+        }, 100);
+    };
+
+    const DeleteRevenuesRow = function (index) {
+
+        const current = _revenuesArr.find(z => z.index === index);
+
+        const indexOfCurrent = _revenuesArr.indexOf(current);
+
+        if (!current.id) {
+
+           _revenuesArr.splice(indexOfCurrent, 1);
+
+        } else {
+
+            current.rowStatus = DeletedStatus;
+
+           _revenuesArr.splice(indexOfCurrent, 1,current);
+        }
+
+        bindRevenuesTable();
+
+        _revenuesListStr.val(_revenuesArr.length === 0 ? '' : JSON.stringify(_revenuesArr));
+    };
+
+    const LoadRevenuesData = function () {
+
+        $('#tblLoaderLine').show();
+
+        $.ajax({
+            url: `${baseUrl}/PmProperties/GetAllRevenues`,
+            method: 'GET',
+            headers: {
+                        'Authorization': `Bearer ${$_token}`
+            },
+            data: {
+                id: primaryEntityKeyId
+            }
+        }).done(function (data) {
+
+            _revenuesArr = [...data.result];
+
+            $.each(_revenuesArr, function (i, item) {
+                item.index = ++tblRevenuesCounterIndex;
+            });
+
+            bindRevenuesTable();
+
+            _revenuesListStr.val(JSON.stringify(_revenuesArr));
+
+            $('#tblLoaderLine').hide();
+        });
+
+    };
+
+    const GetRevenuesRow = function (tblIndex) {
+
+        clearFormRevenues();
+
+        $('#btnAddRevenuesRow').hide();
+        $('#btnUpdateRevenuesRow').show();
+        $('#btnCancelRevenuesRow').show();
+
+        const current = _revenuesArr.find(z => z.index === tblIndex);
+
+        BindCodeComUtilitesDropDowns(__arrGlSelect2, 'AccId', current.codeComUtilityIds, current.codeComUtilityTexts);
+        BindCodeComUtilitesDropDowns(advance__arrGlSelect2, 'advanceAccId', current.codeComUtilityIds_alt1, current.codeComUtilityTexts_alt1);
+
+        $('#revenues #Percentage').val(current.percentage);
+        $('#revenues #Percentage').parent('.form-line').addClass('focused');
+
+        updatedRevenuesRow = current;
+    };
+
+    const clearFormRevenues = function () {
+
+        $('#revenues select:not(.slct2gl)').val('').trigger('change');
+        $('#revenues .card input').val('');
+        $('#revenues .card textarea').val('');
+    };
+
+    const validateRevenues = function () {
+
+        if ($('#revenues #Percentage').val() === '') {
+            toastr.warning('@PmProperties.Percentage' + ' : ' + '@ERP.ResourcePack.Common.Settings.Required')
+            return false;
+        }
+
+        if ($('#revenues #Percentage').val() > 100) {
+            toastr.warning('@PmProperties.PercMustBeLessOrEqual100')
+            return false;
+        }
+
+        if ($('#revenues #Percentage').val() < 0) {
+            toastr.warning('@PmProperties.PercMustBeGreaterThan0')
+            return false;
+        }
+
+        return true;
+    };
+
+    const validateRevenuesPercentage = function () {
+
+        let sum = 0;
+
+        _revenuesArr.map(z => sum += parseFloat(z.percentage));
+
+        return sum;
+    };
+
+    $('#Percentage').on('keyup', function () {
+
+        if ($(this).val() > 100) {
+
+            toastr.warning('@PmProperties.PercMustBeLessOrEqual100');
+            $(this).val('');
+        }
+        else if ($(this).val() < 0) {
+
+            toastr.warning('@PmProperties.PercMustBeGreaterThan0')
+            $(this).val('');
+        }
+
+    });
+
+</script>
+
+<script id="units-attachments">
+
+    let _unitsAttachments = [], updatedUnitAttachmentRow, tblUnitAttachmentCounterIndex = 0, currentUnit;
+
+    const GetUnitsAttachmentsModal = function (unitIndex) {
+
+        $('#modal-attachment .modal-title').text(`@PmProperties.UnitsAttachments`);
+        $('#modal-attachment').modal(_mainModalOprions);
+
+        currentUnit = _unitsArr.find(item => item.index == unitIndex);
+
+        if (primaryEntityKeyId && !currentUnit.dtlbinded) {
+            LoadUnitAttachments(currentUnit.id);
+        } else {
+            BindUnitAttachmentTable();
+        }
+
+        if (trigger === '@ERP.Front.Helpers.Enums.Common.FormTriggers.Show.ToString()') {
+            $('#modal-attachment #formAttachmets').remove();
+        }
+
+    };
+
+    const AddUnitAttachmentRow = function (filePathSelector) {
+
+        if (validateUnitAttachments(filePathSelector) === false) return;
+
+        const current = {
+            index: ++tblUnitAttachmentCounterIndex,
+            filePath: $(`#${filePathSelector}`).val(),
+            rowStatus: NewStatus,
+            parent: currentUnit.index,
+            id: 0
+        };
+
+        _unitsAttachments.push(current);
+
+        currentUnit.pmUnitsAttachments = GetCurrentUnitAttachments();
+
+        BindUnitAttachmentTable();
+
+        clearUnitFormAttachment();
+
+        $('.page-loader-wrapper').hide();
+    };
+
+    const BindUnitAttachmentTable = function () {
+
+        const detailArr = _unitsAttachments.filter(item => item.rowStatus !== DeletedStatus && item.parent === currentUnit.index);
+
+        const columns = [
+            { 'data': 'index' },
+            {
+                'data': null,
+                'render': function (d, t, row) {
+                    return `<a target="_blank" href="${row.filePath}" download><i class="fas fa-download"></i></a>`;
+                }
+            },
+            {
+                'data': null,
+                'render': function (d, t, row) {
+                    return `<a class="attach-gal2" href="${row.filePath}"><img src="${row.filePath}" class="attach-img img-thumbnail" width="80px" height="80px" /></a>`;
+                }
+            },
+            {
+                'data': null,
+                'searchable': false,
+                'ordering': false,
+                'sorting': false,
+                'render': function (d, t, row) {
+
+                    let rows = '';
+
+                    if (primaryEntityKeyId === 0 || trigger !== '@ERP.Front.Helpers.Enums.Common.FormTriggers.Show.ToString()') {
+                        rows += `<td><a href="javascript:void(0)" onclick="return DeleteUnitAttachment(${row.index})"><i class="mx-2 fas fa-trash-alt text-danger"></i></a>`;
+                        rows += `<a href="javascript:void(0)" onclick="return GetUnitAttachmentRow(${row.index})"><i class="mx-2 fas fa-edit text-success"></i></a></td>`;
+                    } else {
+                        rows += '<td></td>';
+                    }
+
+                    return rows;
+                }
+            }
+        ];
+
+        const dtObj = {
+            data: detailArr,
+            retrieve: true,
+            language: dataTableLang,
+            columns: columns,
+            drawCallback: function (c, v, b) { }
+        };
+
+        setTimeout(function () {
+
+            $('#tblModalAttachments').dataTable().fnDestroy();
+            $('#tblModalAttachments').DataTable(dtObj).on('draw', function () { $('[data-toggle="tooltip"]').tooltip(); });
+            //Image View
+            $('.attach-gal2').magnificPopup({
+                type: 'image',
+                gallery: {
+                    enabled: true
+                }
+            });
+            //=========
+        }, 100);
+
+    };
+
+    const DeleteUnitAttachment = function (index) {
+
+        const current = _unitsAttachments.find(z => z.index === index);
+
+        const indexOfCurrent = _unitsAttachments.indexOf(current);
+
+        if (!current.id) {
+
+            _unitsAttachments.splice(indexOfCurrent, 1);
+
+        } else {
+
+            current.rowStatus = DeletedStatus;
+
+            _unitsAttachments.splice(indexOfCurrent, 1, current);
+        }
+
+        BindUnitAttachmentTable();
+
+        currentUnit.pmUnitsAttachments = GetCurrentUnitAttachments();
+    };
+
+    const LoadUnitAttachments = function (id) {
+
+        $.ajax({
+            url: `${baseUrl}/${_apiAppService}/GetAllPmPropertiesAttachmentsUnits`,
+            method: 'GET',
+            headers: {  'Authorization': `Bearer ${$_token}`   },
+            data: { id: id   }
+        }).done(function (data) {
+
+            _unitsAttachments = _unitsAttachments.concat([...data.result]);
+
+            tblUnitAttachmentCounterIndex = 0;
+
+            $.each(_unitsAttachments, function (i, item) {
+
+                 item.index = ++tblUnitAttachmentCounterIndex;
+
+                if (item.pmPropertiesUnitstId == currentUnit.id) item.parent = currentUnit.index;
+             });
+
+            BindUnitAttachmentTable();
+
+            currentUnit.pmUnitsAttachments = GetCurrentUnitAttachments();
+
+            currentUnit.dtlbinded = true;
+        });
+
+    };
+
+    const validateUnitAttachments = function (filePathSelector) {
+
+        if (!$(`#${filePathSelector}`).val()) {
+
+            toastr.warning('@ERP.ResourcePack.AidModule.ScPortalRequestStudy.PleaseUploadAttachment' + ' : ' + '@ERP.ResourcePack.Common.Settings.Required')
+
+            return false;
+        }
+    };
+
+    const clearUnitFormAttachment = function () {
+        $('#modal-attachment img').attr('src','../AssetsPack/assets/images/img-previewer.png');
+        $('.file-path').val('');
+    };
+
+    const GetUnitAttachmentRow = function (tblIndex) {
+
+        clearUnitFormAttachment();
+
+        const current = _unitsAttachments.find(z => z.index === tblIndex);
+
+        updatedUnitAttachmentRow = current;
+
+        $('#btnAddAttachmentModalRow').hide();
+        $('#btnUpdateAttachmentModalRow').show();
+        $('#btnCancelAttachmentModalRow').show();
+    };
+
+    const UpdateUnitAttachmentRow = function (filePathSelector) {
+
+        let current = _unitsAttachments.find(z => z.index === updatedUnitAttachmentRow.index);
+
+        let indexOfCurrent = _unitsAttachments.indexOf(current);
+
+        if (validateUnitAttachments() === false) return;
+
+        const newRow = fillDtlDetail();
+
+        if (newRow === undefined) return;
+
+        newRow.index = current.index;
+        newRow.id = updatedUnitAttachmentRow.id;
+        newRow.rowStatus = !updatedUnitAttachmentRow.id ? NewStatus : UpdatedStatus;
+
+        _unitsAttachments.splice(indexOfCurrent, 1, newRow);
+
+        clearUnitFormAttachment();
+
+        currentUnit.pmUnitsAttachments = GetCurrentUnitAttachments();
+
+        updatedUnitAttachmentRow = undefined;
+
+        setTimeout(function () {
+            BindUnitAttachmentTable();
+        }, 100);
+
+        $('#btnAddAttachmentModalRow').show();
+        $('#btnUpdateAttachmentModalRow').hide();
+        $('#btnCancelAttachmentModalRow').hide();
+    };
+
+    const GetCurrentUnitAttachments = function () {
+
+        const fliterdDtlArr = _unitsAttachments.filter(item => item.parent === currentUnit.index);
+
+        _unitsArr.splice(_unitsArr.indexOf(currentUnit), 1, currentUnit);
+
+        bindUnitsTable();
+
+        _unitsListStr.val(JSON.stringify(_unitsArr));
+
+        return !_unitsAttachments || _unitsAttachments.length === 0 || !currentUnit ? [] : [...fliterdDtlArr];
+    };
+
+    function printExc() {
+        $('.page-loader-wrapper').show();
+        const parmss = {
+            PropertyId: $('#searchBox #PropertyId').find(':selected').val(),
+            StatusLkpId: $('#searchBox #StatusLkpId').find(':selected').val(),
+            CityLkpId: $('#searchBox #CityLkpId').find(':selected').val(),
+            PmOwnerId: $('#searchBox #PmOwnerId').find(':selected').val(),
+            length: 1000000
+        };
+
+        const columns = [
+            {
+                "data": "result.data.id",
+                'render': function (data, type, row, meta) {
+                    return meta.row + meta.settings._iDisplayStart + 1;
+                }
+            },
+            {
+                "data": "PropertyNumber",
+                "name": "PropertyNumber",
+                "autoWidth": true
+            },
+            {
+                "data": "PropertyNameAr",
+                "name": "PropertyNameAr",
+                "autoWidth": true
+            },
+            {
+                "data": "PropertyNameEn",
+                "name": "PropertyNameEn",
+                "autoWidth": true
+            },
+            {
+                "data": null,
+                "autoWidth": true,
+                "render": function (d, t, row) {
+
+                    if (row.PmOwners == null) return '';
+
+                    if (lang === 'ar-EG') return row.PmOwners.OwnerNameAr;
+
+                    return row.PmOwners.OwnerNameEn;
+                }
+            },
+            {
+                "data": null,
+                "autoWidth": true,
+                "render": function (d, t, row) {
+
+                    if (row.FndStatusLkp == null) return '';
+
+                    if (lang === 'ar-EG') return row.FndStatusLkp.NameAr;
+
+                    return row.FndStatusLkp.NameEn;
+                }
+            },
+            {
+                "data": null,
+                "autoWidth": true,
+                "render": function (d, t, row) {
+
+                    if (row.FndCityLkp == null) return '';
+
+                    if (lang === 'ar-EG') return row.FndCityLkp.NameAr;
+
+                    return row.FndCityLkp.NameEn;
+                }
+            },
+            {
+                "data": "Region",
+                "name": "Region",
+                "autoWidth": true
+            },
+        ];
+
+        const dtObj = {
+            "language": dataTableLang,
+            "dom": 'Bfrtip',
+            "buttons": [
+                {
+                    extend: 'excel',
+                    messageTop: `${$('[for="PropertyId"]').text()}: ${(parmss.PropertyId) ? parmss.PropertyId : '--'}, ${$('[for="StatusLkpId"]').text()}: ${(parmss.StatusLkpId) ? parmss.StatusLkpId : '--'}, ${$('[for="CityLkpId"]').text()}: ${(parmss.CityLkpId) ? parmss.CityLkpId : '--'}, ${$('[for="PmOwnerId"]').text()}: ${(parmss.PmOwnerId) ? parmss.PmOwnerId : '--'}`
+                },
+
+            ],
+            "ajax": {
+                "url": _loadDataUrl,
+                "type": "POST",
+                "datatype": "json",
+                "data": parmss,
+                "complete": function (d) {
+                    _tblLoader.hide();
+                }
+            },
+            "columns": columns,
+
+            "initComplete": function () {
+                $('#tblPmPropertiesPrint_wrapper button.dt-button').click();
+            }
+        };
+
+        $('#tblPmPropertiesPrint').dataTable().fnDestroy();
+        $('#tblPmPropertiesPrint').DataTable(dtObj).on('buttons-processing', function (e, indicator) { if (!indicator) { $('.page-loader-wrapper').hide() } });
+
+
+    }
+
+</script>

@@ -1,0 +1,12 @@
+﻿@{
+    ViewBag.Title = ERP.ResourcePack.AccountsExtend.ApPrepaid.Title;
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@Html.Action(nameof(ERP.Web.UI.Controllers.AccountsExtend.ApPrepaidController.ApPrepaidSearch))
+@Html.Action(nameof(ERP.Web.UI.Controllers.AccountsExtend.ApPrepaidController.ApPrepaidData))
+
+@section scripts{
+    <script> let formView = false;</script>
+    @Html.Partial("~/ViewsScripts/_Accounts/ApPrepaid/ApPrepaidScripts.cshtml")
+}

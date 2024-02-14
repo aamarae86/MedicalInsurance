@@ -1,0 +1,47 @@
+﻿@using ERP.Web.UI.Models.ViewModels.PmPropertiesModule
+@model PmContractPaymentsVM
+@{
+    string formTrigger = ViewBag.trigger;
+}
+
+<div class="card" style="display:@(formTrigger ==ERP.Front.Helpers.Enums.Common.FormTriggers.Show.ToString() ? "none":"block" ) ">
+    <div class="body">
+        <div class="row clearfix">
+            <div class="col-sm-6">
+                @Html.LabelFor(z => z.OtherPaymentTypesId, new { @class = "form-label" })
+                <div class="form-group form-float">
+                    <div class="form-group">
+                        @Html.DropDownListFor(z => z.OtherPaymentTypesId, Enumerable.Empty<SelectListItem>(), new { @class = "form-control" })
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="form-group form-float">
+                    <div class="form-line">
+                        @Html.TextBoxFor(z => z.PayAmount, new { @class = "form-control currency" })
+                        @Html.LabelFor(z => z.PayAmount, new { @class = "form-label" })
+                    </div>
+                </div>
+            </div>
+        </div>
+        @*<div class="row clearfix">
+            <div class="col-md-12">
+                <div class="form-group form-float">
+                    <div class="form-line">
+                        @Html.TextAreaFor(z => z.Notes, new { @class = "form-control" })
+                        @Html.LabelFor(z => z.Notes, new { @class = "form-label" })
+                    </div>
+                </div>
+            </div>
+        </div>*@
+        <div class="row clearfix">
+            <div class="col-sm-12 text-center">
+                <div class="form-group">
+                    <button id="btnAddOtherPaymentsRow" onclick="return AddOtherPayments()" class="btn btn-success">@ERP.ResourcePack.Common.Settings.BtnAddNew</button>
+                    <button style="display:none;" id="btnUpdateOtherPaymentsRow" onclick="return UpdateOtherPaymentsRow()" class="btn btn-info">@ERP.ResourcePack.Common.Settings.BtnUpdate</button>
+                    <button style="display:none;" id="btnCancelOtherPaymentsRow" onclick="clearFormAdding(); $('#btnCancelOtherPaymentsRow').hide();$('#btnUpdateOtherPaymentsRow').hide();$('#btnAddOtherPaymentsRow').show();" class="btn btn-danger">@ERP.ResourcePack.Common.Settings.BtnCancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

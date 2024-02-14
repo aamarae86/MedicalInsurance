@@ -1,0 +1,200 @@
+﻿<script>
+
+    $(function () {
+        $('.gl-controller').removeClass('col-md-3').addClass('col-md-12');
+        $('#GlAccSelection').addClass('active');
+    });
+
+    let proccessed = false;
+
+    const drawCheckBoxes = function () {
+
+        const virtualRelativeHeight = $('select').parent('.form-line').css('height');
+
+        let markup = '';
+
+        for (let i = 0; i < __arrGlSelect2.length + 1; i++) {
+
+            markup += `<div class="form-group form-float">
+                        <div class="form-line" style="height:${virtualRelativeHeight};padding:1rem;margin-bottom:20px">
+                            <p>
+                                <label>
+                                    <input type="checkbox" name="check-attrs" id="check_${__arrGlSelect2[i]}" checked />
+                                    <span>@ERP.ResourcePack.Accounts.ReportsAccounts.Yes</span>
+                                </label>
+                            </p>
+                        </div>
+                     </div>`;
+        }
+
+        $('#check-boxes-container').html(markup);
+    };
+
+    const fillLevels = function () {
+
+        for (let counter = 1; counter <= 15; counter++)  $('#Levels').append(new Option(counter, counter));
+
+        $('#Levels').select2();
+    };
+
+    const getCheckBoxesValues = function () {
+
+        let arr = [];
+        let lenAttrs = __arrGlSelect2.length + 1;
+
+        for (let i = 0; i < 10; i++) {
+
+            if (i >= lenAttrs) {
+
+                arr.push(null);
+
+            } else {
+
+                let vl = $('input[name="check-attrs"]')[i].checked ? 'Y' : 'N';
+
+                arr.push(vl);
+            }
+        }
+
+        return arr;
+    };
+
+    const ProcessData = function () {
+
+        if (!$('#FromPeriod').find(':selected').val()) {
+            toastr.warning(`@ERP.ResourcePack.Accounts.ReportsAccounts.FromPeriod : @ERP.ResourcePack.Common.Settings.Required`);
+            return;
+        }
+
+        if (!$('#ToPeriod').find(':selected').val()) {
+            toastr.warning(`@ERP.ResourcePack.Accounts.ReportsAccounts.ToPeriod : @ERP.ResourcePack.Common.Settings.Required`);
+            return;
+        }
+
+        if (!$(`#${__arrGlSelect2[0]}`).find(':selected').val()) {
+            toastr.warning(`${$(`#${__arrGlSelect2[0]}`).parent().parent().parent().find('label').text()} 1 : @ERP.ResourcePack.Common.Settings.Required`);
+            return;
+        }
+
+        if (!$(`#${alt__arrGlSelect2[0]}`).find(':selected').val()) {
+            toastr.warning(`${$(`#${__arrGlSelect2[0]}`).parent().parent().parent().find('label').text()} 2 : @ERP.ResourcePack.Common.Settings.Required`);
+            return;
+        }
+
+        $('.page-loader-wrapper').css('display', 'block');
+
+        const _fromCodeCom = GetCodeComUtilitesForReports(__arrGlSelect2, 'AccId');
+        const _toCodeCom = GetCodeComUtilitesForReports(alt__arrGlSelect2, 'altAccId');
+
+        const FromCodeCom = {
+            Attribute1: _fromCodeCom.attr1,
+            Attribute2: _fromCodeCom.attr2,
+            Attribute3: _fromCodeCom.attr3,
+            Attribute4: _fromCodeCom.attr4,
+            Attribute5: _fromCodeCom.attr5,
+            Attribute6: _fromCodeCom.attr6,
+            Attribute7: _fromCodeCom.attr7,
+            Attribute8: _fromCodeCom.attr8,
+            Attribute9: _fromCodeCom.attr9,
+            AccId: _fromCodeCom.accId
+        };
+
+        const ToCodeCom = {
+            Attribute1: _toCodeCom.attr1,
+            Attribute2: _toCodeCom.attr2,
+            Attribute3: _toCodeCom.attr3,
+            Attribute4: _toCodeCom.attr4,
+            Attribute5: _toCodeCom.attr5,
+            Attribute6: _toCodeCom.attr6,
+            Attribute7: _toCodeCom.attr7,
+            Attribute8: _toCodeCom.attr8,
+            Attribute9: _toCodeCom.attr9,
+            AccId: _toCodeCom.accId
+        };
+
+        const dataObj = {
+            fromCodeCom: FromCodeCom,
+            toCodeCom: ToCodeCom,
+            yesNoAttrs: getCheckBoxesValues(),
+            pERIOD_ID_From:$('#FromPeriod').find(':selected').val(),
+            pERIOD_ID_To: $('#ToPeriod').find(':selected').val(),
+            lang:lang
+        };
+
+        $('.page-loader-wrapper').css('display', 'block');
+
+        $.ajax({
+            url: `${baseUrl}/ReportsAccounts/GlAccountSelection`,
+            type: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${$_token}`
+            },
+            data: JSON.stringify(dataObj)
+        }).done(function (data) {
+
+            proccessed = true;
+
+            toastr.success('@ERP.ResourcePack.Accounts.ReportsAccounts.DataProccessedSuccessfully');
+
+            $('.page-loader-wrapper').css('display', 'none');
+
+        }).fail(function (response, x, r) {
+
+            toastr.error(response.responseText);
+
+            $('.page-loader-wrapper').css('display', 'none');
+        });
+
+    };
+
+    const GetBalanceReport = function (keyType) {
+
+        if (proccessed) {
+
+            $('.page-loader-wrapper').css('display', 'block');
+
+            $.ajax({
+                url: `${$PrefixHostName}/ReportsAccounts/PrintAccountBalance`,
+                method: 'GET',
+                headers: { 'Authorization': `Bearer ${$_token}` },
+                data: {
+                    level: $('#Levels').find(':selected').val(),
+                    keyType: keyType,
+                    fromDateStr: $('#FromPeriod').text(),
+                    toDateStr: $('#ToPeriod').text()
+                }
+            }).done(function (data) {
+
+                if (data.length > 0) {
+
+                    $('.page-loader-wrapper').css('display', 'none');
+                    var src = formAction;
+
+                    $('#bodyss').html('')
+                    $('#bodyss').append('<iframe id="ifram1" style="width:100%;height:550px" src="' + src + '"></iframe>')
+                    $('#model').modal('show');
+
+                }
+                else {
+                    $('.page-loader-wrapper').css('display', 'none');
+                    toastr.warning(NoData);
+                }
+
+            }).fail(function (response) {
+                toastr.error(response.responseText);
+            });
+
+        } else {
+            toastr.warning('@ERP.ResourcePack.Accounts.ReportsAccounts.ProcessingDataRequired');
+        }
+    };
+
+    fillLevels();
+    drawCheckBoxes();
+
+    $('#FromPeriod').select2(ReturnSelect2ObjectDefault(`${baseUrl}/GlPeriodsDetails/GetGlPeriodsSelect2`));
+
+    $('#ToPeriod').select2(ReturnSelect2ObjectDefault(`${baseUrl}/GlPeriodsDetails/GetGlPeriodsSelect2`));
+
+</script>

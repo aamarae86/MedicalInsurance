@@ -1,0 +1,680 @@
+﻿@using ERP.ResourcePack.Warehouses
+@using ERP.Web.UI.Controllers.Warehouses
+@using ERP.Authorization;
+@{
+    string encUpdateTrigger = ERP.Front.Helpers.Enums.Common.EncUpdate;
+    string encShowTrigger = ERP.Front.Helpers.Enums.Common.EncShow;
+    string permissionsStr = TempData["Permissions"].ToString();
+}
+@if (permissionsStr.Contains(PermissionNames.Pages_IvAdjustmentHd_Post))
+{
+    <script>
+        const PostAjax = function (id) {
+
+            bootbox.confirm({
+                message: _booBoxMessagePosting,
+                buttons: bootBoxDefaultBtns,
+                callback: function (result) {
+
+                    if (result) {
+
+                        const data = {
+                            id: id,
+                            lang: lang,
+                            userId: 0
+                        };
+
+                        $.ajax({
+                            url: `${baseUrl}/IvAdjustmentHd/PostIvAdjustmentHd`,
+                            type: 'POST',
+                            data: JSON.stringify(data),
+                            headers:
+                            {
+                                'Content-Type': 'application/json',
+                                'Authorization': `Bearer ${$_token}`
+                            },
+                        }).done(function (response) {
+
+                            if (response.result.finalStatues == 'F') {
+                                toastr.warning(response.result.reason);
+                            }
+                            else {
+                                toastr.success(response.result.reason);
+
+                                if (formView) {
+
+                                    setTimeout(function () {
+                                        window.location.href = $PrefixHostName + '/IvAdjustmentHd';
+                                    }, 100);
+
+                                } else {
+                                    LoadDataGrid();
+                                }
+                            }
+
+                        }).fail(function (response) {
+                            toastr.error(response.responseText);
+                        });
+
+                    }
+
+                }
+            });
+
+
+        };
+    </script>
+}
+else
+{
+    <script>
+        const PostAjax = function (id) { };
+    </script>
+}
+<script>
+    const _mainController = "IvAdjustmentHd"
+
+    $(function () {
+
+        LoadDataGrid();
+        $('#tblIvAdjustmentHdPrint thead').html($('#tblIvAdjustmentHd thead').html());
+        $('#tblIvAdjustmentHdPrint thead tr :last-child').remove();
+        $('#IvAdjustmentHd').addClass('active');
+
+        $('#mainForm #StatusLkpId').parent('.form-line').addClass('focused');
+        $('#mainForm #AdjustmentNumber').parent('.form-line').addClass('focused');
+
+    });
+
+    const _loadDataUrl = `${$PrefixHostName}/${_mainController}/@nameof(IvAdjustmentHdController.LoadDataGrid)`;
+    const _tblSelector = $('#tblIvAdjustmentHd');
+    const _tblLoader = $('#tblLoader');
+    const _mainForm = $('#mainForm');
+
+    const _permissions = '@permissionsStr';
+    const _updatePermission = '@PermissionNames.Pages_IvAdjustmentHd_Update';
+    const _deletePermission = '@PermissionNames.Pages_IvAdjustmentHd_Delete';
+    const _postPermission = '@PermissionNames.Pages_IvAdjustmentHd_Post';
+
+    $('#btnSubmition').on('click', function () {
+
+        console.log('isValid'+_mainForm.valid());
+       
+       
+        _mainForm.submit();
+        console.log(_mainForm.serializeArray())
+        if (_mainForm.valid()) {
+
+           $(this).prop('disabled', true);
+
+        } else {
+
+           $(this).prop('disabled',false);
+        }
+
+    });
+
+    var OnBegin = function (response) {
+        fireBtnLoader();
+    };
+
+    var OnSuccess = function (response) {
+
+        if (response.success) {
+
+            if (response.customRestResult.trigger === '@ERP.Front.Helpers.Enums.Common.FormTriggers.Insert') {
+
+                toastr.success(response.customRestResult.message);
+
+                setTimeout(function () {
+                    window.location.href = $PrefixHostName + '/IvAdjustmentHd';
+                }, 200);
+
+            } else if (response.customRestResult.trigger === '@ERP.Front.Helpers.Enums.Common.FormTriggers.Update') {
+
+                toastr.success(response.customRestResult.message);
+
+                setTimeout(function () {
+                    window.location.href = $PrefixHostName + '/IvAdjustmentHd';
+                }, 200);
+            }
+
+        } else {
+            $('#btnSubmition').prop('disabled',false);
+            toastr.error(response.customRestResult.message);
+        }
+    };
+
+    var OnComplete = function (response) {
+        downBtnLoader();
+        $('#btnSubmition').prop('disabled',false);
+    };
+
+    var OnFailure = function (response) {
+        toastr.error(response);
+        downBtnLoader();
+        $('#btnSubmition').prop('disabled',false);
+    };
+
+    const LoadDataGrid = function () {
+
+        $('#tblLoader').show();
+
+        const parms = {
+            AdjustmentNumber: $('#searchBox #AdjustmentNumber').val(),
+            AdjustmentDate: $('#searchBox #AdjustmentDate').val(),
+            IvWarehouseId: $('#searchBox #IvWarehouseId').find(':selected').val(),
+            AdjustmentTypeLkpId: $('#searchBox #AdjustmentTypeLkpId').find(':selected').val(),
+            StatusLkpId: $('#searchBox #StatusLkpId').find(':selected').val()
+        };
+
+        const columns = [
+            {
+                "data": "result.data.id",
+                'render': function (data, type, row, meta) {
+                    return meta.row + meta.settings._iDisplayStart + 1;
+                }
+            },
+            {
+                "data": "AdjustmentNumber",
+                "name": "AdjustmentNumber",
+                "autoWidth": true
+            },
+            {
+                "data": null,
+                "autoWidth": true,
+                "render": function (d, t, row) {
+                    return row.IvWarehouses ? row.IvWarehouses.WarehouseName: '';
+                }
+            },
+            {
+                "data": null,
+                "autoWidth": true,
+                "render": function (d, t, row) {
+                    return row.FndLookupValuesAdjustmentTypeLkp ? (lang === 'ar-EG' ? row.FndLookupValuesAdjustmentTypeLkp.NameAr : row.FndLookupValuesAdjustmentTypeLkp.NameEn):'';
+                }
+            },
+            {
+                "data": "AdjustmentDate",
+                "name": "AdjustmentDate",
+                "autoWidth": true,
+                "render": function (date) {
+                    return date ? date.split('T')[0] : '';
+                }
+            },
+            {
+                "data": null,
+                "autoWidth": true,
+                "render": function (d, t, row) {
+                    return row.FndLookupValuesStatusLkpIvAdjustmentHd ? (lang === 'ar-EG' ? row.FndLookupValuesStatusLkpIvAdjustmentHd.NameAr : row.FndLookupValuesStatusLkpIvAdjustmentHd.NameEn) : '';
+                }
+            },
+            {
+                "data": "Notes",
+                "name": "Notes",
+                "autoWidth": true
+            },
+            {
+                "data": null,
+                "sortable": false,
+                "render": function (data, type, row) {
+
+                    let formAction = `${$PrefixHostName}/${_mainController}/@nameof(IvAdjustmentHdController.IvAdjustmentHdForm)`;
+                    let DeleteAction = `${$PrefixHostName}/${_mainController}/@nameof(IvAdjustmentHdController.Delete)`;
+
+                    let btns = '';
+
+                    if (_permissions.includes(_postPermission) && row.StatusLkpId == 767) {
+                        btns += `<a href="javascript:void(0)" onclick="PostAjax(${row.Id})" title="@ERP.ResourcePack.Common.Settings.Post"><i class="mx-2 fas fa-check-circle text-info"></i></a>`;
+                    }
+
+                    if (_permissions.includes(_updatePermission) && row.StatusLkpId == 767) {
+                        btns += `<a href="${$PrefixHostName}/IvAdjustmentHd/FormView?id=${row.EncId}&t=@encUpdateTrigger"  title="@ERP.ResourcePack.Common.Settings.Edit"><i class="mx-2 fas fa-edit text-info"></i></a>`;
+                    }
+
+                    btns += `<a href="${$PrefixHostName}/IvAdjustmentHd/FormView?id=${row.EncId}&t=@encShowTrigger"  title="@ERP.ResourcePack.Common.Settings.Show"><i class="mx-2 fas fa-eye text-info"></i></a>`;
+
+                    if (_permissions.includes(_deletePermission) && row.StatusLkpId == 767) {
+                        btns += `<a href="javascript:void(0)" onclick="AjaxController.DeleteMainTableRow(${row.Id},'${DeleteAction}');"  title="@ERP.ResourcePack.Common.Settings.Delete"><i class="mx-2 fas fa-trash-alt text-danger"></i></a>`;
+                    }
+
+                    const _auditedPermission = '@PermissionNames.Pages_IvAdjustmentHd_Audit';
+
+                    if (_permissions.includes(_auditedPermission)) {
+
+                        row.permission = _auditedPermission;
+
+                        btns += GetAuditedButton(row);
+                    }
+
+                    return btns;
+                }
+            }
+        ];
+
+        const dtObj = {
+            "processing": true,
+            "serverSide": true,
+            "filter": false,
+            "orderMulti": false,
+            "language": dataTableLang,
+            "ajax": {
+                "url": _loadDataUrl,
+                "type": "POST",
+                "datatype": "json",
+                "data": parms,
+                "complete": function () {
+                    _tblLoader.hide();
+                }
+            },
+            "columns": columns,
+            "initComplete": function () {
+                $('[data-toggle="tooltip"]').tooltip();
+            }
+
+        };
+
+        _tblSelector.dataTable().fnDestroy();
+        _tblSelector.DataTable(dtObj).on('draw', function () { $('[data-toggle="tooltip"]').tooltip(); });
+
+    };
+
+    $('#mainForm #IvWarehouseId').select2(ReturnSelect2ObjectDefault(`${baseUrl}/IvAdjustmentHd/GetIvWarehousesByUserIdSelect2`));
+
+    $('#mainForm #AdjustmentTypeLkpId').select2(ReturnSelect2ObjectForLkpsTypes('IvAdjustmentHdAdjustmentType'));
+
+    $('#searchBox #AdjustmentTypeLkpId').select2(ReturnSelect2ObjectForLkpsTypes('IvAdjustmentHdAdjustmentType'));
+
+    $('#searchBox #StatusLkpId').select2(ReturnSelect2ObjectForLkpsTypes('IvAdjustmentHdStatues'));
+
+    $('#searchBox #IvWarehouseId').select2(ReturnSelect2ObjectDefault(`${baseUrl}/IvAdjustmentHd/GetIvWarehousesByUserIdSelect2`));
+
+    $('#units #IvItemId').select2(ReturnSelect2ObjectDefault(`${baseUrl}/IvItems/GetSelect2`));
+
+    $('#units #IvItemId').on('change', function (e) {
+        const IvItemId = $(this);
+        const IvWarehouseId = $('#mainForm #IvWarehouseId');
+        const IvItemNumberTxt = $('#units #IvItemNumber');
+        const CurrentQtyTxt = $('#units #CurrentQty');
+        if (!$('#mainForm #IvWarehouseId').find(':selected').val()) {
+            toastr.warning('@IvAdjustmentHd.IvWarehouseId' + ' : ' + '@ERP.ResourcePack.Common.Settings.Required')
+
+        }
+        else {
+            if (IvItemId === undefined || IvItemId.find(':selected').val() === undefined || IvWarehouseId === undefined || IvWarehouseId.find(':selected').val() === undefined) { } else {
+                $.ajax({
+                    url: `${baseUrl}/IvAdjustmentHd/GetNumberQty`,
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${$_token}`
+                    },
+                    data: {
+                        IvItemId: IvItemId.find(':selected').val(),
+                        IvWarehouseId: IvWarehouseId.find(':selected').val()
+                    }
+                }).done(function (rate) {
+                    console.log(rate);
+
+                    let _inputIvItemNumber = $('#units #IvItemNumber');
+                    let _inputCurrentQty = $('#units #CurrentQty');
+
+                    _inputIvItemNumber.parent('.form-line').addClass('focused');
+                    _inputCurrentQty.parent('.form-line').addClass('focused');
+
+                    IvItemNumberTxt.val(rate.result.itemNumber);
+                    CurrentQtyTxt.val(rate.result.currentOnHand);
+
+                }).fail(function (response) {
+                    toastr.error(response);
+                });
+            }
+        }
+    });
+
+    const GetAdjustmentHdAdjustmentStoredEntryType = function (e) {
+
+        $.ajax({
+            url: `${baseUrl}/IvAdjustmentHd/GetAdjustmentHdAdjustmentStoredEntryType`,
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${$_token}`
+            },
+            data: {
+                lang: lang
+            }
+        }).done(function (data) {
+
+            if (data.result) {
+                $(`#mainForm #AdjustmentTypeLkpId`)
+                    .append($("<option selected='selected'></option>")
+                        .val(data.result.item1)
+                        .text(data.result.item2))
+                    .trigger('change');
+
+                ChangeAdjustmentTypeLkpLabelText(data.result.item1);
+            }
+
+        }).fail(function (response) {
+            toastr.error(response);
+        });
+
+    };
+
+    $(`#AdjustmentTypeLkpId`).on('change', function () {
+        ChangeAdjustmentTypeLkpLabelText($(this).find(':selected').val());
+    });
+
+
+    const ChangeAdjustmentTypeLkpLabelText = function (currentVal) {
+
+        if (currentVal == 768) {
+            $('label[for="Qty"]').html('@IvAdjustmentHd.RequiredQtyOut <b class="text-danger"> * </b>');
+            $('#QtyHeader').html('@IvAdjustmentHd.RequiredQtyOut');
+
+        } else if (currentVal == 769) {
+            $('label[for="Qty"]').html('@IvAdjustmentHd.RequiredQtyIn <b class="text-danger"> * </b>');
+            $('#QtyHeader').html('@IvAdjustmentHd.RequiredQtyIn');
+        }
+
+    };
+
+</script>
+
+
+
+<script id="units">
+
+    const _tblUnitsSelector = $('#tblUnits');
+    const _tblUnitsSelectorBody = $('#tblUnits tbody');
+    const _unitsListStr = $('#AdjustmentTrStr');
+
+    let _unitsArr = [], tblUnitsCounterIndex = 0,updatedUnitRow;
+
+    const fillUnitObject = function () {
+
+        if (validateUnits() === false) return;
+
+        const current = {
+            index: ++tblUnitsCounterIndex,
+            ivItemId:$('#IvItemId').find(':selected').val(),
+            ivItemName:$('#IvItemId').find(':selected').text(),
+            ivItemNumber:$('#IvItemNumber').val(),
+            currentQty:$('#CurrentQty').val(),
+            qty:$('#Qty').val(),
+            IvAdjustmentHdId:0,
+            rowStatus: NewStatus
+        };
+
+        return current;
+    };
+
+    const AddUnits = function () {
+
+        const current = fillUnitObject();
+
+        if (current === undefined) return;
+
+        _unitsArr.push(current);
+
+        _unitsListStr.val(JSON.stringify(_unitsArr));
+
+        clearFormUnits();
+
+        bindUnitsTable();
+    };
+
+    const bindUnitsTable = function () {
+
+        let rows = '';
+
+        const detailArr = _unitsArr.filter(z => z.rowStatus !== DeletedStatus);
+
+        $.each(detailArr, function (i, item) {
+
+            rows += '<tr>';
+
+            rows += `<td>${item.index}</td>`;
+            rows += `<td>${!item.ivItemNumber ? '' : item.ivItemNumber}</td>`;
+            rows += `<td>${!item.ivItemName ? '' : item.ivItemName}</td>`;
+            rows += `<td>${!item.currentQty ? 0 : item.currentQty}</td>`;
+            rows += `<td>${!item.qty ? '' : item.qty}</td>`;
+
+            if (primaryEntityKeyId === 0 || trigger !== '@ERP.Front.Helpers.Enums.Common.FormTriggers.Show.ToString()') {
+                rows += `<td><a href="javascript:void(0)" onclick="return DeleteUnitRow(${item.index})"><i class="mx-2 fas fa-trash-alt text-danger"></i></a>`;
+                rows += `<a href="javascript:void(0)" onclick="return GetUnitRowDetail(${item.index})"><i class="mx-2 fas fa-edit text-success"></i></a></td>`;
+            } else {
+                rows += '<td></td>';
+            }
+
+            rows += '</tr>';
+        });
+
+        setTimeout(function () {
+            _tblUnitsSelectorBody.html(rows);
+        }, 100);
+
+    };
+
+    const DeleteUnitRow = function (index) {
+
+        const current = _unitsArr.find(z => z.index === index);
+
+        const indexOfCurrent = _unitsArr.indexOf(current);
+
+        if (!current.id) {
+
+           _unitsArr.splice(indexOfCurrent, 1);
+
+        } else {
+
+            current.rowStatus = DeletedStatus;
+
+           _unitsArr.splice(indexOfCurrent, 1,current);
+        }
+
+        bindUnitsTable();
+
+        _unitsListStr.val(_unitsArr.length === 0 ? '' : JSON.stringify(_unitsArr));
+    };
+
+    const LoadUnitsData = function () {
+
+        $('#tblLoaderDetail').show();
+
+        $.ajax({
+            url: `${baseUrl}/IvAdjustmentHd/GetAllAdjustmentTr`,
+            method: 'GET',
+            headers: {
+                        'Authorization': `Bearer ${$_token}`
+            },
+            data: {
+                id: primaryEntityKeyId
+            }
+        }).done(function (data) {
+
+            _unitsArr = [...data.result];
+
+            $.each(_unitsArr, function (i, item) {
+                item.index = ++tblUnitsCounterIndex;
+            });
+
+            bindUnitsTable();
+
+            _unitsListStr.val(JSON.stringify(_unitsArr));
+
+        });
+
+    };
+
+    const GetUnitRowDetail = function (tblIndex) {
+
+        clearFormUnits();
+
+        const current = _unitsArr.find(z => z.index === tblIndex);
+
+        $('#btnAddUnitRow').hide();
+        $('#btnUpdateUnitRow').show();
+        $('#btnCancelUnitRow').show();
+
+        $('#units #IvItemNumber').val(current.ivItemNumber);
+        $('#units #CurrentQty').val(current.currentQty);
+        $('#units #Qty').val(current.qty);
+
+        $(`#units #IvItemId`)
+        .append($("<option selected='selected'></option>")
+        .val(current.ivItemId)
+        .text(current.ivItemName))
+            .trigger('change');
+
+
+        $('#units #IvItemNumber').parent('.form-line').addClass('focused');
+        $('#units #CurrentQty').parent('.form-line').addClass('focused');
+        $('#units #Qty').parent('.form-line').addClass('focused');
+
+        updatedUnitRow = current;
+
+    };
+
+    const UpdateUnitsRow = function () {
+
+        let current = _unitsArr.find(z => z.index === updatedUnitRow.index);
+
+        let indexOfCurrent = _unitsArr.indexOf(current);
+
+        const newRow = fillUnitObject();
+
+        if (newRow === undefined) return;
+
+        newRow.id = updatedUnitRow.id;
+        newRow.rowStatus = !updatedUnitRow.id ? NewStatus : UpdatedStatus;
+
+        _unitsArr.splice(indexOfCurrent, 1,newRow);
+
+        $('#btnAddUnitRow').show();
+        $('#btnUpdateUnitRow').hide();
+        $('#btnCancelUnitRow').hide();
+
+        clearFormUnits();
+
+        _unitsListStr.val(JSON.stringify(_unitsArr));
+
+        bindUnitsTable();
+    };
+
+
+    const clearFormUnits = function () {
+
+        $('#units .card select').val('').trigger('change');
+        $('#units .card input').val('');
+        $('#units .card textarea').val('');
+
+    };
+
+    const validateUnits = function () {
+
+        if (!$('#units #Qty').val()) {
+            toastr.warning('@IvAdjustmentHd.Qty' + ' : ' + '@ERP.ResourcePack.Common.Settings.Required')
+            return false;
+        }
+
+        if (!$('#units #IvItemId').find(':selected').val()) {
+            toastr.warning('@IvAdjustmentHd.IvItemId' + ' : ' + '@ERP.ResourcePack.Common.Settings.Required')
+            return false;
+        }
+        return true;
+    };
+
+
+    function printExc() {
+        $('.page-loader-wrapper').show();
+        const parmss = {
+            AdjustmentNumber: $('#searchBox #AdjustmentNumber').val(),
+            AdjustmentDate: $('#searchBox #AdjustmentDate').val(),
+            IvWarehouseId: $('#searchBox #IvWarehouseId').find(':selected').val(),
+            AdjustmentTypeLkpId: $('#searchBox #AdjustmentTypeLkpId').find(':selected').val(),
+            StatusLkpId: $('#searchBox #StatusLkpId').find(':selected').val(),
+            length: 1000000
+        };
+
+        const columns = [
+            {
+                "data": "result.data.id",
+                'render': function (data, type, row, meta) {
+                    return meta.row + meta.settings._iDisplayStart + 1;
+                }
+            },
+            {
+                "data": "AdjustmentNumber",
+                "name": "AdjustmentNumber",
+                "autoWidth": true
+            },
+            {
+                "data": null,
+                "autoWidth": true,
+                "render": function (d, t, row) {
+                    return row.IvWarehouses ? row.IvWarehouses.WarehouseName: '';
+                }
+            },
+            {
+                "data": null,
+                "autoWidth": true,
+                "render": function (d, t, row) {
+                    return row.FndLookupValuesAdjustmentTypeLkp ? (lang === 'ar-EG' ? row.FndLookupValuesAdjustmentTypeLkp.NameAr : row.FndLookupValuesAdjustmentTypeLkp.NameEn):'';
+                }
+            },
+            {
+                "data": "AdjustmentDate",
+                "name": "AdjustmentDate",
+                "autoWidth": true,
+                "render": function (date) {
+                    return date ? date.split('T')[0] : '';
+                }
+            },
+            {
+                "data": null,
+                "autoWidth": true,
+                "render": function (d, t, row) {
+                    return row.FndLookupValuesStatusLkpIvAdjustmentHd ? (lang === 'ar-EG' ? row.FndLookupValuesStatusLkpIvAdjustmentHd.NameAr : row.FndLookupValuesStatusLkpIvAdjustmentHd.NameEn) : '';
+                }
+            },
+            {
+                "data": "Notes",
+                "name": "Notes",
+                "autoWidth": true
+            }
+        ];
+
+        const dtObj = {
+            "language": dataTableLang,
+            "dom": 'Bfrtip',
+            "buttons": [
+                {
+                    extend: 'excel',
+                    messageTop: `${$('#AdjustmentNumber').siblings().text()}: ${(parmss.AdjustmentNumber) ? parmss.AdjustmentNumber : '--'}, ${$('#AdjustmentDate').siblings().text()}: ${(parmss.AdjustmentDate) ? parmss.AdjustmentDate : '--'}, ${$('[for="IvWarehouseId"]').text()}: ${(parmss.IvWarehouseId) ? parmss.IvWarehouseId : '--'}, ${$('[for="AdjustmentTypeLkpId"]').text()}: ${(parmss.AdjustmentTypeLkpId) ? parmss.AdjustmentTypeLkpId : '--'}, ${$('[for="StatusLkpId"]').text()}: ${(parmss.StatusLkpId) ? parmss.StatusLkpId : '--'}`
+                },
+
+            ],
+            "ajax": {
+                "url": _loadDataUrl,
+                "type": "POST",
+                "datatype": "json",
+                "data": parmss,
+                "complete": function (d) {
+                    _tblLoader.hide();
+                }
+            },
+            "columns": columns,
+
+            "initComplete": function () {
+                $('#tblIvAdjustmentHdPrint_wrapper button.dt-button').click();
+
+            }
+        };
+
+        $('#tblIvAdjustmentHdPrint').dataTable().fnDestroy();
+        $('#tblIvAdjustmentHdPrint').DataTable(dtObj).on('buttons-processing', function (e, indicator) { if (!indicator) { $('.page-loader-wrapper').hide() } });
+
+
+    }
+
+</script>

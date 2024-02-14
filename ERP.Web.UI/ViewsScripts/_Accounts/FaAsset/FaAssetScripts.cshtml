@@ -1,0 +1,448 @@
+﻿@using ERP.ResourcePack.AccountsExtend
+@using ERP.Web.UI.Controllers.AccountsExtend
+@using ERP.Web.UI.Models.ViewModels.AccountsExtend
+@using ERP.Authorization;
+@{
+    string encUpdateTrigger = ERP.Front.Helpers.Enums.Common.EncUpdate;
+    string encShowTrigger = ERP.Front.Helpers.Enums.Common.EncShow;
+    string permissionsStr = TempData["Permissions"].ToString();
+}
+
+@if (permissionsStr.Contains(PermissionNames.Pages_FaAsset))
+{
+    <script>
+        const PostAjax = function (id) {
+
+            bootbox.confirm({
+                message: _booBoxMessagePosting,
+                buttons: bootBoxDefaultBtns,
+                callback: function (result) {
+
+                    if (result) {
+
+                        const data = {
+                            id: id,
+                            lang: lang,
+                            userId: 0
+                        };
+
+                        $.ajax({
+                            url: `${baseUrl}/FaAsset/PostFaAsset`,
+                            type: 'POST',
+                            data: JSON.stringify(data),
+                            headers:
+                            {
+                                'Content-Type': 'application/json',
+                                'Authorization': `Bearer ${$_token}`
+                            },
+                        }).done(function (response) {
+
+                            if (response.result.finalStatues == 'F') {
+                                toastr.warning(response.result.reason);
+                            }
+                            else {
+                                toastr.success(response.result.reason);
+
+                                if (formView) {
+
+                                    setTimeout(function () {
+                                        window.location.href = $PrefixHostName + '/FaAsset';
+                                    }, 100);
+
+                                } else {
+                                    LoadDataGrid();
+                                }
+                            }
+
+                        }).fail(function (response) {
+                            toastr.error(response.responseText);
+                        });
+
+                    }
+
+                }
+            });
+
+
+        };
+    </script>
+}
+else
+{
+    <script>
+        const PostAjax = function (id) { };
+    </script>
+}
+<script>
+    const _mainController = "FaAsset"
+
+    $(function () {
+        LoadDataGrid();
+        $('#tblFaAssetPrint thead').html($('#tblFaAsset thead').html());
+        $('#tblFaAssetPrint thead tr :last-child').remove();
+        $('#FaAsset').addClass('active');
+
+        $('#tblFaAssetAttachments_wrapper .row:first').remove();
+        $('#tblFaAssetAttachments_wrapper .row:last').remove();
+        $('#tblFaAssetAttachments_wrapper th').removeClass('sorting');
+
+        var prKey = 0;
+        if (formView && primaryEntityKeyId) {
+            prKey = primaryEntityKeyId;
+        }
+        $('#@nameof(FaAssetsVM.ParentAssetId)')
+            .select2(ReturnSelect2ObjectWithParentExcludeIds(
+                `${baseUrl}/FaAsset/GetSelect2WithCategoryExcludingIds`
+                , `@nameof(FaAssetsVM.FaAssetCategoryId)`
+                , prKey));
+
+    });
+
+    const _loadDataUrl = `${$PrefixHostName}/${_mainController}/@nameof(FaAssetController.LoadDataGrid)`;
+    const _tblSelector = $('#tblFaAsset');
+    const _tblLoader = $('#tblLoader');
+    const _mainForm = $('#mainForm');
+
+    const _permissions = '@permissionsStr';
+    const _updatePermission = '@PermissionNames.Pages_FaAsset_Update';
+    const _deletePermission = '@PermissionNames.Pages_FaAsset_Delete';
+    const _postPermission = '@PermissionNames.Pages_FaAsset_Post';
+
+    let tblHeadersAdded = false;
+
+    $('#btnSubmition').on('click', function () {
+
+        if ($('#InUseAlt').is(':checked')) {
+            if (!$('#DatePlacedInService').val()) {
+                toastr.warning('@FaAsset.DatePlacedInService : @ERP.ResourcePack.Common.Settings.Required');
+
+                return;
+            }
+        }
+
+        _mainForm.submit();
+
+        if (_mainForm.valid()) {
+
+            $(this).hide();
+            $('#submitLoader').show();
+
+        } else {
+
+            $(this).show();
+            $('#submitLoader').hide();
+        }
+
+    });
+
+    var OnBegin = function (response) {
+        fireBtnLoader();
+    };
+
+    var OnSuccess = function (response) {
+
+        if (response.success) {
+
+            if (response.customRestResult.trigger === '@ERP.Front.Helpers.Enums.Common.FormTriggers.Insert') {
+
+                toastr.success(response.customRestResult.message);
+
+                setTimeout(function () {
+                    window.location.href = $PrefixHostName + '/FaAsset';
+                }, 200);
+
+            } else if (response.customRestResult.trigger === '@ERP.Front.Helpers.Enums.Common.FormTriggers.Update') {
+
+                toastr.success(response.customRestResult.message);
+
+                setTimeout(function () {
+                    window.location.href = $PrefixHostName + '/FaAsset';
+                }, 200);
+            }
+
+        } else {
+            toastr.error(response.customRestResult.message);
+        }
+
+    };
+
+    var OnComplete = function (response) {
+        downBtnLoader();
+    };
+
+    var OnFailure = function (response) {
+        toastr.error(response);
+        console.log(response);
+        downBtnLoader();
+    };
+
+    const LoadDataGrid = function () {
+
+        $('#tblLoader').show();
+
+        const parms = {
+            AssetTypeLkpId: $('#Search_AssetTypeLkpId').find(':selected').val(),
+            StatusId: $('#Search_StatusId').find(':selected').val(),
+            FaAssetCategoryId: $('#Search_FaAssetCategoryId').find(':selected').val(),
+            Description: $('#Search_Description').val(),
+            AssetNumber: $('#Search_AssetNumber').val()
+        };
+
+        const columns = [
+            {
+                "data": "result.data.id",
+                'render': function (data, type, row, meta) {
+                    return meta.row + meta.settings._iDisplayStart + 1;
+                }
+            },
+            {
+                "data": "AssetNumber",
+                "name": "AssetNumber",
+                "autoWidth": true
+            },
+            {
+                "data": "Description",
+                "name": "Description",
+                "autoWidth": true
+            },
+            {
+                "data": null,
+                "autoWidth": true,
+                "render": function (d, t, row) {
+
+                    if (row.AssetTypeLkpAr == null &&row.AssetTypeLkpEn == null )
+                        return '';
+
+                    if (lang === 'ar-EG')
+                        return row.AssetTypeLkpAr;
+
+                    return row.AssetTypeLkpEn;
+                }
+            },
+            {
+                "data": null,
+                "autoWidth": true,
+                "render": function (d, t, row) {
+
+                    if (row.StatusAr == null &&row.StatusEn == null )
+                        return '';
+
+                    if (lang === 'ar-EG')
+                        return row.StatusAr;
+
+                    return row.StatusEn;
+                }
+            },
+            {
+                "data": null,
+                "sortable": false,
+                "render": function (data, type, row) {
+
+                    let formAction = `${$PrefixHostName}/${_mainController}/@nameof(FaAssetController.FaAssetForm)`;
+                    let DeleteAction = `${$PrefixHostName}/${_mainController}/@nameof(FaAssetController.Delete)`;
+
+                    let btns = '';
+
+                    if (_permissions.includes(_postPermission) && row.StatusLkpId == 893) {
+                        btns += `<a href="javascript:void(0)" onclick="PostAjax(${row.Id})" title="@ERP.ResourcePack.Common.Settings.Post"><i class="mx-2 fas fa-check-circle text-info"></i></a>`;
+                    }
+
+                    if (_permissions.includes(_updatePermission) && row.StatusLkpId == 893) {
+                        btns += `<a href="${$PrefixHostName}/FaAsset/FormView?id=${row.EncId}&t=@encUpdateTrigger" title="@ERP.ResourcePack.Common.Settings.Edit"><i class="mx-2 fas fa-edit text-info"></i></a>`;
+                    }
+
+                    btns += `<a href="${$PrefixHostName}/FaAsset/FormView?id=${row.EncId}&t=@encShowTrigger" title="@ERP.ResourcePack.Common.Settings.Show"><i class="mx-2 fas fa-eye text-info"></i></a>`;
+
+                    if (_permissions.includes(_deletePermission) && row.StatusLkpId == 893) {
+                        btns += `<a href="javascript:void(0)" onclick="AjaxController.DeleteMainTableRow(${row.Id},'${DeleteAction}');" title="@ERP.ResourcePack.Common.Settings.Delete"><i class="mx-2 fas fa-trash-alt text-danger"></i></a>`;
+                    }
+
+
+                    const _auditedPermission = '@PermissionNames.Pages_FaAsset_Audit';
+
+                    if (_permissions.includes(_auditedPermission)) {
+
+                        row.permission = _auditedPermission;
+
+                        btns += GetAuditedButton(row);
+                    }
+
+                    return btns;
+                }
+            }
+        ];
+
+        const dtObj = {
+            "processing": true,
+            "serverSide": true,
+            "filter": false,
+            "orderMulti": false,
+            "language": dataTableLang,
+            "ajax": {
+                "url": _loadDataUrl,
+                "type": "POST",
+                "datatype": "json",
+                "data": parms,
+                "complete": function () {
+                    _tblLoader.hide();
+                }
+            },
+            "columns": columns,
+            "initComplete": function () {
+                $('[data-toggle="tooltip"]').tooltip();
+            }
+
+        };
+
+        _tblSelector.dataTable().fnDestroy();
+        _tblSelector.DataTable(dtObj).on('draw', function () { $('[data-toggle="tooltip"]').tooltip(); });
+
+        setTimeout(function () {
+            $(".sorting_1").removeAttr('colspan');
+        }, 500);
+    };
+
+    @*$('#@nameof(FaAssetsVM.Search_IvWarehouseId)').select2(ReturnSelect2ObjectDefault(`${baseUrl}/IvUserWarehousesPrivileges/GetIvWarehousesForIssueUserSelect2`));*@
+    $('#@nameof(FaAssetsVM.Search_StatusId)').select2(ReturnSelect2ObjectForLkpsTypes('@ERP.Front.Helpers.Enums.Common.FndLkpsTypes.FaAssetsStatusLkpId.ToString()'));
+
+    $('#@nameof(FaAssetsVM.Search_FaAssetCategoryId)').select2(ReturnSelect2ObjectDefault(`${baseUrl}/AssetCategory/GetSelect2`));
+    $('#@nameof(FaAssetsVM.Search_AssetTypeLkpId)').select2(ReturnSelect2ObjectForLkpsTypes('@ERP.Front.Helpers.Enums.Common.FndLkpsTypes.FaAssetsAssetTypeLkpId.ToString()'));
+
+    $('#@nameof(FaAssetsVM.AssetTypeLkpId)').select2(ReturnSelect2ObjectForLkpsTypes('@ERP.Front.Helpers.Enums.Common.FndLkpsTypes.FaAssetsAssetTypeLkpId.ToString()'));
+    $('#@nameof(FaAssetsVM.OwnershipLkpId)').select2(ReturnSelect2ObjectForLkpsTypes('@ERP.Front.Helpers.Enums.Common.FndLkpsTypes.FaAssetsOwnershipLkpId.ToString()'));
+    $('#@nameof(FaAssetsVM.BoughtLkpId)').select2(ReturnSelect2ObjectForLkpsTypes('@ERP.Front.Helpers.Enums.Common.FndLkpsTypes.FaAssetsBoughtLkpId.ToString()'));
+    $('#@nameof(FaAssetsVM.BookingTypeLkpId)').select2(ReturnSelect2ObjectForLkpsTypes('@ERP.Front.Helpers.Enums.Common.FndLkpsTypes.FaAssetsBookingTypeLkpId.ToString()'));
+    $('#@nameof(FaAssetsVM.SalvageValueTypeLkpId)').select2(ReturnSelect2ObjectForLkpsTypes('@ERP.Front.Helpers.Enums.Common.FndLkpsTypes.FaAssetsSalvageValueTypeLkpId.ToString()'));
+    $('#@nameof(FaAssetsVM.DeprenMethodLkpId)').select2(ReturnSelect2ObjectForLkpsTypes('@ERP.Front.Helpers.Enums.Common.FndLkpsTypes.FaAssetsDeprenMethodLkpId.ToString()'));
+    $('#@nameof(FaAssetsVM.FaAssetCategoryId)').select2(ReturnSelect2ObjectDefault(`${baseUrl}/AssetCategory/GetSelect2`));
+
+    //const print = function (url, id, lang) {
+    //    const data = { id: id, lang: lang };
+    //    openModal(data, url);
+    //};
+
+    const setInUseValue = function () {
+        $("#mainForm #InUse").val($('#InUseAlt').is(':checked'));
+    }
+
+    const setInPhysicalInventoryValue = function () {
+        $("#mainForm #InPhysicalInventory").val($('#InPhysicalInventoryAlt').is(':checked'));
+    }
+
+    const setIsDepreciateValue = function () {
+        $("#mainForm #IsDepreciate").val($('#IsDepreciateAlt').is(':checked'));
+    }
+
+    const setIsAmortizeAdjustmentValue = function () {
+        $("#mainForm #IsAmortizeAdjustment").val($('#IsAmortizeAdjustmentAlt').is(':checked'));
+    }
+
+    $('#@nameof(FaAssetsVM.FaAssetCategoryId)').on('select2:unselect', function (e) {
+        $('#LifeInMonthsDis').val('');
+        $('#LifeInMonthsDis').parent('.form-line').removeClass('focused');
+        $('#@nameof(FaAssetsVM.LifeInMonths)').val('');
+        $('#@nameof(FaAssetsVM.LifeInMonths)').parent('.form-line').removeClass('focused');
+    });
+
+    $('#@nameof(FaAssetsVM.FaAssetCategoryId)').on('select2:select', function (e) {
+        var moths = e.params.data.altText;
+        $('#LifeInMonthsDis').val(moths);
+        $('#@nameof(FaAssetsVM.LifeInMonths)').val(moths);
+        $('#@nameof(FaAssetsVM.LifeInMonths)').parent('.form-line').addClass('focused');
+        $('#LifeInMonthsDis').parent('.form-line').addClass('focused');
+    });
+
+    function printExc() {
+        $('.page-loader-wrapper').show();
+
+        const parmss = {
+            AssetTypeLkpId: $('#Search_AssetTypeLkpId').find(':selected').val(),
+            StatusId: $('#Search_StatusId').find(':selected').val(),
+            FaAssetCategoryId: $('#Search_FaAssetCategoryId').find(':selected').val(),
+            Description: $('#Search_Description').val(),
+            AssetNumber: $('#Search_AssetNumber').val(),
+            length: 1000000
+        };
+
+        const columns = [
+            {
+                "data": "result.data.id",
+                'render': function (data, type, row, meta) {
+                    return meta.row + meta.settings._iDisplayStart + 1;
+                }
+            },
+            {
+                "data": "AssetNumber",
+                "name": "AssetNumber",
+                "autoWidth": true
+            },
+            {
+                "data": "Description",
+                "name": "Description",
+                "autoWidth": true
+            },
+            {
+                "data": null,
+                "autoWidth": true,
+                "render": function (d, t, row) {
+
+                    if (row.AssetTypeLkpAr == null &&row.AssetTypeLkpEn == null )
+                        return '';
+
+                    if (lang === 'ar-EG')
+                        return row.AssetTypeLkpAr;
+
+                    return row.AssetTypeLkpEn;
+                }
+            },
+            {
+                "data": null,
+                "autoWidth": true,
+                "render": function (d, t, row) {
+
+                    if (row.StatusAr == null &&row.StatusEn == null )
+                        return '';
+
+                    if (lang === 'ar-EG')
+                        return row.StatusAr;
+
+                    return row.StatusEn;
+                }
+            }
+        ];
+
+        const dtObj = {
+            "language": dataTableLang,
+            "dom": 'Bfrtip',
+            "buttons": [
+                {
+                    extend: 'excel',
+                    messageTop: `${$('[for="Search_AssetTypeLkpId"]').text()}: ${(parmss.AssetTypeLkpId) ? parmss.AssetTypeLkpId : '--'}, ${$('[for="Search_StatusId"]').text()}: ${(parmss.StatusId) ? parmss.StatusId : '--'}, ${$('[for="Search_FaAssetCategoryId"]').text()}: ${(parmss.FaAssetCategoryId) ? parmss.FaAssetCategoryId : '--'}, ${$('#Search_Description').siblings().text()}: ${(parmss.Description) ? parmss.Description : '--'}, ${$('#Search_AssetNumber').siblings().text()}: ${(parmss.AssetNumber) ? parmss.AssetNumber : '--'}`
+                },
+
+            ],
+            "ajax": {
+                "url": _loadDataUrl,
+                "type": "POST",
+                "datatype": "json",
+                "data": parmss,
+                "complete": function (d) {
+                    _tblLoader.hide();
+                }
+            },
+            "columns": columns,
+
+            "initComplete": function () {
+                $('#tblFaAssetPrint_wrapper button.dt-button').click();
+                $('#tblFaAssetPrint_wrapper').parent().addClass('d-none');
+
+            }
+        };
+
+        $('#tblFaAssetPrint').dataTable().fnDestroy();
+        $('#tblFaAssetPrint').DataTable(dtObj).on('buttons-processing', function (e, indicator) { if (!indicator) { $('.page-loader-wrapper').hide() } });
+
+
+    }
+
+</script>

@@ -1,0 +1,443 @@
+﻿@using ERP.ResourcePack.AccountsExtend
+@using ERP.Web.UI.Controllers.AccountsExtend
+@using ERP.Authorization;
+@{
+    string permissionsStr = TempData["Permissions"].ToString();
+    string encUpdateTrigger = ERP.Front.Helpers.Enums.Common.EncUpdate;
+    string encInsertTrigger = ERP.Front.Helpers.Enums.Common.EncInsert;
+    string encShowTrigger = ERP.Front.Helpers.Enums.Common.EncShow;
+}
+
+@if (permissionsStr.Contains(PermissionNames.Pages_ApPaymentsTransactions_Post))
+{
+    <script>
+
+        const PostAjax = function (id) {
+
+            bootbox.confirm({
+                message: _booBoxMessagePosting,
+                buttons: bootBoxDefaultBtns,
+                callback: function (result) {
+
+                    if (result) {
+
+                        const data = {
+                            id: id,
+                            lang: lang
+                        };
+
+                        $.ajax({
+                            url: `${baseUrl}/ApPaymentsTransactions/PostApPaymentsTransactions`,
+                            type: 'POST',
+                            data: JSON.stringify(data),
+                            headers:
+                            {
+                                'Content-Type': 'application/json',
+                                'Authorization': `Bearer ${$_token}`
+                            },
+                        }).done(function (response) {
+
+                            if (response.result.finalStatues == 'F') {
+                                toastr.warning(response.result.reason);
+                            }
+                            else {
+                                toastr.success(response.result.reason);
+                                setTimeout(function () {
+
+                                    if (formView) {
+                                        window.location.href = $PrefixHostName + '/ApPaymentsTransactions';
+                                    } else {
+                                        LoadDataGrid();
+                                    }
+
+                                }, 100);
+                            }
+                        }).fail(function (response) {
+                            toastr.error(response);
+                        });
+
+                    }
+                }
+            });
+        };
+
+    </script>
+}
+else
+{
+    <script>
+        const PostAjax = function (id) { };
+    </script>
+}
+
+<script>
+    const _mainController = "ApPaymentsTransactions"
+
+    $(function () {
+        LoadDataGrid();
+        $('#tblApPaymentsTransactionsPrint thead').html($('#tblApPaymentsTransactions thead').html());
+        $('#tblApPaymentsTransactionsPrint thead tr :last-child').remove();
+        $('#ApPaymentsTransactions').addClass('active');
+
+       /* $('#PaymentAmount').prop('type', 'number').prop('min', 0);*/
+
+    });
+
+    const _loadDataUrl = `${$PrefixHostName}/${_mainController}/@nameof(ApPaymentsTransactionsController.LoadDataGrid)`;
+    const _tblSelector = $('#tblApPaymentsTransactions');
+    const _permissions = '@permissionsStr';
+    const _updatePermission = '@PermissionNames.Pages_ApPaymentsTransactions_Update';
+    const _deletePermission = '@PermissionNames.Pages_ApPaymentsTransactions_Delete';
+    const _postPermission = '@PermissionNames.Pages_ApPaymentsTransactions_Post';
+    const _postStatus = @Convert.ToInt64(ERP.Front.Helpers.Enums.Common.ApPaymentsTransactions.Posted);
+    const _newStatus = @Convert.ToInt64(ERP.Front.Helpers.Enums.Common.ApPaymentsTransactions.New);
+
+    var OnBegin = function (response) {
+        fireBtnLoader();
+    };
+
+    var OnSuccess = function (response) {
+
+        $('#btnSubmition').prop('disabled', false);
+
+        if (response.success) {
+
+            if (response.customRestResult.trigger === '@ERP.Front.Helpers.Enums.Common.FormTriggers.Insert') {
+
+                toastr.success(response.customRestResult.message);
+
+                setTimeout(function () {
+                    window.location.href = $PrefixHostName + '/ApPaymentsTransactions';
+                }, 200);
+
+            }
+            else if (response.customRestResult.trigger === '@ERP.Front.Helpers.Enums.Common.FormTriggers.Update') {
+
+                toastr.success(response.customRestResult.message);
+
+                setTimeout(function () {
+                    window.location.href = $PrefixHostName + '/ApPaymentsTransactions';
+                }, 200);
+
+            }
+            else {
+                toastr.error(response.customRestResult.message);
+            }
+
+        } else {
+            toastr.error(response.error.message);
+        }
+
+    };
+
+    var OnComplete = function (response) {
+        downBtnLoader();
+    };
+
+    var OnFailure = function (response) {
+        toastr.error(response);
+        downBtnLoader();
+    };
+
+    const LoadDataGrid = function () {
+
+        $('#tblLoader').show();
+
+        const params = {
+            PaymentNumber: $('#searchBox #PaymentNumber').val(),
+            PaymentDate: $('#searchBox #PaymentDate').val(),
+            StatusLkpId: $('#searchBox #StatusLkpId').find(':selected').val(),
+            VendorId: $('#searchBox #VendorId').find(':selected').val(),
+        };
+
+        const columns = [
+            {
+                "data": "result.data.id",
+                'render': function (data, type, row, meta) {
+                    return meta.row + meta.settings._iDisplayStart + 1;
+                }
+            },
+            {
+                "data": "PaymentNumber",
+                "name": "PaymentNumber",
+                "autoWidth": true
+            },
+            {
+                "data": "PaymentDate",
+                "name": "PaymentDate",
+                "autoWidth": true
+            },
+            {
+                "data": "CheckNumber",
+                "name": "CheckNumber",
+                "autoWidth": true
+            },
+            {
+                "data": "PaymentAmount",
+                "name": "PaymentAmount",
+                "autoWidth": true
+            },
+            {
+                "data": null,
+                "autoWidth": true,
+                "render": function (d, t, row) {
+                    if (row.ApVendors == null) return '';
+
+                    return lang === 'ar-EG' ? row.ApVendors.VendorNameAr : row.ApVendors.VendorNameEn;
+                }
+            },
+            {
+                "data": null,
+                "autoWidth": true,
+                "render": function (d, t, row) {
+                    if (row.FndStatusLkp == null) return '';
+
+                    return lang === 'ar-EG' ? row.FndStatusLkp.NameAr : row.FndStatusLkp.NameEn;
+                }
+            },
+            {
+                "data": "Notes",
+                "name": "Notes",
+                "autoWidth": true
+            },
+            {
+                "data": null,
+                "sortable": false,
+                "render": function (data, type, row) {
+
+                    let formAction = `${$PrefixHostName}/${_mainController}/@nameof(ApPaymentsTransactionsController.ApPaymentsTransactionsForm)`;
+                    let DeleteAction = `${$PrefixHostName}/${_mainController}/@nameof(ApPaymentsTransactionsController.Delete)`;
+
+                    let formTitle = '@ApPaymentsTransactions.Title';
+                    let btns = '';
+
+                    if (_permissions.includes(_updatePermission) && row.StatusLkpId == _newStatus) {
+                        btns += `<a href="${$PrefixHostName}/ApPaymentsTransactions/FormView?id=${row.EncId}&t=@encUpdateTrigger" title="@ERP.ResourcePack.Common.Settings.Edit"><i class="mx-2 fas fa-edit text-info"></i></a>`;
+                    }
+
+                    btns += `<a href="${$PrefixHostName}/ApPaymentsTransactions/FormView?id=${row.EncId}&t=@encShowTrigger" title="@ERP.ResourcePack.Common.Settings.Show"><i class="mx-2 fas fa-eye text-info"></i></a>`;
+
+                    if (_permissions.includes(_deletePermission) && row.StatusLkpId == _newStatus) {
+                        btns += `<a href="javascript:void(0)" onclick="AjaxController.DeleteMainTableRow(${row.Id},'${DeleteAction}');" title="@ERP.ResourcePack.Common.Settings.Delete"><i class="mx-2 fas fa-trash-alt text-danger"></i></a>`;
+                    }
+
+                    if (_permissions.includes(_postPermission) & row.StatusLkpId == _newStatus) {
+                        btns += `<a href="javascript:void(0)" onclick="PostAjax(${row.Id})"  title="@ERP.ResourcePack.Common.Settings.Post"><i class="mx-2 fas fa-check-circle text-info"></i></a>`;
+                    }
+
+                    const _auditedPermission = '@PermissionNames.Pages_ApPaymentsTransactions_Audit';
+
+                    if (_permissions.includes(_auditedPermission)) {
+
+                        row.permission = _auditedPermission;
+
+                        btns += GetAuditedButton(row);
+                    }
+
+                    return btns;
+                }
+            }
+        ];
+
+        const dtObj = {
+            "processing": true,
+            "serverSide": true,
+            "filter": false,
+            "orderMulti": false,
+            "language": dataTableLang,
+            "ajax": {
+                "url": _loadDataUrl,
+                "type": "POST",
+                "datatype": "json",
+                "data": params,
+                "complete": function () { }
+            },
+            "columns": columns,
+            "initComplete": function () {
+                $('[data-toggle="tooltip"]').tooltip();
+            }
+
+        };
+
+        _tblSelector.dataTable().fnDestroy();
+        _tblSelector.DataTable(dtObj).on('draw', function () { $('[data-toggle="tooltip"]').tooltip(); });
+
+        setTimeout(function () {
+            $(".sorting_1").removeAttr('colspan');
+        }, 500);
+    };
+
+    $('#btnSubmition').on('click', function () {
+
+        if ($('#PaymentTypeLkpId').find(':selected').val() && $('#PaymentTypeLkpId').find(':selected').val() == /* CheQ */ 715) {
+
+            if (!$('#CheckNumber').val()) {
+                toastr.warning('@ApPaymentsTransactions.CheckNumber : @ERP.ResourcePack.Common.Settings.Required');
+                return;
+            }
+
+            if (!$('#BankAccountId').find(':selected').val()) {
+                toastr.warning('@ApPaymentsTransactions.CheckNumber : @ERP.ResourcePack.Common.Settings.Required');
+                return;
+            }
+        }
+
+        if ($('#mainForm').valid()) {
+
+            $(this).prop('disabled', true);
+
+            $('#mainForm').submit();
+
+        } else {
+            $(this).prop('disabled', false);
+        }
+
+    });
+
+    $('#searchBox #StatusLkpId').select2(ReturnSelect2ObjectForLkpsTypes('@ERP.Front.Helpers.Enums.Common.FndLkpsTypes.ApPaymentsTransactionsStatues.ToString()'));
+    $('#searchBox #VendorId').select2(ReturnSelect2ObjectDefault(`${baseUrl}/ApVendors/GetVendorsSelect2`));
+    $('#PaymentTypeLkpId').select2(ReturnSelect2ObjectForLkpsTypes('@ERP.Front.Helpers.Enums.Common.FndLkpsTypes.ApPaymentsTransactionsPaymentType.ToString()'));
+    $('#VendorId').select2(ReturnSelect2ObjectDefault(`${baseUrl}/ApVendors/GetVendorsSelect2`));
+
+
+    //$('#mainForm #BankAccountId').select2(ReturnSelect2ObjectCustomParams(`${baseUrl}/ApBankAccounts/GetUserAccessedApBankAccountsSelect2`,
+     //   { bankLkpId:@Convert.ToInt64(ERP.Front.Helpers.Enums.Common.FndBankLkpsTypes.Bank)}));
+
+    $('#mainForm #BankAccountId').select2({
+        ajax: {
+            url: `${baseUrl}/ApBankAccounts/GetUserAccessedApBankAccountsSelect2`,
+            dataType: 'json',
+            headers: {
+                'Authorization': `Bearer ${$_token}`
+            },
+            data: function (params) {
+                params.page = params.page || 1;
+                return {
+                    bankLkpId: $('#PaymentTypeLkpId').find(':selected').val() ?
+                        ($('#PaymentTypeLkpId').find(':selected').val() == 714  ?
+                                        @Convert.ToInt64(ERP.Front.Helpers.Enums.Common.BankType.Box) :
+                            ($('#PaymentTypeLkpId').find(':selected').val() == 715 ?
+                                            @Convert.ToInt64(ERP.Front.Helpers.Enums.Common.BankType.Bank) : '')) : '',
+                    pageSize: pageSize,
+                    pageNumber: params.page,
+                    searchTerm: params.term,
+                    lang: lang
+                };
+            },
+            processResults: function (data, params) {
+
+                params.page = params.page || 1;
+
+                return {
+                    results: data.result.results,
+                    pagination: {
+                        more: (params.page * pageSize) < data.Total
+                    }
+                };
+            }
+        },
+        placeholder: select2Placeholder,
+        minimumInputLength: 0,
+        allowClear: true,
+        language: select2Lang
+    });
+
+
+    $('#PaymentTypeLkpId').on('change', function () {
+
+        $('#mainForm #BankAccountId').val('').trigger('change');
+
+    });
+
+    function printExc() {
+        $('.page-loader-wrapper').show();
+        const parmss = {
+            PaymentNumber: $('#searchBox #PaymentNumber').val(),
+            PaymentDate: $('#searchBox #PaymentDate').val(),
+            StatusLkpId: $('#searchBox #StatusLkpId').find(':selected').val(),
+            VendorId: $('#searchBox #VendorId').find(':selected').val(),
+            length: 1000000
+        };
+
+        const columns = [
+            {
+                "data": "result.data.id",
+                'render': function (data, type, row, meta) {
+                    return meta.row + meta.settings._iDisplayStart + 1;
+                }
+            },
+            {
+                "data": "PaymentNumber",
+                "name": "PaymentNumber",
+                "autoWidth": true
+            },
+            {
+                "data": "PaymentDate",
+                "name": "PaymentDate",
+                "autoWidth": true
+            },
+            {
+                "data": "CheckNumber",
+                "name": "CheckNumber",
+                "autoWidth": true
+            },
+            {
+                "data": null,
+                "autoWidth": true,
+                "render": function (d, t, row) {
+                    if (row.ApVendors == null) return '';
+
+                    return lang === 'ar-EG' ? row.ApVendors.VendorNameAr : row.ApVendors.VendorNameEn;
+                }
+            },
+            {
+                "data": null,
+                "autoWidth": true,
+                "render": function (d, t, row) {
+                    if (row.FndStatusLkp == null) return '';
+
+                    return lang === 'ar-EG' ? row.FndStatusLkp.NameAr : row.FndStatusLkp.NameEn;
+                }
+            },
+            {
+                "data": "Notes",
+                "name": "Notes",
+                "autoWidth": true
+            }
+        ];
+
+        const dtObj = {
+            "language": dataTableLang,
+            "dom": 'Bfrtip',
+            "buttons": [
+                {
+                    extend: 'excel',
+                    messageTop: `${$('#PaymentNumber').siblings().text()}: ${(parmss.PaymentNumber) ? parmss.PaymentNumber : '--'}, ${$('#PaymentDate').siblings().text()}: ${(parmss.PaymentDate) ? parmss.PaymentDate : '--'}, ${$('[for="StatusLkpId"]').text()}: ${(parmss.StatusLkpId) ? parmss.StatusLkpId : '--'}, ${$('[for="VendorId"]').text()}: ${(parmss.VendorId) ? parmss.VendorId : '--'}`
+                },
+
+            ],
+            "ajax": {
+                "url": _loadDataUrl,
+                "type": "POST",
+                "datatype": "json",
+                "data": parmss,
+                "complete": function (d) {
+                    _tblLoader.hide();
+                }
+            },
+            "columns": columns,
+
+            "initComplete": function () {
+                $('#tblApPaymentsTransactionsPrint_wrapper button.dt-button').click();
+                $('#tblApPaymentsTransactionsPrint_wrapper').parent().addClass('d-none');
+
+            }
+        };
+
+        $('#tblApPaymentsTransactionsPrint').dataTable().fnDestroy();
+        $('#tblApPaymentsTransactionsPrint').DataTable(dtObj).on('buttons-processing', function (e, indicator) { if (!indicator) { $('.page-loader-wrapper').hide() } });
+
+
+    }
+</script>
+

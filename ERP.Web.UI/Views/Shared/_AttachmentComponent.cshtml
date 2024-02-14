@@ -1,0 +1,16 @@
+﻿@model ERP.Web.UI.Models.ViewModels.AttachmentComponentModelVM
+<div class="row">
+    <div class="col-md-12 col-sm-12">
+        <div class="file-field input-field" style="margin:0px">
+            <div class="file-path-wrapper">
+                <div class="btn" style="margin-top: 1rem;">
+                    <span>@ERP.ResourcePack.Common.Settings.UploadFile</span>
+                    @if (Model != null)
+                    {
+                        <input type="file" id="@Model.FileUploaderId" name="file" onchange="return ConfirmAttachmentUpload('@Model.HidenFilePathId','@Model.ImgId','@Model.FileUploaderId','@Model.fNameSelector')">
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

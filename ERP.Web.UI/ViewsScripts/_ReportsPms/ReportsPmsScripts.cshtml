@@ -1,0 +1,54 @@
+﻿<script>
+    $(function () {
+        $('#ReportsPms').addClass('active');
+    });
+
+    $('#PmUnitTypeLkpId').select2(ReturnSelect2ObjectForLkpsTypes('PmPropertiesUnitsUnitType'));
+    $('#PropertyId').select2(ReturnSelect2ObjectDefault(`${baseUrl}/PmProperties/GetPmPropertiesSelect2`));
+    $('#OwnerId').select2(ReturnSelect2ObjectDefault(`${baseUrl}/PmOwners/GetPmOwnersSelect2`));
+
+    const PrintTmCharityBoxListReport = function () {
+
+        $('.page-loader-wrapper').css('display', 'block');
+
+        $.ajax({
+            url: `${$PrefixHostName}/ReportsPms/PrintPmList`,
+            method: 'POST',
+            header: {
+                'Authorization':`bearer ${$_token}`
+            },
+            data: {
+                Lang: lang,
+                TenantId:@Session["TenantId"],
+                OwnerId: $('#OwnerId').find(':selected').val(),
+                OwnerIdtxt: $('#OwnerId').find(':selected').text(),
+                PmUnitTypeLkpId:$('#PmUnitTypeLkpId').find(':selected').val(),
+                PmUnitTypeLkpIdtxt:$('#PmUnitTypeLkpId').find(':selected').text(),
+                PropertyId: $('#PropertyId').find(':selected').val(),
+                PropertyIdtxt: $('#PropertyId').find(':selected').text()
+            }
+        }).done(function (data) {
+
+            if (data.length > 0) {
+                           
+              $('.page-loader-wrapper').css('display', 'none');
+                var src = formAction;
+
+              $('#bodyss').html('')
+              $('#bodyss').append('<iframe id="ifram1" style="width:100%;height:550px" src="' + src + '"></iframe>')
+              $('#model').modal('show');
+
+            }
+            else {
+                  $('.page-loader-wrapper').css('display', 'none');
+                  toastr.warning(NoData);
+            }
+
+        }).fail(function (response,x,r) {
+            toastr.error(response.responseText);
+        });
+
+    };
+
+
+</script>

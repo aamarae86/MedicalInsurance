@@ -1,0 +1,11 @@
+﻿@{
+    ViewBag.Title = ERP.ResourcePack.Common.Pages.Title;
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@Html.Action(nameof(ERP.Web.UI.Controllers.WebViewsController.PagesSearch))
+@Html.Action(nameof(ERP.Web.UI.Controllers.WebViewsController.PagesData))
+
+@section scripts{
+    @Html.Partial("~/ViewsScripts/Pages/PagesScripts.cshtml")
+}

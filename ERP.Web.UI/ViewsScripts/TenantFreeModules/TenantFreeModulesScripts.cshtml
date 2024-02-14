@@ -1,0 +1,192 @@
+﻿@using ERP.Authorization;
+@using ERP.Web.UI.Controllers
+@using ERP.ResourcePack.Common
+@{
+    string permissionsStr = TempData["Permissions"].ToString();
+}
+<script>
+    const _mainController = "TenantFreeModules", _apiAppService = "TenantFreeModules";
+
+    $(function () {
+        //debugger;
+        LoadDataGrid();
+
+        $('#TenantFreeModules').addClass('active');
+
+    });
+
+    const _loadDataUrl = `${$PrefixHostName}/${_mainController}/@nameof(TenantFreeModulesController.LoadDataGrid)`;
+    const _tblSelector = $('#tblTenantFreeModules');
+    const _tblSelectorbody = $('#tblTenantFreeModules tbody');
+
+    const _permissions = '@permissionsStr';
+    const _updatePermission = '@PermissionNames.Pages_TenantFreeModules_Update';
+
+    var OnBegin = function (response) {
+        fireBtnLoader();
+    };
+
+    var OnSuccess = function (response) {
+
+        if (response.success) {
+
+            if (response.customRestResult.trigger === '@ERP.Front.Helpers.Enums.Common.FormTriggers.Insert') {
+
+                toastr.success(response.customRestResult.message);
+
+                LoadDataGrid();
+
+                _mainModal.modal('hide');
+
+            } else if (response.customRestResult.trigger === '@ERP.Front.Helpers.Enums.Common.FormTriggers.Update') {
+
+                LoadDataGrid();
+
+                _mainModal.modal('hide');
+
+                toastr.success(response.customRestResult.message);
+            }
+
+        } else {
+            toastr.error(response.customRestResult.message);
+        }
+
+    };
+
+    var OnComplete = function (response) {
+        downBtnLoader();
+    };
+
+    var OnFailure = function (response) {
+        toastr.error(response);
+        downBtnLoader();
+    };
+
+    const LoadDataGrid = function () {
+
+        const parms = {
+            Name: $('#searchBox #Name').val(),
+            Phone: $('#searchBox #Phone').val(),
+            Email: $('#searchBox #Email').val(),
+
+
+        };
+
+        $('#dataCollapse').show();
+
+        const columns = [
+            {
+                "data": "result.data.id",
+                'render': function (data, type, row, meta) {
+                    return meta.row + meta.settings._iDisplayStart + 1;
+                }
+            },
+            {
+                "data": "Name",
+                "name": "Name",
+                "autoWidth": true
+            },
+
+            {
+                "data": null,
+                "autoWidth": true,
+                "render": function (d, t, row) {
+                    return lang === 'ar-EG' ? row.FullName : row.FullName;
+                }
+            },
+            {
+                "data": null,
+                "autoWidth": true,
+                "render": function (d, t, row) {
+                    return lang === 'ar-EG' ? row.TenantNameAr : row.TenantNameEn  ;
+                }
+            },
+
+             {
+                 "data": "Tel",
+                 "name": "Tel",
+                "autoWidth": true
+            },
+            {
+                "data": "AdminValue",
+                "name": "AdminValue",
+                "autoWidth": true
+            },   {
+                "data": "UserValue",
+                "name": "UserValue",
+                "autoWidth": true
+            },
+            {
+                "data": "CreationTime",
+                "name": "CreationTime",
+                "autoWidth": true
+            },
+            {
+                "data": "AdminSubEndDate",
+                "name": "AdminSubEndDate",
+                "autoWidth": true
+            },
+            {
+                "data": "RemainingDays",
+                "name": "RemainingDays",
+                "autoWidth": true
+            },
+            {
+                "data": "Email",
+                "name": "Email",
+                "autoWidth": true
+            },
+            {
+                "data": "MobileNo",
+                "name": "MobileNo",
+                "autoWidth": true
+            },
+
+            {
+                "data": null,
+                "sortable": false,
+                "render": function (data, type, row) {
+
+                    let formAction = `${$PrefixHostName}/${_mainController}/@nameof(TenantFreeModulesController.TenantFreeModulesForm)`;
+
+                    let formTitle = '@ERP.ResourcePack.Common.Menu.TenantModules', btns = '';
+
+                    if (_permissions.includes(_updatePermission)) {
+                        btns += `<a href="javascript:void(0)" onclick="AjaxController.GetFormModal(${row.Id},'@ERP.Front.Helpers.Enums.Common.FormTriggers.Update','${formAction}','${formTitle}');" title="@ERP.ResourcePack.Common.Settings.Edit"><i class="mx-2 mx-2 fas fa-key text-danger"></i></a>`;
+                        btns += `<a href="javascript:void(0)" onclick="AjaxController.GetFormModal(${row.Id},'chgPaymentValues','${formAction}','${formTitle}');" title="@ERP.ResourcePack.Common.Settings.Edit"><i class="mx-2 mx-2 fas fa-edit text-info"></i></a>`;
+
+
+                    }
+
+                    //btns += `<a href="javascript:void(0)" onclick="AjaxController.GetFormModal(${row.Id},'@ERP.Front.Helpers.Enums.Common.FormTriggers.Show','${formAction}','${formTitle}');" title="@ERP.ResourcePack.Common.Settings.Show"><i class="mx-2 fas fa-eye text-info"></i></a>`;
+
+                    return btns;
+                }
+            }
+        ];
+
+        const dtObj = {
+            "processing": true,
+            "serverSide": true,
+            "filter": false,
+            "orderMulti": false,
+            "language": dataTableLang,
+            "ajax": {
+                "url": _loadDataUrl,
+                "type": "POST",
+                "datatype": "json",
+                "data": parms,
+            },
+            "columns": columns,
+            "initComplete": function () {
+                $('[data-toggle="tooltip"]').tooltip();
+            }
+        };
+
+        _tblSelector.dataTable().fnDestroy();
+        _tblSelector.DataTable(dtObj).on('draw', function () { $('[data-toggle="tooltip"]').tooltip(); });
+    };
+
+   // $('#searchBox #ModuleId').select2(ReturnSelect2ObjectDefault(`${baseUrl}/Modules/GetSelect2`))
+
+</script>

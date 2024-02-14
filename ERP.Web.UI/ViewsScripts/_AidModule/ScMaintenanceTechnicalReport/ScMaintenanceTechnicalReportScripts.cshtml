@@ -1,0 +1,533 @@
+﻿@using ERP.Web.UI.Controllers.AidModule
+@using ERP.Web.UI.Models.ViewModels.AidModule
+@using ERP.ResourcePack.AidModule
+@using ERP.Authorization;
+@{
+    string permissionsStr = TempData["Permissions"].ToString();
+    string encUpdateTrigger = ERP.Front.Helpers.Enums.Common.EncUpdate;
+    string encShowTrigger = ERP.Front.Helpers.Enums.Common.EncShow;
+}
+
+@if (permissionsStr.Contains(PermissionNames.Pages_ScMaintenanceTechnicalReport_Post))
+{
+    <script>
+        const PostAjax = function (id) {
+
+            bootbox.confirm({
+                message: _booBoxMessagePosting,
+                buttons: bootBoxDefaultBtns,
+                callback: function (result) {
+
+                    if (result) {
+
+                        const data = {
+                            id: id,
+                            lang: lang,
+                            userId: 0
+                        };
+
+                        $.ajax({
+                            url: `${baseUrl}/ScMaintenanceTechnicalReport/PostScMaintenanceTechnicalReport`,
+                            type: 'POST',
+                            data: JSON.stringify(data),
+                            headers:
+                            {
+                                'Content-Type': 'application/json',
+                                'Authorization': `Bearer ${$_token}`
+                            },
+                        }).done(function (response) {
+
+                            if (response.result.finalStatues == 'F') {
+                                toastr.warning(response.result.reason);
+                            }
+                            else {
+                                toastr.success(response.result.reason);
+
+                                if (formView) {
+
+                                    setTimeout(function () {
+                                        window.location.href = $PrefixHostName + '/ScMaintenanceTechnicalReport';
+                                    }, 100);
+
+                                } else {
+                                    LoadDataGrid();
+                                }
+                            }
+                        }).fail(function (response) {
+                            toastr.error(response);
+                        });
+                    }
+                }
+            });
+        };
+    </script>
+}
+else
+{
+    <script>
+        const PostAjax = function (id) { };
+    </script>
+}
+
+<script>
+    $(function () {
+
+        $('.datepicker').on('change', function (e, date) {
+            $(this).siblings('label').focus();
+        });
+
+        $('#ScMaintenanceTechnicalReport').addClass('active');
+
+        LoadDataGrid();
+    });
+
+    const _mainController = "ScMaintenanceTechnicalReport", _apiAppService = "ScMaintenanceTechnicalReport";
+    const _loadDataUrl = `${$PrefixHostName}/${_mainController}/@nameof(ScMaintenanceTechnicalReportController.LoadDataGrid)`;
+    const _tblSelector = $('#tblScMaintenanceTechnicalReport');
+    const _mainForm = $('#mainForm');
+
+    const _permissions = '@permissionsStr';
+    const _updatePermission = '@PermissionNames.Pages_ScMaintenanceTechnicalReport_Update';
+    const _deletePermission = '@PermissionNames.Pages_ScMaintenanceTechnicalReport_Delete';
+    const _postPermission = '@PermissionNames.Pages_ScMaintenanceTechnicalReport_Post';
+    const _PostStatus = @Convert.ToInt64(ERP.Front.Helpers.Enums.Common.ScMaintenanceTechnicalReport.Posted);
+
+    $('#btnSubmition').on('click', function () {
+
+        _mainForm.submit();
+
+        if (_mainForm.valid()) {
+
+            $(this).prop('disabled',true);
+
+        } else {
+
+            $(this).prop('disabled', false);
+        }
+
+    });
+
+    var OnBegin = function (response) {
+        fireBtnLoader();
+    };
+
+    var OnSuccess = function (response) {
+
+        if (response.success) {
+
+            if (response.customRestResult.trigger === '@ERP.Front.Helpers.Enums.Common.FormTriggers.Insert') {
+
+                toastr.success(response.customRestResult.message);
+
+                setTimeout(function () {
+                    window.location.href = $PrefixHostName + '/ScMaintenanceTechnicalReport';
+                }, 200);
+
+
+            } else if (response.customRestResult.trigger === '@ERP.Front.Helpers.Enums.Common.FormTriggers.Update') {
+
+
+                toastr.success(response.customRestResult.message);
+
+                setTimeout(function () {
+                    window.location.href = $PrefixHostName + '/ScMaintenanceTechnicalReport';
+                }, 200);
+            }
+
+        } else {
+            toastr.error(response.customRestResult.message);
+        }
+
+        $('#btnSubmition').prop('disabled', false);
+    };
+
+    var OnComplete = function (response) {
+        downBtnLoader();
+        $('#btnSubmition').prop('disabled', false);
+    };
+
+    var OnFailure = function (response) {
+        toastr.error(response);
+        $('#btnSubmition').prop('disabled', false);
+    };
+
+   const LoadDataGrid = function () {
+
+        const parms = {
+            TechnicalReportDate: $('#searchBox #TechnicalReportDate').val(),
+            TechnicalReportNumber: $('#searchBox #TechnicalReportNumber').val(),
+            PortalRequestNumber: $('#searchBox #PortalRequestNumber').val(),
+            StatusLkpId: $('#searchBox #StatusLkpId').find(':selected').val(),
+            PortalUserId: $('#searchBox #PortalUserName').find(':selected').val()
+        };
+
+       const columns = [
+           {
+               "data": "result.data.id",
+               'render': function (data, type, row, meta) {
+                   return meta.row + meta.settings._iDisplayStart + 1;
+               }
+           },
+           {
+               "data": "TechnicalReportNumber",
+               "name": "TechnicalReportNumber",
+               "autoWidth": true
+           },
+           {
+               "data": "TechnicalReportDate",
+               "name": "TechnicalReportDate",
+               "autoWidth": true
+           },
+           {
+               "data": null,
+               "autoWidth": true,
+               "render": function (data, type, row) {
+                   return row.PortalRequest.PortalRequestNumber;
+               }
+           },
+           {
+               "data": null,
+               "autoWidth": true,
+               "render": function (data, type, row) {
+                   return row.PortalRequest.Name;
+               }
+           },
+           {
+               "data": null,
+               "autoWidth": true,
+               "render": function (data, type, row) {
+                   return lang === 'ar-EG' ? row.FndStatusLkp.NameAr : row.FndStatusLkp.NameEn
+               }
+           },
+           {
+               "data": null,
+               "sortable": false,
+               "render": function (data, type, row) {
+
+                   let formAction = `${$PrefixHostName}/${_mainController}/@nameof(ScMaintenanceTechnicalReportController.ScMaintenanceTechnicalReportForm)`;
+                   let DeleteAction = `${$PrefixHostName}/${_mainController}/@nameof(ScMaintenanceTechnicalReportController.Delete)`;
+
+                   let btns = '';
+
+                   if (_permissions.includes(_postPermission) & row.StatusLkpId != _PostStatus) {
+                       btns += `<a href="javascript:void(0)" onclick="PostAjax(${row.Id})" title="@ERP.ResourcePack.Common.Settings.Post"><i class="mx-2 fas fa-check-circle text-info"></i></a>`;
+                   }
+
+                  if (_permissions.includes(_updatePermission) && row.StatusLkpId != _PostStatus) {
+                       btns += `<a href="${$PrefixHostName}/ScMaintenanceTechnicalReport/FormView?id=${row.EncId}&t=@encUpdateTrigger" title="@ERP.ResourcePack.Common.Settings.Edit"><i class="mx-2 fas fa-edit text-info"></i></a>`;
+                  }
+
+                   btns += `<a href="${$PrefixHostName}/ScMaintenanceTechnicalReport/FormView?id=${row.EncId}&t=@encShowTrigger" title="@ERP.ResourcePack.Common.Settings.Show"><i class="mx-2 fas fa-eye text-info"></i></a>`;
+
+                   if (_permissions.includes(_updatePermission) && row.StatusLkpId != _PostStatus) {
+                       btns += `<a href="javascript:void(0)" onclick="AjaxController.DeleteMainTableRow(${row.Id},'${DeleteAction}');" title="@ERP.ResourcePack.Common.Settings.Delete"><i class="mx-2 fas fa-trash-alt text-danger"></i></a>`;
+                   }
+
+                  // btns += `<a href="javascript:void(0);" onclick="return print('${$PrefixHostName}/ScMaintenanceTechnicalReport/PrintGlJeScreen','${row.EncId}','${lang}')" title="@ERP.ResourcePack.Common.Settings.Print"><i class="mx-2 fas fa-print text-success"></i></a>`;
+
+                   const _auditedPermission = '@PermissionNames.Pages_ScMaintenanceTechnicalReport_Audit';
+
+                   if (_permissions.includes(_auditedPermission)){
+
+                       row.permission = _auditedPermission;
+
+                       btns += GetAuditedButton(row);
+                   }
+
+                   return btns;
+               }
+           }
+       ];
+
+        const dtObj = {
+            "processing": true,
+            "serverSide": true,
+            "filter": false,
+            "orderMulti": false,
+            "language": dataTableLang,
+            "ajax": {
+                "url": _loadDataUrl,
+                "type": "POST",
+                "datatype": "json",
+                "data": parms,
+                "complete": function () { }
+            },
+            "columns": columns,
+            "initComplete": function () {
+                $('[data-toggle="tooltip"]').tooltip();
+            }
+        };
+
+        _tblSelector.dataTable().fnDestroy();
+        _tblSelector.DataTable(dtObj).on('draw', function () { $('[data-toggle="tooltip"]').tooltip(); });
+
+        setTimeout(function () {
+            $(".sorting_1").removeAttr('colspan');
+        }, 500);
+
+    };
+
+    $('#searchBox #StatusLkpId').select2(ReturnSelect2ObjectForLkpsTypes('@ERP.Front.Helpers.Enums.Common.FndLkpsTypes.ScMaintenanceTechnicalReportStatues.ToString()'));
+    $('#searchBox #PortalUserName').select2(ReturnSelect2ObjectDefault(`${baseUrl}/PortalUserData/GetUnifiedPortalUsersFromPortalUsersDataSelect2`));
+
+    $('#PortalRequestId').select2(ReturnSelect2ObjectDefault(`${baseUrl}/ScPortalRequest/GetScPortalRequestMaintenanceSelect2`));
+    $('#Details_PortalUser_Name').select2(ReturnSelect2ObjectDefault(`${baseUrl}/ScPortalRequest/GetScPortalRequestMaintenanceNameSelect2`));
+
+    $('#PortalRequestId').on('select2:select', function (e) {
+
+        $('#ScCommitteeDetailId').val(e.params.data.altText.split('-')[1]);
+
+        $(`#Details_PortalUser_Name`).append($("<option selected='selected'></option>")
+            .val(e.params.data.id).text(e.params.data.altText.split('-')[0]).trigger('change'));
+    });
+
+    $('#Details_PortalUser_Name').on('select2:select', function (e) {
+
+        $(`#PortalRequestId`).append($("<option selected='selected'></option>")
+            .val(e.params.data.id).text(e.params.data.altText.split('-')[0]).trigger('change'));
+
+        $('#ScCommitteeDetailId').val(e.params.data.altText.split('-')[1]);
+    });
+
+</script>
+
+<script>
+
+    const BindScMaintenanceQuotationDetailsTable = function (detailArr) {
+
+        const columns = [
+            { 'data': 'index' },
+            {
+                'data': 'quotationNumber',
+                'render': function (d,t,row) {
+                    return `<a style="color:#3443434;text-decoration:underline" href="${$PrefixHostName}/ScMaintenanceQuotations/FormView?id=${row.encId}&t=@encShowTrigger">${row.quotationNumber}</a>`;
+                }
+            },
+            { 'data': lang == 'ar-EG' ? 'statusAr' : 'statusEn' },
+            { 'data': 'quotationDate' },
+            { 'data': 'vendorNumber' },
+            { 'data': lang == 'ar-EG' ? 'vendorAr' : 'vendorEn' },
+            { 'data': 'totalAmount' }
+        ];
+
+        const dtObj = {
+            data: detailArr,
+            retrieve: true,
+            language: dataTableLang,
+            columns: columns,
+            drawCallback: function (c, v, b) { }
+        };
+
+        setTimeout(function () {
+
+            $('#tblScMaintenanceQuotations').dataTable().fnDestroy();
+            $('#tblScMaintenanceQuotations').DataTable(dtObj).on('draw', function () { $('[data-toggle="tooltip"]').tooltip(); });
+
+        }, 100);
+
+    };
+
+    const LoadScMaintenanceQuotationDetailsData = function (id) {
+
+        $.ajax({
+            url: `${baseUrl}/ScMaintenanceTechnicalReport/GetAllScMaintenanceTechnicalReportQuotations`,
+            method: 'GET',
+            headers: { 'Authorization': `Bearer ${$_token}` },
+            data: { id: id }
+        }).done(function (data) {
+
+            const list = [...data.result];
+
+            list.forEach(function (item, index) {
+                item.index = ++index;
+            });
+
+            BindScMaintenanceQuotationDetailsTable(list);
+
+        });
+
+    };
+
+</script>
+
+<script name="AccountLines">
+
+    const _tblAccountLineSelector = $('#tblAccountLines');
+    const _accountLinesListStr = $('#ScMaintenanceTechnicalReportDetailListStr');
+
+    let _arrAccountLines = [], updatedAccountLineRow, sumAccountLineDebit = 0, sumAccountLineCredit = 0, tblAccountLineCounterIndex = 0;
+
+    const fillAccountLines = function () {
+
+        const current = {
+            index: ++tblAccountLineCounterIndex,
+            itemDescription: $('#accounts-lines #DetailItemDescription').val(),
+            rowStatus: NewStatus
+        };
+
+        return current;
+    };
+
+    const AddAccountLine = function () {
+
+        const current = fillAccountLines();
+
+        if (!current) {
+             toastr.warning('!');
+             return;
+        }
+
+        _arrAccountLines.push(current);
+
+        _accountLinesListStr.val(JSON.stringify(_arrAccountLines));
+
+        BindAccountLinesTable();
+
+        ClearDetailForm('accounts-lines');
+    };
+
+    const BindAccountLinesTable = function () {
+
+        const detailArr = _arrAccountLines.filter(z => z.rowStatus !== DeletedStatus);
+
+        const columns = [
+            { 'data': 'index' },
+            { 'data': 'itemDescription' },
+            {
+                'data': null,
+                'searchable': false,
+                'ordering': false,
+                'sorting': false,
+                'render': function (d, t, row) {
+
+                    let rows = '';
+
+                    if (primaryEntityKeyId === 0 || trigger !== '@ERP.Front.Helpers.Enums.Common.FormTriggers.Show.ToString()') {
+
+                        rows += `<td><a href="javascript:void(0)" onclick="return DeleteAcccountLine(${row.index})"><i class="mx-2 fas fa-trash-alt text-danger"></i></a>`;
+                        rows += `<a href="javascript:void(0)" onclick="return GetAccountLineRow(${row.index})"><i class="mx-2 fas fa-edit text-success"></i></a></td>`;
+                    }
+                    else {
+                        rows += '<td></td>';
+                    }
+
+                    return rows;
+                }
+            }
+        ];
+
+        const dtObj = {
+            data: detailArr,
+            retrieve: true,
+            language: dataTableLang,
+            columns: columns,
+            drawCallback: function (c, v, b) { }
+        };
+
+        setTimeout(function () {
+
+            _tblAccountLineSelector.dataTable().fnDestroy();
+            _tblAccountLineSelector.DataTable(dtObj).on('draw', function () { $('[data-toggle="tooltip"]').tooltip(); });
+
+        }, 100);
+
+    };
+
+    const DeleteAcccountLine = function (index) {
+
+        const current = _arrAccountLines.find(z => z.index === index);
+
+        const indexOfCurrent = _arrAccountLines.indexOf(current);
+
+        if (!current.id) {
+
+           _arrAccountLines.splice(indexOfCurrent, 1);
+
+        } else {
+
+            current.rowStatus = DeletedStatus;
+
+           _arrAccountLines.splice(indexOfCurrent, 1,current);
+        }
+
+
+        BindAccountLinesTable();
+
+        _accountLinesListStr.val(_arrAccountLines.length === 0 ? '' : JSON.stringify(_arrAccountLines));
+    };
+
+    const LoadAccountLineData = function () {
+
+        $.ajax({
+            url: `${baseUrl}/ScMaintenanceTechnicalReport/GetAllAccountLineData`,
+            method: 'GET',
+            headers: {
+                        'Authorization': `Bearer ${$_token}`
+            },
+            data: {
+                id: primaryEntityKeyId
+            }
+        }).done(function (data) {
+
+            _arrAccountLines = [...data.result];
+
+            tblAccountLineCounterIndex = 0;
+
+            _arrAccountLines.forEach(function (item, index) {
+                item.index = ++tblAccountLineCounterIndex;
+            });
+
+            BindAccountLinesTable();
+
+            _accountLinesListStr.val(JSON.stringify(_arrAccountLines));
+        });
+
+    };
+
+    const GetAccountLineRow = function (tblIndex) {
+
+        $('#btnAddAccountLineRow').hide();
+        $('#btnUpdateAccountLineRow').show();
+        $('#btnCancelAccountLineRow').show();
+
+        const current = _arrAccountLines.find(z => z.index === tblIndex);
+
+        $('#accounts-lines #DetailItemDescription').val(current.DetailItemDescription);
+
+        $('#accounts-lines #DetailItemDescription').parent('.form-line').addClass('focused');
+
+        updatedAccountLineRow = current;
+
+    };
+
+    const UpdateAccountLineRow = function () {
+
+        let current = _arrAccountLines.find(z => z.index === updatedAccountLineRow.index);
+
+        let indexOfCurrent = _arrAccountLines.indexOf(current);
+
+       const newRow = fillAccountLines();
+
+        if (!newRow) {
+             toastr.warning('!!');
+             return;
+        }
+
+        newRow.id = updatedAccountLineRow.id;
+        newRow.index = current.index;
+        newRow.rowStatus = !updatedAccountLineRow.id ? NewStatus : UpdatedStatus;
+
+        _arrAccountLines.splice(indexOfCurrent, 1,newRow);
+
+        $('#btnAddAccountLineRow').show();
+        $('#btnUpdateAccountLineRow').hide();
+        $('#btnCancelAccountLineRow').hide();
+
+        ClearDetailForm('accounts-lines');
+
+        _accountLinesListStr.val(JSON.stringify(_arrAccountLines));
+
+        BindAccountLinesTable();
+    };
+
+</script>

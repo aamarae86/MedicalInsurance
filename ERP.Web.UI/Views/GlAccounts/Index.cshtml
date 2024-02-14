@@ -1,0 +1,14 @@
+﻿@{
+    ViewBag.Title = ERP.ResourcePack.Accounts.ArCustomers.titGlAccounts;
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+<link href="~/Scripts/dist/themes/default/style.min.css" rel="stylesheet" />
+<link href="~/Content/@ERP.ResourcePack.Common.Styles.treeStyles" rel="stylesheet" />
+
+@Html.Action(nameof(ERP.Web.UI.Controllers.Accounts.GlAccountsController.GlAccountsSearch))
+@Html.Action(nameof(ERP.Web.UI.Controllers.Accounts.GlAccountsController.GlAccountsData))
+@Html.Partial("_ReportModal")
+
+@section scripts{
+    @Html.Partial("~/ViewsScripts/GlAccounts/GlAccountsScripts.cshtml")
+}

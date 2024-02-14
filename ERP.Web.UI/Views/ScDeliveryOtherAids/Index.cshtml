@@ -1,0 +1,12 @@
+﻿@{
+    ViewBag.Title = ERP.ResourcePack.AidModule.ScCommitteesCheck.ScDeliveryOtherAids;
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@Html.Action(nameof(ERP.Web.UI.Controllers.AidModule.ScDeliveryOtherAidsController.ScDeliveryOtherAidsSearch))
+@Html.Action(nameof(ERP.Web.UI.Controllers.AidModule.ScDeliveryOtherAidsController.ScDeliveryOtherAidsData))
+
+@section scripts{
+    <script>let formView = false;</script>
+    @Html.Partial("~/ViewsScripts/_AidModule/ScDeliveryOtherAids/ScDeliveryOtherAidsScripts.cshtml")
+}

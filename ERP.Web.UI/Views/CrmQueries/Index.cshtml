@@ -1,0 +1,14 @@
+﻿@{
+    ViewBag.Title = ERP.ResourcePack.CRM.CrmQueries.CrmQueries.Title;
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@Html.Action(nameof(ERP.Web.UI.Controllers.CRM.CrmQueriesController.CrmQueriesSearch))
+@Html.Action(nameof(ERP.Web.UI.Controllers.CRM.CrmQueriesController.CrmQueriesData))
+
+@section scripts{
+    <script>let formView = false;</script>
+
+    @Html.Partial("~/ViewsScripts/_CRM/CrmQueriesScripts.cshtml")
+}
+ 

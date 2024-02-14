@@ -1,0 +1,117 @@
+﻿@using ERP.ResourcePack.SpGuarantees
+@using ERP.Web.UI.Models.ViewModels.SpGuarantees
+@model SpCaseOperationsVM
+@{
+    string permissions = TempData["Permissions"].ToString();
+}
+<div class="card">
+    <div class="header d-flex justify-content-start align-items-center">
+        <i class="fas fa-2x fa-chevron-down down-arr mr-2" data-toggle="collapse" data-target="#searchCollapse"></i>
+        <h2><strong>@SpCaseOperations.ReplaceOperation</strong></h2>
+    </div>
+    <div class="body collapse show" id="searchCollapse">
+        <div class="row clearfix">
+            @Html.HiddenFor(z => z.Id)
+            <div class="col-sm-6">
+                <div class="form-group form-float">
+                    <div class="form-line">
+                        @Html.TextBoxFor(z => z.CaseNumber, new { @class = "form-control", @disabled = "disabled" })
+                        @Html.LabelFor(z => z.CaseNumber, new { @class = "form-label" })
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-6">
+                <div class="form-group form-float">
+                    <div class="form-line">
+                        @Html.TextBoxFor(z => z.CaseName, new { @class = "form-control", @disabled = "disabled" })
+                        @Html.LabelFor(z => z.CaseId, new { @class = "form-label" })
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row clearfix">
+            <div class="col-sm-6">
+                <div class="form-group form-float">
+                    <div class="form-line">
+                        @Html.TextBoxFor(z => z.BeneficentNumber, new { @class = "form-control", @disabled = "disabled" })
+                        @Html.LabelFor(z => z.BeneficentNumber, new { @class = "form-label" })
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-6">
+                <div class="form-group form-float">
+                    <div class="form-line">
+                        @Html.TextBoxFor(z => z.BeneficentName, new { @class = "form-control", @disabled = "disabled" })
+                        @Html.LabelFor(z => z.BeneficentName, new { @class = "form-label" })
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row clearfix">
+            <div class="col-sm-6">
+                <div class="form-group form-float">
+                    <div class="form-line">
+                        @Html.TextBoxFor(z => z.SponsorLkpNameAr, new { @class = "form-control", @disabled = "disabled" })
+                        <label class="form-label">@SpCaseOperations.SponsorLkpNameAr</label>
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-6">
+                <div class="form-group form-float">
+                    <div class="form-line">
+                        @Html.TextBoxFor(z => z.ContractNumber, new { @class = "form-control", @disabled = "disabled" })
+                        @Html.LabelFor(z => z.ContractNumber, new { @class = "form-label" })
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row clearfix">
+            <div class="col-sm-6">
+                @Html.LabelFor(z => z.CaseNumber, new { @class = "form-label" })
+                <div class="form-group form-float">
+                    <div class="form-group">
+                        @Html.DropDownListFor(z => z.CaseId, Enumerable.Empty<SelectListItem>(), new { @class = "form-control", @id = "ddlCaseNumber" })
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-6">
+                @Html.LabelFor(z => z.CaseId, new { @class = "form-label" })
+                <div class="form-group form-float">
+                    <div class="form-group">
+                        @Html.DropDownListFor(z => z.CaseId, Enumerable.Empty<SelectListItem>(), new { @class = "form-control", @id = "ddlCaseName" })
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row clearfix">
+            <div class="col-sm-6">
+                <div class="form-group form-float">
+                    <div class="form-line">
+                        @Html.TextBoxFor(z => z.OperationDateStr, new { @class = "form-control datepicker" })
+                        @Html.LabelFor(z => z.OperationDateStr, new { @class = "form-label" })
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-6">
+                @Html.LabelFor(z => z.ReasonLkpId, new { @class = "form-label" })
+                <div class="form-group form-float">
+                    <div class="form-group">
+                        @Html.DropDownListFor(z => z.ReasonLkpId, Enumerable.Empty<SelectListItem>(), new { @class = "form-control" })
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row clearfix">
+            <div class="col-sm-12">
+                <div class="form-group m-2">
+                    @if (permissions.Contains(ERP.Authorization.PermissionNames.Pages_SpCaseOperationsReplace_Post))
+                    {
+                        <button id="btnReplace" class="btn btn-info" onclick="return OperateCase()">
+                            @ERP.ResourcePack.SpGuarantees.SpCaseOperations.BtnReplaceCase
+                        </button>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

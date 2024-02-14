@@ -1,0 +1,706 @@
+﻿@using ERP.ResourcePack.Warehouses
+@using ERP.Web.UI.Controllers.Warehouses
+@using ERP.Web.UI.Models.ViewModels.Warehouses
+@using ERP.Authorization;
+@{
+    string encUpdateTrigger = ERP.Front.Helpers.Enums.Common.EncUpdate;
+    string encShowTrigger = ERP.Front.Helpers.Enums.Common.EncShow;
+    string permissionsStr = TempData["Permissions"].ToString();
+}
+@if (permissionsStr.Contains(PermissionNames.Pages_IvStoreIssue_Post))
+{
+    <script>
+        const PostAjax = function (id) {
+
+            bootbox.confirm({
+                message: _booBoxMessagePosting,
+                buttons: bootBoxDefaultBtns,
+                callback: function (result) {
+
+                    if (result) {
+
+                        const data = {
+                            id: id,
+                            lang: lang,
+                            userId: 0
+                        };
+
+                        $.ajax({
+                            url: `${baseUrl}/IvStoreIssue/PostIvStoreIssue`,
+                            type: 'POST',
+                            data: JSON.stringify(data),
+                            headers:
+                            {
+                                'Content-Type': 'application/json',
+                                'Authorization': `Bearer ${$_token}`
+                            },
+                        }).done(function (response) {
+
+                            if (response.result.finalStatues == 'F') {
+                                toastr.warning(response.result.reason);
+                            }
+                            else {
+                                toastr.success(response.result.reason);
+
+                                if (formView) {
+
+                                    setTimeout(function () {
+                                        window.location.href = $PrefixHostName + '/IvStoreIssue';
+                                    }, 100);
+
+                                } else {
+                                    LoadDataGrid();
+                                }
+                            }
+
+                        }).fail(function (response) {
+                            toastr.error(response.responseText);
+                        });
+
+                    }
+
+                }
+            });
+
+
+        };
+    </script>
+}
+else
+{
+    <script>
+        const PostAjax = function (id) { };
+    </script>
+}
+<script>
+    const _mainController = "IvStoreIssue"
+
+    $(function () {
+        LoadDataGrid();
+        $('#tblIvStoreIssuePrint thead').html($('#tblIvStoreIssue thead').html());
+        $('#tblIvStoreIssuePrint thead tr :last-child').remove();
+        $('#IvStoreIssue').addClass('active');
+
+        $('#tblIvStoreIssueAttachments_wrapper .row:first').remove();
+        $('#tblIvStoreIssueAttachments_wrapper .row:last').remove();
+        $('#tblIvStoreIssueAttachments_wrapper th').removeClass('sorting');
+
+
+        if (formView && primaryEntityKeyId && $('#codeComUtilityIds').val()) {
+            BindCodeComUtilitesDropDowns(__arrGlSelect2, 'AccId', $('#codeComUtilityIds').val(), $('#codeComUtilityTexts').val());
+        }
+ });
+
+    const _loadDataUrl = `${$PrefixHostName}/${_mainController}/@nameof(IvStoreIssueController.LoadDataGrid)`;
+    const _tblSelector = $('#tblIvStoreIssue');
+    const _tblLoader = $('#tblLoader');
+    const _mainForm = $('#mainForm');
+
+    const _permissions = '@permissionsStr';
+    const _updatePermission = '@PermissionNames.Pages_IvStoreIssue_Update';
+    const _postPermission = '@PermissionNames.Pages_IvStoreIssue_Post';
+    const _deletePermission = '@PermissionNames.Pages_IvStoreIssue_Delete';
+
+    let tblHeadersAdded = false;
+
+    $('#btnSubmition').on('click', function () {
+
+        if (validateAtLeastOneDetailFailed()) {
+            toastr.warning(`@ERP.ResourcePack.Warehouses.IvStoreIssue.EmptyDetails : @ERP.ResourcePack.Common.Settings.Required`);
+            return;
+
+        }
+
+         const resultCodeComUtility = GetCodeComUtilites(__arrGlSelect2, 'AccId');
+
+        if (resultCodeComUtility) {
+
+            $('#@nameof(Model.codeComUtilityIds)').val(resultCodeComUtility.idsStr);
+            $('#@nameof(Model.codeComUtilityTexts)').val(resultCodeComUtility.textsStr);
+
+        } else {
+            toastr.warning(`@ERP.ResourcePack.AidModule.ScPortalRequestStudy.Account : @ERP.ResourcePack.Common.Settings.Required`);
+            return;
+        }
+
+        _mainForm.submit();
+
+        if (_mainForm.valid()) {
+
+            $(this).hide();
+            $('#submitLoader').show();
+
+        } else {
+
+            $(this).show();
+            $('#submitLoader').hide();
+        }
+
+    });
+
+    var OnBegin = function (response) {
+        fireBtnLoader();
+    };
+
+    var OnSuccess = function (response) {
+
+        if (response.success) {
+
+            if (response.customRestResult.trigger === '@ERP.Front.Helpers.Enums.Common.FormTriggers.Insert') {
+
+                toastr.success(response.customRestResult.message);
+
+                setTimeout(function () {
+                    window.location.href = $PrefixHostName + '/IvStoreIssue';
+                }, 200);
+
+            } else if (response.customRestResult.trigger === '@ERP.Front.Helpers.Enums.Common.FormTriggers.Update') {
+
+                toastr.success(response.customRestResult.message);
+
+                setTimeout(function () {
+                    window.location.href = $PrefixHostName + '/IvStoreIssue';
+                }, 200);
+            }
+
+        } else {
+            toastr.error(response.customRestResult.message);
+        }
+
+    };
+
+    var OnComplete = function (response) {
+        downBtnLoader();
+    };
+
+    var OnFailure = function (response) {
+        toastr.error(response);
+        console.log(response);
+        downBtnLoader();
+    };
+
+    const LoadDataGrid = function () {
+
+        $('#tblLoader').show();
+
+        const parms = {
+            IvWarehouseId: $('#Search_IvWarehouseId').find(':selected').val(),
+            StatusId: $('#Search_StatusId').find(':selected').val(),
+            StoreIssueNumber: $('#Search_IvStoreIssueNumber').val(),
+            StoreIssueDate: $('#Search_IvStoreIssueDate').val()
+        };
+
+        const columns = [
+            {
+                "data": "result.data.id",
+                'render': function (data, type, row, meta) {
+                    return meta.row + meta.settings._iDisplayStart + 1;
+                }
+            },
+            {
+                "data": "StoreIssueNumber",
+                "name": "StoreIssueNumber",
+                "autoWidth": true
+            },
+            {
+                "data": "StoreIssueDate",
+                "name": "StoreIssueDate",
+                "autoWidth": true
+            },
+            {
+                "data": null,
+                "autoWidth": true,
+                "render": function (d, t, row) {
+                    return row.IvWarehouseName;
+                },
+            },
+            {
+                "data": null,
+                "autoWidth": true,
+                "render": function (d, t, row) {
+
+                    if (row.StatusAr == null &&row.StatusEn == null )
+                        return '';
+
+                    if (lang === 'ar-EG')
+                        return row.StatusAr;
+
+                    return row.StatusEn;
+                },
+            },
+            {
+                "data": null,
+                "sortable": false,
+                "render": function (data, type, row) {
+
+                    let formAction = `${$PrefixHostName}/${_mainController}/@nameof(IvStoreIssueController.IvStoreIssueForm)`;
+                    let DeleteAction = `${$PrefixHostName}/${_mainController}/@nameof(IvStoreIssueController.Delete)`;
+
+                    let btns = '';
+
+                    if (_permissions.includes(_postPermission) && row.StatusLkpId == 772) {
+                        btns += `<a href="javascript:void(0)" onclick="PostAjax(${row.Id})" title="@ERP.ResourcePack.Common.Settings.Post"><i class="mx-2 fas fa-check-circle text-info"></i></a>`;
+                    }
+
+                    if (_permissions.includes(_updatePermission)) {
+                        btns += `<a href="${$PrefixHostName}/IvStoreIssue/FormView?id=${row.EncId}&t=@encUpdateTrigger" title="@ERP.ResourcePack.Common.Settings.Edit"><i class="mx-2 fas fa-edit text-info"></i></a>`;
+                    }
+
+                    btns += `<a href="${$PrefixHostName}/IvStoreIssue/FormView?id=${row.EncId}&t=@encShowTrigger" title="@ERP.ResourcePack.Common.Settings.Show"><i class="mx-2 fas fa-eye text-info"></i></a>`;
+
+                    if (_permissions.includes(_deletePermission) && row.StatusLkpId == 772) {
+                        btns += `<a href="javascript:void(0)" onclick="AjaxController.DeleteMainTableRow(${row.Id},'${DeleteAction}');" title="@ERP.ResourcePack.Common.Settings.Delete"><i class="mx-2 fas fa-trash-alt text-danger"></i></a>`;
+                    }
+
+                    btns += `<a href="javascript:void(0);" onclick="return print('${$PrefixHostName}/IvStoreIssue/PrintIvStoreIssueHdScreen','${row.EncId}','${lang}')" title="@ERP.ResourcePack.Common.Settings.Print"><i class="mx-2 fas fa-print text-success"></i></a>`;
+
+                    const _auditedPermission = '@PermissionNames.Pages_IvStoreIssue_Audit';
+
+                    if (_permissions.includes(_auditedPermission)) {
+
+                        row.permission = _auditedPermission;
+
+                        btns += GetAuditedButton(row);
+                    }
+
+                    return btns;
+                }
+            }
+        ];
+
+        const dtObj = {
+            "processing": true,
+            "serverSide": true,
+            "filter": false,
+            "orderMulti": false,
+            "language": dataTableLang,
+            "ajax": {
+                "url": _loadDataUrl,
+                "type": "POST",
+                "datatype": "json",
+                "data": parms,
+                "complete": function () {
+                    _tblLoader.hide();
+                }
+            },
+            "columns": columns,
+            "initComplete": function () {
+                $('[data-toggle="tooltip"]').tooltip();
+            }
+
+        };
+
+        _tblSelector.dataTable().fnDestroy();
+        _tblSelector.DataTable(dtObj).on('draw', function () { $('[data-toggle="tooltip"]').tooltip(); });
+
+        setTimeout(function () {
+            $(".sorting_1").removeAttr('colspan');
+        }, 500);
+    };
+
+    $('#@nameof(IvStoreIssueVM.Search_IvWarehouseId)').select2(ReturnSelect2ObjectDefault(`${baseUrl}/IvUserWarehousesPrivileges/GetIvWarehousesForIssueUserSelect2`));
+    $('#@nameof(IvStoreIssueVM.Search_StatusId)').select2(ReturnSelect2ObjectForLkpsTypes('@ERP.Front.Helpers.Enums.Common.FndLkpsTypes.IvStoreIssueHdStatues.ToString()'));
+
+    $('#@nameof(IvStoreIssueVM.IvWarehouseId)').select2(ReturnSelect2ObjectDefault(`${baseUrl}/IvUserWarehousesPrivileges/GetIvWarehousesForIssueUserSelect2`));
+    $('#@nameof(IvStoreIssueVM.BeneficiaryTypeLkpId)').select2(ReturnSelect2ObjectForLkpsTypes('@ERP.Front.Helpers.Enums.Common.FndLkpsTypes.IvStoreIssueHdBeneficiaryType.ToString()'));
+    $('#@nameof(IvStoreIssueVM.IssueTypeLkpId)').select2(ReturnSelect2ObjectForLkpsTypes('@ERP.Front.Helpers.Enums.Common.FndLkpsTypes.IvStoreIssueHdIssueType.ToString()'));
+
+    const print = function (url, id, lang) {
+        const data = { id: id, lang: lang };
+        openModal(data, url);
+    };
+
+</script>
+
+<script>
+
+    const _tblIvStoreIssueDetailSelector = $('#tblIvStoreIssueDetail');
+    const _tblIvStoreIssueDetailSelectorBody = $('#tblIvStoreIssueDetail tbody');
+    const _listIvStoreIssueDetail = $('#ListIvStoreIssueDetails');
+
+    let  totalOfTotal  = 0,totalCheck = 0;
+    let _IvStoreIssueDetailArr = [], tblLinesCounterIndex = 0 , updatedRow;
+
+    const fillIvStoreIssueDetail = function () {
+
+        const current = {
+            index: ++tblLinesCounterIndex,
+            ivItemId: $('#IvItemId').find(':selected').val(),
+            ivItemName: $('#IvItemId').find(':selected').text(),
+            ivUnitId: $('#IvUnitId').find(':selected').val(),
+            ivUnitName: $('#IvUnitId').find(':selected').text(),
+            ivItemNumber: $('#IvItemNumber').val(),
+            qty: $('#Qty').val(),
+            avgCost: $('#AvgCost').val(),
+            total: $('#Total').val(),
+            rowStatus: NewStatus,
+            IvStoreIssueId: primaryEntityKeyId,
+            id:0
+        };
+        current.total = current.avgCost * current.qty;
+
+        return current;
+    };
+
+    const AddIvStoreIssueDetail = function () {
+
+        let detail = fillIvStoreIssueDetail();
+
+        if (detail === undefined) return;
+
+        const detailArr = _IvStoreIssueDetailArr.filter(z => z.rowStatus !== DeletedStatus);
+
+        if (validateLinesWithParam(detailArr)) {
+
+            _IvStoreIssueDetailArr.push(detail);
+
+            _listIvStoreIssueDetail.val(JSON.stringify(_IvStoreIssueDetailArr));
+
+            bindIvStoreIssueDetailTable();
+
+            clearFormAdding();
+        }
+    };
+
+    const UpdateIvStoreIssueDetailRow = function () {
+
+        let current = _IvStoreIssueDetailArr.find(z => z.index === updatedRow.index);
+
+        let indexOfCurrent = _IvStoreIssueDetailArr.indexOf(current);
+
+        const newRow = fillIvStoreIssueDetail();
+
+        if (newRow === undefined) return;
+
+        newRow.id = updatedRow.id;
+        newRow.IvStoreIssueDetailtatusLkpId = updatedRow.IvStoreIssueDetailtatusLkpId;
+        //newRow.pmOwnerId = updatedRow.pmOwnerId;
+        newRow.rowStatus = !updatedRow.id ? NewStatus : UpdatedStatus;
+
+        _IvStoreIssueDetailArr.splice(indexOfCurrent, 1,newRow);
+
+        $('#btnAddIvStoreIssueDetailRow').show();
+        $('#btnUpdateIvStoreIssueDetailRow').hide();
+        $('#btnCancelIvStoreIssueDetailRow').hide();
+
+        clearFormAdding();
+
+        _listIvStoreIssueDetail.val(JSON.stringify(_IvStoreIssueDetailArr));
+
+        bindIvStoreIssueDetailTable();
+
+    };
+
+    const CancelEditIvStoreIssueDetailRow = function () {
+
+        clearFormAdding();
+
+        $('#btnCancelIvStoreIssueDetailRow').hide();
+        $('#btnUpdateIvStoreIssueDetailRow').hide();
+        $('#btnAddIvStoreIssueDetailRow').show();
+    };
+
+    const bindIvStoreIssueDetailTable = function () {
+
+        const detailArr = _IvStoreIssueDetailArr.filter(z => z.rowStatus !== DeletedStatus);
+
+        const columns = [
+            { 'data': 'index' },
+            { 'data': 'ivItemNumber' },
+            { 'data': 'ivItemName' },
+            { 'data': 'ivUnitName' },
+            { 'data': 'qty' },
+            {
+                'data': 'avgCost',
+                "render": $.fn.dataTable.render.number(',', '.', 2)
+            },
+            {
+                'data': 'total',
+                "render": $.fn.dataTable.render.number(',', '.', 2)
+            },
+            {
+                'data': null,
+                'searchable': false,
+                'ordering': false,
+                'sorting': false,
+                'render': function (d, t, row) {
+
+                    let rows = '';
+                    if (primaryEntityKeyId === 0 || trigger !== '@ERP.Front.Helpers.Enums.Common.FormTriggers.Show.ToString()') {
+                        rows += `<td><a href="javascript:void(0)" onclick="return DeleteRowLine(${row.index})"><i class="mx-2 fas fa-trash-alt text-danger"></i></a>`;
+                        rows += `<a href="javascript:void(0)" onclick="return GetRow(${row.index})"><i class="mx-2 fas fa-edit text-success"></i></a></td>`;
+                    } else {
+                        rows += '<td></td>';
+                    }
+
+                    return rows;
+                }
+            }
+        ];
+
+        const dtObj = {
+            data: detailArr,
+            retrieve: true,
+            language: dataTableLang,
+            columns: columns,
+            drawCallback: function (c, v, b) {
+
+                setTimeout(function () {
+                    var msgTotal = detailArr.reduce(function (prev, cur) {
+                        return prev + cur.total;
+                    }, 0);
+                    let rows = '';
+
+                    rows += '<tr>';
+                    rows += `<td></td><td></td><td></td><td></td><td></td><td></td><td><h3>${Number(msgTotal).toLocaleString(undefined, optionsNumFormat)}</h3></td>`;
+
+
+                    rows += '</tr>';
+
+                    _tblIvStoreIssueDetailSelector.append(rows);
+
+                }, 50);
+
+            }
+        };
+
+        setTimeout(function () {
+
+            _tblIvStoreIssueDetailSelector.dataTable().fnDestroy();
+            _tblIvStoreIssueDetailSelector.DataTable(dtObj).on('draw', function () { $('[data-toggle="tooltip"]').tooltip(); });
+
+        }, 100);
+
+    };
+
+    const DeleteRowLine = function (index) {
+
+        const current = _IvStoreIssueDetailArr.find(z => z.index === index);
+
+        const indexOfCurrent = _IvStoreIssueDetailArr.indexOf(current);
+
+        if (current.id === undefined || current.id == null || current.id == 0) {
+
+           _IvStoreIssueDetailArr.splice(indexOfCurrent, 1);
+
+        } else {
+
+            current.rowStatus = DeletedStatus;
+
+           _IvStoreIssueDetailArr.splice(indexOfCurrent, 1,current);
+        }
+
+        bindIvStoreIssueDetailTable();
+
+        _listIvStoreIssueDetail.val(_IvStoreIssueDetailArr.length === 0 ? '' : JSON.stringify(_IvStoreIssueDetailArr));
+    };
+
+    const LoadIvStoreIssueDetailData = function () {
+
+        $('#tblLoaderLine').show();
+
+        $.ajax({
+            url: `${baseUrl}/IvStoreIssue/GetDetailAsync`,
+            method: 'GET',
+            headers: {  'Authorization': `Bearer ${$_token}`  },
+            data: { id: primaryEntityKeyId }
+        }).done(function (data) {
+
+            _IvStoreIssueDetailArr = [...data.result.ivStoreIssueTrs];
+
+            tblLinesCounterIndex = 0;
+
+            $.each(_IvStoreIssueDetailArr, function (i, item) {
+                item.index = ++tblLinesCounterIndex;
+                item.id = item.id;
+                item.rowStatus = NoActionStatus;
+                item.total = item.qty * item.avgCost;
+            });
+
+            bindIvStoreIssueDetailTable();
+
+            _listIvStoreIssueDetail.val(JSON.stringify(_IvStoreIssueDetailArr));
+
+            $('#tblLoaderLine').hide();
+        });
+
+    };
+
+    $('#@nameof(IvStoreIssueVM.IvItemId)').select2(ReturnSelect2ObjectDefault(`${baseUrl}/IvItems/GetSelect2`));
+    $('#@nameof(IvStoreIssueVM.IvUnitId)').select2(ReturnSelect2ObjectDefault(`${baseUrl}/IvUnits/GetIvUnitsSelect2`));
+    $('#@nameof(IvStoreIssueVM.IvItemId)').on('select2:select', function (e) {
+        $('#@nameof(IvStoreIssueVM.IvItemNumber)').val(e.params.data.altText);
+        $('#@nameof(IvStoreIssueVM.IvItemNumber)').parent('.form-line').addClass('focused');
+        setItemAvgCost(e.params.data.id);
+    });
+
+    const setItemAvgCost = function (id) {
+        $.ajax({
+            url: `${baseUrl}/IvItems/Get`,
+            method: 'GET',
+            headers: { 'Authorization': `Bearer ${$_token}` },
+            data: { id: id }
+        }).done(function (data) {
+
+            $("#@nameof(IvStoreIssue.AvgCost)").val(data.result.avgCost);
+            $('#@nameof(IvStoreIssueVM.AvgCost)').parent('.form-line').addClass('focused');
+
+        });
+    }
+
+    const GetRow = function (tblIndex) {
+
+        clearFormAdding();
+
+        $('#btnAddIvStoreIssueDetailRow').hide();
+        $('#btnUpdateIvStoreIssueDetailRow').show();
+        $('#btnCancelIvStoreIssueDetailRow').show();
+
+        const current = _IvStoreIssueDetailArr.find(z => z.index === tblIndex);
+
+        console.log(current);
+
+        let option = new Option(current.ivItemName, current.ivItemId, true, true);
+        $(`#@nameof(IvStoreIssueVM.IvItemId)`).append(option).trigger('change');
+
+        $('#@nameof(IvStoreIssueVM.IvItemNumber)').val(current.ivItemNumber);
+        $('#@nameof(IvStoreIssueVM.IvItemNumber)').parent('.form-line').addClass('focused');
+
+        let optionUnit = new Option(current.ivUnitName, current.ivUnitId, true, true);
+        $(`#@nameof(IvStoreIssueVM.IvUnitId)`).append(optionUnit).trigger('change');
+
+        $('#@nameof(IvStoreIssueVM.Qty)').val(current.qty);
+        $('#@nameof(IvStoreIssueVM.Qty)').parent('.form-line').addClass('focused');
+
+        $('#@nameof(IvStoreIssueVM.AvgCost)').val(current.avgCost);
+        $('#@nameof(IvStoreIssueVM.AvgCost)').parent('.form-line').addClass('focused');
+
+        $('#@nameof(IvStoreIssueVM.Total)').val(current.total);
+        $('#@nameof(IvStoreIssueVM.Total)').parent('.form-line').addClass('focused');
+
+        updatedRow = current;
+    };
+
+    const clearFormAdding = function () {
+
+        $('#formAdding select:not(.slct2gl)').val('').trigger('change');
+        $('#formAdding  input').val('');
+        $('#formAdding  textarea').val('');
+
+        //$('#details .card input').val('');
+
+    };
+
+    const validateLinesWithParam = function (arr) {
+
+        return true;
+    };
+
+    const validateAtLeastOneDetailFailed = function () {
+        return (_IvStoreIssueDetailArr.filter(z => z.rowStatus !== DeletedStatus).length < 1)
+    };
+
+    $(document).ready(function () {
+        //this calculates values automatically
+        sum();
+        $(`#@nameof(IvStoreIssueVM.Qty), #@nameof(IvStoreIssueVM.AvgCost)`).on("keydown keyup", function () {
+            sum();
+        });
+    });
+
+    function sum() {
+            var num1 =$(`#@nameof(IvStoreIssueVM.Qty)`).val();
+            var num2 = $(`#@nameof(IvStoreIssueVM.AvgCost)`).val();
+			var result = parseFloat(num1) * parseFloat(num2);
+    if (!isNaN(result)) {
+        $(`#@nameof(IvStoreIssueVM.Total)`).val(result);
+        $('#@nameof(IvStoreIssueVM.Total)').parent('.form-line').addClass('focused');
+        }
+    };
+
+    function printExc() {
+        $('.page-loader-wrapper').show();
+        $('#tblIvStoreIssuePrint_wrapper').parent().addClass('d-none');
+        const parmss = {
+            IvWarehouseId: $('#Search_IvWarehouseId').find(':selected').val(),
+            StatusId: $('#Search_StatusId').find(':selected').val(),
+            StoreIssueNumber: $('#Search_IvStoreIssueNumber').val(),
+            StoreIssueDate: $('#Search_IvStoreIssueDate').val(),
+            length: 1000000
+        };
+
+        const columns = [
+            {
+                "data": "result.data.id",
+                'render': function (data, type, row, meta) {
+                    return meta.row + meta.settings._iDisplayStart + 1;
+                }
+            },
+            {
+                "data": "StoreIssueNumber",
+                "name": "StoreIssueNumber",
+                "autoWidth": true
+            },
+            {
+                "data": "StoreIssueDate",
+                "name": "StoreIssueDate",
+                "autoWidth": true
+            },
+            {
+                "data": null,
+                "autoWidth": true,
+                "render": function (d, t, row) {
+                    return row.IvWarehouseName;
+                },
+            },
+            {
+                "data": null,
+                "autoWidth": true,
+                "render": function (d, t, row) {
+
+                    if (row.StatusAr == null &&row.StatusEn == null )
+                        return '';
+
+                    if (lang === 'ar-EG')
+                        return row.StatusAr;
+
+                    return row.StatusEn;
+                },
+            }
+        ];
+
+        const dtObj = {
+            "language": dataTableLang,
+            "dom": 'Bfrtip',
+            "buttons": [
+                {
+                    extend: 'excel',
+                    messageTop: `${$('[for="Search_IvWarehouseId"]').text()}: ${(parmss.IvWarehouseId) ? parmss.IvWarehouseId : '--'}, ${$('[for="Search_StatusId"]').text()}: ${(parmss.StatusId) ? parmss.StatusId : '--'}, ${$('#Search_IvStoreIssueNumber').siblings().text()}: ${(parmss.StoreIssueNumber) ? parmss.StoreIssueNumber : '--'}, ${$('#Search_IvStoreIssueDate').siblings().text()}: ${(parmss.StoreIssueDate) ? parmss.StoreIssueDate : '--'}`
+                },
+
+            ],
+            "ajax": {
+                "url": _loadDataUrl,
+                "type": "POST",
+                "datatype": "json",
+                "data": parmss,
+                "complete": function (d) {
+                    _tblLoader.hide();
+                }
+            },
+            "columns": columns,
+
+            "initComplete": function () {
+                $('#tblIvStoreIssuePrint_wrapper button.dt-button').click();
+                $('#tblIvStoreIssuePrint_wrapper').parent().addClass('d-none');
+
+            }
+        };
+
+        $('#tblIvStoreIssuePrint').dataTable().fnDestroy();
+        $('#tblIvStoreIssuePrint').DataTable(dtObj).on('buttons-processing', function (e, indicator) { if (!indicator) { $('.page-loader-wrapper').hide() } });
+
+
+    }
+
+</script>

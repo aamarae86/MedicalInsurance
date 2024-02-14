@@ -1,0 +1,62 @@
+﻿@using ERP.Web.UI.Controllers.AccountsExtend
+@using ERP.Web.UI.Models.ViewModels.Accounts
+@using ERP.Web.UI.Models.ViewModels.AccountsExtend
+@{
+    ViewBag.Title = ERP.ResourcePack.AccountsExtend.ApPrepaid.Title;
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    string formTrigger = ViewBag.trigger;
+    long? id = ViewData["Id"] == null ? null : (long?)Convert.ToInt32(ViewData["Id"]);
+    var detailObj = ViewData["DetailAsync"] == null ? null : ViewData["DetailAsync"] as ApPrepaidVM;
+    var accHeaders = ViewData["ListGlAccHeadersVM"] == null ? new List<GlAccHeadersVM>() : ViewData["ListGlAccHeadersVM"] as List<GlAccHeadersVM>;
+}
+
+<div class="row clearfix">
+    <div class="col-12">
+        @Html.Action(nameof(ApPrepaidController.ApPrepaidForm), new { id = id, trigger = formTrigger, glJeHeadersVM = detailObj, glAccHeadersVMs = accHeaders })
+    </div>
+    <div class="col-12">
+        <div class="card">
+            <div class="body">
+                <div class="row clearfix"> <div class="col-md-12 text-center" id="btnContainer"></div></div>
+            </div>
+        </div>
+    </div>
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body">
+                <div class="text-center">
+                    <a href="~/ApPrepaid" class="btn btn-danger btn-lg m-l-15 waves-effect">@(ERP.ResourcePack.Common.Settings.BtnClose)</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section scripts{
+    <script>
+        const primaryEntityKeyId =  @(id == null ? 0 : id);
+        const trigger = '@formTrigger';
+        let formView = true;
+    </script>
+    <script src="~/Scripts/jquery.validate.min.js"></script>
+    <script src="~/Scripts/jquery.validate.unobtrusive.min.js"></script>
+    @Html.Partial("~/ViewsScripts/_Accounts/ApPrepaid/ApPrepaidScripts.cshtml")
+    @Html.Partial("~/ViewsScripts/GlAccDetails/GlAccDetailsScripts.cshtml", ViewData["repeatTrigger"] = "dr")
+    @Html.Partial("~/ViewsScripts/GlAccDetails/GlAccDetailsScripts.cshtml", ViewData["repeatTrigger"] = "cr")
+    @Html.Partial("~/ViewsScripts/GlAccDetails/GlAccDetailsScriptManager.cshtml")
+    @if (id != null)
+    {
+        <script>
+            $(function () {
+                if (primaryEntityKeyId && trigger === '@ERP.Front.Helpers.Enums.Common.FormTriggers.Show.ToString()' && @detailObj.StatusLkpId == @Convert.ToInt64(ERP.Front.Helpers.Enums.Common.ApPrepaid.New)) {
+                    let btns = '';
+
+                    btns += `<a href="javascript:void(0)" onclick="return PostApPrepaid(@id)" class="btn btn-success">${'@ERP.ResourcePack.Common.Settings.Post'}</a>`;
+
+                    $('#btnContainer').html(btns);
+                }
+            });
+        </script>
+    }
+}
+

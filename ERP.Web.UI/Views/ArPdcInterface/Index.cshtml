@@ -1,0 +1,13 @@
+﻿@{
+    ViewBag.Title = ERP.ResourcePack.Accounts.ArPdcInterface.Title;
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@Html.Action(nameof(ERP.Web.UI.Controllers.Accounts.ArPdcInterfaceController.ArPdcInterfaceSearch))
+@Html.Action(nameof(ERP.Web.UI.Controllers.Accounts.ArPdcInterfaceController.ArPdcInterfaceData))
+
+@section scripts{
+    @Html.Partial("~/ViewsScripts/ArPdcInterface/ArPdcInterfaceScripts.cshtml")
+}
+
+

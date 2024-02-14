@@ -1,0 +1,35 @@
+﻿@using ERP.Web.UI.Models.ViewModels
+@model BaseAttachmentsVM
+
+<input type="hidden" name="FilePathAttachment" id="FilePathAttachment" />
+<div class="card">
+    <div class="body">
+        <div class="row clearfix">
+            <div class="col-sm-2">
+                <img src="~/AssetsPack/assets/images/img-previewer.png" width="100px" height="100px" class=" attach-img img-thumbnail" id="img-container-0" />
+            </div>
+            <div class="col-sm-5">
+                <div class="form-group form-float">
+                    <div class="form-line">
+                        @Html.TextBoxFor(z => z.AttachmentName, new { @class = "form-control" })
+                        @Html.LabelFor(z => z.AttachmentName, new { @class = "form-label" })
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-5">
+                <div class="row">
+                    <div class="col-sm-6">
+                        @Html.Partial("_AttachmentComponent", new ERP.Web.UI.Models.ViewModels.AttachmentComponentModelVM { HidenFilePathId = "FilePathAttachment", ImgId = "img-container-0", FileUploaderId = "detailsUploader" })
+                    </div>
+                    <div class="col-sm-4">
+                        <div class="form-group m-2" style="margin-top:15px !important">
+                            <button id="btnAddAttachmentRow" onclick="return AddAttachmentRow('FilePathAttachment')" class="btn btn-success">@ERP.ResourcePack.Common.Settings.BtnAddNew</button>
+                            <button style="display:none;" onclick="return UpdateAttachmentRow('FilePathAttachment')" id="btnUpdateAttachmentRow" class="btn btn-info">@ERP.ResourcePack.Common.Settings.BtnUpdate</button>
+                            <button style="display:none;" id="btnCancelAttachmentRow" onclick="clearFormAttachment(); $('#btnCancelAttachmentRow').hide();$('#btnUpdateAttachmentRow').hide();$('#btnAddAttachmentRow').show();" class="btn btn-danger">@ERP.ResourcePack.Common.Settings.BtnCancel</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

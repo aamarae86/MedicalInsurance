@@ -1,0 +1,451 @@
+﻿@using ERP.Web.UI.Controllers.Authentications
+@using ERP.Authorization;
+@{
+    string permissionsStr = TempData["Permissions"].ToString();
+}
+<script>
+    const _mainController = "Roles"
+
+    $(function () {
+        LoadDataGrid();
+        $('#Roles').addClass('active');
+        $('#tblRolesPrint thead').html($('#tblRoles thead').html());
+        $('#tblRolesPrint thead tr :last-child').remove();
+    });
+
+    const _loadDataUrl = `${$PrefixHostName}/${_mainController}/@nameof(RolesController.LoadDataGrid)`;
+    const _tblSelector = $('#tblRoles');
+    const _tblLoader = $('#tblLoader');
+    const _txtNameSearch = $('#searchBox #Name');
+    const _txtDescriptionSearch = $('#searchBox #Description');
+    const _txtDisplayNameSearch = $('#searchBox #DisplayName');
+
+    const _permissions = '@permissionsStr';
+    const _updatePermission = '@PermissionNames.Pages_Roles_Update';
+    const _deletePermission = '@PermissionNames.Pages_Roles_Delete';
+
+    var OnBegin = function (response) {
+        fireBtnLoader();
+    };
+
+    var OnSuccess = function (response) {
+
+        if (response.success) {
+
+            if (response.customRestResult.trigger === '@ERP.Front.Helpers.Enums.Common.FormTriggers.Insert') {
+
+                toastr.success(response.customRestResult.message);
+
+                LoadDataGrid();
+
+                _mainModal.modal('hide');
+
+            } else if (response.customRestResult.trigger === '@ERP.Front.Helpers.Enums.Common.FormTriggers.Update') {
+
+                LoadDataGrid();
+
+                _mainModal.modal('hide');
+
+                toastr.success(response.customRestResult.message);
+            }
+
+        } else {
+            toastr.error(response.customRestResult.message);
+        }
+
+    };
+
+    var OnComplete = function (response) {
+        downBtnLoader();
+    };
+
+    var OnFailure = function (response) {
+        toastr.error(response);
+        console.log(response);
+        downBtnLoader();
+    };
+
+    const LoadDataGrid = function () {
+
+        $('#tblLoader').show();
+
+        const parms = {
+            Name: _txtNameSearch.val(),
+            Description: _txtDescriptionSearch.val(),
+            DisplayName: _txtDisplayNameSearch.val()
+        };
+
+        const columns = [
+            {
+                "data": "result.data.id",
+                'render': function (data, type, row, meta) {
+                    return meta.row + meta.settings._iDisplayStart + 1;
+                }
+            },
+            {
+                "data": "Name",
+                "name": "Name",
+                "autoWidth": true
+            },
+            {
+                "data": "Description",
+                "name": "Description",
+                "autoWidth": true
+            },
+            {
+                "data": "DisplayName",
+                "name": "DisplayName",
+                "autoWidth": true
+            },
+            //{
+            //    "data": "GrantedPermissions",
+            //    "name": "GrantedPermissions",
+            //    "autoWidth": true,
+            //    "render": function (permissions) {
+            //        let per = '<ul class="list-group" style="height: 100px;overflow-y: scroll;">';
+
+            //        $.each(permissions, function (i, item) {
+            //            per += `<li class="list-group-item">${item}</li>`
+            //        })
+
+            //        per += '</ul>';
+            //        return per;
+
+            //    }
+            //},
+            //{
+            //    "data": "IsDefault",
+            //    "name": "IsDefault",
+            //    "autoWidth": true
+            //},
+            //{
+            //    "data": "IsStatic",
+            //    "name": "IsStatic",
+            //    "autoWidth": true
+            //},
+            {
+                "data": null,
+                "sortable": false,
+                "render": function (data, type, row) {
+
+                    let formAction = `${$PrefixHostName}/${_mainController}/@nameof(RolesController.RolesForm)`;
+                    let permissionsFormAction = `${$PrefixHostName}/${_mainController}/@nameof(RolesController.PermissionsForm)`;
+                    let userFormAction = `${$PrefixHostName}/${_mainController}/@nameof(RolesController.UsersInRoleForm)`;
+                    let DeleteAction = `${$PrefixHostName}/${_mainController}/@nameof(RolesController.Delete)`;
+                    let KpiAction = `${$PrefixHostName}/${_mainController}/@nameof(RolesController.RoleKpiForm)`;
+
+                    let formTitle = '@ERP.ResourcePack.Authentications.Roles.Title';
+                    let KpiformTitle = '@ERP.ResourcePack.Authentications.Roles.Kpis';
+                    let btns = '';
+
+                    if (_permissions.includes(_deletePermission)) {
+                        btns += `<a href="javascript:void(0)" onclick="AjaxController.GetFormModal(${row.Id},'@ERP.Front.Helpers.Enums.Common.FormTriggers.Update','${formAction}','${formTitle}');" title="@ERP.ResourcePack.Common.Settings.Edit"><i class="mx-2 fas fa-edit text-info"></i></a>`;
+                    }
+
+                    btns += `<a href="javascript:void(0)" onclick="AjaxController.GetFormModal(${row.Id},'@ERP.Front.Helpers.Enums.Common.FormTriggers.Show','${formAction}','${formTitle}');" title="@ERP.ResourcePack.Common.Settings.Show"><i class="mx-2 fas fa-eye text-info"></i></a>`;
+
+                    btns += `<a href="javascript:void(0)" onclick="AjaxController.GetFormModal(${row.Id},'@ERP.Front.Helpers.Enums.Common.FormTriggers.Insert','${permissionsFormAction}','${formTitle}');" title="@ERP.ResourcePack.Common.Settings.BtnAddNew"><i class="mx-2 fas fa-user-shield text-info"></i></a>`;
+
+                    btns += `<a href="javascript:void(0)" onclick="AjaxController.GetFormModal(${row.Id},'@ERP.Front.Helpers.Enums.Common.FormTriggers.Insert','${userFormAction}','${formTitle}');" title="@ERP.ResourcePack.Common.Settings.BtnAddNew"> <i class="mx-2 fas fa-user-plus text-info"></i></a>`;
+
+                    if (_permissions.includes(_deletePermission)) {
+                        btns += `<a href="javascript:void(0)" onclick="AjaxController.DeleteMainTableRow(${row.Id},'${DeleteAction}');" title="@ERP.ResourcePack.Common.Settings.Delete"><i class="mx-2 fas fa-trash-alt text-danger"></i></a>`;
+                    }
+                    btns += `<a href="javascript:void(0)" onclick="AjaxController.GetFormModal(${row.Id},'@ERP.Front.Helpers.Enums.Common.FormTriggers.Insert','${KpiAction}','${KpiformTitle}');" title="@ERP.ResourcePack.Common.Settings.BtnAddKPI"> <i class="mx-2 far fa-plus-square"></i></a>`;
+
+                    const _auditedPermission = '@PermissionNames.Pages_Roles_Audit';
+
+                    if (_permissions.includes(_auditedPermission)) {
+
+                        row.permission = _auditedPermission;
+
+                        btns += GetAuditedButton(row);
+                    }
+
+                    return btns;
+                }
+            }
+        ];
+
+        const dtObj = {
+            "processing": true,
+            "serverSide": true,
+            "filter": false,
+            "orderMulti": false,
+            "language": dataTableLang,
+            "ajax": {
+                "url": _loadDataUrl,
+                "type": "POST",
+                "datatype": "json",
+                "data": parms,
+                "complete": function () {
+                    _tblLoader.hide();
+                }
+            },
+            "columns": columns,
+            "initComplete": function () {
+                $('[data-toggle="tooltip"]').tooltip();
+            }
+        };
+
+        _tblSelector.dataTable().fnDestroy();
+        _tblSelector.DataTable(dtObj).on('draw', function () { $('[data-toggle="tooltip"]').tooltip(); });
+
+    };
+
+    const HideUnSelected = function () {
+        $(".modulePage").addClass('hide');
+    };
+
+    const ShowAllPages = function () {
+        $(".modulePage").removeClass('hide');
+    };
+
+        const ShowModulePages = function (strPages) {
+            //debugger;
+            for (var i = 0; i < strPages.length; i++) {
+
+                var permString = `.Pages_${strArr[i]}`;
+
+
+            $(`.Pages_${strArr[i]}`).removeClass("hide");
+            $(`.${strArr[i]}`).removeClass("hide");
+        }
+    };
+
+    const ToggleCheckAll = function (oInput) {
+        var elementTR = oInput.closest("tr");
+        var aInputs = $(':checkbox', elementTR).filter(function () {
+            return !this.disabled;
+        }); //document.getElementsByTagName('input');
+        for (var i = 0; i < aInputs.length; i++) {
+            if (aInputs[i] != oInput) {
+                aInputs[i].checked = oInput.checked;
+            }
+        }
+    };
+
+    const ToggleRowCheckAll = function (oInput) {
+        var elementTD = oInput.closest("td");
+        var className = elementTD.className;
+        var aInputs = $(':checkbox').filter(function () {
+            console.log(`Element name: ${this.parentElement.Name}, element classes: ${this.parentElement.classList}`);
+            console.log(this.parentElement.classList.contains("hide"));
+            return !(this.disabled | this.parentElement.classList.contains("hide"));
+        });
+        for (var i = 0; i < aInputs.length; i++) {
+            if (aInputs[i] != oInput) {
+                aInputs[i].checked = oInput.checked;
+            }
+        }
+    };
+
+function printExc() {
+        $('.page-loader-wrapper').show();
+        const parmss = {
+            Name: _txtNameSearch.val(),
+            Description: _txtDescriptionSearch.val(),
+            DisplayName: _txtDisplayNameSearch.val(),
+            length:1000000
+        };
+
+        const columns = [
+            {
+                "data": "result.data.id",
+                'render': function (data, type, row, meta) {
+                    return meta.row + meta.settings._iDisplayStart + 1;
+                }
+            },
+            {
+                "data": "Name",
+                "name": "Name",
+                "autoWidth": true
+            },
+            {
+                "data": "Description",
+                "name": "Description",
+                "autoWidth": true
+            },
+            {
+                "data": "DisplayName",
+                "name": "DisplayName",
+                "autoWidth": true
+            },
+
+        ];
+
+        const dtObj = {
+            "dom": 'Bfrtip',
+            "buttons": [
+                {
+                    extend: 'excel',
+                    messageTop: `${$('#Name').siblings().text()}: ${(parmss.Name)? parmss.Name : '--'}, ${$('#Description').siblings().text()}: ${(parmss.Description)? parmss.Description : '--'}, ${$('#DisplayName').siblings().text()}: ${(parmss.DisplayName)? parmss.DisplayName : '--'}`
+                },
+            ],
+            "language": dataTableLang,
+            "ajax": {
+                "url": _loadDataUrl,
+                "type": "POST",
+                "datatype": "json",
+                "data": parmss,
+                "complete": function () {
+                    _tblLoader.hide();
+                }
+            },
+            "columns": columns,
+            "initComplete": function () {
+                $('#tblRolesPrint_wrapper button.dt-button').click();
+            }
+
+        };
+
+        $('#tblRolesPrint').dataTable().fnDestroy();
+        $('#tblRolesPrint').DataTable(dtObj).on( 'buttons-processing', function ( e, indicator ) {if ( !indicator ) {$('.page-loader-wrapper').hide()}});
+    }
+
+
+
+</script>
+
+<script Kpi>
+    const _tblKpiSelector = $('#tblKpi'), _listKpiDetail = $('#AbpKpiRoleStr');
+
+    let _KpiDetail = [], updatedKpiDetailsRow, tblCounterKpiIndex = 0;
+
+    const fillKpiDetail = function () {
+        /* if (validatorKpi() === false) return;*/
+
+        const current2 = {
+            index: ++tblCounterKpiIndex,
+            kpiLkpId: $('#Kpi').find(':selected').val(),
+            kpi: $('#Kpi').find(':selected').text(),
+
+            roleId: $('#RoleId').val(),
+            rowStatus: NewStatus,
+            id: 0
+        };
+
+        return current2;
+    };
+
+    const AddKpiDetails = function () {
+        const current2 = fillKpiDetail();
+        var chart = $('#Charts').val();
+        if (chart) {
+            var chartLkpId = $('#Charts').find(':selected').val();
+            var chartTxt = $('#Charts').find(':selected').text();
+            if (_KpiDetail.find(x => x.kpiLkpId.toString() === chartLkpId)) {
+
+            toastr.warning('@ERP.ResourcePack.Authentications.Roles.Doublicatedrecords');
+            return false;
+            }
+            current2.kpiLkpId = chartLkpId;
+            current2.kpi = chartTxt;
+
+
+        } else {
+             if (_KpiDetail.find(x => x.kpiLkpId.toString() === current2.kpiLkpId)) {
+
+                toastr.warning('@ERP.ResourcePack.Authentications.Roles.Doublicatedrecords');
+                return false;
+            }
+        }
+
+        if (current2 === undefined) return;
+        console.log(current2)
+        _KpiDetail.push(current2);
+
+        _listKpiDetail.val(JSON.stringify(_KpiDetail));
+        $('#AbpKpiRoleStr').val(JSON.stringify(_KpiDetail));
+       //bindKpiDetailTable();
+         drawKpiTable()
+
+        clearFormKpiAdding();
+    };
+    function drawKpiTable()
+    {
+        const detailArr = _KpiDetail.filter(z => z.rowStatus !== DeletedStatus);
+        console.log(detailArr)
+        let rows = ''
+        detailArr.filter((item, y) => {
+            /*   <td>${i + 1}</td>   */
+            let row =
+                `<tr>
+
+                             <td>${y + 1}</td>
+                            <td>${item.kpi}</td>
+                            <td><a href="javascript:void(0)" onclick="return DeleteKpiDetail(${item.index})"><i class="mx-2 fas fa-trash-alt text-danger"></i></a></td>
+                   </tr>`;
+
+
+            rows = rows + row;
+            console.log(rows)
+        });
+        $('#TableTestBody').html(rows);
+    }
+
+
+    const DeleteKpiDetail = function (index) {
+
+        const current2 = _KpiDetail.find(z => z.index === index);
+
+        const indexOfCurrent = _KpiDetail.indexOf(current2);
+
+        if (!current2.id) {
+
+            _KpiDetail.splice(indexOfCurrent, 1);
+
+        } else {
+
+            current2.rowStatus = DeletedStatus;
+
+            _KpiDetail.splice(indexOfCurrent, 1, current2);
+        }
+
+        drawKpiTable();
+
+        _listKpiDetail.val(_KpiDetail.length === 0 ? '' : JSON.stringify(_KpiDetail));
+        $('#AbpKpiRoleStr').val(_KpiDetail.length === 0 ? '' : JSON.stringify(_KpiDetail));
+    };
+
+    const LoadKpiDetailData = function () {
+
+        $.ajax({
+            url: `${baseUrl}/Role/GetAllRoleKpis`,
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${$_token}`
+            },
+            data: {
+                roleId: $('#RoleId').val(),
+                perantId: $('#KpiModules').find(':selected').val(),
+            }
+        }).done(function (data) {
+
+            _KpiDetail = [...data.result];
+
+            tblCounterKpiIndex = 0;
+
+            $.each(_KpiDetail, function (i, item) {
+                item.index = ++tblCounterKpiIndex;
+            });
+            drawKpiTable();
+            //bindKpiDetailTable();
+
+            _listKpiDetail.val(JSON.stringify(_KpiDetail));
+            $('#AbpKpiRoleStr').val(JSON.stringify(_KpiDetail));
+
+        });
+
+    };
+
+    const clearFormKpiAdding = function () {
+        $(`#Kpi`).append($("<option selected='selected'></option>")
+            .val(0).text('')).trigger('change');
+        //$('#Kpi .card:first select').val('').trigger('change');
+        console.log("1")
+    };
+</script>
+
+
+

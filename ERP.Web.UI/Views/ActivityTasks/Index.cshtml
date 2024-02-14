@@ -1,0 +1,12 @@
+﻿@{
+    ViewBag.Title = ERP.ResourcePack.CRM.activityTask.activityTask.Title;
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@Html.Action(nameof(ERP.Web.UI.Controllers.CRM.ActivityTasksController.ActivityTasksSearch))
+@Html.Action(nameof(ERP.Web.UI.Controllers.CRM.ActivityTasksController.ActivityTasksData))
+
+@section scripts{
+    @Html.Partial("~/ViewsScripts/_CRM/ActivityTasksScripts.cshtml")
+}
+

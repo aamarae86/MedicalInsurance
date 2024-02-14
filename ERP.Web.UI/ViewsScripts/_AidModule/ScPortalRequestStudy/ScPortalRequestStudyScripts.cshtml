@@ -1,0 +1,646 @@
+﻿@using ERP.Web.UI.Controllers.AidModule
+@using ERP.ResourcePack.AidModule
+@using ERP.Authorization;
+@{
+    string encUpdateTrigger = ERP.Front.Helpers.Enums.Common.EncUpdate;
+    string encShowTrigger = ERP.Front.Helpers.Enums.Common.EncShow;
+    string permissionsStr = TempData["Permissions"].ToString();
+}
+
+@if (permissionsStr.Contains(PermissionNames.Pages_ScPortalRequestStudy_Post))
+{
+    <script>
+        const PostAjax = function (id) {
+
+            bootbox.confirm({
+                 message: _booBoxMessagePosting,
+                 buttons: bootBoxDefaultBtns,
+                 callback: function (result) {
+
+                     if (result) {
+
+                           const data = {
+                            id: id,
+                            lang: lang,
+                            userId: 0
+                        };
+
+                        $.ajax({
+                            url: `${baseUrl}/ScPortalRequestStudy/ScPortalRequestStudyPostCommittee`,
+                            type: 'POST',
+                            data: JSON.stringify(data),
+                            headers:
+                            {
+                                'Content-Type': 'application/json',
+                                'Authorization': `Bearer ${$_token}`
+                            },
+                        }).done(function (response) {
+
+                            if (response.result.finalStatues == 'F') {
+                                toastr.warning(response.result.reason);
+                            }
+                            else {
+                                toastr.success(response.result.reason);
+
+                                if (formView) {
+
+                                    setTimeout(function () {
+                                        window.location.href = $PrefixHostName + '/ScPortalRequestStudy';
+                                    }, 100);
+
+                                } else {
+                                    LoadDataGrid();
+                                }
+                            }
+                        }).fail(function (response) {
+                            toastr.error(response);
+                        });
+
+                    }
+
+                 }
+           });
+
+
+        };
+
+        const UnPostAjax = function (id) {
+
+            bootbox.confirm({
+                message: _booBoxMessageUpPost,
+                buttons: bootBoxDefaultBtns,
+                callback: function (result) {
+
+                    if (result) {
+
+                        const data = {
+                            id: id,
+                            lang: lang,
+                            userId: 0
+                        };
+
+                        $.ajax({
+                            url: `${baseUrl}/ScPortalRequestStudy/UnPostScPortalRequestStudy`,
+                            type: 'POST',
+                            data: JSON.stringify(data),
+                            headers:
+                            {
+                                'Content-Type': 'application/json',
+                                'Authorization': `Bearer ${$_token}`
+                            },
+                        }).done(function (response) {
+
+                            if (response.result.finalStatues == 'F') {
+                                toastr.warning(response.result.reason);
+                            }
+                            else {
+                                toastr.success(response.result.reason);
+
+                                if (formView) {
+
+                                    setTimeout(function () {
+                                        window.location.href = $PrefixHostName + '/ScPortalRequestStudy';
+                                    }, 100);
+
+                                } else {
+                                    LoadDataGrid();
+                                }
+                            }
+                        }).fail(function (response) {
+                            toastr.error(response);
+                        });
+
+                    }
+
+                }
+            });
+        };
+
+        const ManagerPostAjax = function (id) {
+
+            bootbox.confirm({
+                message: _booBoxMessagePosting,
+                buttons: bootBoxDefaultBtns,
+                callback: function (result) {
+
+                    if (result) {
+                        const data = {
+                            id: id,
+                            lang: lang,
+                            userId: 0
+                        };
+
+                        $.ajax({
+                            url: `${baseUrl}/ScPortalRequestStudy/ScPortalRequestStudyPostManager`,
+                            type: 'POST',
+                            data: JSON.stringify(data),
+                            headers:
+                            {
+                                'Content-Type': 'application/json',
+                                'Authorization': `Bearer ${$_token}`
+                            },
+                        }).done(function (response) {
+
+                            if (response.result.finalStatues == 'F') {
+                                toastr.warning(response.result.reason);
+                            }
+                            else {
+                                toastr.success(response.result.reason);
+
+                                if (formView) {
+
+                                    setTimeout(function () {
+                                        window.location.href = $PrefixHostName + '/ScPortalRequestStudy';
+                                    }, 100);
+
+                                } else {
+                                    LoadDataGrid();
+                                }
+                            }
+                        }).fail(function (response) {
+                            toastr.error(response);
+                        });
+
+                    }
+
+                }
+            });
+        };
+
+        const RefuseAjax = function (id) {
+
+            $.ajax({
+                url:`${$PrefixHostName}/${_mainController}/@nameof(ScPortalRequestStudyController.ScPortalRequestStudyRefuse)`,
+                method: 'GET',
+                data: {id:id}
+            }).done(function (modalData) {
+
+                _mainModalBody.html(modalData);
+                _mainModal.modal(_mainModalOprions);
+
+            }).fail(function (response) {
+                toastr.error(response.error.message);
+            });
+        };
+
+        const SubmitRefuse = function (id) {
+
+                if ($('#main-modal #RefuseLkpId').find(':selected').val() && $('#main-modal #RefuseDescription').val()) {
+
+                    bootbox.confirm({
+                        message: _booBoxMessageRefusing,
+                        buttons: bootBoxDefaultBtns,
+                        callback: function (result) {
+
+                            if (result) {
+
+                                const data = {
+                                    id: id,
+                                    lang: lang
+                                };
+
+                                $.ajax({
+                                    url: `${baseUrl}/ScPortalRequestStudy/ScPortalRequestStudyRefuse?refuseLkpId=${$('#main-modal #RefuseLkpId').find(':selected').val()}&refuseDescription=${$('#main-modal #RefuseDescription').val()}`,
+                                    type: 'POST',
+                                    data: JSON.stringify(data),
+                                    headers:
+                                    {
+                                        'Content-Type': 'application/json',
+                                        'Authorization': `Bearer ${$_token}`
+                                    },
+                                }).done(function (response) {
+
+                                    if (response.result.finalStatues == 'F') {
+                                        toastr.warning(response.result.reason);
+                                    }
+                                    else {
+                                        toastr.success(response.result.reason);
+
+                                        if (formView) {
+
+                                            _mainModal.hide();
+
+                                            setTimeout(function () {
+                                                window.location.href = $PrefixHostName + '/ScPortalRequestStudy';
+                                            }, 100);
+
+                                        } else {
+
+                                            _mainModal.hide();
+
+                                            LoadDataGrid();
+                                        }
+                                    }
+                                });
+
+                            }
+
+                        }
+                    });
+
+                }
+                else {
+                    toastr.warning(`@ScPortalRequestStudy.RefuseLkpId : @ERP.ResourcePack.Common.Settings.Required`);
+                    toastr.warning(`@ScPortalRequestStudy.RefuseDescription : @ERP.ResourcePack.Common.Settings.Required`);
+                }
+
+        };
+
+    </script>
+}
+else
+{
+    <script>
+        const PostAjax = function (id) { };
+        const UnPostAjax = function (id) { };
+        const RefuseAjax = function (id) { };
+        const ManagerPostAjax = function (id) { };
+    </script>
+}
+
+<script>
+    const _mainController = "ScPortalRequestStudy", _apiAppService = "ScPortalRequestStudy"
+
+    $(function () {
+        LoadDataGrid();
+
+        $('#ScPortalRequestStudy').addClass('active');
+
+        $('#ResearcherName').parent('.form-line').addClass('focused');
+
+        if ($('#DecisionInfo')) $('#DecisionInfo').parent('.form-line').addClass('focused');
+
+        $('#SuggestedAmount').prop('type', 'number').prop('min', 0);
+
+
+        if (formView && primaryEntityKeyId && $('#codeComUtilityIds').val()) {
+            BindCodeComUtilitesDropDowns(__arrGlSelect2, 'AccId', $('#codeComUtilityIds').val(), $('#codeComUtilityTexts').val());
+        }
+
+    });
+
+    const _loadDataUrl = `${$PrefixHostName}/${_mainController}/@nameof(ERP.Web.UI.Controllers.AidModule.ScPortalRequestStudyController.LoadDataGrid)`;
+    const _tblSelector = $('#tblScPortalRequestStudy');
+    const _tblSelectorbody = $('#tblScPortalRequestStudy tbody');
+    const _tblLoader = $('#tblLoader');
+    const _txtStudyNumber = $('#searchBox #StudyNumber');
+    const _txtFromDate = $('#searchBox #FromDate');
+    const _txtToDate = $('#searchBox #ToDate');
+    const _txtPortalRequestIdSearch = $('#searchBox #PortalRequestIdSearch');
+    const _txtStatusLkpIdSearch = $('#searchBox #StatusLkpIdSearch');
+    const _txtCaseNameIdSearch = $('#searchBox #CaseNameIdSearch');
+    const _mainForm = $('#mainForm');
+
+    const _permissions = '@permissionsStr';
+    const _updatePermission = '@PermissionNames.Pages_ScPortalRequestStudy_Update';
+    const _deletePermission = '@PermissionNames.Pages_ScPortalRequestStudy_Delete';
+    const _postPermission = '@PermissionNames.Pages_ScPortalRequestStudy_Post';
+    const _unpostPermission = '@PermissionNames.Pages_ScPortalRequestStudy_UnPost';
+
+    const _NewStatus = @Convert.ToInt64(ERP.Front.Helpers.Enums.Common.ScPortalRequestStudy.New);
+    const _postponed = @Convert.ToInt64(ERP.Front.Helpers.Enums.Common.ScPortalRequestStudy.postponed);
+
+    $('#btnSubmition').on('click', function () {
+
+        if (@Convert.ToInt32(Session["TenantId"]) != 1) {
+
+          const resultCodeComUtility = GetCodeComUtilites(__arrGlSelect2, 'AccId');
+
+          if (resultCodeComUtility) {
+
+              $('#mainForm #@nameof(Model.codeComUtilityIds)').val(resultCodeComUtility.idsStr);
+              $('#mainForm #@nameof(Model.codeComUtilityTexts)').val(resultCodeComUtility.textsStr);
+
+           } else {
+              toastr.warning(`@ERP.ResourcePack.AidModule.ScPortalRequestStudy.Account : @ERP.ResourcePack.Common.Settings.Required`);
+              eturn;
+          }
+
+        }
+
+        _mainForm.submit();
+
+        if (_mainForm.valid()) {
+
+            $(this).hide();
+            $('#submitLoader').show();
+
+        } else {
+
+            $(this).show();
+            $('#submitLoader').hide();
+        }
+    });
+
+    var OnBegin = function (response) {
+        fireBtnLoader();
+    };
+
+    var OnSuccess = function (response) {
+
+        if (response.success) {
+
+            if (response.customRestResult.trigger === '@ERP.Front.Helpers.Enums.Common.FormTriggers.Insert') {
+
+                toastr.success(response.customRestResult.message);
+
+                setTimeout(function () {
+                    window.location.href = $PrefixHostName + '/ScPortalRequestStudy';
+                }, 200);
+
+            } else if (response.customRestResult.trigger === '@ERP.Front.Helpers.Enums.Common.FormTriggers.Update') {
+
+                toastr.success(response.customRestResult.message);
+
+                setTimeout(function () {
+                    window.location.href = $PrefixHostName + '/ScPortalRequestStudy';
+                }, 200);
+            }
+
+        } else {
+            toastr.error(response.customRestResult.message);
+        }
+
+    };
+
+    var OnComplete = function (response) {
+        downBtnLoader();
+    };
+
+    var OnFailure = function (response) {
+        toastr.error(response);
+        console.log(response);
+        downBtnLoader();
+    };
+
+    const LoadDataGrid = function () {
+
+        const parms = {
+            FromStudyDate: _txtFromDate.val(),
+            ToStudyDate: _txtToDate.val(),
+            StudyNumber: _txtStudyNumber.val(),
+            PortalRequestId: _txtPortalRequestIdSearch.val(),
+            StatusLkpId: _txtStatusLkpIdSearch.val(),
+            CaseNameId: _txtCaseNameIdSearch.val()
+        };
+
+        $('#dataCollapse').show();
+        $('#tblLoader').show();
+
+        const columns = [
+            {
+                "data": "result.data.id",
+                'render': function (data, type, row, meta) {
+                    return meta.row + meta.settings._iDisplayStart + 1;
+                }
+            },
+            {
+                "data": "StudyDate",
+                'name': "StudyDate",
+                "autoWidth": true
+            } , {
+                "data": null,
+                "autoWidth": true,
+                "render": function (data, type, row) {
+                    if (row.ScPortalRequest && row.ScPortalRequest) {
+                        if (lang === 'ar-EG')
+                            return row.ScPortalRequest.Name;
+                        return row.ScPortalRequest.Name;
+                    }
+                    else {
+                        return " ";
+                    }
+                }
+            }, {
+                "data": null,
+                "autoWidth": true,
+                "render": function (data, type, row) {
+                    if (row.FndLookupValuesStatusLkp) {
+                        if (lang === 'ar-EG')
+                            return row.FndLookupValuesStatusLkp.NameAr;
+                        return row.FndLookupValuesStatusLkp.NameEn;
+                    }
+                    else {
+                        return " ";
+                    }
+                }
+
+            },
+            {
+                "data": "DecisionInfo",
+                "autoWidth": true
+            },
+            {
+                "data": null,
+                "name": "StudyNumber",
+                "autoWidth": true,
+                "render": function (data, type, row) {
+                    if (row.StudyNumber) {
+                        if (lang === 'ar-EG')
+                            return row.StudyNumber;
+                        return row.StudyNumber;
+                    }
+                    else {
+                        return " ";
+                    }
+                }
+
+            }
+           , {
+                "data": null,
+                "name": "PortalRequestId",
+                "autoWidth": true,
+                "render": function (data, type, row) {
+                    if (row.ScPortalRequest) {
+                        if (lang === 'ar-EG')
+                            return row.ScPortalRequest.PortalRequestNumber;
+                        return row.ScPortalRequest.PortalRequestNumber;
+                    }
+                    else {
+                        return " ";
+                    }
+                }
+
+            },
+            {
+                "data": null,
+                "sortable": false,
+                "render": function (data, type, row) {
+
+                    let formAction = `${$PrefixHostName}/${_mainController}/@nameof(ScPortalRequestStudyController.ScPortalRequestStudyForm)`;
+                    let DeleteAction = `${$PrefixHostName}/${_mainController}/@nameof(ScPortalRequestStudyController.Delete)`;
+
+                    let formTitle = '@ScPortalRequestStudy.Title';
+                    let btns = '';
+
+                    if (_permissions.includes(_postPermission) && (row.StatusLkpId == _NewStatus || row.StatusLkpId == _postponed || row.StatusLkpId == 912)) {
+                        btns += `<a href="javascript:void(0)" onclick="PostAjax(${row.Id})" title="@ERP.ResourcePack.Common.Settings.Post"><i class="mx-2 fas fa-check-circle text-info"></i></a>`;
+                    }
+
+                    if (_permissions.includes(_postPermission) && !row.IsMaintenance && (row.StatusLkpId == _NewStatus || row.StatusLkpId == _postponed || row.StatusLkpId == 912)) {
+                        btns += `<a href="javascript:void(0)" onclick="ManagerPostAjax(${row.Id})" title="@ERP.ResourcePack.Common.Settings.ManagerPost"><i class="mx-2 fas fa-check text-info"></i></a>`;
+                    }
+
+                    if (row.StatusLkpId == _NewStatus) {
+                        btns += `<a href="javascript:void(0)" onclick="RefuseAjax(${row.Id})" title="@ERP.ResourcePack.Common.Settings.Refuse"><i class="mx-2 fas fa-minus-circle text-danger"></i></a>`;
+                    }
+
+                    if (_permissions.includes(_updatePermission) && (row.StatusLkpId == _NewStatus || row.StatusLkpId == _postponed || row.StatusLkpId == 912)) {
+                        btns += `<a href="${$PrefixHostName}/ScPortalRequestStudy/FormView?id=${row.EncId}&t=@encUpdateTrigger" title="@ERP.ResourcePack.Common.Settings.Edit"><i class="mx-2 fas fa-edit text-info"></i></a>`;
+                    }
+
+                    if (_permissions.includes(_unpostPermission) && (row.StatusLkpId == 166 || row.StatusLkpId == 167 || row.StatusLkpId == 169)) {
+                        btns += `<a href="javascript:void(0)" onclick="UnPostAjax(${row.Id})" title="@ERP.ResourcePack.Common.Settings.UnPost"><i class="mx-2 fas fa-check-circle text-danger"></i></a>`;
+                    }
+
+                    btns += `<a href="${$PrefixHostName}/ScPortalRequestStudy/FormView?id=${row.EncId}&t=@encShowTrigger" title="@ERP.ResourcePack.Common.Settings.Show"><i class="mx-2 fas fa-eye text-info"></i></a>`;
+
+                    if (_permissions.includes(_deletePermission) && row.StatusLkpId == _NewStatus) {
+                        btns += `<a href="javascript:void(0)" onclick="AjaxController.DeleteMainTableRow(${row.Id},'${DeleteAction}');" title="@ERP.ResourcePack.Common.Settings.Delete"><i class="mx-2 fas fa-trash-alt text-danger"></i></a>`;
+                    }
+
+                    btns += `<a href="javascript:void(0);" onclick="return print('${$PrefixHostName}/ScPortalRequestStudy/PrintScPortalRequestStudyScreen','${row.EncId}','${lang}')" title="@ERP.ResourcePack.Common.Settings.Print"><i class="mx-2 fas fa-print text-success"></i></a>`;
+
+                    const _auditedPermission = '@PermissionNames.Pages_ScPortalRequestStudy_Audit';
+
+                    if (_permissions.includes(_auditedPermission)) {
+
+                        row.permission = _auditedPermission;
+
+                        btns += GetAuditedButton(row);
+                    }
+
+                    return btns;
+                }
+            }
+        ];
+
+        const dtObj = {
+            "processing": true,
+            "serverSide": true,
+            "filter": false,
+            "orderMulti": false,
+            "language": dataTableLang,
+            "ajax": {
+                "url": _loadDataUrl,
+                "type": "POST",
+                "datatype": "json",
+                "data": parms,
+                "complete": function (d) {
+                    _tblLoader.hide();
+                }
+            },
+            "columns": columns,
+            "initComplete": function () {
+                $('[data-toggle="tooltip"]').tooltip();
+            }
+        };
+        _tblSelector.dataTable().fnDestroy();
+        _tblSelector.DataTable(dtObj).on('draw', function () { $('[data-toggle="tooltip"]').tooltip(); });
+
+    };
+
+
+    $('#StatusLkpIdSearch').select2(
+        ReturnSelect2ObjectCustomParams(`${baseUrl}/FndLookupValues/GetFndLookupValuesCampainsDetailsSelect2`, {
+            type: '@ERP.Front.Helpers.Enums.Common.FndLkpsTypes.ScPortalRequestStudyStatues.ToString()'
+        }));
+
+     $('#StudyLkpId').select2(
+        ReturnSelect2ObjectCustomParams(`${baseUrl}/FndLookupValues/GetFndLookupValuesCampainsDetailsSelect2`, {
+            type: '@ERP.Front.Helpers.Enums.Common.FndLkpsTypes.ScPortalRequestStudyLkpId.ToString()'
+        }));
+
+    $('#PortalRequestIdSearch').select2(ReturnSelect2ObjectDefault(`${baseUrl}/ScPortalRequest/GetScPortalRequestSelect2`))
+    $('#CaseNameIdSearch').select2(ReturnSelect2ObjectDefault(`${baseUrl}/PortalUserData/GetUnifiedPortalUsersFromPortalUsersDataSelect2`))
+    $('#OtherAidLkpId').select2(ReturnSelect2ObjectForLkpsTypes('@ERP.Front.Helpers.Enums.Common.FndLkpsTypes.ScOtherAid.ToString()'));
+
+    $('#PortalRequestId').select2(ReturnSelect2ObjectDefault(`${baseUrl}/ScPortalRequest/GetScPortalRequestForStudySelect2`))
+    $('#CaseName').select2(ReturnSelect2ObjectDefault(`${baseUrl}/ScPortalRequest/GetScPortalRequestForStudyByNameSelect2`))
+
+    $('#PortalRequestId').on('select2:select', function (e) {
+
+        const data = e.params.data;
+
+        const isMaintenance = data.altText.split('-')[1] == 'True' ? true : false;
+
+        $(`#CaseName`).append($("<option selected='selected'></option>")
+            .val(data.id)
+            .text(data.altText.split('-')[0])).trigger('change');
+
+        console.log(isMaintenance);
+
+        MaintenanceInputs(isMaintenance);
+    });
+
+    $('#CaseName').on('select2:select', function (e) {
+
+        const data = e.params.data;
+
+        const isMaintenance = data.altText.split('-')[1] == 'True' ? true : false;
+
+        $(`#PortalRequestId`)
+            .append($("<option selected='selected'></option>")
+                .val(data.id)
+                .text(data.altText.split('-')[0]))
+            .trigger('change');
+
+        $('#CaseName').attr('data-enc-id', data.encId);
+
+        MaintenanceInputs(isMaintenance);
+    });
+
+    $('#PortalRequestId').on('select2:unselect', function (e) {
+
+        $('#OtherAidLkpId').prop('disabled', false);
+        $('#OtherMonthNo').prop('disabled', false);
+        $('#SuggestedAmount').prop('disabled', false);
+        $('#NumberOfMonths').prop('disabled', false);
+        $('#CashingTo').prop('disabled', false);
+        $('#IsMedicineAlt').prop('disabled', false);
+
+    });
+
+    const MaintenanceInputs = function (isMaintenance) {
+
+        if (isMaintenance) {
+            $('#CashingTo').val('');
+            $('#NumberOfMonths').val('');
+            $('#SuggestedAmount').val('');
+            $('#OtherMonthNo').val('');
+            $('#OtherAidLkpId').val('').trigger('change');
+
+            $('#OtherAidLkpId').prop('disabled', true);
+            $('#OtherMonthNo').prop('disabled', true);
+            $('#SuggestedAmount').prop('disabled', true);
+            $('#NumberOfMonths').prop('disabled', true);
+            $('#CashingTo').prop('disabled', true);
+            $('#IsMedicineAlt').prop('disabled', true);
+
+        } else {
+            $('#OtherAidLkpId').prop('disabled', false);
+            $('#OtherMonthNo').prop('disabled', false);
+            $('#SuggestedAmount').prop('disabled', false);
+            $('#NumberOfMonths').prop('disabled', false);
+            $('#CashingTo').prop('disabled', false);
+            $('#IsMedicineAlt').prop('disabled', false);
+        }
+
+    };
+
+    $('#CaseName').on('change', function () {
+
+        if ($(this).find(':selected').val()) {
+
+            $('#openProfile')
+                .html(`<a href="${$PrefixHostName}/ScPortalRequests/FormView?id=${$(this).attr('data-enc-id')}&t=@encShowTrigger" target="_blank" title="@ERP.ResourcePack.Common.Settings.Show"><i class="mx-2 fas fa-eye text-info"></i> @ERP.ResourcePack.Common.Settings.Show </a>`);
+
+        } else {
+
+            $('#openProfile').empty();
+
+        }
+
+    });
+
+</script>

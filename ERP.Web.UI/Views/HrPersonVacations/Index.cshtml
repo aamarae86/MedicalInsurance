@@ -1,0 +1,11 @@
+﻿@{
+    ViewBag.Title = ERP.ResourcePack.HR.HrPersonVacations.Title;
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@Html.Action(nameof(ERP.Web.UI.Controllers.HR.HrPersonVacationsController.HrPersonVacationsSearch))
+@Html.Action(nameof(ERP.Web.UI.Controllers.HR.HrPersonVacationsController.HrPersonVacationsData))
+
+@section scripts{
+    @Html.Partial("~/ViewsScripts/_HR/HrPersonVacations/HrPersonVacationsScripts.cshtml")
+}

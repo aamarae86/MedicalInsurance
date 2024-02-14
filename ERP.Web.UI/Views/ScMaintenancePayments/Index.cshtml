@@ -1,0 +1,15 @@
+﻿@{
+    ViewBag.Title = ERP.ResourcePack.AidModule.ScMaintenancePayments.Title;
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@Html.Action(nameof(ERP.Web.UI.Controllers.AidModule.ScMaintenancePaymentsController.ScMaintenancePaymentsSearch))
+@Html.Action(nameof(ERP.Web.UI.Controllers.AidModule.ScMaintenancePaymentsController.ScMaintenancePaymentsData))
+
+@section scripts{
+    <script>
+        let formView = false;
+        $('#searchBox #ScMaintenanceContractPaymentId').select2(ReturnSelect2ObjectDefault(`${baseUrl}/ScMaintenanceContract/GetScMaintenanceContractPaymentsSelect2`));
+    </script>
+    @Html.Partial("~/ViewsScripts/_AidModule/ScMaintenancePayments/ScMaintenancePaymentsScripts.cshtml")
+}

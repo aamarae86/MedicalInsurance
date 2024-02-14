@@ -1,0 +1,12 @@
+﻿@{
+    ViewBag.Title = ERP.ResourcePack.AccountsExtend.GlAccMapping.Title;
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@Html.Action(nameof(ERP.Web.UI.Controllers.AccountsExtend.GlAccMappingController.GlAccMappingHdSearch))
+@Html.Action(nameof(ERP.Web.UI.Controllers.AccountsExtend.GlAccMappingController.GlAccMappingHdData))
+
+@section scripts{
+    @Html.Partial("~/ViewsScripts/_Accounts/GlAccMapping/GlAccMappingScripts.cshtml")
+}
+

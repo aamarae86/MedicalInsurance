@@ -1,0 +1,15 @@
+﻿@{
+    ViewBag.Title = ERP.ResourcePack.AccountsExtend.FaAsset.Title;
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@Html.Action(nameof(ERP.Web.UI.Controllers.AccountsExtend.FaAssetController.FaAssetSearch))
+@Html.Action(nameof(ERP.Web.UI.Controllers.AccountsExtend.FaAssetController.FaAssetData))
+@Html.Partial("_ReportModal")
+
+@section scripts{
+    <script>
+        let formView = false;
+    </script>
+    @Html.Partial("~/ViewsScripts/_Accounts/FaAsset/FaAssetScripts.cshtml")
+}

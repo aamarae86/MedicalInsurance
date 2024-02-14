@@ -1,0 +1,2227 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{3F29041A-C034-4821-A8E5-74DEBBB8212D}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>ERP.ResourcePack</RootNamespace>
+    <AssemblyName>ERP.ResourcePack</AssemblyName>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <Deterministic>true</Deterministic>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Net.Http" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="AccountsExtend\ArInvoiceSettlementHd.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>ArInvoiceSettlementHd.resx</DependentUpon>
+    </Compile>
+    <Compile Include="AccountsExtend\FaAsset.Designer.cs">
+      <DependentUpon>FaAsset.resx</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="AccountsExtend\ApInvoiceHd.ar.Designer.cs">
+      <DependentUpon>ApInvoiceHd.ar.resx</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="AccountsExtend\FaAsset.ar.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>FaAsset.ar.resx</DependentUpon>
+    </Compile>
+    <Compile Include="AccountsExtend\ApInvoiceHd.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>ApInvoiceHd.resx</DependentUpon>
+    </Compile>
+    <Compile Include="AccountsExtend\ApPaymentsTransactions.ar.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>ApPaymentsTransactions.ar.resx</DependentUpon>
+    </Compile>
+    <Compile Include="AccountsExtend\ApPaymentsTransactions.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>ApPaymentsTransactions.resx</DependentUpon>
+    </Compile>
+    <Compile Include="AccountsExtend\ApPrepaid.ar.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>ApPrepaid.ar.resx</DependentUpon>
+    </Compile>
+    <Compile Include="AccountsExtend\ApPrepaid.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>ApPrepaid.resx</DependentUpon>
+    </Compile>
+    <Compile Include="AccountsExtend\ApVendors.ar.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>ApVendors.ar.resx</DependentUpon>
+    </Compile>
+    <Compile Include="AccountsExtend\ApVendors.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>ApVendors.resx</DependentUpon>
+    </Compile>
+    <Compile Include="AccountsExtend\GlAccMapping.ar.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>GlAccMapping.ar.resx</DependentUpon>
+    </Compile>
+    <Compile Include="AccountsExtend\GlAccMapping.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>GlAccMapping.resx</DependentUpon>
+    </Compile>
+    <Compile Include="AccountsExtend\GlJeIntegrationHeaders.ar.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>GlJeIntegrationHeaders.ar.resx</DependentUpon>
+    </Compile>
+    <Compile Include="AccountsExtend\GlJeIntegrationHeaders.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>GlJeIntegrationHeaders.resx</DependentUpon>
+    </Compile>
+    <Compile Include="Accounts\ApBanks.ar.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>ApBanks.ar.resx</DependentUpon>
+    </Compile>
+    <Compile Include="Accounts\ApBanks.Designer.cs" />
+    <Compile Include="Accounts\ApMiscPaymentHeaders.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>ApMiscPaymentHeaders.resx</DependentUpon>
+    </Compile>
+    <Compile Include="Accounts\ArJobCardHd.ar.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>ArJobCardHd.ar.resx</DependentUpon>
+    </Compile>
+    <Compile Include="Accounts\ArJobCardHd.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>ArJobCardHd.resx</DependentUpon>
+    </Compile>
+    <Compile Include="Accounts\ArJobCardPaymentHd.ar.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>ArJobCardPaymentHd.ar.resx</DependentUpon>
+    </Compile>
+    <Compile Include="Accounts\ArJobCardPaymentHd.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>ArJobCardPaymentHd.resx</DependentUpon>
+    </Compile>
+    <Compile Include="Accounts\ArJobSurveyHd.ar.Designer.cs" />
+    <Compile Include="Accounts\ArJobSurveyHd.Designer.cs" />
+    <Compile Include="Accounts\ArJobSurveyPartsList.ar.Designer.cs" />
+    <Compile Include="Accounts\ArJobSurveyPartsList.Designer.cs" />
+    <Compile Include="Accounts\FaAssetDeprnHd.Designer.cs">
+      <DependentUpon>FaAssetDeprnHd.resx</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Accounts\FaAssetDeprnHd.ar.Designer.cs">
+      <DependentUpon>FaAssetDeprnHd.ar.resx</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Accounts\FaAssetCategory.Designer.cs">
+      <DependentUpon>FaAssetCategory.resx</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Accounts\ArCustomers.ar - Copy.Designer.cs">
+      <DependentUpon>FaAssetCategory.ar.resx</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Accounts\FaAssetCategory.ar.Designer.cs">
+      <DependentUpon>FaAssetCategory.ar.resx</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Accounts\ArReceipts.Designer.cs">
+      <DependentUpon>ArReceipts.resx</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Accounts\ArReceipts.ar.Designer.cs">
+      <DependentUpon>ArReceipts.ar.resx</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Accounts\ApPdcInterface.ar.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>ApPdcInterface.ar.resx</DependentUpon>
+    </Compile>
+    <Compile Include="Accounts\ApPdcInterface.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>ApPdcInterface.resx</DependentUpon>
+    </Compile>
+    <Compile Include="Accounts\ApUserBankAccess.ar.Designer.cs" />
+    <Compile Include="Accounts\ApUserBankAccess.ar1.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>ApUserBankAccess.ar.resx</DependentUpon>
+    </Compile>
+    <Compile Include="Accounts\ApUserBankAccess.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>ApUserBankAccess.resx</DependentUpon>
+    </Compile>
+    <Compile Include="Accounts\ArCustomers.ar1.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>ArCustomers.ar.resx</DependentUpon>
+    </Compile>
+    <Compile Include="Accounts\ArMiscReceiptHeaders.ar.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>ArMiscReceiptHeaders.ar.resx</DependentUpon>
+    </Compile>
+    <Compile Include="Accounts\ArMiscReceiptHeaders.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>ArMiscReceiptHeaders.resx</DependentUpon>
+    </Compile>
+    <Compile Include="Accounts\ArSecurityDepositInterface.ar.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>ArSecurityDepositInterface.ar.resx</DependentUpon>
+    </Compile>
+    <Compile Include="Accounts\ArSecurityDepositInterface.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>ArSecurityDepositInterface.resx</DependentUpon>
+    </Compile>
+    <Compile Include="Accounts\FndCollectors.Designer.cs">
+      <DependentUpon>FndCollectors.resx</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Accounts\FndCollectors.ar.Designer.cs">
+      <DependentUpon>FndCollectors.ar.resx</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Accounts\ArPdcInterface.ar.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>ArPdcInterface.ar.resx</DependentUpon>
+    </Compile>
+    <Compile Include="Accounts\ArCustomers.Designer.cs">
+      <DependentUpon>ArCustomers.resx</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Accounts\ArCustomers.ar.Designer.cs">
+      <DependentUpon>ArCustomers.ar.resx</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Accounts\ArPdcInterface.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>ArPdcInterface.resx</DependentUpon>
+    </Compile>
+    <Compile Include="Accounts\Currencies.Designer.cs">
+      <DependentUpon>Currencies.resx</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Accounts\Currencies.ar.Designer.cs">
+      <DependentUpon>Currencies.ar.resx</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Accounts\FndTaxType.ar.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>FndTaxType.ar.resx</DependentUpon>
+    </Compile>
+    <Compile Include="Accounts\FndTaxType.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>FndTaxType.resx</DependentUpon>
+    </Compile>
+    <Compile Include="Accounts\GlAccDetails.ar.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>GlAccDetails.ar.resx</DependentUpon>
+    </Compile>
+    <Compile Include="Accounts\GlAccDetails.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>GlAccDetails.resx</DependentUpon>
+    </Compile>
+    <Compile Include="Accounts\GlAccHeaders.ar.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>GlAccHeaders.ar.resx</DependentUpon>
+    </Compile>
+    <Compile Include="Accounts\GlAccHeaders.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>GlAccHeaders.resx</DependentUpon>
+    </Compile>
+    <Compile Include="Accounts\GlJeHeaders.ar.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>GlJeHeaders.ar.resx</DependentUpon>
+    </Compile>
+    <Compile Include="Accounts\GlJeHeaders.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>GlJeHeaders.resx</DependentUpon>
+    </Compile>
+    <Compile Include="Accounts\GlPeriodsYearsDetails.Designer.cs">
+      <DependentUpon>GlPeriodsYearsDetails.resx</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Accounts\GlPeriodsYearsDetails.ar.Designer.cs">
+      <DependentUpon>GlPeriodsYearsDetails.ar.resx</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Accounts\GlPeriodsYears.Designer.cs">
+      <DependentUpon>GlPeriodsYears.resx</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Accounts\GlPeriodsYears.ar.Designer.cs">
+      <DependentUpon>GlPeriodsYears.ar.resx</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Accounts\GlMainAccounts.ar.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>GlMainAccounts.ar.resx</DependentUpon>
+    </Compile>
+    <Compile Include="Accounts\GlMainAccounts.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>GlMainAccounts.resx</DependentUpon>
+    </Compile>
+    <Compile Include="Accounts\ReportsAccounts.ar.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>ReportsAccounts.ar.resx</DependentUpon>
+    </Compile>
+    <Compile Include="Accounts\ReportsAccounts.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>ReportsAccounts.resx</DependentUpon>
+    </Compile>
+    <Compile Include="AidModule\FndUsers.ar.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>FndUsers.ar.resx</DependentUpon>
+    </Compile>
+    <Compile Include="AidModule\FndUsers.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>FndUsers.resx</DependentUpon>
+    </Compile>
+    <Compile Include="AidModule\ScCampains.ar.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>ScCampains.ar.resx</DependentUpon>
+    </Compile>
+    <Compile Include="AidModule\ScCampains.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>ScCampains.resx</DependentUpon>
+    </Compile>
+    <Compile Include="AidModule\ScMaintenanceContract.ar.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>ScMaintenanceContract.ar.resx</DependentUpon>
+    </Compile>
+    <Compile Include="AidModule\ScMaintenanceContract.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>ScMaintenanceContract.resx</DependentUpon>
+    </Compile>
+    <Compile Include="AidModule\ScMaintenancePayments.ar.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>ScMaintenancePayments.ar.resx</DependentUpon>
+    </Compile>
+    <Compile Include="AidModule\ScMaintenancePayments.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>ScMaintenancePayments.resx</DependentUpon>
+    </Compile>
+    <Compile Include="AidModule\ScMaintenanceQuotations.ar.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>ScMaintenanceQuotations.ar.resx</DependentUpon>
+    </Compile>
+    <Compile Include="AidModule\ScMaintenanceQuotations.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>ScMaintenanceQuotations.resx</DependentUpon>
+    </Compile>
+    <Compile Include="AidModule\ScMaintenanceTechnicalReport.Designer.cs">
+      <DependentUpon>ScMaintenanceTechnicalReport.resx</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="AidModule\ScMaintenanceTechnicalReport.ar.Designer.cs">
+      <DependentUpon>ScMaintenanceTechnicalReport.ar.resx</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="AidModule\ScCommittee.ar.Designer.cs">
+      <DependentUpon>ScCommittee.ar.resx</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="AidModule\ScCommitteesCheck.ar.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>ScCommitteesCheck.ar.resx</DependentUpon>
+    </Compile>
+    <Compile Include="AidModule\ScCommitteesCheck.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>ScCommitteesCheck.resx</DependentUpon>
+    </Compile>
+    <Compile Include="AidModule\ScFndAidRequestType.ar.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>ScFndAidRequestType.ar.resx</DependentUpon>
+    </Compile>
+    <Compile Include="AidModule\ScFndAidRequestType.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>ScFndAidRequestType.resx</DependentUpon>
+    </Compile>
+    <Compile Include="AidModule\ScFndPortalIntervalSetting.ar.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>ScFndPortalIntervalSetting.ar.resx</DependentUpon>
+    </Compile>
+    <Compile Include="AidModule\ScFndPortalIntervalSetting.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>ScFndPortalIntervalSetting.resx</DependentUpon>
+    </Compile>
+    <Compile Include="AidModule\ScFndProtalAttachmentSetting.ar.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>ScFndProtalAttachmentSetting.ar.resx</DependentUpon>
+    </Compile>
+    <Compile Include="AidModule\ScFndProtalAttachmentSetting.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>ScFndProtalAttachmentSetting.resx</DependentUpon>
+    </Compile>
+    <Compile Include="AidModule\ScCommittee.Designer.cs">
+      <DependentUpon>ScCommittee.resx</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="AidModule\ScPortalRequests.ar.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>ScPortalRequests.ar.resx</DependentUpon>
+    </Compile>
+    <Compile Include="AidModule\ScPortalRequests.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>ScPortalRequests.resx</DependentUpon>
+    </Compile>
+    <Compile Include="AidModule\ScPortalRequestStudy.ar.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>ScPortalRequestStudy.ar.resx</DependentUpon>
+    </Compile>
+    <Compile Include="AidModule\ScPortalRequestStudy.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>ScPortalRequestStudy.resx</DependentUpon>
+    </Compile>
+    <Compile Include="Authentications\Roles.Designer.cs">
+      <DependentUpon>Roles.resx</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Authentications\Roles.ar.Designer.cs">
+      <DependentUpon>Roles.ar.resx</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Authentications\Users.ar.Designer.cs">
+      <DependentUpon>Users.ar.resx</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Authentications\Users.Designer.cs">
+      <DependentUpon>Users.resx</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="CharityBoxes\ReportsTms.ar.Designer.cs">
+      <DependentUpon>ReportsTms.ar.resx</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="CharityBoxes\ReportsTms.Designer.cs">
+      <DependentUpon>ReportsTms.resx</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="CharityBoxes\TmCharityBoxActions.ar.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>TmCharityBoxActions.ar.resx</DependentUpon>
+    </Compile>
+    <Compile Include="CharityBoxes\TmCharityBoxActions.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>TmCharityBoxActions.resx</DependentUpon>
+    </Compile>
+    <Compile Include="CharityBoxes\TmCharityBoxCollect.ar.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>TmCharityBoxCollect.ar.resx</DependentUpon>
+    </Compile>
+    <Compile Include="CharityBoxes\TmCharityBoxCollect.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>TmCharityBoxCollect.resx</DependentUpon>
+    </Compile>
+    <Compile Include="CharityBoxes\TmCharityBoxCollectMembers.ar.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>TmCharityBoxCollectMembers.ar.resx</DependentUpon>
+    </Compile>
+    <Compile Include="CharityBoxes\TmCharityBoxCollectMembers.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>TmCharityBoxCollectMembers.resx</DependentUpon>
+    </Compile>
+    <Compile Include="CharityBoxes\TmCharityBoxes.Designer.cs">
+      <DependentUpon>TmCharityBoxes.resx</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="CharityBoxes\TmCharityBoxes.ar.Designer.cs">
+      <DependentUpon>TmCharityBoxes.ar.resx</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="CharityBoxes\TmCharityBoxReceive.Designer.cs">
+      <DependentUpon>TmCharityBoxReceive.resx</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="CharityBoxes\TmCharityBoxReceive.ar.Designer.cs">
+      <DependentUpon>TmCharityBoxReceive.ar.resx</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="CharityBoxes\TmDamagedCharityBoxs.ar.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>TmDamagedCharityBoxs.ar.resx</DependentUpon>
+    </Compile>
+    <Compile Include="CharityBoxes\TmDamagedCharityBoxs.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>TmDamagedCharityBoxs.resx</DependentUpon>
+    </Compile>
+    <Compile Include="CharityBoxes\TmLocations.ar.Designer.cs">
+      <DependentUpon>TmLocations.ar.resx</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="CharityBoxes\TmLocations.Designer.cs">
+      <DependentUpon>TmLocations.resx</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Common\FndLookupValues.ar.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>FndLookupValues.ar.resx</DependentUpon>
+    </Compile>
+    <Compile Include="Common\FndLookupValues.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>FndLookupValues.resx</DependentUpon>
+    </Compile>
+    <Compile Include="Common\Menu.ar.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Menu.ar.resx</DependentUpon>
+    </Compile>
+    <Compile Include="Common\Menu.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Menu.resx</DependentUpon>
+    </Compile>
+    <Compile Include="Common\Pages.ar.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Pages.ar.resx</DependentUpon>
+    </Compile>
+    <Compile Include="Common\Pages.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Pages.resx</DependentUpon>
+    </Compile>
+    <Compile Include="Common\Settings.ar.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Settings.ar.resx</DependentUpon>
+    </Compile>
+    <Compile Include="Common\Settings.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Settings.resx</DependentUpon>
+    </Compile>
+    <Compile Include="Common\Styles.ar.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Styles.ar.resx</DependentUpon>
+    </Compile>
+    <Compile Include="Common\Styles.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Styles.resx</DependentUpon>
+    </Compile>
+    <Compile Include="CRM\CrmContactUs\CrmContactUs.ar.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>CrmContactUs.ar.resx</DependentUpon>
+    </Compile>
+    <Compile Include="CRM\CrmContactUs\CrmContactUs.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>CrmContactUs.resx</DependentUpon>
+    </Compile>
+    <Compile Include="CRM\CrmQueries\CrmQueries.ar.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>CrmQueries.ar.resx</DependentUpon>
+    </Compile>
+    <Compile Include="CRM\CrmQueries\CrmQueries.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>CrmQueries.resx</DependentUpon>
+    </Compile>
+    <Compile Include="CRM\Meetings\activityMeeting.ar.Designer.cs">
+      <DependentUpon>activityMeeting.ar.resx</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="CRM\Meetings\activityMeeting.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>activityMeeting.resx</DependentUpon>
+    </Compile>
+    <Compile Include="CRM\activityTask\activityTask.ar.Designer.cs">
+      <DependentUpon>activityTask.ar.resx</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="CRM\activityTask\activityTask.Designer.cs">
+      <DependentUpon>activityTask.resx</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="CRM\activityCall\activityCall.ar.Designer.cs">
+      <DependentUpon>activityCall.ar.resx</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="CRM\activityCall\activityCall.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>activityCall.resx</DependentUpon>
+    </Compile>
+    <Compile Include="CRM\Deals\deals.ar.Designer.cs">
+      <DependentUpon>deals.ar.resx</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="CRM\Deals\deals.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>deals.resx</DependentUpon>
+    </Compile>
+    <Compile Include="CRM\Leads\crmLeadsPersons.ar.Designer.cs">
+      <DependentUpon>crmLeadsPersons.ar.resx</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="CRM\Leads\crmLeadsPersons.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>crmLeadsPersons.resx</DependentUpon>
+    </Compile>
+    <Compile Include="CRM\aboutUs\aboutUs.ar.Designer.cs">
+      <DependentUpon>aboutUs.ar.resx</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="CRM\aboutUs\aboutUs.Designer.cs">
+      <DependentUpon>aboutUs.resx</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="CRM\services\services.ar.Designer.cs">
+      <DependentUpon>services.ar.resx</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="CRM\services\services.Designer.cs">
+      <DependentUpon>services.resx</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="CRM\products\products.ar.Designer.cs">
+      <DependentUpon>products.ar.resx</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="CRM\products\products.Designer.cs">
+      <DependentUpon>products.resx</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="CRM\projects\projects.ar.Designer.cs">
+      <DependentUpon>projects.ar.resx</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="CRM\projects\projects.Designer.cs">
+      <DependentUpon>projects.resx</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="HR\HrPersonPermission.ar.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>HrPersonPermission.ar.resx</DependentUpon>
+    </Compile>
+    <Compile Include="HR\HrPersonPermission.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>HrPersonPermission.resx</DependentUpon>
+    </Compile>
+    <Compile Include="HR\HrPersonRequestDocument.ar.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>HrPersonRequestDocument.ar.resx</DependentUpon>
+    </Compile>
+    <Compile Include="HR\HrPersonRequestDocument.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>HrPersonRequestDocument.resx</DependentUpon>
+    </Compile>
+    <Compile Include="HR\HrPersonTimeSheet.ar.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>HrPersonTimeSheet.ar.resx</DependentUpon>
+    </Compile>
+    <Compile Include="HR\HrPersonTimeSheet.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>HrPersonTimeSheet.resx</DependentUpon>
+    </Compile>
+    <Compile Include="HR\HrPersonVacations.ar.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>HrPersonVacations.ar.resx</DependentUpon>
+    </Compile>
+    <Compile Include="HR\HrPersonVacations.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>HrPersonVacations.resx</DependentUpon>
+    </Compile>
+    <Compile Include="HR\HrPersonsAdditionHd.ar.Designer.cs">
+      <DependentUpon>HrPersonsAdditionHd.ar.resx</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="HR\HrPersonsAdditionHd.Designer.cs">
+      <DependentUpon>HrPersonsAdditionHd.resx</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="HR\HrReports.ar.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>HrReports.ar.resx</DependentUpon>
+    </Compile>
+    <Compile Include="HR\HrReports.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>HrReports.resx</DependentUpon>
+    </Compile>
+    <Compile Include="HR\PyElements.Designer.cs">
+      <DependentUpon>PyElements.resx</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="HR\PyElements.ar.Designer.cs">
+      <DependentUpon>PyElements.ar.resx</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="HR\HrAbsencesTypes.Designer.cs">
+      <DependentUpon>HrAbsencesTypes.resx</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="HR\HrAbsencesTypes.ar.Designer.cs">
+      <DependentUpon>HrAbsencesTypes.ar.resx</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="HR\HrOrganizations.ar.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>HrOrganizations.ar.resx</DependentUpon>
+    </Compile>
+    <Compile Include="HR\HrOrganizations.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>HrOrganizations.resx</DependentUpon>
+    </Compile>
+    <Compile Include="HR\HrPersons.ar.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>HrPersons.ar.resx</DependentUpon>
+    </Compile>
+    <Compile Include="HR\HrPersons.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>HrPersons.resx</DependentUpon>
+    </Compile>
+    <Compile Include="HR\HrPersonsDeductionHd.ar.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>HrPersonsDeductionHd.ar.resx</DependentUpon>
+    </Compile>
+    <Compile Include="HR\HrPersonsDeductionHd.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>HrPersonsDeductionHd.resx</DependentUpon>
+    </Compile>
+    <Compile Include="HR\PyPayrollOperations.ar.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>PyPayrollOperations.ar.resx</DependentUpon>
+    </Compile>
+    <Compile Include="HR\PyPayrollOperations.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>PyPayrollOperations.resx</DependentUpon>
+    </Compile>
+    <Compile Include="HR\PyPayrollTypes.ar.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>PyPayrollTypes.ar.resx</DependentUpon>
+    </Compile>
+    <Compile Include="HR\PyPayrollTypes.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>PyPayrollTypes.resx</DependentUpon>
+    </Compile>
+    <Compile Include="Notifications\Notifications.ar.Designer.cs">
+      <DependentUpon>Notifications.ar.resx</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Notifications\Notifications.Designer.cs">
+      <DependentUpon>Notifications.resx</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="PmPropertiesModule\FmContracts.ar.Designer.cs">
+      <DependentUpon>FmContracts.ar.resx</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="PmPropertiesModule\FmContracts.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>FmContracts.resx</DependentUpon>
+    </Compile>
+    <Compile Include="PmPropertiesModule\FmEngineers.ar.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>FmEngineers.ar.resx</DependentUpon>
+    </Compile>
+    <Compile Include="PmPropertiesModule\FmEngineers.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>FmEngineers.resx</DependentUpon>
+    </Compile>
+    <Compile Include="PmPropertiesModule\FmMaintRequisitionsExe.ar.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>FmMaintRequisitionsExe.ar.resx</DependentUpon>
+    </Compile>
+    <Compile Include="PmPropertiesModule\FmMaintRequisitionsExe.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>FmMaintRequisitionsExe.resx</DependentUpon>
+    </Compile>
+    <Compile Include="PmPropertiesModule\FmMaintRequisitionsHdr.ar.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>FmMaintRequisitionsHdr.ar.resx</DependentUpon>
+    </Compile>
+    <Compile Include="PmPropertiesModule\FmMaintRequisitionsHdr.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>FmMaintRequisitionsHdr.resx</DependentUpon>
+    </Compile>
+    <Compile Include="PmPropertiesModule\PmTenants.Designer.cs">
+      <DependentUpon>PmTenants.resx</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="PmPropertiesModule\PmTenants.ar.Designer.cs">
+      <DependentUpon>PmTenants.ar.resx</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="PmPropertiesModule\PmContract.ar.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>PmContract.ar.resx</DependentUpon>
+    </Compile>
+    <Compile Include="PmPropertiesModule\PmContract.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>PmContract.resx</DependentUpon>
+    </Compile>
+    <Compile Include="PmPropertiesModule\PmOwners.ar.Designer.cs">
+      <DependentUpon>PmOwners.ar.resx</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="PmPropertiesModule\PmOwners.Designer.cs">
+      <DependentUpon>PmOwners.resx</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="PmPropertiesModule\PmProperties.ar.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>PmProperties.ar.resx</DependentUpon>
+    </Compile>
+    <Compile Include="PmPropertiesModule\PmProperties.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>PmProperties.resx</DependentUpon>
+    </Compile>
+    <Compile Include="PmPropertiesModule\Reports.ar.Designer.cs">
+      <DependentUpon>Reports.ar.resx</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="PmPropertiesModule\Reports.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Reports.resx</DependentUpon>
+    </Compile>
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Sales\FndSalesMen.ar.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>FndSalesMen.ar.resx</DependentUpon>
+    </Compile>
+    <Compile Include="Sales\FndSalesMen.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>FndSalesMen.resx</DependentUpon>
+    </Compile>
+    <Compile Include="Sales\IvSaleHd.ar.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>IvSaleHd.ar.resx</DependentUpon>
+    </Compile>
+    <Compile Include="Sales\IvSaleHd.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>IvSaleHd.resx</DependentUpon>
+    </Compile>
+    <Compile Include="Sales\IvSaleHdInQuery.ar.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>IvSaleHdInQuery.ar.resx</DependentUpon>
+    </Compile>
+    <Compile Include="Sales\IvSaleHdInQuery.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>IvSaleHdInQuery.resx</DependentUpon>
+    </Compile>
+    <Compile Include="Sales\ReportsSales.ar.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>ReportsSales.ar.resx</DependentUpon>
+    </Compile>
+    <Compile Include="Sales\ReportsSales.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>ReportsSales.resx</DependentUpon>
+    </Compile>
+    <Compile Include="Sales\ReturnSale.ar.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>ReturnSale.ar.resx</DependentUpon>
+    </Compile>
+    <Compile Include="Sales\ReturnSale.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>ReturnSale.resx</DependentUpon>
+    </Compile>
+    <Compile Include="SpGuarantees\SpBeneficent.ar.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>SpBeneficent.ar.resx</DependentUpon>
+    </Compile>
+    <Compile Include="SpGuarantees\SpBeneficent.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>SpBeneficent.resx</DependentUpon>
+    </Compile>
+    <Compile Include="SpGuarantees\SpCaseEditData.Designer.cs">
+      <DependentUpon>SpCaseEditData.resx</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="SpGuarantees\SpCaseEditData.ar.Designer.cs">
+      <DependentUpon>SpCaseEditData.ar.resx</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="SpGuarantees\SpCaseHistory.ar.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>SpCaseHistory.ar.resx</DependentUpon>
+    </Compile>
+    <Compile Include="SpGuarantees\SpCaseHistory.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>SpCaseHistory.resx</DependentUpon>
+    </Compile>
+    <Compile Include="SpGuarantees\SpCases.Designer.cs">
+      <DependentUpon>SpCases.resx</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="SpGuarantees\SpCases.ar.Designer.cs">
+      <DependentUpon>SpCases.ar.resx</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="SpGuarantees\SpCaseOperations.ar.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>SpCaseOperations.ar.resx</DependentUpon>
+    </Compile>
+    <Compile Include="SpGuarantees\SpCaseOperations.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>SpCaseOperations.resx</DependentUpon>
+    </Compile>
+    <Compile Include="SpGuarantees\SpContracts.ar.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>SpContracts.ar.resx</DependentUpon>
+    </Compile>
+    <Compile Include="SpGuarantees\SpContracts.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>SpContracts.resx</DependentUpon>
+    </Compile>
+    <Compile Include="SpGuarantees\SpFamilies.ar.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>SpFamilies.ar.resx</DependentUpon>
+    </Compile>
+    <Compile Include="SpGuarantees\SpFamilies.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>SpFamilies.resx</DependentUpon>
+    </Compile>
+    <Compile Include="SpGuarantees\SpGuaranteesReports.ar.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>SpGuaranteesReports.ar.resx</DependentUpon>
+    </Compile>
+    <Compile Include="SpGuarantees\SpGuaranteesReports.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>SpGuaranteesReports.resx</DependentUpon>
+    </Compile>
+    <Compile Include="SpGuarantees\SpPayments.ar.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>SpPayments.ar.resx</DependentUpon>
+    </Compile>
+    <Compile Include="SpGuarantees\SpPayments.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>SpPayments.resx</DependentUpon>
+    </Compile>
+    <Compile Include="SpGuarantees\SpPaymentSetting.ar.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>SpPaymentSetting.ar.resx</DependentUpon>
+    </Compile>
+    <Compile Include="SpGuarantees\SpPaymentSetting.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>SpPaymentSetting.resx</DependentUpon>
+    </Compile>
+    <Compile Include="Warehouses\IvAdjustmentHd.Designer.cs">
+      <DependentUpon>IvAdjustmentHd.resx</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Warehouses\IvAdjustmentHd.ar.Designer.cs">
+      <DependentUpon>IvAdjustmentHd.ar.resx</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Warehouses\IvInventorySetting.ar.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>IvInventorySetting.ar.resx</DependentUpon>
+    </Compile>
+    <Compile Include="Warehouses\IvInventorySetting.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>IvInventorySetting.resx</DependentUpon>
+    </Compile>
+    <Compile Include="Warehouses\IvItemsTypesConfigure.ar.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>IvItemsTypesConfigure.ar.resx</DependentUpon>
+    </Compile>
+    <Compile Include="Warehouses\IvItemsTypesConfigure.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>IvItemsTypesConfigure.resx</DependentUpon>
+    </Compile>
+    <Compile Include="Warehouses\IvPriceListHd.ar.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>IvPriceListHd.ar.resx</DependentUpon>
+    </Compile>
+    <Compile Include="Warehouses\IvPriceListHd.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>IvPriceListHd.resx</DependentUpon>
+    </Compile>
+    <Compile Include="Warehouses\IvReceiveHd.ar.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>IvReceiveHd.ar.resx</DependentUpon>
+    </Compile>
+    <Compile Include="Warehouses\IvReceiveHd.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>IvReceiveHd.resx</DependentUpon>
+    </Compile>
+    <Compile Include="Warehouses\IvReturnReceiveHd.ar.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>IvReturnReceiveHd.ar.resx</DependentUpon>
+    </Compile>
+    <Compile Include="Warehouses\IvReturnReceiveHd.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>IvReturnReceiveHd.resx</DependentUpon>
+    </Compile>
+    <Compile Include="Warehouses\IvStoreIssue.Designer.cs">
+      <DependentUpon>IvStoreIssue.resx</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Warehouses\IvStoreIssue.ar.Designer.cs">
+      <DependentUpon>IvStoreIssue.ar.resx</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Warehouses\PoPurchaseOrder.Designer.cs">
+      <DependentUpon>PoPurchaseOrder.resx</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Warehouses\PoPurchaseOrder.ar.Designer.cs">
+      <DependentUpon>PoPurchaseOrder.ar.resx</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Warehouses\IvItems.Designer.cs">
+      <DependentUpon>IvItems.resx</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Warehouses\IvItems.ar.Designer.cs">
+      <DependentUpon>IvItems.ar.resx</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Warehouses\IvUnits.Designer.cs">
+      <DependentUpon>IvUnits.resx</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Warehouses\IvUnits.ar.Designer.cs">
+      <DependentUpon>IvUnits.ar.resx</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Warehouses\IvUserWarehousesPrivileges.ar.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>IvUserWarehousesPrivileges.ar.resx</DependentUpon>
+    </Compile>
+    <Compile Include="Warehouses\IvUserWarehousesPrivileges.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>IvUserWarehousesPrivileges.resx</DependentUpon>
+    </Compile>
+    <Compile Include="Warehouses\IvWarehouses.ar.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>IvWarehouses.ar.resx</DependentUpon>
+    </Compile>
+    <Compile Include="Warehouses\IvWarehouses.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>IvWarehouses.resx</DependentUpon>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="AccountsExtend\ArInvoiceSettlementHd.ar.resx" />
+    <EmbeddedResource Include="AccountsExtend\ArInvoiceSettlementHd.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>ArInvoiceSettlementHd.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="AccountsExtend\FaAsset.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>FaAsset.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="AccountsExtend\ApInvoiceHd.ar.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>ApInvoiceHd.ar.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="AccountsExtend\FaAsset.ar.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>FaAsset.ar.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="AccountsExtend\ApInvoiceHd.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>ApInvoiceHd.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="AccountsExtend\ApPaymentsTransactions.ar.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>ApPaymentsTransactions.ar.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="AccountsExtend\ApPaymentsTransactions.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>ApPaymentsTransactions.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="AccountsExtend\ApPrepaid.ar.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>ApPrepaid.ar.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="AccountsExtend\ApPrepaid.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>ApPrepaid.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="AccountsExtend\ApVendors.ar.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>ApVendors.ar.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="AccountsExtend\ApVendors.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>ApVendors.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="AccountsExtend\GlAccMapping.ar.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>GlAccMapping.ar.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="AccountsExtend\GlAccMapping.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>GlAccMapping.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="AccountsExtend\GlJeIntegrationHeaders.ar.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>GlJeIntegrationHeaders.ar.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="AccountsExtend\GlJeIntegrationHeaders.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>GlJeIntegrationHeaders.Designer.cs</LastGenOutput>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Accounts\ApBanks.ar.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>ApBanks.ar.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Accounts\ApBanks.resx">
+      <LastGenOutput>ApBanks1.Designer.cs</LastGenOutput>
+      <Generator>PublicResXFileCodeGenerator</Generator>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Accounts\ApMiscPaymentHeaders.ar.resx" />
+    <EmbeddedResource Include="Accounts\ApMiscPaymentHeaders.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>ApMiscPaymentHeaders.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Accounts\ArJobCardHd.ar.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>ArJobCardHd.ar.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Accounts\ArJobCardHd.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>ArJobCardHd.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Accounts\ArJobCardPaymentHd.ar.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>ArJobCardPaymentHd.ar.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Accounts\ArJobCardPaymentHd.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>ArJobCardPaymentHd.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Accounts\ArJobSurveyHd.ar.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>ArJobSurveyHd.ar1.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Accounts\ArJobSurveyHd.resx" />
+    <EmbeddedResource Include="Accounts\ArJobSurveyPartsList.ar.resx" />
+    <EmbeddedResource Include="Accounts\ArJobSurveyPartsList.resx" />
+    <EmbeddedResource Include="Accounts\FaAssetDeprnHd.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>FaAssetDeprnHd.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Accounts\FaAssetDeprnHd.ar.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>FaAssetDeprnHd.ar.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Accounts\FaAssetCategory.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>FaAssetCategory.Designer.cs</LastGenOutput>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Accounts\FaAssetCategory.ar.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>FaAssetCategory.ar.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Accounts\ArReceipts.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>ArReceipts.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Accounts\ArReceipts.ar.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>ArReceipts.ar.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Accounts\ApPdcInterface.ar.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>ApPdcInterface.ar.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Accounts\ApPdcInterface.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>ApPdcInterface.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Accounts\ApUserBankAccess.ar.resx">
+      <LastGenOutput>ApUserBankAccess.ar1.Designer.cs</LastGenOutput>
+      <Generator>PublicResXFileCodeGenerator</Generator>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Accounts\ApUserBankAccess.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>ApUserBankAccess.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Accounts\ArMiscReceiptHeaders.ar.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>ArMiscReceiptHeaders.ar.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Accounts\ArMiscReceiptHeaders.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>ArMiscReceiptHeaders.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Accounts\ArSecurityDepositInterface.ar.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>ArSecurityDepositInterface.ar.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Accounts\ArSecurityDepositInterface.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>ArSecurityDepositInterface.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Accounts\FndCollectors.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>FndCollectors.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Accounts\FndCollectors.ar.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>FndCollectors.ar.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Accounts\ArCustomers.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>ArCustomers.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Accounts\ArCustomers.ar.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>ArCustomers.ar1.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Accounts\ArPdcInterface.ar.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>ArPdcInterface.ar.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Accounts\ArPdcInterface.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>ArPdcInterface.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Accounts\Currencies.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>Currencies.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Accounts\Currencies.ar.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>Currencies.ar.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Accounts\FndTaxType.ar.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>FndTaxType.ar.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Accounts\FndTaxType.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>FndTaxType.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Accounts\GlAccDetails.ar.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>GlAccDetails.ar.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Accounts\GlAccDetails.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>GlAccDetails.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Accounts\GlAccHeaders.ar.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>GlAccHeaders.ar.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Accounts\GlAccHeaders.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>GlAccHeaders.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Accounts\GlJeHeaders.ar.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>GlJeHeaders.ar.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Accounts\GlJeHeaders.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>GlJeHeaders.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Accounts\GlPeriodsYearsDetails.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>GlPeriodsYearsDetails.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Accounts\GlPeriodsYearsDetails.ar.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>GlPeriodsYearsDetails.ar.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Accounts\GlPeriodsYears.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>GlPeriodsYears.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Accounts\GlPeriodsYears.ar.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>GlPeriodsYears.ar.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Accounts\GlMainAccounts.ar.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>GlMainAccounts.ar.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Accounts\GlMainAccounts.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>GlMainAccounts.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Accounts\ReportsAccounts.ar.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>ReportsAccounts.ar.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Accounts\ReportsAccounts.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>ReportsAccounts.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="AidModule\FndUsers.ar.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>FndUsers.ar.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="AidModule\FndUsers.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>FndUsers.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="AidModule\ScCampains.ar.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>ScCampains.ar.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="AidModule\ScCampains.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>ScCampains.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="AidModule\ScMaintenanceContract.ar.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>ScMaintenanceContract.ar.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="AidModule\ScMaintenanceContract.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>ScMaintenanceContract.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="AidModule\ScMaintenancePayments.ar.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>ScMaintenancePayments.ar.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="AidModule\ScMaintenancePayments.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>ScMaintenancePayments.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="AidModule\ScMaintenanceQuotations.ar.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>ScMaintenanceQuotations.ar.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="AidModule\ScMaintenanceQuotations.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>ScMaintenanceQuotations.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="AidModule\ScMaintenanceTechnicalReport.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>ScMaintenanceTechnicalReport.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="AidModule\ScMaintenanceTechnicalReport.ar.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>ScMaintenanceTechnicalReport.ar.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="AidModule\ScCommittee.ar.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>ScCommittee.ar.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="AidModule\ScCommitteesCheck.ar.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>ScCommitteesCheck.ar.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="AidModule\ScCommitteesCheck.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>ScCommitteesCheck.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="AidModule\ScFndAidRequestType.ar.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>ScFndAidRequestType.ar.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="AidModule\ScFndAidRequestType.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>ScFndAidRequestType.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="AidModule\ScFndPortalIntervalSetting.ar.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>ScFndPortalIntervalSetting.ar.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="AidModule\ScFndPortalIntervalSetting.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>ScFndPortalIntervalSetting.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="AidModule\ScFndProtalAttachmentSetting.ar.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>ScFndProtalAttachmentSetting.ar.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="AidModule\ScFndProtalAttachmentSetting.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>ScFndProtalAttachmentSetting.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="AidModule\ScCommittee.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>ScCommittee.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="AidModule\ScPortalRequests.ar.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>ScPortalRequests.ar.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="AidModule\ScPortalRequests.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>ScPortalRequests.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="AidModule\ScPortalRequestStudy.ar.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>ScPortalRequestStudy.ar.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="AidModule\ScPortalRequestStudy.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>ScPortalRequestStudy.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Authentications\Roles.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>Roles.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Authentications\Roles.ar.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>Roles.ar.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Authentications\Users.ar.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>Users.ar.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Authentications\Users.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>Users.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="CharityBoxes\ReportsTms.ar.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>ReportsTms.ar.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="CharityBoxes\ReportsTms.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>ReportsTms.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="CharityBoxes\TmCharityBoxActions.ar.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>TmCharityBoxActions.ar.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="CharityBoxes\TmCharityBoxActions.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>TmCharityBoxActions.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="CharityBoxes\TmCharityBoxCollect.ar.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>TmCharityBoxCollect.ar.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="CharityBoxes\TmCharityBoxCollect.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>TmCharityBoxCollect.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="CharityBoxes\TmCharityBoxCollectMembers.ar.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>TmCharityBoxCollectMembers.ar.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="CharityBoxes\TmCharityBoxCollectMembers.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>TmCharityBoxCollectMembers.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="CharityBoxes\TmCharityBoxes.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>TmCharityBoxes.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="CharityBoxes\TmCharityBoxes.ar.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>TmCharityBoxes.ar.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="CharityBoxes\TmCharityBoxReceive.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>TmCharityBoxReceive.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="CharityBoxes\TmCharityBoxReceive.ar.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>TmCharityBoxReceive.ar.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="CharityBoxes\TmDamagedCharityBoxs.ar.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>TmDamagedCharityBoxs.ar.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="CharityBoxes\TmDamagedCharityBoxs.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>TmDamagedCharityBoxs.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="CharityBoxes\TmLocations.ar.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>TmLocations.ar.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="CharityBoxes\TmLocations.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>TmLocations.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Common\FndLookupValues.ar.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>FndLookupValues.ar.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Common\FndLookupValues.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>FndLookupValues.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Common\Menu.ar.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>Menu.ar.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Common\Menu.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>Menu.Designer.cs</LastGenOutput>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Common\Pages.ar.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>Pages.ar.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Common\Pages.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>Pages.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Common\Settings.ar.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>Settings.ar.Designer.cs</LastGenOutput>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Common\Settings.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>Settings.Designer.cs</LastGenOutput>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Common\Styles.ar.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>Styles.ar.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Common\Styles.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>Styles.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="CRM\CrmContactUs\CrmContactUs.ar.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>CrmContactUs.ar.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="CRM\CrmContactUs\CrmContactUs.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>CrmContactUs.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="CRM\CrmQueries\CrmQueries.ar.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>CrmQueries.ar.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="CRM\CrmQueries\CrmQueries.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>CrmQueries.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="CRM\Meetings\activityMeeting.ar.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>activityMeeting.ar.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="CRM\Meetings\activityMeeting.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>activityMeeting.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="CRM\activityTask\activityTask.ar.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>activityTask.ar.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="CRM\activityTask\activityTask.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>activityTask.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="CRM\activityCall\activityCall.ar.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>activityCall.ar.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="CRM\activityCall\activityCall.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>activityCall.Designer.cs</LastGenOutput>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="CRM\Deals\deals.ar.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>deals.ar.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="CRM\Deals\deals.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>deals.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="CRM\Leads\crmLeadsPersons.ar.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>crmLeadsPersons.ar.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="CRM\Leads\crmLeadsPersons.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>crmLeadsPersons.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="CRM\aboutUs\aboutUs.ar.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>aboutUs.ar.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="CRM\aboutUs\aboutUs.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>aboutUs.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="CRM\services\services.ar.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>services.ar.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="CRM\services\services.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>services.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="CRM\products\products.ar.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>products.ar.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="CRM\products\products.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>products.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="CRM\projects\projects.ar.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>projects.ar.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="CRM\projects\projects.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>projects.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="HR\HrPersonPermission.ar.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>HrPersonPermission.ar.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="HR\HrPersonPermission.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>HrPersonPermission.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="HR\HrPersonRequestDocument.ar.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>HrPersonRequestDocument.ar.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="HR\HrPersonRequestDocument.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>HrPersonRequestDocument.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="HR\HrPersonTimeSheet.ar.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>HrPersonTimeSheet.ar.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="HR\HrPersonTimeSheet.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>HrPersonTimeSheet.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="HR\HrPersonVacations.ar.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>HrPersonVacations.ar.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="HR\HrPersonVacations.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>HrPersonVacations.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="HR\HrPersonsAdditionHd.ar.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>HrPersonsAdditionHd.ar.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="HR\HrPersonsAdditionHd.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>HrPersonsAdditionHd.Designer.cs</LastGenOutput>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="HR\HrReports.ar.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>HrReports.ar.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="HR\HrReports.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>HrReports.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="HR\PyElements.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>PyElements.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="HR\PyElements.ar.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>PyElements.ar.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="HR\HrAbsencesTypes.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>HrAbsencesTypes.Designer.cs</LastGenOutput>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="HR\HrAbsencesTypes.ar.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>HrAbsencesTypes.ar.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="HR\HrOrganizations.ar.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>HrOrganizations.ar.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="HR\HrOrganizations.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>HrOrganizations.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="HR\HrPersons.ar.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>HrPersons.ar.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="HR\HrPersons.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>HrPersons.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="HR\HrPersonsDeductionHd.ar.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>HrPersonsDeductionHd.ar.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="HR\HrPersonsDeductionHd.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>HrPersonsDeductionHd.Designer.cs</LastGenOutput>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="HR\PyPayrollOperations.ar.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>PyPayrollOperations.ar.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="HR\PyPayrollOperations.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>PyPayrollOperations.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="HR\PyPayrollTypes.ar.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>PyPayrollTypes.ar.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="HR\PyPayrollTypes.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>PyPayrollTypes.Designer.cs</LastGenOutput>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Notifications\Notifications.ar.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>Notifications.ar.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Notifications\Notifications.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>Notifications.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="PmPropertiesModule\FmContracts.ar.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>FmContracts.ar.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="PmPropertiesModule\FmContracts.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>FmContracts.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="PmPropertiesModule\FmEngineers.ar.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>FmEngineers.ar.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="PmPropertiesModule\FmEngineers.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>FmEngineers.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="PmPropertiesModule\FmMaintRequisitionsExe.ar.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>FmMaintRequisitionsExe.ar.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="PmPropertiesModule\FmMaintRequisitionsExe.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>FmMaintRequisitionsExe.Designer.cs</LastGenOutput>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="PmPropertiesModule\FmMaintRequisitionsHdr.ar.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>FmMaintRequisitionsHdr.ar.Designer.cs</LastGenOutput>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="PmPropertiesModule\FmMaintRequisitionsHdr.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>FmMaintRequisitionsHdr.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="PmPropertiesModule\PmTenants.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>PmTenants.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="PmPropertiesModule\PmTenants.ar.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>PmTenants.ar.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="PmPropertiesModule\PmContract.ar.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>PmContract.ar.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="PmPropertiesModule\PmContract.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>PmContract.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="PmPropertiesModule\PmProperties.ar.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>PmProperties.ar.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="PmPropertiesModule\PmProperties.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>PmProperties.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="PmPropertiesModule\Reports.ar.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>Reports.ar.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="PmPropertiesModule\Reports.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>Reports.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Sales\FndSalesMen.ar.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>FndSalesMen.ar.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Sales\FndSalesMen.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>FndSalesMen.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Sales\IvSaleHd.ar.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>IvSaleHd.ar.Designer.cs</LastGenOutput>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Sales\IvSaleHd.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>IvSaleHd.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Sales\IvSaleHdInQuery.ar.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>IvSaleHdInQuery.ar.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Sales\IvSaleHdInQuery.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>IvSaleHdInQuery.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Sales\ReportsSales.ar.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>ReportsSales.ar.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Sales\ReportsSales.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>ReportsSales.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Sales\ReturnSale.ar.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>ReturnSale.ar.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Sales\ReturnSale.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>ReturnSale.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="SpGuarantees\SpBeneficent.ar.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>SpBeneficent.ar.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="SpGuarantees\SpBeneficent.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>SpBeneficent.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="SpGuarantees\SpCaseEditData.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>SpCaseEditData.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="SpGuarantees\SpCaseEditData.ar.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>SpCaseEditData.ar.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="SpGuarantees\SpCaseHistory.ar.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>SpCaseHistory.ar.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="SpGuarantees\SpCaseHistory.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>SpCaseHistory.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="SpGuarantees\SpCases.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>SpCases.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="SpGuarantees\SpCases.ar.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>SpCases.ar.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="SpGuarantees\SpCaseOperations.ar.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>SpCaseOperations.ar.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="SpGuarantees\SpCaseOperations.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>SpCaseOperations.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="SpGuarantees\SpContracts.ar.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>SpContracts.ar.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="SpGuarantees\SpContracts.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>SpContracts.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="SpGuarantees\SpFamilies.ar.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>SpFamilies.ar.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="SpGuarantees\SpFamilies.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>SpFamilies.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="SpGuarantees\SpGuaranteesReports.ar.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>SpGuaranteesReports.ar.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="SpGuarantees\SpGuaranteesReports.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>SpGuaranteesReports.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="SpGuarantees\SpPayments.ar.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>SpPayments.ar.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="SpGuarantees\SpPayments.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>SpPayments.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="SpGuarantees\SpPaymentSetting.ar.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>SpPaymentSetting.ar.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="SpGuarantees\SpPaymentSetting.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>SpPaymentSetting.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Warehouses\IvAdjustmentHd.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>IvAdjustmentHd.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Warehouses\IvAdjustmentHd.ar.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>IvAdjustmentHd.ar.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Warehouses\IvInventorySetting.ar.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>IvInventorySetting.ar.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Warehouses\IvInventorySetting.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>IvInventorySetting.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Warehouses\IvItemsTypesConfigure.ar.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>IvItemsTypesConfigure.ar.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Warehouses\IvItemsTypesConfigure.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>IvItemsTypesConfigure.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Warehouses\IvPriceListHd.ar.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>IvPriceListHd.ar.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Warehouses\IvPriceListHd.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>IvPriceListHd.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Warehouses\IvReceiveHd.ar.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>IvReceiveHd.ar.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Warehouses\IvReceiveHd.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>IvReceiveHd.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Warehouses\IvReturnReceiveHd.ar.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>IvReturnReceiveHd.ar.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Warehouses\IvReturnReceiveHd.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>IvReturnReceiveHd.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Warehouses\IvStoreIssue.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>IvStoreIssue.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Warehouses\IvStoreIssue.ar.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>IvStoreIssue.ar.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Warehouses\PoPurchaseOrder.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>PoPurchaseOrder.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Warehouses\PoPurchaseOrder.ar.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>PoPurchaseOrder.ar.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Warehouses\IvItems.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>IvItems.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Warehouses\IvItems.ar.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>IvItems.ar.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Warehouses\IvUnits.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>IvUnits.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Warehouses\IvUnits.ar.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>IvUnits.ar.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Warehouses\IvUserWarehousesPrivileges.ar.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>IvUserWarehousesPrivileges.ar.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Warehouses\IvUserWarehousesPrivileges.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>IvUserWarehousesPrivileges.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Warehouses\IvWarehouses.ar.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>IvWarehouses.ar.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Warehouses\IvWarehouses.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>IvWarehouses.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="PmPropertiesModule\PmOwners.ar.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>PmOwners.ar.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="PmPropertiesModule\PmOwners.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>PmOwners.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup />
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+</Project>

@@ -1,0 +1,120 @@
+﻿@using ERP.Web.UI.Controllers.PmPropertiesModule
+@using ERP.Web.UI.Models.ViewModels.PmPropertiesModule
+@{
+    ViewBag.Title = ERP.ResourcePack.PmPropertiesModule.PmContract.Title;
+    Layout = "~/Views/Shared/_Layout.cshtml";
+
+    string formTrigger = ViewBag.trigger;
+
+    long? id = ViewData["Id"] == null ? null : (long?)Convert.ToInt32(ViewData["Id"]);
+
+    var detailObj = ViewData["DetailAsync"] == null ? null : ViewData["DetailAsync"] as PmContractVM;
+}
+
+<div class="row clearfix">
+    <div class="col-12">
+        @Html.Action(nameof(PmContractController.PmContractForm), new { id = id, trigger = formTrigger, PmContractVM = detailObj })
+    </div>
+    <div class="col-12">
+        <div class="card">
+            <div class="body">
+                <ul class="mt-2 nav nav-tabs tab-nav-right" role="tablist">
+                    <li role="presentation">
+                        <a href="#units" data-toggle="tab" class="show active">@ERP.ResourcePack.PmPropertiesModule.PmContract.Title1</a>
+                    </li>
+                    <li role="presentation">
+                        <a href="#Payments" data-toggle="tab" class="show">@ERP.ResourcePack.PmPropertiesModule.PmContract.Title2</a>
+                    </li>
+                    <li role="presentation">
+                        <a href="#OtherPayments" data-toggle="tab" class="show">@ERP.ResourcePack.PmPropertiesModule.PmContract.Title3</a>
+                    </li>
+                    <li role="presentation">
+                        <a href="#attachments" data-toggle="tab" class="show">@ERP.ResourcePack.PmPropertiesModule.PmContract.Title4</a>
+                    </li>
+                </ul>
+                <div class="tab-content">
+                    <div role="tabpanel" class="tab-pane fade in active show" id="units">
+                        @Html.Action(nameof(PmContractController.PmContractFormDetail), new { id = id, trigger = formTrigger })
+                        @Html.Action(nameof(PmContractController.PmContractDataDetail))
+                    </div>
+                    <div role="tabpanel" class="tab-pane fade in  " id="Payments">
+                        @Html.Action(nameof(PmContractController.PmContractFormDetail2), new { id = id, trigger = formTrigger })
+                        @Html.Action(nameof(PmContractController.PmContractDataDetail2))
+                    </div>
+                    <div role="tabpanel" class="tab-pane fade in  " id="OtherPayments">
+                        @Html.Action(nameof(PmContractController.PmContractFormDetail3), new { id = id, trigger = formTrigger })
+                        @Html.Action(nameof(PmContractController.PmContractDataDetail3))
+                    </div>
+                    <div role="tabpanel" class="tab-pane fade in  " id="attachments">
+                        @*@Html.Action(nameof(PmContractController.PmContractFormDetail4), new { id = id, trigger = formTrigger })
+                        @Html.Action(nameof(PmContractController.PmContractDataDetail4))*@
+                        @if (formTrigger != ERP.Front.Helpers.Enums.Common.FormTriggers.Show.ToString())
+                        {
+                            @Html.Partial("_AttachmentForm");
+                        }
+                        @Html.Partial("_AttachmentsData");
+                    </div>
+                </div>
+                <div class="row clearfix"> <div class="col-md-12 text-center" id="btnContainer"></div></div>
+
+            </div>
+        </div>
+    </div>
+
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body">
+                <div class="text-center">
+                    @if (formTrigger != ERP.Front.Helpers.Enums.Common.FormTriggers.Show.ToString())
+                    {
+                        <button type="submit" id="btnSubmition" class="btn btn-info btn-lg m-l-15 waves-effect">@(formTrigger == ERP.Front.Helpers.Enums.Common.FormTriggers.Insert.ToString() ? ERP.ResourcePack.Common.Settings.BtnSave : ERP.ResourcePack.Common.Settings.BtnUpdate)</button>
+                        <div id="submitLoader" style="display:none">
+                            <div class="lds-roller"><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div></div>
+                        </div>
+                    }
+                    <a href="~/PmContract" class="btn btn-danger btn-lg m-l-15 waves-effect">@(ERP.ResourcePack.Common.Settings.BtnClose)</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+@section scripts{
+    <script>
+        const primaryEntityKeyId =  @(id == null ? 0 : id);
+        const trigger = '@formTrigger';
+        let formView = true;
+    </script>
+    <script src="~/Scripts/jquery.validate.min.js"></script>
+    <script src="~/Scripts/jquery.validate.unobtrusive.min.js"></script>
+    @Html.Partial("~/ViewsScripts/_PmPropertiesModule/PmContract/PmContractScripts.cshtml")
+    @if (id != null && detailObj != null)
+    {
+        <script>
+            $(function () {
+                LoadAttachments();
+                LoadUnitsData();
+                LoadOtherPaymentsData();
+                LoadPaymentsData();
+
+                getPropInfo(@detailObj.PropertyId);
+                calcTotal();
+
+                 if (primaryEntityKeyId && trigger === '@ERP.Front.Helpers.Enums.Common.FormTriggers.Show.ToString()') {
+
+                   let btns = '';
+                     if (@detailObj.StatusLkpId == @Convert.ToInt64(ERP.Front.Helpers.Enums.Common.PmContractPost.New)) {
+                         btns += `<a href="javascript:void(0)" onclick="return ProcContract(@id,'Post')" class="btn btn-success">${'@ERP.ResourcePack.Common.Settings.Post'}</a>`;
+                     }
+                     else if (@detailObj.StatusLkpId == @Convert.ToInt64(ERP.Front.Helpers.Enums.Common.PmContractPost.Posted)) {
+                         btns += `<a href="javascript:void(0)" onclick="return ProcContract(@id,'Renew')" class="btn btn-success">${'@ERP.ResourcePack.Common.Settings.RenewContract'}</a>`;
+                     }
+
+                    $('#btnContainer').html(btns);
+                 };
+            });
+        </script>
+    }
+}
+

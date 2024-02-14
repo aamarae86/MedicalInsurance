@@ -1,0 +1,37 @@
+﻿@using ERP.Web.UI.Models.ViewModels.CRM.meetings
+@model ActivityMeetingParticipantVM
+@{ string formTrigger = ViewBag.trigger; }
+
+<div class="card" style="display:@(formTrigger ==ERP.Front.Helpers.Enums.Common.FormTriggers.Show.ToString() ? "none":"block" ) ">
+    <div class="body">
+        <div class="row clearfix">
+        
+            <div class="col-sm-6">
+                @Html.LabelFor(z => z.RelatedToLkpId, new { @class = "form-label label-required" })
+                <div class="form-group form-float">
+                    <div class="form-group">
+                        @Html.DropDownList("RelatedToLkpId1", Enumerable.Empty<SelectListItem>(), new { @class = "form-control" })
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-6">
+                @Html.LabelFor(z => z.CrmLeadsPersonsId, new { @class = "form-label label-required" })
+                <div class="form-group form-float">
+                    <div class="form-group">
+                        @Html.DropDownList("CrmLeadsPersonsId1", Enumerable.Empty<SelectListItem>(), new { @class = "form-control" })
+                    </div>
+                </div>
+            </div>
+ 
+        </div>
+        <div class="row clearfix">
+            <div class="col-sm-12 text-center">
+                <div class="form-group">
+                    <button id="btnAddUnitRow" onclick="return AddUnits()" class="btn btn-success">@ERP.ResourcePack.Common.Settings.BtnAddNew</button>
+                    <button style="display:none;" id="btnUpdateUnitRow" onclick="return UpdateUnitsRow()" class="btn btn-info">@ERP.ResourcePack.Common.Settings.BtnUpdate</button>
+                    <button style="display:none;" id="btnCancelUnitRow" onclick="clearFormUnits(); $('#btnCancelUnitRow').hide();$('#btnUpdateUnitRow').hide();$('#btnAddUnitRow').show();" class="btn btn-danger">@ERP.ResourcePack.Common.Settings.BtnCancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

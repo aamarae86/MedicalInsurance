@@ -1,0 +1,193 @@
+﻿@using ERP.Web.UI.Models.ViewModels.AidModule
+@using ERP.Web.UI.Models.ViewModels.General
+@model ScMaintenanceContractVM
+@{
+    string formTrigger = ViewBag.trigger;
+    string lang = Request.Cookies["Lang"] == null ? "ar-EG" : Request.Cookies["Lang"].Value.ToString();
+    string lkpKeyDdl = lang == "ar-EG" ? nameof(FndLookupValuesVM.NameAr) : nameof(FndLookupValuesVM.NameEn);
+    bool isFormDetail = Model != null && formTrigger == ERP.Front.Helpers.Enums.Common.FormTriggers.Show.ToString();
+    var lastDateTime = ViewData["Version"] == null ? null : ViewData["Version"] as Nullable<DateTime>;
+}
+<div class="card">
+    <div class="header d-flex justify-content-start align-items-center">
+        <i class="fas fa-2x fa-chevron-down down-arr mr-2" data-toggle="collapse" data-target="#masterData"></i>
+        <h2><strong>@ERP.ResourcePack.AidModule.ScMaintenanceContract.Title</strong></h2>
+    </div>
+    <div class="body collapse show" id="masterData">
+        <ul class="mt-2 nav nav-tabs tab-nav-right" role="tablist">
+            <li role="presentation">
+                <a href="#contract" data-toggle="tab" class="show active">@ERP.ResourcePack.AidModule.ScMaintenanceContract.ContractData</a>
+            </li>
+            <li role="presentation">
+                <a href="#conditions" data-toggle="tab" class="show">@ERP.ResourcePack.AidModule.ScMaintenanceContract.Conditions</a>
+            </li>
+        </ul>
+        @using (Ajax.BeginForm(nameof(ERP.Web.UI.Controllers.AidModule.ScMaintenanceContractController.CreateScMaintenanceContract), "ScMaintenanceContract", new AjaxOptions { HttpMethod = "POST", OnBegin = "OnBegin", OnSuccess = "OnSuccess", OnComplete = "OnComplete", OnFailure = "OnFailure" }, new { @id = "mainForm" }))
+        {
+            <div class="tab-content">
+                <div role="tabpanel" class="tab-pane fade in active show" id="contract">
+                    @Html.HiddenFor(z => z.Id)
+                    @Html.HiddenFor(z => z.ScMaintenanceContractPaymentsListStr)
+
+                    <input type="hidden" id="LastModificationTime" name="LastModificationTime" value="@lastDateTime" />
+
+                    <div class="row clearfix">
+                        <div class="col-md-4">
+                            <div class="form-group form-float">
+                                <div class="form-line">
+                                    @Html.TextBoxFor(z => z.MaintenanceContractNumber, new { @readOnly = "readonly", @class = "from-control" })
+                                    @Html.LabelFor(z => z.MaintenanceContractNumber, new { @class = "form-label" })
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-sm-4">
+                            <div class="form-group form-float">
+                                <div class="form-line">
+                                    @if (Model == null || Model.FndStatusLkp == null)
+                                    {
+                                        @Html.TextBoxFor(z => z.StatusLkpId, getHtmlAttributes(true, "form-control", string.Empty))
+                                        @Html.LabelFor(z => z.StatusLkpId, new { @class = "form-label" })
+                                    }
+                                    else if (lang == "ar-EG")
+                                    {
+                                        @Html.TextBoxFor(z => z.FndStatusLkp.NameAr, getHtmlAttributes(true, "form-control", string.Empty))
+                                        @Html.LabelFor(z => z.StatusLkpId, new { @class = "form-label" })
+                                    }
+                                    else
+                                    {
+                                        @Html.TextBoxFor(z => z.FndStatusLkp.NameEn, getHtmlAttributes(true, "form-control", string.Empty))
+                                        @Html.LabelFor(z => z.StatusLkpId, new { @class = "form-label" })
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group form-float">
+                                <div class="form-line">
+                                    @Html.TextBoxFor(z => z.MaintenanceContractDate, getHtmlAttributes(isFormDetail, "form-control", "datepicker"))
+                                    @Html.LabelFor(z => z.MaintenanceContractDate, new { @class = "form-label label-required" })
+                                </div>
+                            </div>
+                            @Html.ValidationMessageFor(z => z.MaintenanceContractDate)
+                        </div>
+                    </div>
+                    <div class="row clearfix">
+                        <div class="col-md-3">
+                            @Html.LabelFor(z => z.ScMaintenanceQuotationId, new { @class = "form-label label-required" })
+                            <div class="form-group form-float">
+                                <div class="">
+                                    @if (Model != null && Model.ScMaintenanceQuotations != null)
+                                    {
+                                        var list = new List<FndLookupValuesVM> { new FndLookupValuesVM { Id = (long)Model.ScMaintenanceQuotationId, NameAr = Model.ScMaintenanceQuotations.QuotationNumber, NameEn = Model.ScMaintenanceQuotations.QuotationNumber } };
+                                        var selectList = new SelectList(list, "Id", lkpKeyDdl, Model.ScMaintenanceQuotationId);
+
+                                        @Html.DropDownListFor(z => z.ScMaintenanceQuotationId, selectList, getHtmlAttributes(isFormDetail, "form-control", string.Empty))
+                                    }
+                                    else
+                                    {
+                                        @Html.DropDownListFor(z => z.ScMaintenanceQuotationId, Enumerable.Empty<SelectListItem>(), getHtmlAttributes(isFormDetail, "form-control", string.Empty))
+                                    }
+                                </div>
+                                @Html.ValidationMessageFor(z => z.ScMaintenanceQuotationId)
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-group form-float">
+                                <div class="form-line">
+                                    @Html.TextBoxFor(z => z.PortalRequestNumber, new { @class = "form-control", @readonly = "readonly", @tabindex = "-1", @style = "pointer-events: none;" })
+                                    @Html.LabelFor(z => z.PortalRequestNumber, new { @class = "form-label", @style = "pointer-events: none;" })
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-group form-float">
+                                <div class="form-line">
+                                    @Html.TextBoxFor(z => z.PortalUserName, new { @class = "form-control", @readonly = "readonly", @tabindex = "-1", @style = "pointer-events: none;" })
+                                    @Html.LabelFor(z => z.PortalUserName, new { @class = "form-label", @style = "pointer-events: none;" })
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-group form-float">
+                                <div class="form-line">
+                                    @Html.TextBoxFor(z => z.Vendor, new { @class = "form-control", @readonly = "readonly", @tabindex = "-1", @style = "pointer-events: none;" })
+                                    @Html.LabelFor(z => z.Vendor, new { @class = "form-label", @style = "pointer-events: none;" })
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row clearfix">
+                        <div class="col-md-4">
+                            <div class="form-group form-float">
+                                <div class="form-line">
+                                    @Html.TextBoxFor(z => z.TotalAmount, new { @class = "form-control", @readonly = "readonly", @tabindex = "-1", @style = "pointer-events: none;" })
+                                    @Html.LabelFor(z => z.TotalAmount, new { @class = "form-label", @style = "pointer-events: none;" })
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group form-float">
+                                <div class="form-line">
+                                    @Html.TextBoxFor(z => z.DurationOfImplementation, getHtmlAttributes(isFormDetail, "form-control", string.Empty))
+                                    @Html.LabelFor(z => z.DurationOfImplementation, new { @class = "form-label" })
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group form-float">
+                                <div class="form-line">
+                                    @Html.TextBoxFor(z => z.StartDate, getHtmlAttributes(isFormDetail, "form-control", "datepicker"))
+                                    @Html.LabelFor(z => z.StartDate, new { @class = "form-label" })
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row clearfix">
+                        <div class="col-md-12">
+                            <div class="form-group form-float">
+                                <div class="form-line">
+                                    @Html.TextAreaFor(z => z.Notes, getHtmlAttributes(isFormDetail, "form-control", string.Empty))
+                                    @Html.LabelFor(z => z.Notes, new { @class = "form-label" })
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div role="tabpanel" class="tab-pane fade in" id="conditions">
+                    <div class="row clearfix">
+                        <div class="col-md-12">
+                            <div class="form-group form-float">
+                                <div class="form-line">
+                                    @Html.TextAreaFor(z => z.ContractTerms, getHtmlAttributes(isFormDetail, "form-control", string.Empty))
+                                    @Html.LabelFor(z => z.ContractTerms, new { @class = "form-label" })
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row clearfix">
+                        <div class="col-md-12">
+                            <div class="form-group form-float">
+                                <div class="form-line">
+                                    @Html.TextAreaFor(z => z.OtherContractTerms, getHtmlAttributes(isFormDetail, "form-control", string.Empty))
+                                    @Html.LabelFor(z => z.OtherContractTerms, new { @class = "form-label" })
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+@functions {
+    object getHtmlAttributes(bool Disabled, string CssClass, string CssClass2)
+    {
+        if (Disabled)
+        {
+            return new { @class = CssClass, Disabled = Disabled };
+        }
+        return new { @class = $"{CssClass} {CssClass2}" };
+    }
+}
+

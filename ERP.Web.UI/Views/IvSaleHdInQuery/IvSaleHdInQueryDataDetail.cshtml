@@ -1,0 +1,79 @@
+﻿@using ERP.ResourcePack.Sales
+
+<div class="row clearfix">
+    <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+        <div class="">
+            <div class="">
+                <div class="table-responsive">
+                    <table class="table table-bordered table-striped table-hover" id="tblSalesDetails" style="width:100%">
+                        <thead>
+                            <tr>
+                                <th><i class="fas fa-hashtag"></i></th>
+                                <th>@IvSaleHd.Itemcode</th>
+                                <th>@IvSaleHd.Itemname</th>
+                                <th>@IvSaleHd.Avilablequantity</th>
+                                <th>@IvSaleHd.Qtys</th>
+                                <th>@IvSaleHd.Unitprice</th>
+
+                                <th>Discount</th>
+                                <th>@IvSaleHd.totbeforetax</th>
+
+                                <th>@IvSaleHd.Taxamount</th>
+                                <th>@IvSaleHd.Totalamount</th>
+                                @*<th>@IvSaleHd.cost</th>
+        <th>@IvSaleHd.Totalcost </th>*@
+                                <th>@IvSaleHd.AvgCost </th>
+                                <th>@IvSaleHd.profit </th>
+                                <th>@IvSaleHd.profitamount </th>
+                                <th><i class="fas fa-cog"></i></th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                        <tfoot>
+                            <tr>
+                                <th style="text-align:right"></th>
+                                <th style="text-align:right">@IvSaleHd.Invoicetotal</th>
+                                <th style="text-align:right"></th>
+                                <th style="text-align:right"></th>
+                                <th style="text-align:right"></th>
+                                <th style="text-align:right"></th>
+                                @*<th style="text-align:right"></th>
+        <th style="text-align:right"></th>*@
+                                <th style="text-align:right"></th>
+                                <th style="text-align:right"></th>
+                                <th style="text-align:right"></th>
+                                <th style="text-align:right"></th>
+                                <th style="text-align:right"></th>
+                                <th style="text-align:right"></th>
+                                <th style="text-align:right"></th>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row" hidden>
+    <div class="col-sm-4">
+        <div class="form-group form-float">
+            <div class="form-line">
+                <input type="number" id="_Discount" class="form-control" />
+                @Html.Label("Discount", new { @class = "form-label" })
+            </div>
+        </div>
+    </div>
+
+    <div class="col-sm-4">
+        <div class="form-group form-float">
+            <div class="form-line">
+                <input type="number" id="_DeliveryCharges" class="form-control" />
+                @Html.Label("Delivery Charges", new { @class = "form-label" })
+            </div>
+        </div>
+    </div>
+
+</div>
+

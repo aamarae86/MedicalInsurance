@@ -1,0 +1,11 @@
+﻿@{
+    ViewBag.Title = ERP.ResourcePack.CharityBoxes.TmCharityBoxes.Title;
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@Html.Action(nameof(ERP.Web.UI.Controllers.CharityBoxes.TmCharityBoxesController.TmCharityBoxesSearch))
+@Html.Action(nameof(ERP.Web.UI.Controllers.CharityBoxes.TmCharityBoxesController.TmCharityBoxesData))
+
+@section scripts{
+    @Html.Partial("~/ViewsScripts/_CharityBoxes/TmCharityBoxes/TmCharityBoxesScripts.cshtml")
+}

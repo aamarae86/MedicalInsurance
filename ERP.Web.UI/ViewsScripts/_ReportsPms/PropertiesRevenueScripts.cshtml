@@ -1,0 +1,182 @@
+﻿<script>
+
+    $(function () {
+
+        $('#ContractStartDate').parent('.form-line').addClass('focused');
+        $('#contractEndDate').parent('.form-line').addClass('focused');
+        $('#PropertiesRevenue').addClass('active');
+    });
+
+    $('#PmUnitTypeLkpId').select2(ReturnSelect2ObjectForLkpsTypes('PmPropertiesUnitsUnitType'));
+
+    $('#PmOwnerId').select2({
+        ajax: {
+            url: `${baseUrl}/PmOwners/GetPmOwnersSelect2`,
+            dataType: 'json',
+            headers: {
+                'Authorization': `Bearer ${$_token}`
+            },
+            data: function (params) {
+                params.page = params.page || 1;
+                return {
+                    pageSize: pageSize,
+                    pageNumber: params.page,
+                    searchTerm: params.term,
+                    lang: lang
+                };
+            },
+            processResults: function (data, params) {
+
+                params.page = params.page || 1;
+
+                return {
+                    results: data.result.results,
+                    pagination: {
+                        more: (params.page * pageSize) < data.result.total
+                    }
+                };
+            }
+        },
+        placeholder: select2Placeholder,
+        minimumInputLength: 0,
+        allowClear: true,
+        language: select2Lang,
+        templateSelection: function (data, container) {
+
+            if (data.altText)
+                $('#PmOwnerIdNumber').val(data.altText);
+
+            return data.text;
+        }
+    });
+
+    $('#PropertyId').select2({
+        ajax: {
+            url: `${baseUrl}/PmProperties/GetPmPropertiesSelect2`,
+            dataType: 'json',
+            headers: {
+                'Authorization': `Bearer ${$_token}`
+            },
+            data: function (params) {
+                params.page = params.page || 1;
+                return {
+                    pageSize: pageSize,
+                    pageNumber: params.page,
+                    searchTerm: params.term,
+                    lang: lang
+                };
+            },
+            processResults: function (data, params) {
+
+                params.page = params.page || 1;
+
+                return {
+                    results: data.result.results,
+                    pagination: {
+                        more: (params.page * pageSize) < data.result.total
+                    }
+                };
+            }
+        },
+        placeholder: select2Placeholder,
+        minimumInputLength: 0,
+        allowClear: true,
+        language: select2Lang,
+        templateSelection: function (data, container) {
+
+            if (data.altText)
+                $('#PropertyIdNumber').val(data.altText);
+
+            return data.text;
+        }
+    });
+
+    $('#PeriodsYearId').select2({
+        ajax: {
+            url: `${baseUrl}/GlPeriodsYears/GetGlPeriodsYearsSelect2`,
+            dataType: 'json',
+            headers: {
+                'Authorization': `Bearer ${$_token}`
+            },
+            data: function (params) {
+                params.page = params.page || 1;
+                return {
+                    pageSize: pageSize,
+                    pageNumber: params.page,
+                    searchTerm: params.term,
+                    lang: lang
+                };
+            },
+            processResults: function (data, params) {
+
+                params.page = params.page || 1;
+
+                return {
+                    results: data.result.results,
+                    pagination: {
+                        more: (params.page * pageSize) < data.result.total
+                    }
+                };
+            }
+        },
+        placeholder: select2Placeholder,
+        minimumInputLength: 0,
+        allowClear: true,
+        language: select2Lang
+    });
+
+
+    const PrintTmCharityBoxListReport = function () {
+        if ($('#PeriodsYearId').find(':selected').val()) {
+
+            $('.page-loader-wrapper').css('display', 'block');
+
+            $.ajax({
+                url: `${$PrefixHostName}/ReportsPms/PrintPropertiesRevenue`,
+                method: 'POST',
+                header: {
+                    'Authorization': `bearer ${$_token}`
+                },
+                data: {
+                    Lang: lang,
+                    TenantId:@Session["TenantId"],
+                    PmOwnerId: $('#PmOwnerId').find(':selected').val(),
+                    PmOwnerIdtxt: $('#PmOwnerId').find(':selected').text(),
+                    PropertyId: $('#PropertyId').find(':selected').val(),
+                    PropertyIdtxt: $('#PropertyId').find(':selected').text(),
+                    PmUnitTypeLkpId: $('#PmUnitTypeLkpId').find(':selected').val(),
+                    PmUnitTypeLkpIdtxt: $('#PmUnitTypeLkpId').find(':selected').text(),
+                    FromDate: $('#FromDate').val(),
+                    ToDate: $('#ToDate').val(),
+                    PeriodsYearId: $('#PeriodsYearId').find(':selected').val(),
+                    PeriodsYearIdtxt: $('#PeriodsYearId').find(':selected').text(),
+                    PmOwnerIdNumber: $('#PmOwnerIdNumber').find(':selected').val(),
+                    PropertyIdNumber: $('#PropertyIdNumber').find(':selected').val()
+                }
+            }).done(function (data) {
+
+                if (data.length > 0) {
+
+                    $('.page-loader-wrapper').css('display', 'none');
+                    var src = formAction;
+
+                    $('#bodyss').html('')
+                    $('#bodyss').append('<iframe id="ifram1" style="width:100%;height:550px" src="' + src + '"></iframe>')
+                    $('#model').modal('show');
+
+                }
+                else {
+                    $('.page-loader-wrapper').css('display', 'none');
+                    toastr.warning(NoData);
+                }
+
+            }).fail(function (response, x, r) {
+                toastr.error(response.responseText);
+            });
+        } else {
+            toastr.warning('@ERP.ResourcePack.Accounts.GlPeriodsYears.PeriodYear @ERP.ResourcePack.Common.Settings.Required')
+        }
+    };
+
+
+</script>

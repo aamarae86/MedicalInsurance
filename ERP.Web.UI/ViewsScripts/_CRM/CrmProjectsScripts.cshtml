@@ -1,0 +1,220 @@
+﻿@using ERP.Authorization;
+@using ERP.Web.UI.Controllers.CRM
+@using ERP.ResourcePack.CRM.projects
+@{
+    string permissionsStr = TempData["Permissions"].ToString();
+}
+<script>
+    const _mainController = "CrmProjects"
+    const _apiAppService = "CrmProjects";
+    $(function () {
+
+        LoadDataGrid();
+        $('#tblCrmProjectsPrint thead').html($('#tblCrmProjects thead').html());
+        $('#tblCrmProjectsPrint thead tr :last-child').remove();
+       $('#CrmProjects').addClass('active');
+    });
+
+    const _loadDataUrl = `${$PrefixHostName}/${_mainController}/@nameof(CrmProjectsController.LoadDataGrid)`;
+    const _tblSelector = $('#tblCrmProjects');
+
+    const _permissions = '@permissionsStr';
+    const _updatePermission = '@PermissionNames.Pages_CrmProjects_Update';
+    const _deletePermission = '@PermissionNames.Pages_CrmProjects_Delete';
+
+    var OnBegin = function (response) {
+      fireBtnLoader();
+    };
+
+    var OnSuccess = function (response) {
+
+        if (response.success) {
+
+            if (response.customRestResult.trigger === '@ERP.Front.Helpers.Enums.Common.FormTriggers.Insert') {
+
+                toastr.success(response.customRestResult.message);
+
+                LoadDataGrid();
+
+                _mainModal.modal('hide');
+
+            } else if (response.customRestResult.trigger === '@ERP.Front.Helpers.Enums.Common.FormTriggers.Update') {
+
+                LoadDataGrid();
+
+                _mainModal.modal('hide');
+
+                toastr.success(response.customRestResult.message);
+            }
+
+        } else {
+            toastr.error(response.customRestResult.message);
+        }
+
+    };
+
+    var OnComplete = function (response) {
+        downBtnLoader();
+    };
+
+    var OnFailure = function (response) {
+        downBtnLoader();
+    };
+
+    const LoadDataGrid = function () {
+
+        const parms = {
+
+            ProjectDate: $('#searchBox #ProjectDate').val(),
+            ProjectName: $('#searchBox #ProjectName').val(),
+        };
+
+        const columns = [
+            {
+                "data": "result.data.id",
+                'render': function (data, type, row, meta) {
+                    return meta.row + meta.settings._iDisplayStart + 1;
+                }
+            },
+            {
+                "data": "ProjectNameAr",
+                "name": "ProjectNameAr",
+                "autoWidth": true
+            },
+            {
+                "data": "ProjectNameEn",
+                "name": "ProjectNameEn",
+                "autoWidth": true
+            },
+            {
+                "data": "ProjectDate",
+                "name": "ProjectDate",
+                "autoWidth": true
+            },
+
+            {
+                "data": null,
+                "sortable": false,
+                "render": function (data, type, row) {
+
+                    let formAction = `${$PrefixHostName}/${_mainController}/@nameof(CrmProjectsController.CrmProjectsForm)`;
+                    let DeleteAction = `${$PrefixHostName}/${_mainController}/@nameof(CrmProjectsController.Delete)`;
+
+                    let formTitle = '@projects.Title', btns = '';
+
+                    if (_permissions.includes(_updatePermission)) {
+                        btns += `<a href="javascript:void(0)" onclick="AjaxController.GetFormModal(${row.Id},'@ERP.Front.Helpers.Enums.Common.FormTriggers.Update','${formAction}','${formTitle}');" title="@ERP.ResourcePack.Common.Settings.Edit"><i class="mx-2 fas fa-edit text-info"></i></a>`;
+                    }
+
+                    btns += `<a href="javascript:void(0)" onclick="AjaxController.GetFormModal(${row.Id},'@ERP.Front.Helpers.Enums.Common.FormTriggers.Show','${formAction}','${formTitle}');" title="@ERP.ResourcePack.Common.Settings.Show"><i class="mx-2 fas fa-eye text-info"></i></a>`;
+
+                    if (_permissions.includes(_deletePermission)) {
+                        btns += `<a href="javascript:void(0)" onclick="AjaxController.DeleteMainTableRow(${row.Id},'${DeleteAction}');" title="@ERP.ResourcePack.Common.Settings.Delete"><i class="mx-2 fas fa-trash-alt text-danger"></i></a>`;
+                    }
+
+                    const _auditedPermission = '@PermissionNames.Pages_CrmProjects_Audit';
+
+                    if (_permissions.includes(_auditedPermission)) {
+
+                        row.permission = _auditedPermission;
+
+                        btns += GetAuditedButton(row);
+                    }
+
+                    return btns;
+                }
+            }
+        ];
+
+        const dtObj = {
+            "processing": true,
+            "serverSide": true,
+            "filter": false,
+            "orderMulti": false,
+            "language": dataTableLang,
+            "ajax": {
+                "url": _loadDataUrl,
+                "type": "POST",
+                "datatype": "json",
+                "data": parms,
+                "complete": function () { }
+            },
+            "columns": columns,
+            "initComplete": function () {
+                $('[data-toggle="tooltip"]').tooltip();
+            }
+        };
+
+        _tblSelector.dataTable().fnDestroy();
+        _tblSelector.DataTable(dtObj).on('draw', function () { $('[data-toggle="tooltip"]').tooltip(); });
+
+    };
+
+
+    function printExc() {
+        $('.page-loader-wrapper').show();
+
+        const parmss = {
+            ProjectDate: $('#searchBox #ProjectDate').val(),
+            ProjectName: $('#searchBox #ProjectName').val(),
+            length: 1000000
+        };
+
+        const columns = [
+            {
+                "data": "result.data.id",
+                'render': function (data, type, row, meta) {
+                    return meta.row + meta.settings._iDisplayStart + 1;
+                }
+            },
+            {
+                "data": "ProjectNameAr",
+                "name": "ProjectNameAr",
+                "autoWidth": true
+            },
+            {
+                "data": "ProjectNameEn",
+                "name": "ProjectNameEn",
+                "autoWidth": true
+            },
+            {
+                "data": "ProjectDate",
+                "name": "ProjectDate",
+                "autoWidth": true
+            }
+        ];
+
+        const dtObj = {
+            "language": dataTableLang,
+            "dom": 'Bfrtip',
+            "buttons": [
+                {
+                    extend: 'excel',
+                    messageTop: `${$('#ProjectDate').siblings().text()}: ${(parmss.ProjectDate) ? parmss.ProjectDate : '--'}, ${$('#ProjectName').siblings().text()}: ${(parmss.ProjectName) ? parmss.ProjectName : '--'}`
+                },
+
+            ],
+            "ajax": {
+                "url": _loadDataUrl,
+                "type": "POST",
+                "datatype": "json",
+                "data": parmss,
+                "complete": function (d) {
+                    _tblLoader.hide();
+                }
+            },
+            "columns": columns,
+
+            "initComplete": function () {
+                $('#tblCrmProjectsPrint_wrapper button.dt-button').click();
+            }
+        };
+
+        $('#tblCrmProjectsPrint').dataTable().fnDestroy();
+        $('#tblCrmProjectsPrint').DataTable(dtObj).on('buttons-processing', function (e, indicator) { if (!indicator) { $('.page-loader-wrapper').hide() } });
+
+
+    }
+
+
+</script>

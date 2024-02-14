@@ -1,0 +1,36 @@
+﻿@using ERP.Web.UI.Models.ViewModels.AidModule
+@model ScPortalRequestStudyVM
+
+<div class="card">
+    <div class="body">
+        <div class="row clearfix">
+            <div class="col-sm-12">
+                @Html.LabelFor(z => z.RefuseLkpId, new { @class = "form-label" })
+                <div class="form-group form-float">
+                    <div class="form-group">
+                        @Html.DropDownListFor(z => z.RefuseLkpId, Enumerable.Empty<SelectListItem>(), new { @class = "form-control" })
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-12">
+                <div class="form-group form-float">
+                    <div class="form-line">
+                        @Html.TextAreaFor(z => z.RefuseDescription, new { @class = "form-control" })
+                        @Html.LabelFor(z => z.RefuseDescription, new { @class = "form-label" })
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-2">
+                <div class="form-group m-2" style="margin-top:15px !important">
+                    <button onclick="return SubmitRefuse(@ViewBag.id)" class="btn btn-success">@ERP.ResourcePack.Common.Settings.Refuse</button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+<script>
+
+  $('#main-modal #RefuseLkpId').select2(ReturnSelect2ObjectForLkpsTypes('@ERP.Front.Helpers.Enums.Common.FndLkpsTypes.ScPortalRequestStudyRefuseReason.ToString()'));
+
+</script>

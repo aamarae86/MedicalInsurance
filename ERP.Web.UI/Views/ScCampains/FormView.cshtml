@@ -1,0 +1,72 @@
+﻿@using ERP.Web.UI.Controllers.AidModule
+@using ERP.Web.UI.Models.ViewModels.AidModule
+@{
+    ViewBag.Title = ERP.ResourcePack.AidModule.ScCampains.Title;
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    string formTrigger = ViewBag.trigger;
+    long? id = ViewData["Id"] == null ? null : (long?)Convert.ToInt32(ViewData["Id"]);
+    var detailObj = ViewData["DetailAsync"] == null ? null : ViewData["DetailAsync"] as ScCampainsVM;
+}
+
+<div class="row clearfix">
+    <div class="col-12">
+        @Html.Action(nameof(ScCampainsController.ScCampainsForm), new { id = id, trigger = formTrigger, ScCampainsVM = detailObj })
+    </div>
+    <div class="col-12">
+        <div class="card">
+            <div class="body">
+                <ul class="mt-2 nav nav-tabs tab-nav-right" role="tablist">
+                    <li role="presentation">
+                        <a href="#first" data-toggle="tab" class="show active">@ERP.ResourcePack.AidModule.ScCampains.DetailData</a>
+                    </li>
+                </ul>
+                <div class="tab-content">
+                    <div role="tabpanel" class="tab-pane fade in active show" id="first">
+                        @Html.Action(nameof(ScCampainsController.ScCampainsFormDetail), new { id = id, trigger = formTrigger })
+                        @Html.Action(nameof(ScCampainsController.ScCampainsDataDetail))
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body">
+                <div class="text-center">
+                    @if (formTrigger != ERP.Front.Helpers.Enums.Common.FormTriggers.Show.ToString())
+                    {
+                        <button type="submit" id="btnSubmition" class="btn btn-info btn-lg m-l-15 waves-effect">@(formTrigger == ERP.Front.Helpers.Enums.Common.FormTriggers.Insert.ToString() ? ERP.ResourcePack.Common.Settings.BtnSave : ERP.ResourcePack.Common.Settings.BtnUpdate)</button>
+                        <div id="submitLoader" style="display:none">
+                            <div class="lds-roller"><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div></div>
+                        </div>
+                    }
+                    <a href="~/ScCampains" class="btn btn-danger btn-lg m-l-15 waves-effect">@(ERP.ResourcePack.Common.Settings.BtnClose)</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section scripts{
+    <script>
+        const primaryEntityKeyId =  @(id == null ? 0 : id);
+        const trigger = '@formTrigger';
+    </script>
+    <script src="~/Scripts/jquery.validate.min.js"></script>
+    <script src="~/Scripts/jquery.validate.unobtrusive.min.js"></script>
+    @Html.Partial("~/ViewsScripts/_AidModule/ScCampains/ScCampainsScripts.cshtml")
+    @if (id != null)
+    {
+        <script>
+            $(function () {
+                LoadScCampainsDetailData();
+
+                if (primaryEntityKeyId && trigger === '@ERP.Front.Helpers.Enums.Common.FormTriggers.Show.ToString()' && @detailObj.StatusLkpId != @Convert.ToInt64(ERP.Front.Helpers.Enums.Common.ScCampains.Posted)) {
+
+                    $('#btnCloseCampainContainer').html(`<a href="javascript:void(0)" onclick="return PostScCampains(@id)" class="btn btn-success">${'@ERP.ResourcePack.AidModule.ScCampains.CloseCampain'}</a>`);
+
+                };
+            });
+        </script>
+    }
+}

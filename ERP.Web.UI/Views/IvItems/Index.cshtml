@@ -1,0 +1,14 @@
+﻿@{
+    ViewBag.Title = ERP.ResourcePack.Warehouses.IvItems.Title;
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<link href="~/Scripts/dist/themes/default/style.min.css" rel="stylesheet" />
+<link href="~/Content/@ERP.ResourcePack.Common.Styles.treeStyles" rel="stylesheet" />
+
+@Html.Action(nameof(ERP.Web.UI.Controllers.Warehouses.IvItemsController.IvItemsSearch))
+@Html.Action(nameof(ERP.Web.UI.Controllers.Warehouses.IvItemsController.IvItemsData))
+
+@section scripts{
+    @Html.Partial("~/ViewsScripts/_Warehouses/IvItems/IvItemsScripts.cshtml")
+}

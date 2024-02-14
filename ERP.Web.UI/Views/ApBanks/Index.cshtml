@@ -1,0 +1,12 @@
+﻿@{
+    ViewBag.Title = ERP.ResourcePack.Accounts.ApBanks.Title;
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@Html.Action(nameof(ERP.Web.UI.Controllers.Accounts.ApBanksController.ApBanksSearch))
+@Html.Action(nameof(ERP.Web.UI.Controllers.Accounts.ApBanksController.ApBanksData))
+
+@section scripts{
+    @Html.Partial("~/ViewsScripts/ApBanks/ApBanksScripts.cshtml")
+}
+

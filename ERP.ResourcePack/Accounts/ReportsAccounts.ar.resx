@@ -1,0 +1,417 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="Accounts" xml:space="preserve">
+    <value>شجرة الحسابات</value>
+  </data>
+  <data name="AccountStatment" xml:space="preserve">
+    <value>كشف حساب</value>
+  </data>
+  <data name="BalanceReview" xml:space="preserve">
+    <value>ميزان مراجعة</value>
+  </data>
+  <data name="Budget" xml:space="preserve">
+    <value>الميزانية</value>
+  </data>
+  <data name="DataProccessedSuccessfully" xml:space="preserve">
+    <value>تم تجهيز البيانات بنجاح</value>
+  </data>
+  <data name="DataProcessing" xml:space="preserve">
+    <value>تجهيز البيانات</value>
+  </data>
+  <data name="FromDate" xml:space="preserve">
+    <value>من تاريخ</value>
+  </data>
+  <data name="FromPeriod" xml:space="preserve">
+    <value>من فترة </value>
+  </data>
+  <data name="GlAccSelection" xml:space="preserve">
+    <value>ميزان المراجعة</value>
+  </data>
+  <data name="Levels" xml:space="preserve">
+    <value>المستوي</value>
+  </data>
+  <data name="ListIncomes" xml:space="preserve">
+    <value>قائمة الدخل</value>
+  </data>
+  <data name="No" xml:space="preserve">
+    <value>لا</value>
+  </data>
+  <data name="NoData" xml:space="preserve">
+    <value>لا يوجد بيانات</value>
+  </data>
+  <data name="ProcessingDataRequired" xml:space="preserve">
+    <value>تجهيز البيانات مطلوب</value>
+  </data>
+  <data name="ToDate" xml:space="preserve">
+    <value>الي تاريخ</value>
+  </data>
+  <data name="ToPeriod" xml:space="preserve">
+    <value>الي فترة</value>
+  </data>
+  <data name="Yes" xml:space="preserve">
+    <value>نعم</value>
+  </data>
+  <data name="BoxNo" xml:space="preserve">
+    <value>رقم الصندوف</value>
+  </data>
+  <data name="Email" xml:space="preserve">
+    <value>بريد الكتروني</value>
+  </data>
+  <data name="EnterData" xml:space="preserve">
+    <value>ادخل كل البيانات</value>
+  </data>
+  <data name="Fax" xml:space="preserve">
+    <value>فاكس</value>
+  </data>
+  <data name="Tel" xml:space="preserve">
+    <value>تليفون</value>
+  </data>
+  <data name="TenantNameAr" xml:space="preserve">
+    <value>اسم المؤسسة</value>
+  </data>
+  <data name="TenantNameEn" xml:space="preserve">
+    <value>اسم المؤسسة لاتيني</value>
+  </data>
+  <data name="TitleTenant" xml:space="preserve">
+    <value>بيانات المؤسسة</value>
+  </data>
+  <data name="WebSite" xml:space="preserve">
+    <value>الموقع</value>
+  </data>
+  <data name="OwnerId" xml:space="preserve">
+    <value>اسم المالك</value>
+  </data>
+  <data name="PmsList" xml:space="preserve">
+    <value>تقرير الوحدات الشاغرة</value>
+  </data>
+  <data name="PmUnitTypeLkpId" xml:space="preserve">
+    <value>نوع الوحدة</value>
+  </data>
+  <data name="PropertyId" xml:space="preserve">
+    <value>اسم العقار</value>
+  </data>
+  <data name="PmContractNotRenewed" xml:space="preserve">
+    <value>تقرير كشف العقود الغير مجددة</value>
+  </data>
+  <data name="contractEndDate" xml:space="preserve">
+    <value>نهاية العقد</value>
+  </data>
+  <data name="ContractStartDate" xml:space="preserve">
+    <value>بداية العقد</value>
+  </data>
+  <data name="PmActivityId" xml:space="preserve">
+    <value>النشاط</value>
+  </data>
+  <data name="pmContracts" xml:space="preserve">
+    <value>تقرير قائمة العقود</value>
+  </data>
+  <data name="PMTenantId" xml:space="preserve">
+    <value>اسم المستاجر</value>
+  </data>
+  <data name="StatusLKkpId" xml:space="preserve">
+    <value>الحالة</value>
+  </data>
+  <data name="ManagerName" xml:space="preserve">
+    <value>اسم المدير العام</value>
+  </data>
+  <data name="RepManagerName" xml:space="preserve">
+    <value>اسم نائب المدير العام</value>
+  </data>
+  <data name="BudgetPerformance" xml:space="preserve">
+    <value>قائمة المركز المالى</value>
+  </data>
+  <data name="GlAccMappingHd" xml:space="preserve">
+    <value>التقرير</value>
+  </data>
+  <data name="TenantAccount" xml:space="preserve">
+    <value>كشف حساب مستاجر</value>
+  </data>
+  <data name="TenantName" xml:space="preserve">
+    <value>اسم المستاجر</value>
+  </data>
+  <data name="TenantNumber" xml:space="preserve">
+    <value>رقم المستاجر</value>
+  </data>
+  <data name="OwnerNumber" xml:space="preserve">
+    <value>رقم المالك</value>
+  </data>
+  <data name="PropertiesRevenue" xml:space="preserve">
+    <value>ايرادات الوحدات العقارية</value>
+  </data>
+  <data name="propertyNumber" xml:space="preserve">
+    <value>رقم العقار</value>
+  </data>
+  <data name="Nationality" xml:space="preserve">
+    <value>الجنسية</value>
+  </data>
+  <data name="RequestPerNationality" xml:space="preserve">
+    <value>إحصائيات الطلبات حسب الجنسية</value>
+  </data>
+  <data name="Asset" xml:space="preserve">
+    <value>الاصل</value>
+  </data>
+  <data name="Category" xml:space="preserve">
+    <value>الفئة</value>
+  </data>
+  <data name="FaAssetList" xml:space="preserve">
+    <value>قائمة الاصول</value>
+  </data>
+  <data name="FromBuyingDate" xml:space="preserve">
+    <value>من تاريخ شراء</value>
+  </data>
+  <data name="ToBuyingDate" xml:space="preserve">
+    <value>الي تاريخ شراء</value>
+  </data>
+  <data name="ApPdcInterface" xml:space="preserve">
+    <value>تقرير الشيكات الصادرة</value>
+  </data>
+  <data name="ArPdcInterface" xml:space="preserve">
+    <value>تقرير الشيكات الواردة</value>
+  </data>
+  <data name="BaseCurrency" xml:space="preserve">
+    <value>العملة الرئيسية</value>
+  </data>
+  <data name="Country" xml:space="preserve">
+    <value>البلد</value>
+  </data>
+  <data name="Currency" xml:space="preserve">
+    <value>العملة</value>
+  </data>
+  <data name="CurrencyCode" xml:space="preserve">
+    <value>كود العملة</value>
+  </data>
+  <data name="Industry" xml:space="preserve">
+    <value>المجال</value>
+  </data>
+  <data name="TaxReports" xml:space="preserve">
+    <value>‏المدخلات الضريبيه</value>
+  </data>
+  <data name="TaxReports2" xml:space="preserve">
+    <value>‏المخرجات الضريبيه</value>
+  </data>
+  <data name="taxsReports" xml:space="preserve">
+    <value>‏المدخلات الضريبيه</value>
+  </data>
+  <data name="taxsReports2" xml:space="preserve">
+    <value>‏المخرجات الضريبيه</value>
+  </data>
+  <data name="IssuedChecks" xml:space="preserve">
+    <value>الشيكات الصادرة</value>
+  </data>
+  <data name="TaxInput" xml:space="preserve">
+    <value>المدخلات الضريبيه</value>
+  </data>
+  <data name="TaxOutput" xml:space="preserve">
+    <value>المخرجات الضريبيه</value>
+  </data>
+  <data name="CreationTime" xml:space="preserve">
+    <value>تاريخ الانشاء</value>
+  </data>
+  <data name="Faild" xml:space="preserve">
+    <value>خطا في الحفظ</value>
+  </data>
+  <data name="Name" xml:space="preserve">
+    <value>الاسم الموحد</value>
+  </data>
+  <data name="Sved" xml:space="preserve">
+    <value>تم الحفظ</value>
+  </data>
+  <data name="rptAccountsTreeTitle" xml:space="preserve">
+    <value>شجرة الحسابات</value>
+  </data>
+  <data name="rptFaAssetListTitle" xml:space="preserve">
+    <value>قائمة الأصول</value>
+  </data>
+  <data name="rptSecurityDetailsListTitle" xml:space="preserve">
+    <value>تفاصيل التأمينات</value>
+  </data>
+  <data name="RPT_GetGeneralBalanceSheetTitle" xml:space="preserve">
+    <value>قائمه الدخل</value>
+  </data>
+  <data name="RPT_GetGeneralBalanceSheetTitlee" xml:space="preserve">
+    <value>الميزانيه</value>
+  </data>
+  <data name="RPT_GetgltrialbalancesTitle" xml:space="preserve">
+    <value>ميزان المراجعه</value>
+  </data>
+  <data name="RPT_Get_GL_JE_EnTitle" xml:space="preserve">
+    <value>كشف حركه حساب</value>
+  </data>
+  <data name="rptArInvoiceHdScreenTitle" xml:space="preserve">
+    <value>فواتير الزبائن</value>
+  </data>
+  <data name="rptGlAccountsScreenTitle" xml:space="preserve">
+    <value>شجرة الحسابات</value>
+  </data>
+  <data name="rptGlJeScreenTitle" xml:space="preserve">
+    <value>تفاصيل القيد</value>
+  </data>
+  <data name="rptInvoiceHdScreenTitle" xml:space="preserve">
+    <value>فاتورة موردين</value>
+  </data>
+  <data name="rptIvReceiveHdScreenTitle" xml:space="preserve">
+    <value>تقرير طلب الشراء</value>
+  </data>
+  <data name="rptIvStoreIssueHdScreenTitle" xml:space="preserve">
+    <value>سند صرف مواد</value>
+  </data>
+  <data name="rptPoPurchaseOrderScreenTitle" xml:space="preserve">
+    <value>تقرير طلب الشراء</value>
+  </data>
+  <data name="AddDays" xml:space="preserve">
+    <value>اضافه ايام</value>
+  </data>
+  <data name="AdminValue" xml:space="preserve">
+    <value>سعر الادمن</value>
+  </data>
+  <data name="RemainingDays" xml:space="preserve">
+    <value>الايام المتبقيه</value>
+  </data>
+  <data name="UserValue" xml:space="preserve">
+    <value>سعر اليوزر</value>
+  </data>
+  <data name="RenewalDate" xml:space="preserve">
+    <value>تاريخ التجديد</value>
+  </data>
+  <data name="SubEndDateValidation" xml:space="preserve">
+    <value>لا يمكنك التجديد لمستخد لفترة اطول من فترة صلاحية المدير</value>
+  </data>
+  <data name="BankName" xml:space="preserve">
+    <value>اسم البنك</value>
+  </data>
+  <data name="ArPdcInterfaceReportTitle" xml:space="preserve">
+    <value>الشيكات الواردة</value>
+  </data>
+  <data name="ExecutedInvoices" xml:space="preserve">
+    <value>استبعاد الفواتير المدفوعة</value>
+  </data>
+  <data name="TaxRegNo" xml:space="preserve">
+    <value>التسجيل الضريبي(15)</value>
+  </data>
+  <data name="TaxRegNum" xml:space="preserve">
+    <value>التسجيل الضريبي</value>
+  </data>
+  <data name="MobileNo" xml:space="preserve">
+    <value>رقم الهاتف</value>
+  </data>
+  <data name="FullName" xml:space="preserve">
+    <value>الاسم الكامل</value>
+  </data>
+</root>

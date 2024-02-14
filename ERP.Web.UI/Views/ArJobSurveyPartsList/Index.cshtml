@@ -1,0 +1,11 @@
+﻿@{
+    ViewBag.Title = ERP.ResourcePack.Accounts.ArJobSurveyPartsList.Title;
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@Html.Action(nameof(ERP.Web.UI.Controllers.CharityBoxes.ArJobSurveyPartsListController.ArJobSurveyPartsListSearch))
+@Html.Action(nameof(ERP.Web.UI.Controllers.CharityBoxes.ArJobSurveyPartsListController.ArJobSurveyPartsListData))
+
+@section scripts{
+    @Html.Partial("~/ViewsScripts/ArJobSurveyPartsList/ArJobSurveyPartsListScripts.cshtml")
+}

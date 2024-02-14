@@ -1,0 +1,87 @@
+﻿@using ERP.Web.UI.Controllers.CharityBoxes
+@using ERP.Web.UI.Models.ViewModels.CharityBoxes
+@{
+    ViewBag.Title = ERP.ResourcePack.CharityBoxes.TmCharityBoxCollect.Title;
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    string formTrigger = ViewBag.trigger;
+    long? id = ViewData["Id"] == null ? null : (long?)Convert.ToInt32(ViewData["Id"]);
+    var detailObj = ViewData["DetailAsync"] == null ? null : ViewData["DetailAsync"] as TmCharityBoxCollectVM;
+}
+
+<div class="row clearfix">
+    <div class="col-12">
+        @Html.Action(nameof(TmCharityBoxCollectController.TmCharityBoxCollectForm), new { id = id, trigger = formTrigger, TmCharityBoxCollectVM = detailObj })
+    </div>
+    <div class="col-12">
+        <div class="card">
+            <div class="body">
+                <ul class="mt-2 nav nav-tabs tab-nav-right" role="tablist">
+                    <li role="presentation">
+                        <a href="#details" data-toggle="tab" class="show active">@ERP.ResourcePack.CharityBoxes.TmCharityBoxCollect.CharityBoxes</a>
+                    </li>
+                    <li role="presentation">
+                        <a href="#members" data-toggle="tab" class="show">@ERP.ResourcePack.CharityBoxes.TmCharityBoxCollect.Members</a>
+                    </li>
+                </ul>
+                <div class="tab-content">
+                    <div role="tabpanel" class="tab-pane fade in active show" id="details">
+                        @Html.Action(nameof(TmCharityBoxCollectController.TmCharityBoxCollectFormDetail), new { id = id, trigger = formTrigger })
+                        @Html.Action(nameof(TmCharityBoxCollectController.TmCharityBoxCollectDataDetail))
+                    </div>
+                    <div role="tabpanel" class="tab-pane fade in  " id="members">
+                        @Html.Action(nameof(TmCharityBoxCollectController.TmCharityBoxCollectMembersForm), new { id = id, trigger = formTrigger })
+                        @Html.Action(nameof(TmCharityBoxCollectController.TmCharityBoxCollectMembersData))
+                    </div>
+                </div>
+                <div class="row clearfix"> <div class="col-md-12 text-center" id="btnContainer"></div></div>
+            </div>
+        </div>
+    </div>
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body">
+                <div class="text-center">
+                    @if (formTrigger != ERP.Front.Helpers.Enums.Common.FormTriggers.Show.ToString())
+                    {
+                        <button type="submit" id="btnSubmition" class="btn btn-info btn-lg m-l-15 waves-effect">@(formTrigger == ERP.Front.Helpers.Enums.Common.FormTriggers.Insert.ToString() ? ERP.ResourcePack.Common.Settings.BtnSave : ERP.ResourcePack.Common.Settings.BtnUpdate)</button>
+                        <div id="submitLoader" style="display:none">
+                            <div class="lds-roller"><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div></div>
+                        </div>
+                    }
+                    <a href="~/TmCharityBoxCollect" class="btn btn-danger btn-lg m-l-15 waves-effect">@(ERP.ResourcePack.Common.Settings.BtnClose)</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section scripts{
+    <script>
+        const primaryEntityKeyId =  @(id == null ? 0 : id);
+        const trigger = '@formTrigger';
+        let formView = true;
+    </script>
+    <script src="~/Scripts/jquery.validate.min.js"></script>
+    <script src="~/Scripts/jquery.validate.unobtrusive.min.js"></script>
+    @Html.Partial("~/ViewsScripts/_CharityBoxes/TmCharityBoxCollect/TmCharityBoxCollectScripts.cshtml")
+    @if (id != null)
+    {
+        <script>
+            $(function () {
+                LoadTmCharityBoxCollectDetailData();
+                LoadTmCharityBoxCollectMemberData();
+                calcTotal();
+            });
+
+
+            if (primaryEntityKeyId && trigger === '@ERP.Front.Helpers.Enums.Common.FormTriggers.Show.ToString()' && @detailObj.StatusLkpId == @Convert.ToInt64(ERP.Front.Helpers.Enums.Common.TmCharityBoxCollectStatus.New)) {
+                    let btns = '';
+
+                    btns += `<a href="javascript:void(0)" onclick="return PostAjax(@id)" class="btn btn-success">${'@ERP.ResourcePack.Common.Settings.Post'}</a>`;
+
+                    $('#btnContainer').html(btns);
+
+            };
+        </script>
+    }
+}

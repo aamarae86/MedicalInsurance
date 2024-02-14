@@ -1,0 +1,13 @@
+﻿@{
+    ViewBag.Title = ERP.ResourcePack.Accounts.ArCustomers.PmOtherPaymentTypes;
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@Html.Action(nameof(ERP.Web.UI.Controllers.PmPropertiesModule.PmOtherPaymentTypesController.PmOtherPaymentTypesSearch))
+@Html.Action(nameof(ERP.Web.UI.Controllers.PmPropertiesModule.PmOtherPaymentTypesController.PmOtherPaymentTypesData))
+
+@section scripts{
+
+    @Html.Partial("~/ViewsScripts/_PmPropertiesModule/PmOtherPaymentTypes/PmOtherPaymentTypesScripts.cshtml")
+   
+}

@@ -1,0 +1,717 @@
+﻿@using ERP.ResourcePack.AccountsExtend
+@using ERP.Web.UI.Controllers.AccountsExtend
+@using ERP.Authorization;
+@{
+    string permissionsStr = TempData["Permissions"].ToString();
+    string encUpdateTrigger = ERP.Front.Helpers.Enums.Common.EncUpdate;
+    string encInsertTrigger = ERP.Front.Helpers.Enums.Common.EncInsert;
+    string encShowTrigger = ERP.Front.Helpers.Enums.Common.EncShow;
+}
+
+
+    <script>
+    const _mainController = "GlAccMapping"
+
+    $(function () {
+
+        LoadDataGrid();
+        $('#tblGlAccMappingPrint thead').html($('#tblGlAccMapping thead').html());
+        $('#tblGlAccMappingPrint thead tr :last-child').remove();
+        $('#GlAccMapping').addClass('active');
+ 
+    });
+
+    const _loadDataUrl = `${$PrefixHostName}/${_mainController}/@nameof(GlAccMappingController.LoadDataGrid)`;
+    const _tblSelector = $('#tblGlAccMapping');
+    const _permissions = '@permissionsStr';
+    const _updatePermission = '@PermissionNames.Pages_GlAccMappingHd_Update';
+    const _deletePermission = '@PermissionNames.Pages_GlAccMappingHd_Delete';
+
+    var OnBegin = function (response) {
+        fireBtnLoader();
+    };
+
+    var OnSuccess = function (response) {
+
+        $('#btnSubmition').prop('disabled', false);
+        //loaderIconOFF();
+
+        if (response.success) {
+
+            if (response.customRestResult.trigger === '@ERP.Front.Helpers.Enums.Common.FormTriggers.Insert') {
+
+                toastr.success(response.customRestResult.message);
+
+                setTimeout(function () {
+                    window.location.href = $PrefixHostName + '/GlAccMapping';
+                }, 200);
+
+            }
+            else if (response.customRestResult.trigger === '@ERP.Front.Helpers.Enums.Common.FormTriggers.Update') {
+
+                toastr.success(response.customRestResult.message);
+
+                setTimeout(function () {
+                    window.location.href = $PrefixHostName + '/GlAccMapping';
+                }, 200);
+
+            }
+            else {
+                toastr.error(response.customRestResult.message);
+            }
+
+        } else {
+            toastr.error(response.error.message);
+        }
+
+    };
+
+    var OnComplete = function (response) {
+        $('#btnSubmition').prop('disabled', false);
+    };
+
+    var OnFailure = function (response) {
+        $('#btnSubmition').prop('disabled', false);
+    };
+
+    const LoadDataGrid = function () {
+
+        $('#tblLoader').show();
+
+        const params = {
+            MapName: $('#searchBox #MapName').val(),
+            MapNumber: $('#searchBox #MapNumber').val()
+        };
+
+        const columns = [
+            {
+                "data": "result.data.id",
+                'render': function (data, type, row, meta) {
+                    return meta.row + meta.settings._iDisplayStart + 1;
+                }
+            },
+            {
+                "data": "MapNumber",
+                "name": "MapNumber",
+                "autoWidth": true
+            },
+            {
+                "data": "MapName",
+                "name": "MapName",
+                "autoWidth": true
+            },
+            {
+                "data": null,
+                "sortable": false,
+                "render": function (data, type, row) {
+
+                    let formAction = `${$PrefixHostName}/${_mainController}/@nameof(GlAccMappingController.GlAccMappingHdForm)`;
+                    let DeleteAction = `${$PrefixHostName}/${_mainController}/@nameof(GlAccMappingController.Delete)`;
+
+                    let formTitle = '@ERP.ResourcePack.AccountsExtend.GlAccMapping.Title',btns = '';
+
+                    if (_permissions.includes(_updatePermission)) {
+                        btns += `<a href="${$PrefixHostName}/GlAccMapping/FormView?id=${row.EncId}&t=@encUpdateTrigger" title="@ERP.ResourcePack.Common.Settings.Edit"><i class="mx-2 fas fa-edit text-info"></i></a>`;
+                    }
+
+                    btns += `<a href="${$PrefixHostName}/GlAccMapping/FormView?id=${row.EncId}&t=@encShowTrigger" title="@ERP.ResourcePack.Common.Settings.Show"><i class="mx-2 fas fa-eye text-info"></i></a>`;
+
+                    if (_permissions.includes(_deletePermission)) {
+                        btns += `<a href="javascript:void(0)" onclick="AjaxController.DeleteMainTableRow(${row.Id},'${DeleteAction}');" title="@ERP.ResourcePack.Common.Settings.Delete"><i class="mx-2 fas fa-trash-alt text-danger"></i></a>`;
+                    }
+
+                    const _auditedPermission = '@PermissionNames.Pages_GlAccMappingHd_Audit';
+
+                    if (_permissions.includes(_auditedPermission)) {
+
+                        row.permission = _auditedPermission;
+
+                        btns += GetAuditedButton(row);
+                    }
+
+                    return btns;
+                }
+            }
+        ];
+
+        const dtObj = {
+            "processing": true,
+            "serverSide": true,
+            "filter": false,
+            "orderMulti": false,
+            "language": dataTableLang,
+            "ajax": {
+                "url": _loadDataUrl,
+                "type": "POST",
+                "datatype": "json",
+                "data": params,
+                "complete": function () { }
+            },
+            "columns": columns,
+            "initComplete": function () {
+                $('[data-toggle="tooltip"]').tooltip();
+            }
+
+        };
+
+        _tblSelector.dataTable().fnDestroy();
+        _tblSelector.DataTable(dtObj).on('draw', function () { $('[data-toggle="tooltip"]').tooltip(); });
+
+        setTimeout(function () {
+            $(".sorting_1").removeAttr('colspan');
+        }, 500);
+    };
+
+    $('#btnSubmition').on('click', function () {
+
+        if ($('#mainForm').valid()) {
+
+            //loaderIconON();
+
+            _listGlAccMappingTrDetail.val(JSON.stringify(_GlAccMappingTrDetail));
+
+            $(this).prop('disabled', true);
+
+            $('#mainForm').submit();
+
+        } else {
+            //loaderIconOFF();
+
+            $(this).prop('disabled', false);
+        }
+
+    });
+
+    </script>
+
+<script name="hd-tr-manager">
+
+    const _tblGlAccMappingTrDetailSelector = $('#tblGlAccMappingTr');
+    const _listGlAccMappingTrDetail = $('#GlAccMappingTrListStr');
+
+    let _GlAccMappingTrDetail = [], updatedDetailsRow, tblCounterIndex = 0, currentTr ;
+
+    const fillDetail = function () {
+
+        if (validator() === false) return;
+
+        const current = {
+            index: ++tblCounterIndex,
+            trName: $('#TrName').val(),
+            trNo: $('#TrNo').val(),
+            rowStatus: NewStatus,
+            trDtlCount:0,
+            id: 0
+        };
+
+        return current;
+    };
+
+    const AddGlAccMappingTrDetail = function () {
+
+        const current = fillDetail();
+
+        if (current === undefined) return;
+
+        _GlAccMappingTrDetail.push(current);
+
+        _listGlAccMappingTrDetail.val(JSON.stringify(_GlAccMappingTrDetail));
+
+        bindGlAccMappingTrDetailTable();
+
+        clearFormDetAdding();
+    };
+
+    const bindGlAccMappingTrDetailTable = function () {
+
+        const detailArr = _GlAccMappingTrDetail.filter(z => z.rowStatus !== DeletedStatus);
+
+        const columns = [
+            { 'data': 'index' },
+            { 'data': 'trNo' },
+            { 'data': 'trName' },
+            { 'data':'trDtlCount'},
+            {
+                'data': null,
+                'searchable': false,
+                'ordering': false,
+                'sorting': false,
+                'render': function (d, t, row) {
+
+                    let rows = '<td>';
+
+                    rows += `<a href="javascript:void(0)" onclick="return OpenDetailModal(${row.index})" title="@GlAccMapping.GlAccMappingTrDtl"><i class="mx-2 fas ${trigger === '@ERP.Front.Helpers.Enums.Common.FormTriggers.Show.ToString()' ? 'fa-info-circle' : 'fa-plus-circle' }  text-info"></i></a>`;
+
+                    if (primaryEntityKeyId === 0 || trigger !== '@ERP.Front.Helpers.Enums.Common.FormTriggers.Show.ToString()') {
+
+                        rows += `<a href="javascript:void(0)" onclick="return GetGlAccMappingTrDetailRow(${row.index})"><i class="mx-2 fas fa-edit text-success"></i></a>`;
+                        rows += `<a href="javascript:void(0)" onclick="return DeleteGlAccMappingTrDetail(${row.index})"><i class="mx-2 fas fa-trash-alt text-danger"></i></a>`;
+                    }
+
+                    rows += '</td>';
+
+                    return rows;
+                }
+            }
+        ];
+
+        const dtObj = {
+            data: detailArr,
+            retrieve: true,
+            language: dataTableLang,
+            columns: columns,
+            drawCallback: function (c, v, b) {}
+        };
+
+        setTimeout(function () {
+
+            _tblGlAccMappingTrDetailSelector.dataTable().fnDestroy();
+            _tblGlAccMappingTrDetailSelector.DataTable(dtObj).on('draw', function () { $('[data-toggle="tooltip"]').tooltip(); });
+
+        }, 100);
+
+    };
+
+    const DeleteGlAccMappingTrDetail = function (index)  {
+
+        const current = _GlAccMappingTrDetail.find(z => z.index === index);
+
+        const indexOfCurrent = _GlAccMappingTrDetail.indexOf(current);
+
+        if (!current.id) {
+
+           _GlAccMappingTrDetail.splice(indexOfCurrent, 1);
+
+        } else {
+
+            current.rowStatus = DeletedStatus;
+
+           _GlAccMappingTrDetail.splice(indexOfCurrent, 1,current);
+        }
+
+        bindGlAccMappingTrDetailTable();
+
+        _listGlAccMappingTrDetail.val(_GlAccMappingTrDetail.length === 0 ? '' : JSON.stringify(_GlAccMappingTrDetail));
+
+    };
+
+    const LoadGlAccMappingTrDetailData = function () {
+
+        $.ajax({
+            url: `${baseUrl}/GlAccMappingHd/GetAllGlAccMappingTr`,
+            method: 'GET',
+            headers: {
+                        'Authorization': `Bearer ${$_token}`
+            },
+            data: {
+                id: primaryEntityKeyId
+            }
+        }).done(function (data) {
+
+            _GlAccMappingTrDetail = [...data.result];
+
+            tblCounterIndex = 0;
+
+            $.each(_GlAccMappingTrDetail, function (i, item) {
+
+                item.index = ++tblCounterIndex;
+
+            });
+
+            bindGlAccMappingTrDetailTable();
+
+            _listGlAccMappingTrDetail.val(JSON.stringify(_GlAccMappingTrDetail));
+
+        });
+
+    };
+
+    const GetGlAccMappingTrDetailRow = function (tblIndex) {
+
+        clearFormDetAdding();
+
+        $('#btnAddDetailRow').hide();
+        $('#btnUpdateDetailRow').show();
+        $('#btnCancelDetailRow').show();
+
+        const current = _GlAccMappingTrDetail.find(z => z.index === tblIndex);
+
+        $('#TrName').val(current.trName);
+        $('#TrNo').val(current.trNo);
+
+        $('#TrName').parent('.form-line').addClass('focused');
+        $('#TrNo').parent('.form-line').addClass('focused');
+
+        updatedDetailsRow = current;
+    };
+
+    const UpdateGlAccMappingTrDetailRow = function () {
+
+        let current = _GlAccMappingTrDetail.find(z => z.index === updatedDetailsRow.index);
+
+        let indexOfCurrent = _GlAccMappingTrDetail.indexOf(current);
+
+        const newRow = fillDetail();
+
+        if (newRow === undefined) return;
+
+        newRow.index = current.index;
+        newRow.trDtlCount = current.trDtlCount;
+        newRow.id = updatedDetailsRow.id;
+        newRow.rowStatus =  !updatedDetailsRow.id ? NewStatus : UpdatedStatus;
+
+        _GlAccMappingTrDetail.splice(indexOfCurrent, 1,newRow);
+
+        $('#btnAddDetailRow').show();
+        $('#btnUpdateDetailRow').hide();
+        $('#btnCancelDetailRow').hide();
+
+        clearFormDetAdding();
+
+        _listGlAccMappingTrDetail.val(JSON.stringify(_GlAccMappingTrDetail));
+
+        setTimeout(function () {
+            bindGlAccMappingTrDetailTable();
+        }, 100);
+    };
+
+    const clearFormDetAdding = function () {
+        $('#hd-tr .card:first input,textarea').val('');
+        $('#hd-tr .card:first select').val('').trigger('change');
+    };
+
+    const validator = function () {
+
+        if (!$('#TrName').val()) {
+            toastr.warning('@GlAccMapping.TrName' + ' : ' + '@ERP.ResourcePack.Common.Settings.Required');
+            return false;
+        }
+
+    };
+
+    const OpenDetailModal = function (index) {
+
+        _mainModalTitle.html('@ERP.ResourcePack.AccountsExtend.GlAccMapping.GlAccMappingTrDtl');
+        _mainModalBody.html($('#tr-dtl-box-container').html());
+        _mainModal.modal(_mainModalOprions);
+
+        $('#main-modal .modal-dialog').css('max-width', '80%');
+
+        $('#main-modal #TypeLkpId').select2(ReturnSelect2ObjectForLkpsTypes('@ERP.Front.Helpers.Enums.Common.FndLkpsTypes.GlAccMappingTrDtlType.ToString()'));
+        $('#main-modal #FromAccId').select2(ReturnSelect2ObjectDefault(`${baseUrl}/GlAccounts/GetGlAccountsForAccMappingSelect2`));
+        $('#main-modal #ToAccId').select2(ReturnSelect2ObjectDefault(`${baseUrl}/GlAccounts/GetGlAccountsForAccMappingSelect2`));
+
+        currentTr = _GlAccMappingTrDetail.find(item => item.index === index);
+
+        if (primaryEntityKeyId && !currentTr.trDtlbinded) {
+            LoadGlAccMappingTrDtlDetailData(currentTr.id);
+        } else {
+            bindGlAccMappingTrDtlDetailTable();
+        }
+    };
+
+</script>
+
+<script name="hd-tr-dtl-manager">
+
+    let _GlAccMappingTrDtlDetail = [], updatedDtlDetailsRow, tblCounterDtlIndex = 0 ;
+
+    const fillDtlDetail = function () {
+
+            if (validatorDtl() === false) return;
+
+            const current = {
+                index: ++tblCounterDtlIndex,
+                typeLkpId: $('#TypeLkpId').find(':selected').val(),
+                typeLkpNameAr: $('#TypeLkpId').find(':selected').text(),
+                typeLkpNameEn: $('#TypeLkpId').find(':selected').text(),
+                fromAccId: $('#FromAccId').find(':selected').val(),
+                fromAccDescriptionAr: $('#FromAccId').find(':selected').text(),
+                fromAccDescriptionEn: $('#FromAccId').find(':selected').text(),
+                toAccId: $('#ToAccId').find(':selected').val(),
+                toAccDescriptionAr: $('#ToAccId').find(':selected').text(),
+                toAccDescriptionEn: $('#ToAccId').find(':selected').text(),
+                rowStatus: NewStatus,
+                parent: currentTr.index,
+                id: 0
+            };
+
+            return current;
+        };
+
+    const AddGlAccMappingTrDtlDetail = function () {
+
+            const current = fillDtlDetail();
+
+            if (current === undefined) return;
+
+            _GlAccMappingTrDtlDetail.push(current);
+
+            currentTr.glAccMappingTrDtlList = GetCurrentTrDtlArr();
+
+            bindGlAccMappingTrDtlDetailTable();
+
+            clearFormDtlAdding();
+        };
+
+    const bindGlAccMappingTrDtlDetailTable = function () {
+
+        const detailArr = _GlAccMappingTrDtlDetail.filter(item => item.rowStatus !== DeletedStatus && item.parent === currentTr.index);
+
+        const columns = [
+            { 'data': 'index' },
+            { 'data': lang === 'ar-EG' ? 'typeLkpNameAr' : 'typeLkpNameEn' },
+            { 'data': lang === 'ar-EG' ? 'fromAccDescriptionAr' : 'fromAccDescriptionEn' },
+            { 'data': lang === 'ar-EG' ? 'toAccDescriptionAr' : 'toAccDescriptionEn' },
+            {
+                'data': null,
+                'searchable': false,
+                'ordering': false,
+                'sorting': false,
+                'render': function (d, t, row) {
+
+                    let rows = '';
+
+                    if (primaryEntityKeyId === 0 || trigger !== '@ERP.Front.Helpers.Enums.Common.FormTriggers.Show.ToString()') {
+
+                        rows += `<td><a href="javascript:void(0)" onclick="return DeleteGlAccMappingTrDtlDetail(${row.index})"><i class="mx-2 fas fa-trash-alt text-danger"></i></a>`;
+                        rows += `<a href="javascript:void(0)" onclick="return GetGlAccMappingTrDtlDetailRow(${row.index})"><i class="mx-2 fas fa-edit text-success"></i></a></td>`;
+                    }
+                    else {
+                        rows += '<td></td>';
+                    }
+
+                    return rows;
+                }
+            }
+        ];
+
+        const dtObj = {
+            data: detailArr,
+            retrieve: true,
+            language: dataTableLang,
+            columns: columns,
+            drawCallback: function (c, v, b) { }
+        };
+
+        setTimeout(function () {
+
+            $('#tblGlAccMappingTrDtl').dataTable().fnDestroy();
+            $('#tblGlAccMappingTrDtl').DataTable(dtObj).on('draw', function () { $('[data-toggle="tooltip"]').tooltip(); });
+
+        }, 100);
+
+    };
+
+    const DeleteGlAccMappingTrDtlDetail = function (index)  {
+
+            const current = _GlAccMappingTrDtlDetail.find(z => z.index === index);
+
+            const indexOfCurrent = _GlAccMappingTrDtlDetail.indexOf(current);
+
+            if (!current.id) {
+
+               _GlAccMappingTrDtlDetail.splice(indexOfCurrent, 1);
+
+            } else {
+
+                current.rowStatus = DeletedStatus;
+
+               _GlAccMappingTrDtlDetail.splice(indexOfCurrent, 1,current);
+            }
+
+            bindGlAccMappingTrDtlDetailTable();
+
+            currentTr.glAccMappingTrDtlList = GetCurrentTrDtlArr();
+        };
+
+    const LoadGlAccMappingTrDtlDetailData = function (trId) {
+
+            $.ajax({
+                url: `${baseUrl}/GlAccMappingHd/GetAllGlAccMappingTrDtl`,
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${$_token}`
+                },
+                data: {
+                    id: trId
+                }
+            }).done(function (data) {
+
+                _GlAccMappingTrDtlDetail = _GlAccMappingTrDtlDetail.concat([...data.result]);
+
+                tblCounterDtlIndex = 0;
+
+                $.each(_GlAccMappingTrDtlDetail, function (i, item) {
+
+                    item.index = ++tblCounterDtlIndex;
+
+                    if (item.glAccMappingTrId == currentTr.id)  item.parent = currentTr.index;
+
+                });
+
+                bindGlAccMappingTrDtlDetailTable();
+
+                currentTr.glAccMappingTrDtlList = GetCurrentTrDtlArr();
+                currentTr.trDtlbinded = true;
+            });
+
+        };
+
+    const GetGlAccMappingTrDtlDetailRow = function (tblIndex) {
+
+            clearFormDtlAdding();
+
+            $('#btnAddDetailDtlRow').hide();
+            $('#btnUpdateDetailDtlRow').show();
+            $('#btnCancelDetailDtlRow').show();
+
+            const current = _GlAccMappingTrDtlDetail.find(z => z.index === tblIndex);
+
+            $(`#FromAccId`).append($("<option selected='selected'></option>")
+                .val(current.fromAccId).text(lang === 'ar-EG' ? current.fromAccDescriptionAr : current.fromAccDescriptionEn))
+                .trigger('change');
+
+            $(`#ToAccId`).append($("<option selected='selected'></option>")
+                .val(current.toAccId).text(lang === 'ar-EG' ? current.toAccDescriptionAr : current.toAccDescriptionEn))
+                .trigger('change');
+
+            $(`#TypeLkpId`).append($("<option selected='selected'></option>")
+                .val(current.typeLkpId).text(lang === 'ar-EG' ? current.typeLkpNameAr : current.typeLkpNameEn))
+                .trigger('change');
+
+            updatedDtlDetailsRow = current;
+        };
+
+    const UpdateGlAccMappingTrDtlDetailRow = function () {
+
+            let current = _GlAccMappingTrDtlDetail.find(z => z.index === updatedDtlDetailsRow.index);
+
+            let indexOfCurrent = _GlAccMappingTrDtlDetail.indexOf(current);
+
+            const newRow = fillDtlDetail();
+
+            if (newRow === undefined) return;
+
+            newRow.index = current.index;
+            newRow.id = updatedDtlDetailsRow.id;
+            newRow.rowStatus =  !updatedDtlDetailsRow.id ? NewStatus : UpdatedStatus;
+
+            _GlAccMappingTrDtlDetail.splice(indexOfCurrent, 1,newRow);
+
+            $('#btnAddDetailDtlRow').show();
+            $('#btnUpdateDetailDtlRow').hide();
+            $('#btnCancelDetailDtlRow').hide();
+
+            clearFormDtlAdding();
+
+            currentTr.glAccMappingTrDtlList = GetCurrentTrDtlArr();
+
+            setTimeout(function () {
+                bindGlAccMappingTrDtlDetailTable();
+            }, 100);
+        };
+
+    const clearFormDtlAdding = function () {
+        $('#main-modal .card:first input,textarea').val('');
+        $('#main-modal .card:first select').val('').trigger('change');
+    };
+
+    const validatorDtl = function () {
+
+            if (!$('#TypeLkpId').find(':selected').val()) {
+                toastr.warning('@GlAccMapping.TypeLkpId : @ERP.ResourcePack.Common.Settings.Required');
+                return false;
+            }
+
+            if (!$('#FromAccId').find(':selected').val()) {
+                toastr.warning('@GlAccMapping.FromAccId : @ERP.ResourcePack.Common.Settings.Required');
+                return false;
+            }
+
+            if (!$('#ToAccId').find(':selected').val()) {
+                toastr.warning('@GlAccMapping.ToAccId : @ERP.ResourcePack.Common.Settings.Required');
+                return false;
+            }
+
+    };
+
+    const GetCurrentTrDtlArr = function () {
+
+        const fliterdTrDtlArr =  _GlAccMappingTrDtlDetail.filter(item => item.parent === currentTr.index);
+
+        currentTr.trDtlCount = fliterdTrDtlArr.length;
+
+        const indexOfCurrentTr = _GlAccMappingTrDetail.indexOf(currentTr);
+
+        _GlAccMappingTrDetail.splice(indexOfCurrentTr, 1, currentTr);
+
+        bindGlAccMappingTrDetailTable();
+
+        _listGlAccMappingTrDetail.val(JSON.stringify(_GlAccMappingTrDetail));
+
+        return !_GlAccMappingTrDtlDetail || _GlAccMappingTrDtlDetail.length === 0 || !currentTr ? [] : [...fliterdTrDtlArr];
+    };
+
+    function printExc() {
+        $('.page-loader-wrapper').show();
+        $('#tblGlAccMappingPrint_wrapper').parent().addClass('d-none');
+        const parmss = {
+            MapName: $('#searchBox #MapName').val(),
+            MapNumber: $('#searchBox #MapNumber').val(),
+            length: 1000000
+        };
+
+        const columns = [
+            {
+                "data": "result.data.id",
+                'render': function (data, type, row, meta) {
+                    return meta.row + meta.settings._iDisplayStart + 1;
+                }
+            },
+            {
+                "data": "MapNumber",
+                "name": "MapNumber",
+                "autoWidth": true
+            },
+            {
+                "data": "MapName",
+                "name": "MapName",
+                "autoWidth": true
+            }
+        ];
+        const dtObj = {
+            "language": dataTableLang,
+            "dom": 'Bfrtip',
+            "buttons": [
+                {
+                    extend: 'excel',
+                    messageTop: `${$('#MapName').siblings().text()}: ${(parmss.MapName) ? parmss.MapName : '--'}, ${$('#MapNumber').siblings().text()}: ${(parmss.MapNumber) ? parmss.MapNumber : '--'}`
+                },
+
+            ],
+            "ajax": {
+                "url": _loadDataUrl,
+                "type": "POST",
+                "datatype": "json",
+                "data": parmss,
+                "complete": function (d) {
+                    _tblLoader.hide();
+                }
+            },
+            "columns": columns,
+
+            "initComplete": function () {
+                $('#tblGlAccMappingPrint_wrapper button.dt-button').click();
+                $('#tblGlAccMappingPrint_wrapper').parent().addClass('d-none');
+
+            }
+        };
+
+        $('#tblGlAccMappingPrint').dataTable().fnDestroy();
+        $('#tblGlAccMappingPrint').DataTable(dtObj).on('buttons-processing', function (e, indicator) { if (!indicator) { $('.page-loader-wrapper').hide() } });
+
+
+    }
+
+</script>

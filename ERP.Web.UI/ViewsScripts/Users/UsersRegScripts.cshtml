@@ -1,0 +1,178 @@
+﻿@using ERP.Web.UI.Controllers.Authentications
+@using ERP.ResourcePack.Authentications
+@using ERP.Authorization;
+@{
+    string permissionsStr = TempData["Permissions"].ToString();
+}
+
+<script>
+
+    const _mainController = "PortalUserReg"
+
+    $(function () {
+        LoadDataGrid();
+        $('#PortalUserReg').addClass('active');
+    });
+
+    const _loadDataUrl = `${$PrefixHostName}/${_mainController}/@nameof(PortalUserRegController.LoadDataGrid)`;
+    const _tblSelector = $('#tblUsers');
+    const _tblLoader = $('#tblLoader');
+    const _txtNameSearch = $('#searchBox #Name');
+    const _txtSurNameSearch = $('#searchBox #SurName');
+    const _txtFullNameSearch = $('#searchBox #FullName');
+    const _txtEmailAddressSearch = $('#searchBox #EmailAddress');
+    const _txtUserNameSearch = $('#searchBox #UserName');
+
+    const _permissions = '@permissionsStr';
+    const _updatePermission = '@PermissionNames.Pages_PortalUserReg_Update';
+
+    var OnBegin = function (response) {  };
+
+    var OnSuccess = function (response) {
+
+        if (response.success) {
+
+            if (response.customRestResult.trigger === '@ERP.Front.Helpers.Enums.Common.FormTriggers.Insert') {
+
+                toastr.success(response.customRestResult.message);
+
+                LoadDataGrid();
+
+                _mainModal.modal('hide');
+
+            } else if (response.customRestResult.trigger === '@ERP.Front.Helpers.Enums.Common.FormTriggers.Update') {
+
+                LoadDataGrid();
+
+                _mainModal.modal('hide');
+
+                toastr.success(response.customRestResult.message);
+            }
+
+        } else {
+            toastr.error(response.customRestResult.message);
+        }
+
+    };
+
+    var OnComplete = function (response) {
+         downBtnLoader();
+    };
+
+    var OnFailure = function (response) {
+        toastr.error(response);
+        downBtnLoader();
+    };
+
+    const LoadDataGrid = function () {
+
+        const parms = {
+            Name: _txtNameSearch.val(),
+            SurName: _txtSurNameSearch.val(),
+            FullName: _txtFullNameSearch.val(),
+            EmailAddress: _txtEmailAddressSearch.val(),
+            UserName: _txtUserNameSearch.val(),
+            FullName: _txtFullNameSearch.val()
+        };
+
+        const columns = [
+            {
+                "data": "result.data.id",
+                'render': function (data, type, row, meta) {
+                    return meta.row + meta.settings._iDisplayStart + 1;
+                }
+            },
+            {
+                "data": "Name",
+                "name": "Name",
+                "autoWidth": true
+            },
+            {
+                "data": "SurName",
+                "name": "SurName",
+                "autoWidth": true
+            },
+            {
+                "data": "FullName",
+                "name": "FullName",
+                "autoWidth": true
+            },
+            {
+                "data": "EmailAddress",
+                "name": "EmailAddress",
+                "autoWidth": true
+            },
+            {
+                "data": "UserName",
+                "name": "UserName",
+                "autoWidth": true
+            },
+            {
+                "data": "IsActive",
+                "name": "IsActive",
+                "autoWidth": true,
+                "render": function (isActive, type, row) {
+
+                    if (isActive) return '<i class="fas fa-check text-success"></i>';
+
+                    return '<i class="fas fa-times text-danger"></i>';
+                }
+            },
+            {
+                "data": null,
+                "sortable": false,
+                "render": function (data, type, row) {
+
+                    let formAction = `${$PrefixHostName}/${_mainController}/@nameof(UsersController.UsersForm)`;
+                    let DeleteAction = `${$PrefixHostName}/${_mainController}/@nameof(UsersController.Delete)`;
+
+                    let formTitle = '@Users.Title';
+                    let btns = '';
+
+                    if (_permissions.includes(_updatePermission)) {
+                        btns += `<a href="javascript:void(0)" onclick="AjaxController.GetFormModal(${row.Id},'@ERP.Front.Helpers.Enums.Common.FormTriggers.Update','${formAction}','${formTitle}');" title="@ERP.ResourcePack.Common.Settings.Edit"><i class="mx-2 fas fa-edit text-info"></i></a>`;
+                    }
+
+                    btns += `<a href="javascript:void(0)" onclick="AjaxController.GetFormModal(${row.Id},'@ERP.Front.Helpers.Enums.Common.FormTriggers.Show','${formAction}','${formTitle}');" title="@ERP.ResourcePack.Common.Settings.Show"><i class="mx-2 fas fa-eye text-info"></i></a>`;
+
+                    const _auditedPermission = '@PermissionNames.Pages_Users_Audit';
+
+                    if (_permissions.includes(_auditedPermission)) {
+
+                        row.permission = _auditedPermission;
+
+                        btns += GetAuditedButton(row);
+                    }
+
+                    return btns;
+                }
+            }
+        ];
+
+        const dtObj = {
+            "processing": true,
+            "serverSide": true,
+            "filter": false,
+            "orderMulti": false,
+            "language": dataTableLang,
+            "ajax": {
+                "url": _loadDataUrl,
+                "type": "POST",
+                "datatype": "json",
+                "data": parms,
+                "complete": function () { }
+            },
+            "columns": columns,
+            "initComplete": function () {
+                $('[data-toggle="tooltip"]').tooltip();
+            }
+        };
+
+        _tblSelector.dataTable().fnDestroy();
+        _tblSelector.DataTable(dtObj).on('draw', function () { $('[data-toggle="tooltip"]').tooltip(); });
+    };
+ 
+    const setIsActiveUserValue = function () {
+        $("#mainForm #IsActive").val($('#IsActiveAlt').is(':checked'));
+    }
+</script>

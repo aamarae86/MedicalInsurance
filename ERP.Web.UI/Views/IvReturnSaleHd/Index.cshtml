@@ -1,0 +1,13 @@
+﻿@{
+    ViewBag.Title = ERP.ResourcePack.Sales.ReturnSale.Title;
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@Html.Action(nameof(ERP.Web.UI.Controllers.Sales.IvReturnSaleHdController.IvReturnSaleHdSearch))
+@Html.Action(nameof(ERP.Web.UI.Controllers.Sales.IvReturnSaleHdController.IvReturnSaleHdData))
+
+@section scripts{
+    <script>let formView = false;</script>
+    @Html.Partial("~/ViewsScripts/_Sales/IvReturnSaleHd/IvReturnSaleHdScripts.cshtml")
+}
+

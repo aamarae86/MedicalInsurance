@@ -1,0 +1,147 @@
+﻿@*@using ERP.ResourcePack.SpGuarantees
+    @using ERP.Web.UI.Controllers.SpGuarantees*@
+@using ERP.Authorization;
+@{
+    string encUpdateTrigger = ERP.Front.Helpers.Enums.Common.EncUpdate;
+    string encShowTrigger = ERP.Front.Helpers.Enums.Common.EncShow;
+    string permissionsStr = TempData["Permissions"]?.ToString() ?? "";
+}
+
+<script>
+    const _mainController = "SpecialPermission"
+    const _detailPostPermission = '@PermissionNames.Pages_ScCommittee_Detail_Post';
+    const _detailPostponePermission = '@PermissionNames.Pages_ScCommittee_Detail_Postpone';
+    const _detailRejectPermission = '@PermissionNames.Pages_ScCommittee_Detail_Reject';
+
+    $(function () {
+        //LoadDataGrid();
+        $('#SpecialPermissionsManagement').addClass('active');
+    });
+    const _mainForm = $('#mainForm');
+
+    const _permissions = '@permissionsStr';
+
+    $('#btnSubmition').on('click', function () {
+
+        _mainForm.submit();
+
+        if (_mainForm.valid()) {
+
+            $(this).hide();
+            $('#submitLoader').show();
+
+        } else {
+
+            $(this).show();
+            $('#submitLoader').hide();
+        }
+
+    });
+
+    var OnBegin = function (response) {
+        fireBtnLoader();
+    };
+
+    var OnSuccess = function (response) {
+
+        if (response.success) {
+
+            if (response.customRestResult.trigger === '@ERP.Front.Helpers.Enums.Common.FormTriggers.Insert') {
+
+                toastr.success(response.customRestResult.message);
+
+                setTimeout(function () {
+                    window.location.href = $PrefixHostName + '/ScCommittee';
+                }, 200);
+
+            } else if (response.customRestResult.trigger === '@ERP.Front.Helpers.Enums.Common.FormTriggers.Update') {
+
+                toastr.success(response.customRestResult.message);
+
+                setTimeout(function () {
+                    window.location.href = $PrefixHostName + '/ScCommittee';
+                }, 200);
+            }
+
+        } else {
+            toastr.error(response.customRestResult.message);
+        }
+
+    };
+
+    var OnComplete = function (response) {
+        downBtnLoader();
+    };
+
+    var OnFailure = function (response) {
+        toastr.error(response);
+        console.log(response);
+        downBtnLoader();
+    };
+
+
+    $('#UserId').select2(ReturnSelect2ObjectDefault(`${baseUrl}/User/GetUsersSelect2`));
+
+</script>
+
+<script>
+
+    const fillSpecialPermissionDetail = function () {
+
+        if (validatetor() === false) return;
+
+        const current = {
+            postAction: $('#HasPostActionAlt').is(':checked')
+        };
+
+        return current;
+    };
+
+    const validatetor = function () {
+
+    };
+
+    $('#UserId').on('select2:select', function (e) {
+        console.log(e);
+        LoadSpecialPermissionDetailData(e);
+        //var accountData = e.params.data.altText;
+        //console.log(accountData);
+        //$('#AccountOwner').val(accountName);
+        //$('#AccountOwner').parent('.form-line').addClass('focused');
+        //$('#AccountNumber').val(accountNo);
+        //$('#AccountNumber').parent('.form-line').addClass('focused');
+    });
+
+    const LoadSpecialPermissionDetailData = function (e) {
+
+        //$('#tblLoaderLine').show();
+
+        $.ajax({
+            url: `${baseUrl}/User/GetActionSpecialPermissionsForUserToUpdate`,
+            method: 'GET',
+            headers: { 'Authorization': `Bearer ${$_token}` },
+            data:
+            {
+                userId: e.params.data.id,
+                actionName: "ScCommittee"
+            }
+        }).done(function (data) {
+
+            current = [...data.result.permissions];
+
+            var postActionVal = current.indexOf(_detailPostPermission) !== -1;
+            $('#HasPostActionAlt').prop('checked', postActionVal);
+            $('#PostAction').val(postActionVal);
+
+            var postponeActionVal = current.indexOf(_detailPostponePermission) !== -1;
+            $('#HasPostponeActionAlt').prop('checked', postponeActionVal);
+            $('#PostponeAction').val(postponeActionVal);
+
+            var rejectActionVal = current.indexOf(_detailRejectPermission) !== -1;
+            $('#HasRejectActionAlt').prop('checked', rejectActionVal);
+            $('#RejectAction').val(rejectActionVal);
+        });
+
+    };
+
+</script>

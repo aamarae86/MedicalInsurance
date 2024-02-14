@@ -1,0 +1,38 @@
+﻿@using ERP.ResourcePack.Accounts
+@model List<ERP.Web.UI.Models.ViewModels.Accounts.GlAccountsrptVM>
+@{
+    ViewBag.Title = ReportsAccounts.AccountStatment;
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+    <div class="card">
+        <div class="header d-flex justify-content-start align-items-center">
+            <i class="fas fa-2x fa-chevron-down down-arr mr-2" data-toggle="collapse" data-target="#searchCollapse"></i>
+            <h2><strong>@ReportsAccounts.Accounts</strong></h2>
+        </div>
+        <div class="body  collapse show"  id="searchCollapse">
+            <div class="row clearfix">
+                <div class="col-md-4">
+                    <label class="form-label" for="Levels">@ReportsAccounts.Levels</label>
+                    <div class="form-group form-float">
+                        <div class="form-group">
+                            <select class="form-control" name="Levels" id="Levels"></select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row clearfix">
+                <div class="col-sm-12 text-center">
+                    <div class="form-group">
+                        <button id="btnPrint" onclick="return PrintAccountStatementReport()" class="btn btn-success">@ERP.ResourcePack.Common.Settings.Print</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+@section scripts{
+    @Html.Partial("~/ViewsScripts/_ReportsAccounts/AccountsScripts.cshtml")
+    @Html.Partial("_ReportModal")
+}

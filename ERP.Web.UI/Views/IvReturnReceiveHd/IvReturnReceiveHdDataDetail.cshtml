@@ -1,0 +1,45 @@
+﻿@using ERP.ResourcePack.Warehouses
+
+<div class="row clearfix">
+    <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+        <div class="">
+            <div class="">
+                <div class="table-responsive">
+                    <table class="table table-bordered table-striped table-hover" id="tblReturnReceiveDetails" style="width:100%">
+                        <thead>
+                            <tr>
+                                <th><i class="fas fa-hashtag"></i></th>
+                                <th>@IvReturnReceiveHd.Itemcode</th>
+                                <th>@IvReturnReceiveHd.Itemname</th>
+                                <th>@IvReturnReceiveHd.Avilablequantity</th>
+                                <th>@IvReturnReceiveHd.Qtys</th>
+                                <th>@IvReturnReceiveHd.Unitprice</th>
+                                <th>@IvReturnReceiveHd.totbeforetax</th>
+                                <th>@IvReturnReceiveHd.Taxamount</th>
+                                <th>@IvReturnReceiveHd.Totalamount</th>
+                                @*<th>@IvSaleHd.profit</th>*@
+                                <th><i class="fas fa-cog"></i></th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                        <tfoot>
+                            <tr>
+                                <th style="text-align:right"></th>
+                                <th style="text-align:right"></th>
+                                <th style="text-align:right"></th>
+                                <th style="text-align:right"></th>
+                                <th style="text-align:right"></th>
+                                <th style="text-align:right"></th>
+                                <th style="text-align:right"></th>
+                                <th  style="text-align:right">@IvReturnReceiveHd.Invoicetotal</th>
+                                <th></th>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+

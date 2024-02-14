@@ -1,0 +1,46 @@
+﻿@using ERP.Web.UI.Models.ViewModels.AccountsExtend
+@model GlAccMappingHdVM
+@{
+    string formTrigger = ViewBag.trigger;
+    bool isFormDetail = Model != null && formTrigger == ERP.Front.Helpers.Enums.Common.FormTriggers.Show.ToString();
+}
+<div class="card" style="display:@(formTrigger == ERP.Front.Helpers.Enums.Common.FormTriggers.Show.ToString() ? "none":"block" ) ">
+    <div class="body">
+        <div class="row clearfix">
+            <div class="col-sm-4">
+                @Html.LabelFor(z => z.TypeLkpId, new { @class = "form-label label-required" })
+                <div class="form-group form-float">
+                    <div class="form-group">
+                        @Html.DropDownListFor(z => z.TypeLkpId, Enumerable.Empty<SelectListItem>(), new { @class = "form-control" })
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-4">
+                @Html.LabelFor(z => z.FromAccId, new { @class = "form-label label-required" })
+                <div class="form-group form-float">
+                    <div class="form-group">
+                        @Html.DropDownListFor(z => z.FromAccId, Enumerable.Empty<SelectListItem>(), new { @class = "form-control" })
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-4">
+                @Html.LabelFor(z => z.ToAccId, new { @class = "form-label label-required" })
+                <div class="form-group form-float">
+                    <div class="form-group">
+                        @Html.DropDownListFor(z => z.ToAccId, Enumerable.Empty<SelectListItem>(), new { @class = "form-control" })
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row clearfix text-center">
+            <div class="col-sm-4"></div>
+            <div class="col-sm-4">
+                <div class="form-group m-2">
+                    <button id="btnAddDetailDtlRow" onclick="return AddGlAccMappingTrDtlDetail()" class="btn btn-success">@ERP.ResourcePack.Common.Settings.BtnAddNew</button>
+                    <button style="display:none;" id="btnUpdateDetailDtlRow" onclick="return UpdateGlAccMappingTrDtlDetailRow()" class="btn btn-info">@ERP.ResourcePack.Common.Settings.BtnUpdate</button>
+                    <button style="display:none;" id="btnCancelDetailDtlRow" onclick="clearFormDtlAdding(); $('#btnCancelDetailDtlRow').hide();$('#btnUpdateDetailDtlRow').hide();$('#btnAddDetailDtlRow').show();" class="btn btn-danger">@ERP.ResourcePack.Common.Settings.BtnCancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

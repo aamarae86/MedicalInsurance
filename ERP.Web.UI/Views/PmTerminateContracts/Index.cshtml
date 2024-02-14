@@ -1,0 +1,11 @@
+﻿@{
+    ViewBag.Title = ERP.ResourcePack.Accounts.ArCustomers.PmTerminateContracts;
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@Html.Action(nameof(ERP.Web.UI.Controllers.PmPropertiesModule.PmTerminateContractsController.PmTerminateContractsSearch))
+@Html.Action(nameof(ERP.Web.UI.Controllers.PmPropertiesModule.PmTerminateContractsController.PmTerminateContractsData))
+
+@section scripts{
+    @Html.Partial("~/ViewsScripts/_PmPropertiesModule/PmTerminateContracts/PmTerminateContractsScripts.cshtml")
+}

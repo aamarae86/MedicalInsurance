@@ -1,0 +1,335 @@
+﻿@using ERP.Web.UI.Controllers.PmPropertiesModule
+@using ERP.Authorization;
+@{
+    string encUpdateTrigger = ERP.Front.Helpers.Enums.Common.EncUpdate;
+    string encShowTrigger = ERP.Front.Helpers.Enums.Common.EncShow;
+    string permissionsStr = TempData["Permissions"].ToString();
+}
+
+@if (permissionsStr.Contains(PermissionNames.Pages_FmMaintRequisitionsExe_Post))
+{
+    <script>
+
+        const PostAjax = function (id) {
+
+            bootbox.confirm({
+                message:  _booBoxMessagePosting,
+                buttons: bootBoxDefaultBtns,
+                callback: function (result) {
+
+                    if (result) {
+
+                        const data = { id: id, lang: lang };
+
+                        $.ajax({
+                            url: `${baseUrl}/FmMaintRequisitionsExe/PostFmMaintRequisitionsExe`,
+                            type: 'POST',
+                            data: JSON.stringify(data),
+                            headers:
+                            {
+                                'Content-Type': 'application/json',
+                                'Authorization': `Bearer ${$_token}`
+                            },
+                        }).done(function (response) {
+
+                            if (response.result.finalStatues == 'F') {
+                                toastr.error(response.result.reason);
+                            }
+                            else {
+
+                                toastr.success(response.result.reason);
+                                setTimeout(function () {
+                                    window.location.href = $PrefixHostName + '/FmMaintRequisitionsExe';
+                                }, 200);
+                            }
+
+                        }).fail(function (response) {
+                            toastr.error(response);
+                        });
+                    }
+                }
+            });
+        };
+
+    </script>
+}
+else
+{
+    <script>
+        const PostAjax = function (id) { };
+    </script>
+}
+<script>
+    const _mainController = "FmMaintRequisitionsExe", _apiAppService = "FmMaintRequisitionsExe";
+
+    $(function () {
+        LoadDataGrid();
+
+        $('#FmMaintRequisitionsExe').addClass('active');
+    });
+
+    const _loadDataUrl = `${$PrefixHostName}/${_mainController}/@nameof(FmMaintRequisitionsExeController.LoadDataGrid)`;
+    const _tblSelector = $('#tblFmMaintRequisitionsExe');
+    const _tblLoader = $('#tblLoader');
+    const _mainForm = $('#mainForm');
+
+    const _permissions = '@permissionsStr';
+    const _postPermission = '@PermissionNames.Pages_FmMaintRequisitionsExe_Post';
+    const _updatePermission = '@PermissionNames.Pages_FmMaintRequisitionsExe_Update';
+    const _deletePermission = '@PermissionNames.Pages_FmMaintRequisitionsExe_Delete';
+
+    $('#btnSubmition').on('click', function () {
+
+        _mainForm.submit();
+
+        if (_mainForm.valid()) {
+
+            $(this).prop('disabled',true);
+
+        } else {
+
+            $(this).prop('disabled', false);
+        }
+
+    });
+
+    var OnBegin = function (response) {
+        fireBtnLoader();
+    };
+
+    var OnSuccess = function (response) {
+
+        if (response.success) {
+
+            if (response.customRestResult.trigger === '@ERP.Front.Helpers.Enums.Common.FormTriggers.Insert') {
+
+                toastr.success(response.customRestResult.message);
+
+                setTimeout(function () {
+                    window.location.href = $PrefixHostName + '/FmMaintRequisitionsExe';
+                }, 200);
+
+            } else if (response.customRestResult.trigger === '@ERP.Front.Helpers.Enums.Common.FormTriggers.Update') {
+
+                toastr.success(response.customRestResult.message);
+
+                setTimeout(function () {
+                    window.location.href = $PrefixHostName + '/FmMaintRequisitionsExe';
+                }, 200);
+            }
+
+        } else {
+            toastr.error(response.customRestResult.message);
+            $('#btnSubmition').prop('disabled', false);
+        }
+
+    };
+
+    var OnComplete = function (response) {
+        downBtnLoader();
+    };
+
+    var OnFailure = function (response) {
+        toastr.error(response);
+        downBtnLoader();
+        $('#btnSubmition').prop('disabled', false);
+    };
+
+    const LoadDataGrid = function () {
+
+        const parms = {
+            StatusLkpId: $('#searchBox #StatusLkpId').find(':selected').val(),
+            ExecuteTypeLkpId: $('#searchBox #ExecuteTypeLkpId').find(':selected').val(),
+            EngineerNumber: $('#EngineerId').val(),
+            ContractNumber: $('#FmContractsId').val()
+        };
+
+        const columns = [
+            {
+                "data": "result.data.id",
+                'render': function (data, type, row, meta) {
+                    return meta.row + meta.settings._iDisplayStart + 1;
+                }
+            },
+            {
+                "data": "EngineerId",
+                "name": "EngineerId",
+                "autoWidth": true,
+                "render": function (d, t, row) { 
+                    return row.FmEngineers !== null ? row.FmEngineers.EngineerNumber : "";
+                }
+            },
+            {
+                "data": "ExecuteDate",
+                "name": "ExecuteDate",
+                "autoWidth": true
+            },
+            {
+                "data": "ExecuteTypeLkpId",
+                "name": "ExecuteTypeLkpId",
+                "autoWidth": true,
+                "render": function (d, t, row) {
+                    return lang === 'ar-EG' ? row.FndExecuteTypeLkp.NameAr : row.FndExecuteTypeLkp.NameEn;
+                }
+            },
+            {
+                "data": "StatusLkpId",
+                "name": "StatusLkpId",
+                "autoWidth": true,
+                "render": function (d, t, row) {
+                    return lang === 'ar-EG' ? row.FndStatusLkp.NameAr : row.FndStatusLkp.NameEn;
+                }
+            },
+            {
+                "data": "FmContractsId",
+                "name": "FmContractsId",
+                "autoWidth": true,
+                "render": function (d, t, row) {
+                    return row.FmContracts ? row.FmContracts.ContractNumber : '';
+                }
+            },
+            {
+                "data": null,
+                "sortable": false,
+                "render": function (data, type, row) {
+
+                    let formAction = `${$PrefixHostName}/${_mainController}/@nameof(FmMaintRequisitionsExeController.FmMaintRequisitionsExeForm)`;
+                    let DeleteAction = `${$PrefixHostName}/${_mainController}/@nameof(FmMaintRequisitionsExeController.Delete)`;
+
+                    let btns = '';
+
+                    if (_permissions.includes(_postPermission) && row.StatusLkpId == 11054) {
+                         btns += `<a title="@ERP.ResourcePack.Common.Settings.Post" href="javascript:void(0)"  onclick="return PostAjax(${row.Id})"><i class="mx-2 fas fa-check-circle text-success"></i></a></td>`;
+                    }
+
+                    if (_permissions.includes(_updatePermission) && row.StatusLkpId == 11054) {
+                        btns += `<a href="${$PrefixHostName}/FmMaintRequisitionsExe/FormView?id=${row.EncId}&t=@encUpdateTrigger" title="@ERP.ResourcePack.Common.Settings.Edit"><i class="mx-2 fas fa-edit text-info"></i></a>`;
+                    }
+
+                    btns += `<a href="${$PrefixHostName}/FmMaintRequisitionsExe/FormView?id=${row.EncId}&t=@encShowTrigger" title="@ERP.ResourcePack.Common.Settings.Show"><i class="mx-2 fas fa-eye text-info"></i></a>`;
+
+                    if (_permissions.includes(_deletePermission) && row.StatusLkpId == 11054) {
+                        btns += `<a href="javascript:void(0)" onclick="AjaxController.DeleteMainTableRow(${row.Id},'${DeleteAction}');" title="@ERP.ResourcePack.Common.Settings.Delete"><i class="mx-2 fas fa-trash-alt text-danger"></i></a>`;
+                    }
+
+                    const _auditedPermission = '@PermissionNames.Pages_FmMaintRequisitionsExe_Audit';
+
+                    if (_permissions.includes(_auditedPermission)) {
+
+                        row.permission = _auditedPermission;
+
+                        btns += GetAuditedButton(row);
+                    }
+
+                    return btns;
+                }
+            }
+        ];
+
+        const dtObj = {
+            "processing": true,
+            "serverSide": true,
+            "filter": false,
+            "orderMulti": false,
+            "language": dataTableLang,
+            "ajax": {
+                "url": _loadDataUrl,
+                "type": "POST",
+                "datatype": "json",
+                "data": parms,
+                "complete": function () { }
+            },
+            "columns": columns,
+            "initComplete": function () {
+                $('[data-toggle="tooltip"]').tooltip();
+            }
+
+        };
+
+        _tblSelector.dataTable().fnDestroy();
+        _tblSelector.DataTable(dtObj).on('draw', function () { $('[data-toggle="tooltip"]').tooltip(); });
+
+        setTimeout(function () {
+            $(".sorting_1").removeAttr('colspan');
+        }, 500);
+    };
+
+    $('#searchBox #StatusLkpId').select2(ReturnSelect2ObjectForLkpsTypes('@ERP.Front.Helpers.Enums.Common.FndLkpsTypes.FmMaintRequisitionsExeStatues.ToString()'));
+    $('#searchBox #ExecuteTypeLkpId').select2(ReturnSelect2ObjectForLkpsTypes('@ERP.Front.Helpers.Enums.Common.FndLkpsTypes.FmMaintRequisitionsExeExecuteType.ToString()'));
+    $('#ExecuteTypeLkpId').select2(ReturnSelect2ObjectForLkpsTypes('@ERP.Front.Helpers.Enums.Common.FndLkpsTypes.FmMaintRequisitionsExeExecuteType.ToString()'));
+    $('#mainForm #EngineerId').select2(ReturnSelect2ObjectDefault(`${baseUrl}/FmMaintRequisitionsExe/GetFmEngineersNumberSelect2`));
+    $('#mainForm #FmContractsId').select2(ReturnSelect2ObjectDefault(`${baseUrl}/FmMaintRequisitionsExe/GetFmContractsNumberSelect2`));
+    $('#FmMaintRequisitionsHdrId').select2(ReturnSelect2ObjectDefault(`${baseUrl}/FmMaintRequisitionsExe/GetFmMaintRequisitionsNumberSelect2`));
+    $('#FmContractVisitsId').select2({
+        ajax: {
+            url: `${baseUrl}/FmMaintRequisitionsExe/GetFmContractsVisitsNumberSelect2`,
+            dataType: 'json',
+            headers: {
+                'Authorization': `Bearer ${$_token}`
+            },
+            data: function (params) {
+                params.page = params.page || 1;
+                return {
+                    contactId: $('#FmContractsId').find(':selected').val(),
+                    pageSize: pageSize,
+                    pageNumber: params.page,
+                    searchTerm: params.term,
+                    lang: lang
+                };
+            },
+            processResults: function (data, params) {
+
+                params.page = params.page || 1;
+
+                return {
+                    results: data.result.results,
+                    pagination: {
+                        more: (params.page * pageSize) < data.result.total
+                    }
+                };
+            }
+        },
+        placeholder: select2Placeholder,
+        minimumInputLength: 0,
+        allowClear: true,
+        language: select2Lang
+    });
+
+    $('#mainForm #FmContractsId').on('change', function (e) { $('#FmContractVisitsId').val('').trigger('change');  });
+
+    $('#mainForm #EngineerId').on('select2:select', function (e) {
+        $('#EngineerName').val(e.params.data.altText);
+        $('#EngineerName').parent('.form-line').addClass('focused');
+    });
+
+    $('#FmContractVisitsId').on('select2:select', function (e) {
+
+        if (e.params.data.altText) {
+
+            const data = JSON.parse(e.params.data.altText);
+
+            console.log(data);
+
+            $('#EngineerName').val(data.EngineerName);
+            $('#EngineerName').parent('.form-line').addClass('focused');
+
+            $(`#EngineerId`).append($("<option selected='selected'></option>")
+                .val(data.Id).text(data.EngineerNumber)).trigger('change');
+        }
+    });
+
+    $('#ExecuteTypeLkpId').on('change', function (e) {
+
+        const value = $(this).find(':selected').val();
+
+        if (value == 11056) {
+            $('#FmMaintRequisitionsHdrBox').hide();
+            $('#FmMaintRequisitionsHdrBox').parent().find('.col-sm-4').removeClass('col-sm-4').addClass('col-sm-6');
+        } else {
+            $('#FmMaintRequisitionsHdrBox').show();
+            $('#FmMaintRequisitionsHdrBox').parent().find('.col-sm-6').removeClass('col-sm-6').addClass('col-sm-4');
+        }
+
+    });
+
+</script>

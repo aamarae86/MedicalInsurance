@@ -1,0 +1,200 @@
+﻿@using ERP.ResourcePack.SpGuarantees
+@using ERP.Authorization;
+@{
+    string permissionsStr = TempData["Permissions"].ToString();
+}
+<script>
+
+    $('#searchBox #BeneficentId').select2(ReturnSelect2ObjectDefault(`${baseUrl}/SpBeneficent/GetSpBeneficentSelect2`));
+    $('#searchBox #CaseId').select2(ReturnSelect2ObjectDefault(`${baseUrl}/SpCases/GetSpCasesGrantedSelect2`));
+    $('#ReasonLkpId').select2(ReturnSelect2ObjectForLkpsTypes('@ERP.Front.Helpers.Enums.Common.FndLkpsTypes.SpCaseOperationsReason.ToString()'));
+    $('#SpCaseOperations').addClass('active');
+
+    setTimeout(function () {
+            $('#SpCaseOperations').children('a').removeClass('toggled');
+    }, 100);
+
+    const _permissions = '@permissionsStr';
+    const _postPerm = '@PermissionNames.Pages_SpCaseOperations_Post';
+    const _contactDetails = [];
+
+    const LoadDataGrid = function () {
+
+        if (!validator()) return;
+
+        $.ajax({
+            url: `${baseUrl}/SpCaseOperations/GetSpCasesContractDetails`,
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${$_token}`
+            },
+            data: {
+                CaseId: $('#CaseId').find(':selected').val(),
+                BeneficentId: $('#BeneficentId').find(':selected').val(),
+                BeneficentNumber: $('#BeneficentNumber').val(),
+                CaseNumber: $('#CaseNumber').val()
+            }
+        }).done(function (data) {
+
+            if (data.result) {
+                bindDataTable(data.result);
+            }
+
+        });
+    };
+
+    const bindDataTable = function (data) {
+
+
+        const columns = [
+            {
+                "data": "result.data.id",
+                'render': function (data, type, row, meta) {
+                    return meta.row + meta.settings._iDisplayStart + 1;
+                }
+            },
+            { 'data': 'contractNumber' },
+            { 'data': 'beneficentNumber' },
+            { 'data': 'beneficentName' },
+            { 'data': 'caseName' },
+            { 'data': 'caseNumber' },
+            { 'data': 'caseDate' },
+            //{ 'data': 'operationDate' },
+            {
+                'data': null,
+                'searchable': false,
+                'ordering': false,
+                'sorting': false,
+                'render': function (d, t, row) {
+
+                    let checks = `<p>
+                                    <label>
+                                        <input type="checkbox" onclick="return SetData(event,${row.id})"  />
+                                        <span></span>
+                                    </label>
+                                  </p>`;
+
+                    return checks;
+                }
+            }
+        ];
+
+        const dtObj = {
+            data: data,
+            retrieve: true,
+            language: dataTableLang,
+            columns: columns,
+            drawCallback: function (c, v, b) { }
+        };
+
+        $('#tblSpCaseOperations').dataTable().fnDestroy();
+        $('#tblSpCaseOperations').DataTable(dtObj).on('draw', function () { $('[data-toggle="tooltip"]').tooltip(); });
+
+        setTimeout(function () {
+            $(".sorting_1").removeAttr('colspan');
+        }, 500);
+
+    };
+
+    const validator = function () {
+
+        let valid = false;
+
+        if ($('#BeneficentId').find(':selected').val()) valid = true;
+        if ($('#CaseId').find(':selected').val()) valid = true;
+
+        if (!$('#BeneficentId').find(':selected').val() && !valid) {
+            toastr.warning(`@SpCaseOperations.MustChooseCaseOrBenf`);
+            return false;
+        }
+        else if (!$('#CaseId').find(':selected').val() && !valid) {
+            toastr.warning(`@SpCaseOperations.MustChooseCaseOrBenf`);
+            return false;
+        }
+
+        return true;
+    };
+
+    const SetData = function (e, contractDetailsId) {
+
+        if (e.target.checked) {
+            _contactDetails.push(contractDetailsId);
+        } else {
+            _contactDetails.splice(_contactDetails.indexOf(_contactDetails.find(z => z == contractDetailsId)), 1);
+        }
+
+    };
+
+    const OperateCase = function (operationType) {
+
+        if (_contactDetails.length == 0) {
+            toastr.warning(`@SpCaseOperations.MustCheckAtLeastOneCase`);
+            return;
+        }
+
+        if (!$('#OperationDateStr').val()) {
+            toastr.warning(`@SpCaseOperations.OperationDate : @ERP.ResourcePack.Common.Settings.Required`);
+            return;
+        }
+
+        if (!$('#ReasonLkpId').find(':selected').val()) {
+            toastr.warning(`@SpCaseOperations.ReasonLkpId : @ERP.ResourcePack.Common.Settings.Required`);
+            return;
+        }
+
+        bootbox.confirm({
+            message: @Convert.ToInt64(ERP.Front.Helpers.Enums.Common.SpCaseOperations.TurnOff) == operationType ? _booBoxMessageTurnOff : _booBoxMessageCanceling,
+            buttons: bootBoxDefaultBtns,
+            callback: function (result) {
+
+                if (result) {
+
+                    const data = {
+                        ids: _contactDetails.toString(),
+                        operationDate: $('#OperationDateStr').val(),
+                        reasonLkpId: $('#ReasonLkpId').find(':selected').val(),
+                        operationTypeLkpId: operationType,
+                        lang: lang,
+                        tenantId: 0,
+                        userId: 0
+                    };
+
+                    $.ajax({
+                        url: `${baseUrl}/SpCaseOperations/OperateCase`,
+                        type: 'POST',
+                        data: JSON.stringify(data),
+                        headers:
+                        {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${$_token}`
+                        },
+                    }).done(function (response) {
+
+                        if (response.result.finalStatues == 'F') {
+                            toastr.warning(response.result.reason);
+                        }
+                        else {
+                            clear();
+                            toastr.success(response.result.reason);
+                        }
+
+                    }).fail(function (response) {
+                        toastr.error(response.responseText);
+                    });
+                }
+            }
+        });
+    };
+
+    const clear = function () {
+
+        $('input').val('');
+        $('select').val('').trigger('change');
+        $('#tblSpCaseOperations').dataTable().fnDestroy();
+
+        setTimeout(function () {
+            $('table tbody').empty();
+        }, 50);
+    };
+
+</script>

@@ -1,0 +1,70 @@
+﻿@using ERP.Web.UI.Controllers.AccountsExtend
+@using ERP.Web.UI.Models.ViewModels.Accounts
+@{
+    ViewBag.Title = ERP.ResourcePack.Accounts.FaAssetDeprnHd.Title;
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    string formTrigger = ViewBag.trigger;
+    long? id = ViewData["Id"] == null ? null : (long?)Convert.ToInt32(ViewData["Id"]);
+    var detailObj = ViewData["DetailAsync"] == null ? null : ViewData["DetailAsync"] as FaAssetDeprnHdVM;
+}
+
+<div class="row clearfix">
+    <div class="col-12">
+        @Html.Action(nameof(FaAssetDeprnHdController.FaAssetDeprnHdForm), new { id = id, trigger = formTrigger, GlAccMappingVM = detailObj })
+    </div>
+    <div class="col-12">
+        <div class="card">
+            <div class="body">
+                <ul class="mt-2 nav nav-tabs tab-nav-right" role="tablist">
+                    <li role="presentation">
+                        <a href="#hd-tr" data-toggle="tab" class="show active">@ERP.ResourcePack.Accounts.FaAssetDeprnHd.FaAssetDeprnHdTr</a>
+                    </li>
+                </ul>
+                <div class="tab-content">
+                    <div role="tabpanel" class="tab-pane fade in active show" id="hd-tr">
+                        @Html.Action(nameof(FaAssetDeprnHdController.FaAssetDeprnTrDataDetail))
+                    </div>
+                </div>
+                <div class="row clearfix"> <div class="col-md-12 text-center" id="btnContainer"></div></div>
+            </div>
+        </div>
+    </div>
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body">
+                <div class="text-center">
+                    @if (formTrigger != ERP.Front.Helpers.Enums.Common.FormTriggers.Show.ToString())
+                    {
+                        <button type="submit" id="btnSubmition" class="btn btn-info btn-lg m-l-15 waves-effect">@(formTrigger == ERP.Front.Helpers.Enums.Common.FormTriggers.Insert.ToString() ? ERP.ResourcePack.Common.Settings.BtnSave : ERP.ResourcePack.Common.Settings.BtnUpdate)</button>
+                        <div id="submitLoader" style="display:none">
+                            <div class="lds-roller"><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div></div>
+                        </div>
+                    }
+                    <a href="~/FaAssetDeprnHd" class="btn btn-danger btn-lg m-l-15 waves-effect">@(ERP.ResourcePack.Common.Settings.BtnClose)</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div id="tr-dtl-box-container" style="display:none">
+    @Html.Action(nameof(FaAssetDeprnHdController.FaAssetDeprnTrDtlDataDetail))
+</div>
+
+@section scripts{
+    <script>
+        const primaryEntityKeyId =  @(id  ?? 0);
+        const trigger = '@formTrigger';
+        let formView = true;
+    </script>
+    <script src="~/Scripts/jquery.validate.min.js"></script>
+    <script src="~/Scripts/jquery.validate.unobtrusive.min.js"></script>
+    @Html.Partial("~/ViewsScripts/_Accounts/FaAssetDeprnHd/FaAssetDeprnHdScripts.cshtml")
+    @if (id != null)
+    {
+        <script>
+
+            $(function () { LoadFaAssetDeprnTrData(); });
+
+        </script>
+    }
+}

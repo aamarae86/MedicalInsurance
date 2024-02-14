@@ -1,0 +1,390 @@
+﻿@using ERP.Web.UI.Controllers.Accounts
+@using ERP.ResourcePack.Accounts
+@using ERP.Authorization;
+@{
+    string permissionsStr = TempData["Permissions"].ToString();
+
+}
+<script>
+    const _mainController = "GlAccounts"
+
+    $(function () {
+
+        LoadDataGrid();
+        $('#tblGIAccountsPrint thead').html($('#tblGlAccounts thead').html());
+        $('#tblGIAccountsPrint thead tr :last-child').remove();
+
+        $('#GlAccounts').addClass('active');
+
+
+        $('#btnAdd').on("click", function () {
+            let data1;
+            $.ajax({
+                url: `${baseUrl}/GlAccounts/GetMyTreeAsync`,
+                dataType: 'json',
+                headers: {
+                    'Authorization': `Bearer ${$_token}`
+                },
+                data: { lang: lang ,id:0},
+                cache: false,
+                success: function (data) {
+                    data1 = data.result;
+                    createJSTree(data1);
+                }
+            });
+        });
+
+        $('#btnAddAdd').on("click", function () {
+            let data1;
+            $.ajax({
+                url: `${baseUrl}/GlAccounts/GetMyTreeAsync`,
+                dataType: 'json',
+                headers: {
+                    'Authorization': `Bearer ${$_token}`
+                },
+                data: { lang: lang ,id:0},
+                cache: false,
+                success: function (data) {
+                    data1 = data.result;
+                    createJSTreeForm(data1);
+                }
+            });
+        });
+
+        $("#search").keyup(function () {
+            var searchString = $(this).val();
+            $('#jstree').jstree('search', searchString);
+        });
+
+        function createJSTree(data) {
+            $('#jstree').jstree({
+                "core": {
+                    "check_callback": true,
+                    'data': data,
+
+                },
+                "plugins": ["search"],
+                "search": {
+                    "case_sensitive": false,
+                    "show_only_matches": true
+                }
+            });
+        }
+
+        function createJSTreeForm(data) {
+          $('#jstreeForm').jstree({
+              "core": {
+                "check_callback" : true,
+                  'data': data,
+
+              },
+              "plugins": ["search"],
+              "search": {
+                  "case_sensitive": false,
+                  "show_only_matches": true
+              }
+          });
+        }
+
+    });
+
+    const _loadDataUrl = `${$PrefixHostName}/${_mainController}/@nameof(GlAccountsController.LoadDataGrid)`;
+    const _tblSelector = $('#tblGlAccounts');
+    const _tblSelectorbody = $('#tblGlAccounts tbody');
+    const _tblLoader = $('#tblLoader');
+    const _txtCode = $('#searchBox #Code');
+    const _txtDescriptionAr = $('#searchBox #DescriptionAr');
+    const _txtDescriptionEn = $('#searchBox #DescriptionEn');
+
+    const _permissions = '@permissionsStr';
+    const _updatePermission = '@PermissionNames.Pages_GlAccounts_Update';
+    const _deletePermission = '@PermissionNames.Pages_GlAccounts_Delete';
+
+    var OnBegin = function (response) {
+
+        if (($('#Id').val() == $('#ParentId').val()) && $('#ParentId').val()) {
+            downBtnLoader();
+            toastr.warning('@ERP.ResourcePack.Accounts.ArCustomers.NotPermitted')
+            return false
+            response.abort(function () { });
+
+        }
+        fireBtnLoader();
+    };
+
+    var OnSuccess = function (response) {
+
+        if (response.success) {
+
+            if (response.customRestResult.trigger === '@ERP.Front.Helpers.Enums.Common.FormTriggers.Insert') {
+
+                toastr.success(response.customRestResult.message);
+
+                LoadDataGrid();
+
+                _mainModal.modal('hide');
+
+            } else if (response.customRestResult.trigger === '@ERP.Front.Helpers.Enums.Common.FormTriggers.Update') {
+
+                LoadDataGrid();
+
+                _mainModal.modal('hide');
+
+                toastr.success(response.customRestResult.message);
+            }
+
+        } else {
+            toastr.error(response.customRestResult.message);
+        }
+
+    };
+
+    var OnComplete = function (response) {
+        downBtnLoader();
+    };
+
+    var OnFailure = function (response) {
+        toastr.error(response.statusText);
+        console.log(response);
+        downBtnLoader();
+    };
+
+    const LoadDataGrid = function () {
+
+        const parms = {
+            Code: _txtCode.val(),
+            DescriptionAr: _txtDescriptionAr.val(),
+            DescriptionEn: _txtDescriptionEn.val()
+        };
+
+        $('#dataCollapse').show();
+        $('#tblLoader').show();
+
+        const columns = [
+            {
+                "data": "result.data.id",
+                'render': function (data, type, row, meta) {
+                    return meta.row + meta.settings._iDisplayStart + 1;
+                }
+            }
+
+            , {
+                "data": "Code",
+                "name": "Code",
+                "autoWidth": true
+            }, {
+                "data": "DescriptionAr",
+                "name": "DescriptionAr",
+                "autoWidth": true
+            }, {
+                "data": "DescriptionEn",
+                "name": "DescriptionEn",
+                "autoWidth": true
+            },
+            {
+                "data": null,
+                "sortable": false,
+                "render": function (data, type, row) {
+
+                    let formAction = `${$PrefixHostName}/${_mainController}/@nameof(GlAccountsController.GlAccountsForm)`;
+                    let DeleteAction = `${$PrefixHostName}/${_mainController}/@nameof(GlAccountsController.Delete)`;
+
+                    let formTitle = '@ArCustomers.titGlAccounts', btns = '';
+
+                    if (_permissions.includes(_updatePermission)) {
+                        btns += `<a href="javascript:void(0)" onclick="update('${row.Id}','${formAction}','${formTitle}')" title="@ERP.ResourcePack.Common.Settings.Edit"><i class="mx-2 fas fa-edit text-info"></i></a>`;
+                    }
+
+                    btns += `<a href="javascript:void(0)" onclick="Details('${row.Id}','${formAction}','${formTitle}')" title="@ERP.ResourcePack.Common.Settings.Show"><i class="mx-2 fas fa-eye text-info"></i></a>`;
+
+                    if (_permissions.includes(_deletePermission)) {
+                        btns += `<a href="javascript:void(0)" onclick="AjaxController.DeleteMainTableRow(${row.Id},'${DeleteAction}');" title="@ERP.ResourcePack.Common.Settings.Delete"><i class="mx-2 fas fa-trash-alt text-danger"></i></a>`;
+                    }
+
+                    const _auditedPermission = '@PermissionNames.Pages_GlAccounts_Audit';
+
+                    if (_permissions.includes(_auditedPermission)) {
+
+                        row.permission = _auditedPermission;
+
+                        btns += GetAuditedButton(row);
+                    }
+
+                    return btns;
+                }
+            }
+        ];
+
+        const dtObj = {
+            //paging: false,
+            "processing": true,
+            "serverSide": true,
+            "filter": false,
+            "orderMulti": false,
+            "language": dataTableLang,
+            "ajax": {
+                "url": _loadDataUrl,
+                "type": "POST",
+                "datatype": "json",
+                "data": parms,
+                "complete": function (d) {
+                    _tblLoader.hide();
+                }
+            },
+            "columns": columns,
+
+            "initComplete": function () {
+                $('[data-toggle="tooltip"]').tooltip();
+            }
+        };
+        _tblSelector.dataTable().fnDestroy();
+        _tblSelector.DataTable(dtObj).on('draw', function () { $('[data-toggle="tooltip"]').tooltip(); });
+    };
+
+    $('#searchBox #UserIdSearch').select2(ReturnSelect2ObjectDefault(`${baseUrl}/User/GetUsersSelect2`));
+
+    function update(id, formAction, formTitle) {
+
+        let data1;
+
+        $.ajax({
+            url: `${baseUrl}/GlAccounts/GetMyTreeAsync`,
+            dataType: 'json',
+            headers: {
+                'Authorization': `Bearer ${$_token}`
+            },
+            data: { lang: lang, id: 0 },
+            cache: false,
+            success: function (data) {
+                data1 = data.result;
+
+                setInterval(function () {
+
+                    $('#jstreeForm').jstree({
+                        "core": {
+                            "check_callback": true,
+                            'data': data1,
+
+                        },
+                        "plugins": ["search"],
+                        "search": {
+                            "case_sensitive": false,
+                            "show_only_matches": true
+                        }
+                    });
+
+                }, 100);
+
+            }
+        });
+
+        AjaxController.GetFormModal(id, '@ERP.Front.Helpers.Enums.Common.FormTriggers.Update', formAction, formTitle);
+    };
+
+      function Details(id, formAction, formTitle) {
+
+          let data1;
+
+          $.ajax({
+              url: `${baseUrl}/GlAccounts/GetMyTreeAsync`,
+              dataType: 'json',
+              headers: {
+                  'Authorization': `Bearer ${$_token}`
+              },
+              data: { lang: lang, id: 0 },
+              cache: false,
+              success: function (data) {
+
+                  data1 = data.result;
+
+                  setInterval(function () {
+
+                      $('#jstreeForm').jstree({
+                          "core": {
+                              "check_callback": true,
+                              'data': data1,
+
+                          },
+                          "plugins": ["search"],
+                          "search": {
+                              "case_sensitive": false,
+                              "show_only_matches": true
+                          }
+                      });
+
+                  }, 100);
+              }
+          });
+
+          AjaxController.GetFormModal(id, '@ERP.Front.Helpers.Enums.Common.FormTriggers.Show', formAction, formTitle);
+        };
+
+        function printExc() {
+            $('.page-loader-wrapper').show();
+            $('#tblGIAccountsPrint_wrapper').parent().addClass('d-none');
+            const parmss = {
+                Code: _txtCode.val(),
+                DescriptionAr: _txtDescriptionAr.val(),
+                DescriptionEn: _txtDescriptionEn.val(),
+                length: 1000000
+            };
+
+            const columns = [
+            {
+                "data": "result.data.id",
+                'render': function (data, type, row, meta) {
+                    return meta.row + meta.settings._iDisplayStart + 1;
+                }
+            }
+
+            , {
+                "data": "Code",
+                "name": "Code",
+                "autoWidth": true
+            }, {
+                "data": "DescriptionAr",
+                "name": "DescriptionAr",
+                "autoWidth": true
+            }, {
+                "data": "DescriptionEn",
+                "name": "DescriptionEn",
+                "autoWidth": true
+            },
+        ];
+
+        const dtObj = {
+            "language": dataTableLang,
+            "dom": 'Bfrtip',
+            "buttons": [
+                {
+                    extend: 'excel',
+                    messageTop: `${$('#Code').siblings().text()}: ${(parmss.Code) ? parmss.Code : '--'}, ${$('#DescriptionAr').siblings().text()}: ${(parmss.DescriptionAr) ? parmss.Description : '--'}, ${$('#DescriptionEn').siblings().text()}: ${(parmss.DescriptionEn) ? parmss.DescriptionEn : '--'}`
+                },
+
+            ],
+            "ajax": {
+                "url": _loadDataUrl,
+                "type": "POST",
+                "datatype": "json",
+                "data": parmss,
+                "complete": function (d) {
+                    _tblLoader.hide();
+                }
+            },
+            "columns": columns,
+
+            "initComplete": function () {
+                $('#tblGIAccountsPrint_wrapper button.dt-button').click();
+                $('#tblGIAccountsPrint_wrapper').parent().addClass('d-none');
+
+            }
+        };
+
+            $('#tblGIAccountsPrint').dataTable().fnDestroy();
+            $('#tblGIAccountsPrint').DataTable(dtObj).on('buttons-processing', function (e, indicator) { if (!indicator) { $('.page-loader-wrapper').hide() } });
+
+
+        }
+
+
+</script>

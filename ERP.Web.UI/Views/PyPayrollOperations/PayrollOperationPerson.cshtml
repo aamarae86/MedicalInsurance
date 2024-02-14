@@ -1,0 +1,56 @@
+﻿@using ERP.Web.UI.Controllers.HR
+@using ERP.Web.UI.Models.ViewModels.HR
+@{
+    ViewBag.Title = ERP.ResourcePack.HR.PyPayrollOperations.PayRollPersons;
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    long? id = ViewData["Id"] == null ? null : (long?)Convert.ToInt32(ViewData["Id"]);
+    var detailObj = ViewData["DetailAsync"] == null ? null : ViewData["DetailAsync"] as PyPayrollOperationsVM;
+}
+
+<div class="row clearfix">
+    <div class="col-12">
+        @Html.Action(nameof(PyPayrollOperationsController.PayrollOperationPersonFormDetail), new { id = id, PyPayrollOperationsVM = detailObj })
+    </div>
+    <div class="col-12">
+        <div class="card">
+            <div class="body">
+                <ul class="mt-2 nav nav-tabs tab-nav-right" role="tablist">
+                    <li role="presentation">
+                        <a href="#payroll-persons" data-toggle="tab" class="show active">@ERP.ResourcePack.HR.PyPayrollOperations.PayRollPersons</a>
+                    </li>
+                </ul>
+                <div class="tab-content">
+                    <div role="tabpanel" class="tab-pane fade in active show" id="payroll-persons">
+                        @Html.Action(nameof(PyPayrollOperationsController.PayrollOperationPersonDataDetail))
+                    </div>
+                </div>
+                <div class="row clearfix"> <div class="col-md-12 text-center" id="btnContainer"></div></div>
+            </div>
+        </div>
+    </div>
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body">
+                <div class="text-center">
+                    <a href="~/PyPayrollOperations" class="btn btn-danger btn-lg m-l-15 waves-effect">@(ERP.ResourcePack.Common.Settings.BtnClose)</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div id="payroll-operations-persons-details" style="display:none">
+    @Html.Partial("~/Views/PyPayrollOperations/PayrollPersonDetails.cshtml")
+</div>
+@section scripts{
+    @Html.Partial("~/ViewsScripts/_HR/PyPayrollOperations/PyPayrollOperationsScripts.cshtml")
+    @if (id != null)
+    {
+        <script>
+
+            $(function () {
+                LoadPyPayrollOperationsPersonsData(@id);
+            });
+
+        </script>
+    }
+}

@@ -1,0 +1,11 @@
+﻿@{
+    ViewBag.Title = ERP.ResourcePack.CRM.aboutUs.aboutUs.Title;
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@Html.Action(nameof(ERP.Web.UI.Controllers.PmPropertiesModule.CrmAboutUsController.CrmAboutUsSearch))
+@Html.Action(nameof(ERP.Web.UI.Controllers.PmPropertiesModule.CrmAboutUsController.CrmAboutUsData))
+
+@section scripts{
+    @Html.Partial("~/ViewsScripts/_CRM/CrmAboutUsScripts.cshtml")
+}

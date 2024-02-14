@@ -1,0 +1,237 @@
+﻿@using ERP.Web.UI.Controllers.Accounts
+@{ 
+    string permissionsStr = TempData["Permissions"].ToString();
+}
+<script>
+    const _mainController = "GlMainAccounts"
+
+    $(function () {
+        LoadDataGrid();
+
+        $('#tblGlMainAccountsPrint thead').html($('#tblGlMainAccounts thead').html());
+        $('#tblGlMainAccountsPrint thead tr :last-child').remove();
+
+        $('#GlMainAccounts').addClass('active');
+    });
+
+    const _loadDataUrl = `${$PrefixHostName}/${_mainController}/@nameof(GlMainAccountsController.LoadDataGrid)`;
+    const _tblSelector = $('#tblGlMainAccounts');
+    const _tblLoader = $('#tblLoader');
+    const _txtReferenceCodeSearch = $('#searchBox #ReferenceCode');
+    const _txtNameEnSearch = $('#searchBox #NameEn');
+    const _permissions = '@permissionsStr';
+
+    var OnBegin = function (response) {
+        fireBtnLoader();
+    };
+
+    var OnSuccess = function (response) {
+
+        if (response.success) {
+
+            if (response.customRestResult.trigger === '@ERP.Front.Helpers.Enums.Common.FormTriggers.Insert') {
+
+                    toastr.success(response.customRestResult.message);
+                    LoadDataGrid();
+                _mainModal.modal('hide');
+
+
+            } else if (response.customRestResult.trigger === '@ERP.Front.Helpers.Enums.Common.FormTriggers.Update') {
+
+                    toastr.success(response.customRestResult.message);
+                    LoadDataGrid();
+                    _mainModal.modal('hide');
+
+                setTimeout(function () {
+                    window.location.reload();
+                },200)
+            }
+
+        } else {
+               toastr.error(response.customRestResult.message);
+        }
+
+    };
+
+    var OnComplete = function (response) {
+        downBtnLoader();
+    };
+
+    var OnFailure = function (response) {
+        toastr.error(response);
+        downBtnLoader();
+    };
+
+    const LoadDataGrid = function () {
+
+        $('#tblLoader').show();
+
+        const parms = {
+            ReferenceCode: _txtReferenceCodeSearch.val(),
+            DescriptionSearchId: $('#searchBox #DescriptionSearchId').find(':selected').val()
+        };
+
+        const columns = [
+            {
+                "data": "result.data.id",
+                'render': function (data, type, row, meta) {
+                    return meta.row + meta.settings._iDisplayStart + 1;
+                }
+            },
+            {
+                "data": "ReferenceCode",
+                "name": "ReferenceCode",
+                "autoWidth": true
+            },
+            {
+                "data": "Description",
+                "name": "Description",
+                "autoWidth": true
+            },
+            {
+                "data": "CodesDetails",
+                "name": "CodesDetails",
+                "autoWidth": true
+            },
+            {
+                "data": "@ERP.ResourcePack.Accounts.GlMainAccounts.NamesAccDetail",
+                "name": "@ERP.ResourcePack.Accounts.GlMainAccounts.NamesAccDetail",
+                "autoWidth": true
+            },
+            {
+                "data": null,
+                "sortable": false,
+                "render": function (data, type, row) {
+
+                    let formAction = `${$PrefixHostName}/${_mainController}/@nameof(GlMainAccountsController.GlMainAccountsForm)`;
+
+                    let formTitle = '@ERP.ResourcePack.Accounts.GlMainAccounts.Title';
+                    let btns = '';
+
+                    btns += `<a href="javascript:void(0)" onclick="AjaxController.GetFormModal(${row.Id},'@ERP.Front.Helpers.Enums.Common.FormTriggers.Update','${formAction}','${formTitle}');" title="@ERP.ResourcePack.Common.Settings.Edit"><i class="mx-2 fas fa-edit text-info"></i></a>`;
+
+                    const _auditedPermission = '@ERP.Authorization.PermissionNames.Pages_GlMainAccounts_Audit';
+
+                    if (_permissions.includes(_auditedPermission)) {
+
+                        row.permission = _auditedPermission;
+
+                        btns += GetAuditedButton(row);
+                    }
+
+                    return btns;
+                }
+            }
+        ];
+
+        const dtObj = {
+            "processing": true,
+            "serverSide": true,
+            "filter": false,
+            "orderMulti": false,
+            "language": dataTableLang,
+            "ajax": {
+                "url": _loadDataUrl,
+                "type": "POST",
+                "datatype": "json",
+                "data": parms,
+                "complete": function () {
+                      _tblLoader.hide();
+                }
+            },
+            "columns": columns,
+            "initComplete": function () {
+                $('[data-toggle="tooltip"]').tooltip();
+            }
+
+        };
+
+        _tblSelector.dataTable().fnDestroy();
+        _tblSelector.DataTable(dtObj).on('draw', function () { $('[data-toggle="tooltip"]').tooltip(); });
+
+        setTimeout(function () {
+            $(".sorting_1").removeAttr('colspan');
+        }, 500);
+    };
+
+        $('#searchBox #DescriptionSearchId').select2(ReturnSelect2ObjectDefault(`${baseUrl}/GlMainAccounts/GetGlMainAccountsSelect2`));
+
+        function printExc() {
+            $('.page-loader-wrapper').show();
+
+            $('#tblGlMainAccountsPrint_wrapper').parent().addClass('d-none');
+            const parmss = {
+                ReferenceCode: _txtReferenceCodeSearch.val(),
+                DescriptionSearchId: $('#searchBox #DescriptionSearchId').find(':selected').val(),
+                length: 1000000
+            };
+
+            $('#tblLoader').show();
+
+
+        const columns = [
+            {
+                "data": "result.data.id",
+                'render': function (data, type, row, meta) {
+                    return meta.row + meta.settings._iDisplayStart + 1;
+                }
+            },
+            {
+                "data": "ReferenceCode",
+                "name": "ReferenceCode",
+                "autoWidth": true
+            },
+            {
+                "data": "Description",
+                "name": "Description",
+                "autoWidth": true
+            },
+            {
+                "data": "CodesDetails",
+                "name": "CodesDetails",
+                "autoWidth": true
+            },
+            {
+                "data": "@ERP.ResourcePack.Accounts.GlMainAccounts.NamesAccDetail",
+                "name": "@ERP.ResourcePack.Accounts.GlMainAccounts.NamesAccDetail",
+                "autoWidth": true
+            },
+            
+        ];
+
+
+            const dtObj = {
+                "language": dataTableLang,
+                "dom": 'Bfrtip',
+                "buttons": [
+                    {
+                        extend: 'excel',
+                        messageTop: `${$('#ReferenceCode').siblings().text()}: ${(parmss.ReferenceCode) ? parmss.ReferenceCode : '--'}, ${$('[for="Description"]').text()}: ${(parmss.DescriptionSearchId) ? parmss.DescriptionSearchId : '--'}`
+                    },
+
+                ],
+                "ajax": {
+                    "url": _loadDataUrl,
+                    "type": "POST",
+                    "datatype": "json",
+                    "data": parmss,
+                    "complete": function (d) {
+                        _tblLoader.hide();
+                    }
+                },
+                "columns": columns,
+
+                "initComplete": function () {
+                    $('#tblGlMainAccountsPrint_wrapper button.dt-button').click();
+                }
+            };
+
+            $('#tblGlMainAccountsPrint').dataTable().fnDestroy();
+            $('#tblGlMainAccountsPrint').DataTable(dtObj).on('buttons-processing', function (e, indicator) { if (!indicator) { $('.page-loader-wrapper').hide() } });
+
+
+        }
+
+
+</script>
+

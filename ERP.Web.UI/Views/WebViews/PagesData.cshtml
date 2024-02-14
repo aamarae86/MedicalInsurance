@@ -1,0 +1,42 @@
+﻿@using ERP.Web.UI.Controllers
+@using ERP.ResourcePack.Common
+@{
+    string insertTrigger = ERP.Front.Helpers.Enums.Common.FormTriggers.Insert.ToString();
+    string formAction = $"{System.Configuration.ConfigurationManager.AppSettings["PrefixHostName"].ToString()}/Pages/{nameof(WebViewsController.PagesForm)}";
+}
+
+<div class="row no-gutters clearfix">
+    <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+        <div class="card">
+            <div class="header d-flex justify-content-start align-items-center">
+                <i class="fas fa-2x fa-chevron-down down-arr mr-2" data-toggle="collapse" data-target="#dataCollapse"></i>
+                <h2> <strong>@Pages.Title</strong> -  @ERP.ResourcePack.Common.Settings.Data </h2>
+            </div>
+            <div class="body collapse show" id="dataCollapse">
+                <div class="table-responsive">
+                    <div id="tblLoader" style="display:none">
+                        <div class="lds-roller"><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div></div>
+                    </div>
+                    <table class="dataTable dt-responsive no-footer nowrap table table-bordered table-striped w-100" id="tblPages">
+                        <thead>
+                            <tr>
+                                <th><i class="fas fa-hashtag"></i></th>
+                                <th>@Pages.NameAr</th>
+                                <th>@Pages.NameEn</th>
+                                <th>@Pages.Icon</th>
+                                <th>@Pages.ModuleName</th>
+                                <th>@Pages.Link</th>
+                                <th>@Pages.DocPathAr</th>
+                                <th>@Pages.DocPathEn</th>
+                                <th>@Pages.VideoUrlAr</th>
+                                <th>@Pages.VideoUrlEn</th>
+                                <th class="all"><i class="fas fa-cogs"></i></th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

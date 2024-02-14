@@ -1,0 +1,579 @@
+﻿@using ERP.ResourcePack.SpGuarantees
+@using ERP.Web.UI.Controllers.SpGuarantees
+@using ERP.Authorization;
+@{
+    string encUpdateTrigger = ERP.Front.Helpers.Enums.Common.EncUpdate;
+    string encShowTrigger = ERP.Front.Helpers.Enums.Common.EncShow;
+    string permissionsStr = TempData["Permissions"].ToString();
+}
+
+<script>
+    const _mainController = "SpBeneficent", _apiAppService = "SpBeneficent"
+
+    $(function () {
+        LoadDataGrid();
+
+        $('#SpBeneficent').addClass('active');
+
+        $('#tblSpBeneficentAttachments_wrapper .row:first').remove();
+        $('#tblSpBeneficentAttachments_wrapper .row:last').remove();
+        $('#tblSpBeneficentAttachments_wrapper th').removeClass('sorting');
+
+    });
+
+    const _loadDataUrl = `${$PrefixHostName}/${_mainController}/@nameof(SpBeneficentController.LoadDataGrid)`;
+    const _tblSelector = $('#tblSpBeneficent');
+    const _tblLoader = $('#tblLoader');
+    const _mainForm = $('#mainForm');
+
+    const _permissions = '@permissionsStr';
+    const _updatePermission = '@PermissionNames.Pages_SpBeneficent_Update';
+    const _deletePermission = '@PermissionNames.Pages_SpBeneficent_Delete';
+
+    let tblHeadersAdded = false;
+
+    $('#btnSubmition').on('click', function () {
+
+        _mainForm.submit();
+
+        if (_mainForm.valid()) {
+
+            $(this).hide();
+            $('#submitLoader').show();
+
+        } else {
+
+            $(this).show();
+            $('#submitLoader').hide();
+        }
+
+    });
+
+    var OnBegin = function (response) {
+        fireBtnLoader();
+    };
+
+    var OnSuccess = function (response) {
+
+        if (response.success) {
+
+            if (response.customRestResult.trigger === '@ERP.Front.Helpers.Enums.Common.FormTriggers.Insert') {
+
+                toastr.success(response.customRestResult.message);
+
+                setTimeout(function () {
+                    window.location.href = $PrefixHostName + '/SpBeneficent';
+                }, 200);
+
+            } else if (response.customRestResult.trigger === '@ERP.Front.Helpers.Enums.Common.FormTriggers.Update') {
+
+                toastr.success(response.customRestResult.message);
+
+                setTimeout(function () {
+                    window.location.href = $PrefixHostName + '/SpBeneficent';
+                }, 200);
+            }
+
+        } else {
+            toastr.error(response.customRestResult.message);
+        }
+
+    };
+
+    var OnComplete = function (response) {
+        downBtnLoader();
+    };
+
+    var OnFailure = function (response) {
+        toastr.error(response);
+        console.log(response);
+        downBtnLoader();
+    };
+
+    const LoadDataGrid = function () {
+
+        $('#tblLoader').show();
+
+        const parms = {
+            BeneficentId: $('#searchBox #Search_BeneficentName').find(':selected').val(),
+            CityLkpId: $('#searchBox #Search_CityLkpId').find(':selected').val(),
+            BeneficentNumber:$('#searchBox #Search_BeneficentNumber').val(),
+            Mobile: $('#searchBox #Search_MobileNumber').val()
+        };
+
+        const columns = [
+            {
+                "data": "result.data.id",
+                'render': function (data, type, row, meta) {
+                    return meta.row + meta.settings._iDisplayStart + 1;
+                }
+            },
+            {
+                "data": "BeneficentNumber",
+                "name": "@nameof(SpBeneficent.BeneficentNumber)",
+                "autoWidth": true
+            },
+            {
+                "data": null,
+                "autoWidth": true,
+                "render": function (d, t, row) {
+
+                    if (row.FndLookupFirstTitleValues == null)
+                        return '';
+
+                    if (lang === 'ar-EG')
+                        return row.FndLookupFirstTitleValues.NameAr;
+
+                    return row.FndLookupFirstTitleValues.NameEn;
+                },
+            },
+            {
+                "data": "BeneficentName",
+                "name": "@nameof(SpBeneficent.BeneficentName)",
+                "autoWidth": true
+            },
+            {
+                "data": null,
+                "autoWidth": true,
+                "render": function (d, t, row) {
+
+                    if (row.FndLookupGenderValues == null)
+                        return '';
+
+                    if (lang === 'ar-EG')
+                        return row.FndLookupGenderValues.NameAr;
+
+                    return row.FndLookupGenderValues.NameEn;
+                },
+            },
+            {
+                "data": "MobileNumber1",
+                "name": "@nameof(SpBeneficent.MobileNumber1)",
+                "autoWidth": true
+            },
+            {
+                "data": "PoBox",
+                "name": "@nameof(SpBeneficent.PoBox)",
+                "autoWidth": true
+            },
+            {
+                "data": null,
+                "autoWidth": true,
+                "render": function (d, t, row) {
+
+                    if (row.FndLookupNationalityValues == null)
+                        return '';
+
+                    if (lang === 'ar-EG')
+                        return row.FndLookupNationalityValues.NameAr;
+
+                    return row.FndLookupNationalityValues.NameEn;
+                },
+            },
+            {
+                "data": null,
+                "autoWidth": true,
+                "render": function (d, t, row) {
+
+                    if (row.FndLookupCityValues == null)
+                        return '';
+
+                    if (lang === 'ar-EG')
+                        return row.FndLookupCityValues.NameAr;
+
+                    return row.FndLookupCityValues.NameEn;
+                },
+            },
+            {
+                "data": null,
+                "sortable": false,
+                "render": function (data, type, row) {
+
+                    let formAction = `${$PrefixHostName}/${_mainController}/@nameof(SpBeneficentController.SpBeneficentForm)`;
+                    let DeleteAction = `${$PrefixHostName}/${_mainController}/@nameof(SpBeneficentController.Delete)`;
+
+                    let btns = '';
+
+                    if (_permissions.includes(_updatePermission)) {
+                        btns += `<a href="${$PrefixHostName}/SpBeneficent/FormView?id=${row.EncId}&t=@encUpdateTrigger" title="@ERP.ResourcePack.Common.Settings.Edit"><i class="mx-2 fas fa-edit text-info"></i></a>`;
+                    }
+
+                    btns += `<a href="${$PrefixHostName}/SpBeneficent/FormView?id=${row.EncId}&t=@encShowTrigger" title="@ERP.ResourcePack.Common.Settings.Show"><i class="mx-2 fas fa-eye text-info"></i></a>`;
+
+                    if (_permissions.includes(_deletePermission)) {
+                        btns += `<a href="javascript:void(0)" onclick="AjaxController.DeleteMainTableRow(${row.Id},'${DeleteAction}');" title="@ERP.ResourcePack.Common.Settings.Delete"><i class="mx-2 fas fa-trash-alt text-danger"></i></a>`;
+                    }
+
+                    const _auditedPermission = '@PermissionNames.Pages_SpBeneficent_Audit';
+
+                    if (_permissions.includes(_auditedPermission)) {
+
+                        row.permission = _auditedPermission;
+
+                        btns += GetAuditedButton(row);
+                    }
+
+                    return btns;
+                }
+            }
+        ];
+
+        const dtObj = {
+            "processing": true,
+            "serverSide": true,
+            "filter": false,
+            "orderMulti": false,
+            "language": dataTableLang,
+            "ajax": {
+                "url": _loadDataUrl,
+                "type": "POST",
+                "datatype": "json",
+                "data": parms,
+                "complete": function () {
+                    _tblLoader.hide();
+                }
+            },
+            "columns": columns,
+            "initComplete": function () {
+                $('[data-toggle="tooltip"]').tooltip();
+            }
+
+        };
+
+        _tblSelector.dataTable().fnDestroy();
+        _tblSelector.DataTable(dtObj).on('draw', function () { $('[data-toggle="tooltip"]').tooltip(); });
+
+        setTimeout(function () {
+            $(".sorting_1").removeAttr('colspan');
+        }, 500);
+    };
+
+    $('#searchBox #Search_CityLkpId').select2(ReturnSelect2ObjectForLkpsTypes('@ERP.Front.Helpers.Enums.Common.FndLkpsTypes.City.ToString()'));
+    $('#searchBox #Search_BeneficentName').select2(ReturnSelect2ObjectDefault(`${baseUrl}/SpBeneficent/GetSpBeneficentSelect2`));
+
+    const print = function (url, id, lang) {
+        const data = { id: id, lang: lang };
+        openModal(data, url);
+    };
+
+</script>
+
+<script>
+
+    const _tblSpBeneficentDetailSelector = $('#tblSpBeneficentDetail');
+    const _tblSpBeneficentDetailSelectorBody = $('#tblSpBeneficentDetail tbody');
+    const _listSpBeneficentDetail = $('#ListSpBeneficentBank');
+
+    let  totalOfTotal  = 0,totalCheck = 0;
+    let _SpBeneficentDetailArr = [], tblLinesCounterIndex = 0 , updatedRow;
+
+    $('#FirstTitleLkpId').select2(ReturnSelect2ObjectForLkpsTypes('@ERP.Front.Helpers.Enums.Common.FndLkpsTypes.FirstTitle.ToString()'));
+    $('#LastTitleLkpId').select2(ReturnSelect2ObjectForLkpsTypes('@ERP.Front.Helpers.Enums.Common.FndLkpsTypes.LastTitle.ToString()'));
+    $('#GenderLkpId').select2(ReturnSelect2ObjectForLkpsTypes('@ERP.Front.Helpers.Enums.Common.FndLkpsTypes.Gender.ToString()'));
+    $('#NationalityLkpId').select2(ReturnSelect2ObjectForLkpsTypes('@ERP.Front.Helpers.Enums.Common.FndLkpsTypes.Nationality.ToString()'));
+    $('#CityLkpId').select2(ReturnSelect2ObjectForLkpsTypes('@ERP.Front.Helpers.Enums.Common.FndLkpsTypes.City.ToString()'));
+    $('#Bank_LkpId').select2(ReturnSelect2ObjectForLkpsTypes('@ERP.Front.Helpers.Enums.Common.FndLkpsTypes.Banks.ToString()'));
+
+    const fillSpBeneficentDetail = function () {
+
+        if (validatetor() === false) return;
+
+        const current = {
+            index: ++tblLinesCounterIndex,
+            bankLkpId: $('#Bank_LkpId').find(':selected').val(),
+            bankNameAr: $('#Bank_LkpId').find(':selected').text(),
+            bankNameEn: $('#Bank_LkpId').find(':selected').text(),
+            accountNumber:$('#Bank_AccountNumber').val(),
+            accountOwnerName:$('#Bank_AccountOwnerName').val(),
+            isDefault: $('#IsDefaultAlt').is(':checked'),
+            rowStatus: NewStatus,
+            id:0
+        };
+
+        return current;
+    };
+
+    const AddSpBeneficentDetail = function () {
+        let detail = fillSpBeneficentDetail();
+        if (detail === undefined) return;
+
+        const detailArr = _SpBeneficentDetailArr.filter(z => z.rowStatus !== DeletedStatus);
+
+        if (validateLinesWithParam(detailArr)) {
+
+            _SpBeneficentDetailArr.push(detail);
+
+            _listSpBeneficentDetail.val(JSON.stringify(_SpBeneficentDetailArr));
+
+            bindSpBeneficentDetailTable();
+
+            clearFormAdding();
+        }
+    };
+
+    const UpdateSpBeneficentDetailRow = function () {
+
+        let current = _SpBeneficentDetailArr.find(z => z.index === updatedRow.index);
+
+        let indexOfCurrent = _SpBeneficentDetailArr.indexOf(current);
+
+        //if (fillSpBeneficentDetail() === undefined) return;
+
+        const newRow = fillSpBeneficentDetail();
+
+        if (newRow === undefined) return;
+
+        newRow.id = updatedRow.id;
+        //newRow.bankLkpId = updatedRow.bankLkpId;
+        //newRow.accountNumber = updatedRow.accountNumber;
+        //newRow.accountOwnerName = updatedRow.accountOwnerName;
+        //newRow.isDefault = updatedRow.isDefault;
+        newRow.BeneficentId = updatedRow.BeneficentId;
+        newRow.rowStatus = (updatedRow.id === undefined || updatedRow.id == null || updatedRow.id == 0) ? NewStatus : UpdatedStatus;
+
+        _SpBeneficentDetailArr.splice(indexOfCurrent, 1,newRow);
+
+        $('#btnAddSpBeneficentDetailRow').show();
+        $('#btnUpdateSpBeneficentDetailRow').hide();
+        $('#btnCancelSpBeneficentDetailRow').hide();
+
+        clearFormAdding();
+
+        _listSpBeneficentDetail.val(JSON.stringify(_SpBeneficentDetailArr));
+
+        bindSpBeneficentDetailTable();
+
+    };
+
+    const CancelEditSpBeneficentDetailRow = function () {
+        clearFormAdding();
+        $('#btnCancelSpBeneficentDetailRow').hide();
+        $('#btnUpdateSpBeneficentDetailRow').hide();
+        $('#btnAddSpBeneficentDetailRow').show();
+    };
+
+    const validatetor = function () {
+
+    };
+
+    @*const hrefUserOnClickEvent = function (UserId) {
+        window.open(`${$PrefixHostName}/FndUsers/FormView?id=${UserId}&t=@encShowTrigger`, '_blank');
+    };*@
+
+    const bindSpBeneficentDetailTable = function () {
+        var name = lang == 'ar-EG' ? "bankNameAr" : "bankNameEn";
+        const detailArr = _SpBeneficentDetailArr.filter(z => z.rowStatus !== DeletedStatus);
+        const columns = [
+
+            { 'data': 'index' },
+            {
+                "data": name,
+                "name": name,
+                "autoWidth": true
+            },
+            {
+                "data": "accountNumber",
+                "name": "accountNumber",
+                "autoWidth": true
+            },
+            {
+                "data": "accountOwnerName",
+                "name": "accountOwnerName",
+                "autoWidth": true
+            },
+            {
+                "data": "isDefault",
+                "name": "isDefault",
+                "autoWidth": true,
+                "render": function (element,t,row) {
+                    if (element) {
+                        return '<i class="fas fa-check text-success"></i>';
+                    }
+                    return '<i class="fas fa-times text-danger"></i>';
+                }
+            },
+            {
+                'data': null,
+                'searchable': false,
+                'ordering': false,
+                'sorting': false,
+                'render': function (d, t, row) {
+
+                    let rows = '';
+
+                    @*if (primaryEntityKeyId && row.rowStatus != NewStatus) {
+                        rows += `<a href="javascript:void(0);" onclick="return print1('${$PrefixHostName}/FndUsers/PrintFndUsersScreen','${row.portalRequestEncId}','${lang}')" title="@ERP.ResourcePack.Common.Settings.Print"><i class="mx-2 fas fa-print text-success"></i></a>`;
+                    }*@
+
+                    if (primaryEntityKeyId === 0 || trigger !== '@ERP.Front.Helpers.Enums.Common.FormTriggers.Show.ToString()') {
+
+                            rows += `<td><a href="javascript:void(0)" onclick="return DeleteRowLine(${row.index})"><i class="mx-2 fas fa-trash-alt text-danger"></i></a>`;
+                            rows += `<a href="javascript:void(0)" onclick="return GetRow(${row.index})"><i class="mx-2 fas fa-edit text-success"></i></a></td>`;
+
+                    } else {
+                        rows += '<td></td>';
+                    }
+
+                    return rows;
+                }
+            }
+        ];
+
+        const dtObj = {
+            data: detailArr,
+            retrieve: true,
+            language: dataTableLang,
+            columns: columns,
+            drawCallback: function (c, v, b) { }
+        };
+
+        setTimeout(function () {
+            _tblSpBeneficentDetailSelector.DataTable().clear().destroy();
+            _tblSpBeneficentDetailSelector.DataTable(dtObj).on('draw', function () { $('[data-toggle="tooltip"]').tooltip(); });
+        }, 100);
+
+        //totalOfTotal = 0;
+
+        //$.each(detailArr, function (i, item) {
+        //    totalOfTotal += (item.aidAmount * item.noOfMonths);
+        //});
+
+        //$("#Total").val(totalOfTotal);
+    };
+
+    const DeleteRowLine = function (index) {
+
+        const current = _SpBeneficentDetailArr.find(z => z.index === index);
+
+        const indexOfCurrent = _SpBeneficentDetailArr.indexOf(current);
+
+        if (current.id === undefined || current.id == null || current.id == 0) {
+
+           _SpBeneficentDetailArr.splice(indexOfCurrent, 1);
+
+        } else {
+
+            current.rowStatus = DeletedStatus;
+
+           _SpBeneficentDetailArr.splice(indexOfCurrent, 1,current);
+        }
+
+        bindSpBeneficentDetailTable();
+
+        _listSpBeneficentDetail.val(_SpBeneficentDetailArr.length === 0 ? '' : JSON.stringify(_SpBeneficentDetailArr));
+    };
+
+    const LoadSpBeneficentDetailData = function () {
+
+        $('#tblLoaderLine').show();
+
+        $.ajax({
+            url: `${baseUrl}/SpBeneficent/GetDetailAsync`,
+            method: 'GET',
+            headers: {  'Authorization': `Bearer ${$_token}`  },
+            data: { id: primaryEntityKeyId }
+        }).done(function (data) {
+
+            _SpBeneficentDetailArr = [...data.result.spBeneficentBanks];
+
+            tblLinesCounterIndex = 0;
+
+            $.each(_SpBeneficentDetailArr, function (i, item) {
+                item.index = ++tblLinesCounterIndex;
+                //item.accountNumber = item.accountNumber;
+                //item.isDefault = item.isDefault;
+                //item.accountOwnerName = item.accountOwnerName;
+                //item.bankNameAr = item.bankNameAr;
+                //item.bankNameEn = item.bankNameEn;
+                //item.bankLkpId = item.bankLkpId;
+            });
+
+            bindSpBeneficentDetailTable();
+
+            _listSpBeneficentDetail.val(JSON.stringify(_SpBeneficentDetailArr));
+
+            $('#tblLoaderLine').hide();
+
+            //_attachments = [...data.result.spBeneficentAttachments];
+
+            //bindAttachmentTable();
+        });
+
+    };
+
+    const GetRow = function (tblIndex) {
+
+        clearFormAdding();
+
+        $('#btnAddSpBeneficentDetailRow').hide();
+        $('#btnUpdateSpBeneficentDetailRow').show();
+        $('#btnCancelSpBeneficentDetailRow').show();
+
+        const current = _SpBeneficentDetailArr.find(z => z.index === tblIndex);
+
+        $('#Bank_AccountNumber').val(current.accountNumber);
+        $('#Bank_AccountOwnerName').val(current.accountOwnerName);
+        var isDefaultVal = current.isDefault === true;
+        if (isDefaultVal) {
+            $('#IsDefaultAlt').prop('checked', current.isDefault);
+        }
+        else {
+            $('#IsDefaultAlt').prop('checked', isDefaultVal);
+        }
+
+        $('#Bank_AccountNumber').parent('.form-line').addClass('focused');
+        $('#Bank_AccountOwnerName').parent('.form-line').addClass('focused');
+        //$('#Bank_IsDefault').parent('.form-line').addClass('focused');
+
+
+        setSelect2Value('Bank_LkpId', current.bankLkpId, lang == 'ar-EG' ? current.bankNameAr : current.bankNameEn);
+
+        //setSelect2Value('Details_PortalUser_IdNumber', current.portalReqstudyId, `${current.name}-${current.idNumber}`);
+
+        updatedRow = current;
+    };
+
+    const getSelect2Selected = function (controlName) {
+        $(`#${controlName}`).find(':selected');
+    };
+
+    const setSelect2Value = function (controlName, id, text) {
+        let option = new Option(text,id, true, true);
+        $(`#${controlName}`).append(option).trigger('change');
+
+    };
+
+    const unSetSelect2Value = function (controlName) {
+        $(`#${controlName}`).val(null).trigger('change');
+    }
+
+    const clearFormAdding = function () {
+
+        $('#first .card select').val('').trigger('change');
+        $('#first .card input').val('');
+        $('#first .card textarea').val('');
+
+        $('#details .card input').val('');
+
+        $('#IsDefaultAlt').prop('checked', false);
+    };
+
+    const validateLinesWithParam = function (arr) {
+
+        const portalReqstudyId = $('#Details_PortalRequestNumber').find(':selected').val();
+
+        const current = arr.find(z => z.requestStudyId == portalReqstudyId);
+
+
+        @*if (current) {
+            toastr.warning('@SpBeneficent.Details_PortalUser_Name' + ' : ' + '@ERP.ResourcePack.Common.Settings.NameExistBefore')
+            return false;
+        }*@
+
+        return true;
+    };
+    //const print1 = function (url,id,lang) {
+    //    const data = { id: id, lang : lang,type:"c" };
+    //    openModal(data, url);
+    //};
+</script>

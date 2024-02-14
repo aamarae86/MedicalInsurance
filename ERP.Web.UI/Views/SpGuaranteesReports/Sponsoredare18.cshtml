@@ -1,0 +1,54 @@
+﻿@using ERP.ResourcePack.SpGuarantees
+@using ERP.Web.UI.Models.ViewModels.SpGuarantees
+@model GetSpCaseListrptVM
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+<div class="card" id="searchBox">
+    <div class="header d-flex justify-content-start align-items-center">
+        <i class="fas fa-2x fa-chevron-down down-arr mr-2" data-toggle="collapse" data-target="#searchCollapse"></i>
+        <h2><strong>@SpGuaranteesReports.Title18Sponsored</strong> -  @SpCaseOperations.SearchForm</h2>
+    </div>
+    <div class="body collapse show" id="searchCollapse">
+        <div class="row clearfix">
+            <div class="col-sm-3">
+                @Html.LabelFor(z => z.SpBeneficentId, new { @class = "form-label" })
+                <div class="form-group form-float">
+                    <div class="form-group">
+                        @Html.DropDownListFor(z => z.SpBeneficentId, Enumerable.Empty<SelectListItem>(), new { @class = "form-control" })
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-3">
+                <div class="form-group form-float">
+                    <div class="form-line">
+                        @Html.TextBoxFor(z => z.SpBeneficentNumber, new { @class = "form-control", @disabled = "disabled" })
+                        @Html.LabelFor(z => z.SpBeneficentNumber, new { @class = "form-label" })
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-3">
+                <label class="form-label">@SpGuaranteesReports.GuaranteeType</label>
+                <div class="form-group form-float">
+                    <div class="form-group">
+                        @Html.DropDownListFor(z => z.StatuesId, Enumerable.Empty<SelectListItem>(), new { @class = "form-control" })
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row clearfix">
+            <div class="col-sm-12 text-center">
+                <div class="form-group">
+                    <button type="button" class="btn btn-success btn-border-radius mx-2 waves-effect" id="btnSearch" onclick="return PrintSpCaseOperationReport();">
+                        @ERP.ResourcePack.Common.Settings.Print
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+@Html.Partial("_ReportModal")
+
+@section scripts{
+    @Html.Partial("~/ViewsScripts/_SpGuaranteesReports/Sponsoredare18Scripts.cshtml")
+}

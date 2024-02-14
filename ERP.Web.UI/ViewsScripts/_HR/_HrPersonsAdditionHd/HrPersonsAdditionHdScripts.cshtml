@@ -1,0 +1,594 @@
+﻿@using ERP.ResourcePack.HR
+@using ERP.Web.UI.Controllers.HR
+@using ERP.Authorization;
+@{
+    string encUpdateTrigger = ERP.Front.Helpers.Enums.Common.EncUpdate;
+    string encShowTrigger = ERP.Front.Helpers.Enums.Common.EncShow;
+    string permissionsStr = TempData["Permissions"].ToString();
+}
+@if (permissionsStr.Contains(PermissionNames.Pages_HrPersonsAdditionHd_Post))
+{
+    <script>
+        const PostAjax = function (id) {
+
+            bootbox.confirm({
+                message: _booBoxMessagePosting,
+                buttons: bootBoxDefaultBtns,
+                callback: function (result) {
+
+                    if (result) {
+
+                        const data = {
+                            id: id,
+                            lang: lang,
+                            userId: 0
+                        };
+
+                        $.ajax({
+                            url: `${baseUrl}/HrPersonsAdditionHd/PostHrPersonsAdditionHd`,
+                            type: 'POST',
+                            data: JSON.stringify(data),
+                            headers:
+                            {
+                                'Content-Type': 'application/json',
+                                'Authorization': `Bearer ${$_token}`
+                            },
+                        }).done(function (response) {
+
+                            if (response.result.finalStatues == 'F') {
+                                toastr.warning(response.result.reason);
+                            }
+                            else {
+                                toastr.success(response.result.reason);
+
+                                if (formView) {
+
+                                    setTimeout(function () {
+                                        window.location.href = $PrefixHostName + '/HrPersonsAdditionHd';
+                                    }, 100);
+
+                                } else {
+                                    LoadDataGrid();
+                                }
+                            }
+
+                        }).fail(function (response) {
+                            toastr.error(response.responseText);
+                        });
+
+                    }
+
+                }
+            });
+
+
+        };
+    </script>
+}
+else
+{
+    <script>
+        const PostAjax = function (id) { };
+    </script>
+}
+<script>
+    const _mainController = "HrPersonsAdditionHd"
+
+    $(function () {
+
+        LoadDataGrid();
+        $('#tblHrPersonsAdditionHdPrint thead').html($('#tblHrPersonsAdditionHd thead').html());
+        $('#tblHrPersonsAdditionHdPrint thead tr :last-child').remove();
+        $('#HrPersonsAdditionHd').addClass('active');
+
+        $('#mainForm #StatusLkpId').parent('.form-line').addClass('focused');
+        $('#mainForm #AdditionNumber').parent('.form-line').addClass('focused');
+        $('#mainForm #AdditionName').parent('.form-line').addClass('focused');
+        $('#units #Amount').parent('.form-line').addClass('focused');
+
+    });
+
+    const _loadDataUrl = `${$PrefixHostName}/${_mainController}/@nameof(HrPersonsAdditionHdController.LoadDataGrid)`;
+    const _tblSelector = $('#tblHrPersonsAdditionHd');
+    const _tblLoader = $('#tblLoader');
+    const _mainForm = $('#mainForm');
+
+    const _permissions = '@permissionsStr';
+    const _updatePermission = '@PermissionNames.Pages_HrPersonsAdditionHd_Update';
+    const _deletePermission = '@PermissionNames.Pages_HrPersonsAdditionHd_Delete';
+    const _postPermission = '@PermissionNames.Pages_HrPersonsAdditionHd_Post';
+
+    $('#btnSubmition').on('click', function () {
+
+        _mainForm.submit();
+
+        if (_mainForm.valid()) {
+
+           $(this).prop('disabled', true);
+
+        } else {
+
+           $(this).prop('disabled',false);
+        }
+
+    });
+
+    var OnBegin = function (response) {
+        fireBtnLoader();
+    };
+
+    var OnSuccess = function (response) {
+
+        if (response.success) {
+
+            if (response.customRestResult.trigger === '@ERP.Front.Helpers.Enums.Common.FormTriggers.Insert') {
+
+                toastr.success(response.customRestResult.message);
+
+                setTimeout(function () {
+                    window.location.href = $PrefixHostName + '/HrPersonsAdditionHd';
+                }, 200);
+
+            } else if (response.customRestResult.trigger === '@ERP.Front.Helpers.Enums.Common.FormTriggers.Update') {
+
+                toastr.success(response.customRestResult.message);
+
+                setTimeout(function () {
+                    window.location.href = $PrefixHostName + '/HrPersonsAdditionHd';
+                }, 200);
+            }
+
+        } else {
+            $('#btnSubmition').prop('disabled',false);
+            toastr.error(response.customRestResult.message);
+        }
+    };
+
+    var OnComplete = function (response) {
+        downBtnLoader();
+        $('#btnSubmition').prop('disabled',false);
+    };
+
+    var OnFailure = function (response) {
+        toastr.error(response);
+        downBtnLoader();
+        $('#btnSubmition').prop('disabled',false);
+    };
+
+    const LoadDataGrid = function () {
+
+        $('#tblLoader').show();
+
+        const parms = {
+            AdditionNumber: $('#searchBox #AdditionNumber').val(),
+            AdditionName: $('#searchBox #AdditionName').val()
+        };
+
+        const columns = [
+            {
+                "data": "result.data.id",
+                'render': function (data, type, row, meta) {
+                    return meta.row + meta.settings._iDisplayStart + 1;
+                }
+            },
+            {
+                "data": "AdditionNumber",
+                "name": "AdditionNumber",
+                "autoWidth": true
+            },
+            {
+                "data": "AdditionName",
+                "name": "AdditionName",
+                "autoWidth": true
+            },
+            {
+                "data": null,
+                "autoWidth": true,
+                "render": function (d, t, row) {
+                    return row.GlPeriodsDetails ? row.GlPeriodsDetails.periodNameAr: '';
+                }
+            },
+            {
+                "data": null,
+                "autoWidth": true,
+                "render": function (d, t, row) {
+                    return row.FndLookupValuesHrPersonsAdditionHdStatusLkp ? (lang === 'ar-EG' ? row.FndLookupValuesHrPersonsAdditionHdStatusLkp.NameAr : row.FndLookupValuesHrPersonsAdditionHdStatusLkp.NameEn):'';
+                }
+            },
+            {
+                "data": null,
+                "sortable": false,
+                "render": function (data, type, row) {
+
+                    let formAction = `${$PrefixHostName}/${_mainController}/@nameof(HrPersonsAdditionHdController.HrPersonsAdditionHdForm)`;
+                    let DeleteAction = `${$PrefixHostName}/${_mainController}/@nameof(HrPersonsAdditionHdController.Delete)`;
+
+                    let btns = '';
+
+                    if (_permissions.includes(_postPermission) && row.StatusLkpId == 838) {
+                        btns += `<a href="javascript:void(0)" onclick="PostAjax(${row.Id})" title="@ERP.ResourcePack.Common.Settings.Post"><i class="mx-2 fas fa-check-circle text-info"></i></a>`;
+                    }
+
+                    if (_permissions.includes(_updatePermission) && row.StatusLkpId == 838) {
+                        btns += `<a href="${$PrefixHostName}/HrPersonsAdditionHd/FormView?id=${row.EncId}&t=@encUpdateTrigger"  title="@ERP.ResourcePack.Common.Settings.Edit"><i class="mx-2 fas fa-edit text-info"></i></a>`;
+                    }
+
+                    btns += `<a href="${$PrefixHostName}/HrPersonsAdditionHd/FormView?id=${row.EncId}&t=@encShowTrigger"  title="@ERP.ResourcePack.Common.Settings.Show"><i class="mx-2 fas fa-eye text-info"></i></a>`;
+
+                    if (_permissions.includes(_deletePermission) && row.StatusLkpId == 838) {
+                        btns += `<a href="javascript:void(0)" onclick="AjaxController.DeleteMainTableRow(${row.Id},'${DeleteAction}');"  title="@ERP.ResourcePack.Common.Settings.Delete"><i class="mx-2 fas fa-trash-alt text-danger"></i></a>`;
+                    }
+
+                    const _auditedPermission = '@PermissionNames.Pages_HrPersonsAdditionHd_Audit';
+
+                    if (_permissions.includes(_auditedPermission)) {
+
+                        row.permission = _auditedPermission;
+
+                        btns += GetAuditedButton(row);
+                    }
+
+                    return btns;
+                }
+            }
+        ];
+
+        const dtObj = {
+            "processing": true,
+            "serverSide": true,
+            "filter": false,
+            "orderMulti": false,
+            "language": dataTableLang,
+            "ajax": {
+                "url": _loadDataUrl,
+                "type": "POST",
+                "datatype": "json",
+                "data": parms,
+                "complete": function () {
+                    _tblLoader.hide();
+                }
+            },
+            "columns": columns,
+            "initComplete": function () {
+                $('[data-toggle="tooltip"]').tooltip();
+            }
+
+        };
+
+        _tblSelector.dataTable().fnDestroy();
+        _tblSelector.DataTable(dtObj).on('draw', function () { $('[data-toggle="tooltip"]').tooltip(); });
+
+    };
+
+    $('#mainForm #PeriodId').select2(ReturnSelect2ObjectDefault(`${baseUrl}/GlPeriodsDetails/GetGlPeriodsSelect2`));
+
+    $('#units #HrPersonId').select2(ReturnSelect2ObjectDefault(`${baseUrl}/HrPersons/GetPersonsSelect2`));
+
+    $('#units #AdditionTypeLkpId').select2(ReturnSelect2ObjectForLkpsTypes('HrAdditionType'));
+
+    $('#units #HrPersonId').on('change', function (e) {
+        const HrPersonId = $(this);
+        const HrPersonNumberTxt = $('#units #HrPersonNumber');
+        if (HrPersonId === undefined || HrPersonId.find(':selected').val() === undefined) { } else {
+            $.ajax({
+                url: `${baseUrl}/HrPersonsAdditionHd/GetPersonNumber`,
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${$_token}`
+                },
+                data: {
+                    Id: HrPersonId.find(':selected').val()
+                }
+            }).done(function (rate) {
+                console.log(rate);
+
+                let _inputHrPersonNumber = $('#units #HrPersonNumber');
+
+                _inputHrPersonNumber.parent('.form-line').addClass('focused');
+
+                HrPersonNumberTxt.val(rate.result);
+
+            }).fail(function (response) {
+                toastr.error(response);
+            });
+        }
+
+    });
+
+</script>
+
+
+
+<script id="units">
+
+    const _tblUnitsSelector = $('#tblUnits');
+    const _tblUnitsSelectorBody = $('#tblUnits tbody');
+    const _unitsListStr = $('#PersonsAdditionTrStr');
+
+    let _unitsArr = [], tblUnitsCounterIndex = 0,updatedUnitRow;
+
+    const fillUnitObject = function () {
+
+        if (validateUnits() === false) return;
+
+        const current = {
+            index: ++tblUnitsCounterIndex,
+            hrPersonId:$('#HrPersonId').find(':selected').val(),
+            hrPersonName:$('#HrPersonId').find(':selected').text(),
+            hrPersonNumber: $('#HrPersonNumber').val(),
+            additionTypeLkpId:$('#AdditionTypeLkpId').find(':selected').val(),
+            additionTypeLkpName:$('#AdditionTypeLkpId').find(':selected').text(),
+            amount:$('#Amount').val(),
+            notes:$('#Notes').val(),
+            hrPersonAdditionHdId:0,
+            rowStatus: NewStatus
+        };
+
+        return current;
+    };
+
+    const AddUnits = function () {
+
+        const current = fillUnitObject();
+
+        if (current === undefined) return;
+
+        _unitsArr.push(current);
+
+        _unitsListStr.val(JSON.stringify(_unitsArr));
+
+        clearFormUnits();
+
+        bindUnitsTable();
+    };
+
+    const bindUnitsTable = function () {
+
+        let rows = '';
+
+        const detailArr = _unitsArr.filter(z => z.rowStatus !== DeletedStatus);
+
+        $.each(detailArr, function (i, item) {
+
+            rows += '<tr>';
+
+            rows += `<td>${item.index}</td>`;
+            rows += `<td>${!item.hrPersonNumber ? '' : item.hrPersonNumber}</td>`;
+            rows += `<td>${!item.hrPersonName ? '' : item.hrPersonName}</td>`;
+            rows += `<td>${!item.additionTypeLkpName ? '' : item.additionTypeLkpName}</td>`;
+            rows += `<td>${!Number(item.amount) ? 0 : Number(item.amount).toLocaleString(undefined, optionsNumFormat)}</td>`;
+            rows += `<td>${!item.notes ? '' : item.notes}</td>`;
+
+            if (primaryEntityKeyId === 0 || trigger !== '@ERP.Front.Helpers.Enums.Common.FormTriggers.Show.ToString()') {
+                rows += `<td><a href="javascript:void(0)" onclick="return DeleteUnitRow(${item.index})"><i class="mx-2 fas fa-trash-alt text-danger"></i></a>`;
+                rows += `<a href="javascript:void(0)" onclick="return GetUnitRowDetail(${item.index})"><i class="mx-2 fas fa-edit text-success"></i></a></td>`;
+            } else {
+                rows += '<td></td>';
+            }
+
+            rows += '</tr>';
+        });
+
+        setTimeout(function () {
+            _tblUnitsSelectorBody.html(rows);
+        }, 100);
+
+    };
+
+    const DeleteUnitRow = function (index) {
+
+        const current = _unitsArr.find(z => z.index === index);
+
+        const indexOfCurrent = _unitsArr.indexOf(current);
+
+        if (!current.id) {
+
+           _unitsArr.splice(indexOfCurrent, 1);
+
+        } else {
+
+            current.rowStatus = DeletedStatus;
+
+           _unitsArr.splice(indexOfCurrent, 1,current);
+        }
+
+        bindUnitsTable();
+
+        _unitsListStr.val(_unitsArr.length === 0 ? '' : JSON.stringify(_unitsArr));
+    };
+
+    const LoadUnitsData = function () {
+
+        $('#tblLoaderDetail').show();
+
+        $.ajax({
+            url: `${baseUrl}/HrPersonsAdditionHd/GetAllAdjustmentTr`,
+            method: 'GET',
+            headers: {
+                        'Authorization': `Bearer ${$_token}`
+            },
+            data: {
+                id: primaryEntityKeyId
+            }
+        }).done(function (data) {
+
+            _unitsArr = [...data.result];
+
+            $.each(_unitsArr, function (i, item) {
+                item.index = ++tblUnitsCounterIndex;
+            });
+
+            bindUnitsTable();
+
+            _unitsListStr.val(JSON.stringify(_unitsArr));
+
+        });
+
+    };
+
+    const GetUnitRowDetail = function (tblIndex) {
+
+        clearFormUnits();
+
+        const current = _unitsArr.find(z => z.index === tblIndex);
+
+        $('#btnAddUnitRow').hide();
+        $('#btnUpdateUnitRow').show();
+        $('#btnCancelUnitRow').show();
+
+        $('#units #HrPersonNumber').val(current.hrPersonNumber);
+        $('#units #Amount').val(current.amount);
+        $('#units #Notes').val(current.notes);
+
+        $(`#units #HrPersonId`)
+        .append($("<option selected='selected'></option>")
+        .val(current.hrPersonId)
+        .text(current.hrPersonName))
+            .trigger('change');
+
+        $(`#units #AdditionTypeLkpId`)
+        .append($("<option selected='selected'></option>")
+        .val(current.additionTypeLkpId)
+        .text(current.additionTypeLkpName))
+            .trigger('change');
+
+
+        $('#units #HrPersonNumber').parent('.form-line').addClass('focused');
+        $('#units #Amount').parent('.form-line').addClass('focused');
+        $('#units #Notes').parent('.form-line').addClass('focused');
+
+        updatedUnitRow = current;
+
+    };
+
+    const UpdateUnitsRow = function () {
+
+        let current = _unitsArr.find(z => z.index === updatedUnitRow.index);
+
+        let indexOfCurrent = _unitsArr.indexOf(current);
+
+        const newRow = fillUnitObject();
+
+        if (newRow === undefined) return;
+
+        newRow.id = updatedUnitRow.id;
+        newRow.rowStatus = !updatedUnitRow.id ? NewStatus : UpdatedStatus;
+
+        _unitsArr.splice(indexOfCurrent, 1,newRow);
+
+        $('#btnAddUnitRow').show();
+        $('#btnUpdateUnitRow').hide();
+        $('#btnCancelUnitRow').hide();
+
+        clearFormUnits();
+
+        _unitsListStr.val(JSON.stringify(_unitsArr));
+
+        bindUnitsTable();
+    };
+
+
+    const clearFormUnits = function () {
+
+        $('#units .card select').val('').trigger('change');
+        $('#units .card input').val('');
+        $('#units .card textarea').val('');
+
+    };
+
+    const validateUnits = function () {
+
+        if (!$('#units #Amount').val()) {
+            toastr.warning('@HrPersonsAdditionHd.Amount' + ' : ' + '@ERP.ResourcePack.Common.Settings.Required')
+            return false;
+        }
+
+        if (!$('#units #HrPersonId').find(':selected').val()) {
+            toastr.warning('@HrPersonsAdditionHd.HrPersonName' + ' : ' + '@ERP.ResourcePack.Common.Settings.Required')
+            return false;
+        }
+
+        if (!$('#units #AdditionTypeLkpId').find(':selected').val()) {
+            toastr.warning('@HrPersonsAdditionHd.AdditionTypeLkpId' + ' : ' + '@ERP.ResourcePack.Common.Settings.Required')
+            return false;
+        }
+        return true;
+    };
+
+
+    function printExc() {
+        $('.page-loader-wrapper').show();
+
+        const parmss = {
+            AdditionNumber: $('#searchBox #AdditionNumber').val(),
+            AdditionName: $('#searchBox #AdditionName').val(),
+            length: 1000000
+        };
+
+        const columns = [
+            {
+                "data": "result.data.id",
+                'render': function (data, type, row, meta) {
+                    return meta.row + meta.settings._iDisplayStart + 1;
+                }
+            },
+            {
+                "data": "AdditionNumber",
+                "name": "AdditionNumber",
+                "autoWidth": true
+            },
+            {
+                "data": "AdditionName",
+                "name": "AdditionName",
+                "autoWidth": true
+            },
+            {
+                "data": null,
+                "autoWidth": true,
+                "render": function (d, t, row) {
+                    return row.GlPeriodsDetails ? row.GlPeriodsDetails.periodNameAr: '';
+                }
+            },
+            {
+                "data": null,
+                "autoWidth": true,
+                "render": function (d, t, row) {
+                    return row.FndLookupValuesHrPersonsAdditionHdStatusLkp ? (lang === 'ar-EG' ? row.FndLookupValuesHrPersonsAdditionHdStatusLkp.NameAr : row.FndLookupValuesHrPersonsAdditionHdStatusLkp.NameEn):'';
+                }
+            }
+        ];
+
+        const dtObj = {
+            "language": dataTableLang,
+            "dom": 'Bfrtip',
+            "buttons": [
+                {
+                    extend: 'excel',
+                    messageTop: `${$('#AdditionNumber').siblings().text()}: ${(parmss.AdditionNumber) ? parmss.AdditionNumber : '--'}, ${$('#AdditionName').siblings().text()}: ${(parmss.AdditionName) ? parmss.AdditionName : '--'}`
+                },
+
+            ],
+            "ajax": {
+                "url": _loadDataUrl,
+                "type": "POST",
+                "datatype": "json",
+                "data": parmss,
+                "complete": function (d) {
+                    _tblLoader.hide();
+                }
+            },
+            "columns": columns,
+
+            "initComplete": function () {
+                $('#tblHrPersonsAdditionHdPrint_wrapper button.dt-button').click();
+            }
+        };
+
+        $('#tblHrPersonsAdditionHdPrint').dataTable().fnDestroy();
+        $('#tblHrPersonsAdditionHdPrint').DataTable(dtObj).on('buttons-processing', function (e, indicator) { if (!indicator) { $('.page-loader-wrapper').hide() } });
+
+
+    }
+
+
+</script>

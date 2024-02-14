@@ -1,0 +1,173 @@
+﻿@using ERP.Web.UI.Controllers.Authentications
+@using ERP.Web.UI.Models.ViewModels.Authentications
+
+@model RolePermissionsVM
+@{
+    string formTrigger = ViewBag.trigger;
+    string lang = Request.Cookies["Lang"] == null ? "ar-EG" : Request.Cookies["Lang"].Value.ToString();
+}
+<div class="card">
+    <div class="body">
+        @using (Ajax.BeginForm(
+            nameof(ERP.Web.UI.Controllers.Authentications.RolesController.PostPermissionsToRole), "Currencies",
+            new AjaxOptions { HttpMethod = "POST", OnBegin = "OnBegin", OnSuccess = "OnSuccess", OnComplete = "OnComplete", OnFailure = "OnFailure" }, new { @id = "mainForm" }))
+        {
+            @Html.HiddenFor(z => z.Id)
+        <div class="row no-gutters clearfix">
+            <div class="col-sm-1">
+            </div>
+            <div class="col-sm-4">
+                @Html.Label(ERP.ResourcePack.Common.Menu.Modules, new { @class = "form-label" })
+                <div class="form-group form-float">
+                    <div>
+                        <select class="form-control" id="Modules">
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-2">
+            </div>
+            <div class="col-sm-4">
+                @Html.Label(ERP.ResourcePack.Common.Menu.Pages, new { @class = "form-label" })
+                <div class="form-group form-float">
+                    <div>
+                        <select class="form-control" id="Pages">
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+            <div class="row no-gutters clearfix">
+                <div class="col-sm-12">
+                    <div class="card">
+                        <div class="table-responsive">
+                            <div id="tblLoader" style="display:none">
+                                <div class="lds-roller"><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div></div>
+                            </div>
+                            <table class="table table-bordered table-striped table-hover js-basic-example dataTable" id="tblRoles">
+                                <thead>
+                                    <tr>
+                                        <th>@ERP.ResourcePack.Authentications.Roles.SelectAll</th>
+                                        <th><i class="fas fa-hashtag"></i>@ERP.ResourcePack.Authentications.Roles.PageName</th>
+                                        <th>@ERP.ResourcePack.Authentications.Roles.PageView</th>
+                                        <th>@ERP.ResourcePack.Authentications.Roles.PageInsert</th>
+                                        <th>@ERP.ResourcePack.Authentications.Roles.PageUpdate</th>
+                                        <th>@ERP.ResourcePack.Authentications.Roles.PageDelete</th>
+                                        <th>@ERP.ResourcePack.Authentications.Roles.PagePost</th>
+                                        <th>@ERP.ResourcePack.Authentications.Roles.PageUnPost</th>
+                                        <th>@ERP.ResourcePack.Authentications.Roles.PageAudit</th>
+                                        <th><i class="fas fa-cogs"></i></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @*<tr>
+                                        <td class="selectAll">
+                                            <input type="checkbox" onclick="ToggleRowCheckAll(this)" style="opacity:10; pointer-events:visible;">
+                                        </td>
+                                        <td></td>
+                                        <td class="page">
+                                            <input type="checkbox" onclick="ToggleRowCheckAll(this)" style="opacity:10; pointer-events:visible;">
+                                        </td>
+                                        <td class="insert">
+                                            <input type="checkbox" onclick="ToggleRowCheckAll(this)" style="opacity:10; pointer-events:visible;">
+                                        </td>
+                                        <td class="update">
+                                            <input type="checkbox" onclick="ToggleRowCheckAll(this)" style="opacity:10; pointer-events:visible;">
+                                        </td>
+                                        <td class="delete">
+                                            <input type="checkbox" onclick="ToggleRowCheckAll(this)" style="opacity:10; pointer-events:visible;">
+                                        </td>
+                                        <td class="post">
+                                            <input type="checkbox" onclick="ToggleRowCheckAll(this)" style="opacity:10; pointer-events:visible;">
+                                        </td>
+                                        <td class="unpost">
+                                            <input type="checkbox" onclick="ToggleRowCheckAll(this)" style="opacity:10; pointer-events:visible;">
+                                        </td>
+                                        <td class="audit">
+                                            <input type="checkbox" onclick="ToggleRowCheckAll(this)" style="opacity:10; pointer-events:visible;">
+                                        </td>
+                                        <td></td>
+                                    </tr>*@
+                                    @foreach (var page in Model.Pages)
+                                    {
+                                        <tr class="modulePage @page.ViewPermission.Name.Replace('.','_')" id="tr_@page.ViewPermission.Name.Replace('.','_')">
+                                            <td class="selectAll">
+                                                <input type="checkbox" onclick="ToggleCheckAll(this)" style="opacity:10; pointer-events:visible;">
+                                            </td>
+                                            <td>@page.Name</td>
+                                            <td class="page">
+                                                <input type="checkbox" name="GrantedPermissionNames" value="@page.ViewPermission.Name" @page.ViewPermission.Value.ToString() style="opacity:10; pointer-events:visible;">
+                                            </td>
+                                            <td class="insert">
+                                                <input type="checkbox" name="GrantedPermissionNames" value="@page.InsertPermission.Name" @page.InsertPermission.Value.ToString() style="opacity:10; pointer-events:visible;">
+                                            </td>
+                                            <td class="update">
+                                                <input type="checkbox" name="GrantedPermissionNames" value="@page.UpdatePermission.Name" @page.UpdatePermission.Value.ToString() style="opacity:10; pointer-events:visible;">
+                                            </td>
+                                            <td class="delete">
+                                                <input type="checkbox" name="GrantedPermissionNames" value="@page.DeletePermission.Name" @page.DeletePermission.Value.ToString() style="opacity:10; pointer-events:visible;">
+                                            </td>
+                                            <td class="post">
+                                                <input type="checkbox" name="GrantedPermissionNames" value="@page.PostPermission.Name" @page.PostPermission.Value.ToString() style="opacity:10; pointer-events:visible;">
+                                            </td>
+                                            <td class="unpost">
+                                                <input type="checkbox" name="GrantedPermissionNames" value="@page.UnPostPermission.Name" @page.UnPostPermission.Value.ToString() style="opacity:10; pointer-events:visible;">
+                                            </td>
+                                            <td class="audit">
+                                                <input type="checkbox" name="GrantedPermissionNames" value="@page.AuditPermission.Name" @page.AuditPermission.Value.ToString() style="opacity:10; pointer-events:visible;">
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row clearfix">
+                <div class="form-group text-center form-float">
+                    <button type="submit" class="btn btn-info btn-lg m-l-15 waves-effect">@(Model == null ? ERP.ResourcePack.Common.Settings.BtnSave : ERP.ResourcePack.Common.Settings.BtnUpdate)</button>
+                    <div id="submitLoader" style="display:none">
+                        <div class="lds-roller"><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div></div>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+<script src="~/Scripts/jquery.validate.min.js"></script>
+<script src="~/Scripts/jquery.validate.unobtrusive.min.js"></script>
+<script src="~/AssetsPack/assets/js/pages/forms/basic-form-elements.js"></script>
+
+<script>
+    var strArr;
+
+    $('#Modules').select2(ReturnSelect2ObjectDefault(`${baseUrl}/Modules/GetSelect2`));
+    $('#Pages').select2(ReturnSelect2ObjectWithParentFromURL(`${baseUrl}/WebViews/GetSelect2`, 'Modules')); 
+
+    $('#Modules').on('select2:unselect', function (e) {
+        $("#Pages").val('');
+        $("#Pages").text('');
+        ShowAllPages();
+    });
+    $('#Pages').on('select2:unselect', function (e) {
+        HideUnSelected();
+        ShowModulePages(strArr);
+    });
+    $('#Modules').on('select2:select', function (e) {
+        
+
+        HideUnSelected();
+        console.log(e);
+        strArr = e.params.data.altText.split(',');
+        ShowModulePages(strArr);
+    });
+    $('#Pages').on('select2:select', function (e) {
+        HideUnSelected();
+        console.log(`.Pages_${e.params.data.altText}`);
+        $(`.Pages_${e.params.data.altText}`).removeClass("hide");
+        $(`.${e.params.data.altText}`).removeClass("hide");
+    });
+
+</script>

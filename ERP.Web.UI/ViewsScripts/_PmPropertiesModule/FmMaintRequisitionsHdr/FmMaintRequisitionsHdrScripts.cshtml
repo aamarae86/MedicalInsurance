@@ -1,0 +1,326 @@
+﻿@using ERP.Web.UI.Controllers.PmPropertiesModule
+@using ERP.Authorization;
+@{
+    string encUpdateTrigger = ERP.Front.Helpers.Enums.Common.EncUpdate;
+    string encShowTrigger = ERP.Front.Helpers.Enums.Common.EncShow;
+    string permissionsStr = TempData["Permissions"].ToString();
+}
+
+<script>
+    const _mainController = "FmMaintRequisitionsHdr", _apiAppService = "FmMaintRequisitionsHdr";
+
+    $(function () {
+        LoadDataGrid();
+        $('#tblFmMaintRequisitionsHdrPrint thead').html($('#tblFmMaintRequisitionsHdr thead').html());
+        $('#tblFmMaintRequisitionsHdrPrint thead tr :last-child').remove();
+        $('#FmMaintRequisitionsHdr').addClass('active');
+    });
+
+    const _loadDataUrl = `${$PrefixHostName}/${_mainController}/@nameof(FmMaintRequisitionsHdrController.LoadDataGrid)`;
+    const _tblSelector = $('#tblFmMaintRequisitionsHdr');
+    const _tblLoader = $('#tblLoader');
+    const _mainForm = $('#mainForm');
+
+    const _permissions = '@permissionsStr';
+    const _updatePermission = '@PermissionNames.Pages_FmMaintRequisitionsHdr_Update';
+    const _deletePermission = '@PermissionNames.Pages_FmMaintRequisitionsHdr_Delete';
+
+    $('#btnSubmition').on('click', function () {
+
+        _mainForm.submit();
+
+        if (_mainForm.valid()) {
+
+            $(this).prop('disabled',true);
+
+        } else {
+
+            $(this).prop('disabled', false);
+        }
+
+    });
+
+    var OnBegin = function (response) {
+        fireBtnLoader();
+    };
+
+    var OnSuccess = function (response) {
+
+        if (response.success) {
+
+            if (response.customRestResult.trigger === '@ERP.Front.Helpers.Enums.Common.FormTriggers.Insert') {
+
+                toastr.success(response.customRestResult.message);
+
+                setTimeout(function () {
+                    window.location.href = $PrefixHostName + '/FmMaintRequisitionsHdr';
+                }, 200);
+
+            } else if (response.customRestResult.trigger === '@ERP.Front.Helpers.Enums.Common.FormTriggers.Update') {
+
+                toastr.success(response.customRestResult.message);
+
+                setTimeout(function () {
+                    window.location.href = $PrefixHostName + '/FmMaintRequisitionsHdr';
+                }, 200);
+            }
+
+        } else {
+            toastr.error(response.customRestResult.message);
+            $('#btnSubmition').prop('disabled', false);
+        }
+
+    };
+
+    var OnComplete = function (response) {
+        downBtnLoader();
+    };
+
+    var OnFailure = function (response) {
+        toastr.error(response);
+        downBtnLoader();
+        $('#btnSubmition').prop('disabled', false);
+    };
+
+    const LoadDataGrid = function () {
+
+        const parms = {
+            RequisitionNumber: $('#searchBox #RequisitionNumber').val(),
+            RequisitionDate: $('#searchBox #RequisitionDate').val(),
+            RequisitionStatusLkpId: $('#searchBox #RequisitionStatusLkpId').find(':selected').val(),
+            PmPropertiesId: $('#searchBox #PmPropertiesId').find(':selected').val()
+        };
+
+        const columns = [
+            {
+                "data": "result.data.id",
+                'render': function (data, type, row, meta) {
+                    return meta.row + meta.settings._iDisplayStart + 1;
+                }
+            },
+            {
+                "data": "RequisitionNumber",
+                "name": "RequisitionNumber",
+                "autoWidth": true
+            },
+            {
+                "data": "RequisitionDate",
+                "name": "RequisitionDate",
+                "autoWidth": true
+            },
+            {
+                "data": "PmPropertiesId",
+                "name": "PmPropertiesId",
+                "autoWidth": true,
+                "render": function (d, t, row) {
+                    return row.PmProperties ? row.PmProperties.PropertyNumber : '';
+                }
+            },
+            {
+                "data": "ComplaintTypeLkpId",
+                "name": "ComplaintTypeLkpId",
+                "autoWidth": true,
+                "render": function (d, t, row) {
+                    return lang === 'ar-EG' ? row.FndComplaintTypeLkp.NameAr : row.FndComplaintTypeLkp.NameEn;
+                }
+            },
+            {
+                "data": "RequisitionStatusLkpId",
+                "name": "RequisitionStatusLkpId",
+                "autoWidth": true,
+                "render": function (d, t, row) {
+                    return lang === 'ar-EG' ? row.FndRequisitionStatusLkp.NameAr : row.FndRequisitionStatusLkp.NameEn;
+                }
+            },
+            {
+                "data": null,
+                "sortable": false,
+                "render": function (data, type, row) {
+
+                    let formAction = `${$PrefixHostName}/${_mainController}/@nameof(FmMaintRequisitionsHdrController.FmMaintRequisitionsHdrForm)`;
+                    let DeleteAction = `${$PrefixHostName}/${_mainController}/@nameof(FmMaintRequisitionsHdrController.Delete)`;
+
+                    let btns = '';
+
+                    if (_permissions.includes(_updatePermission) && row.RequisitionStatusLkpId == 11048) {
+                        btns += `<a href="${$PrefixHostName}/FmMaintRequisitionsHdr/FormView?id=${row.EncId}&t=@encUpdateTrigger" title="@ERP.ResourcePack.Common.Settings.Edit"><i class="mx-2 fas fa-edit text-info"></i></a>`;
+                    }
+
+                    btns += `<a href="${$PrefixHostName}/FmMaintRequisitionsHdr/FormView?id=${row.EncId}&t=@encShowTrigger" title="@ERP.ResourcePack.Common.Settings.Show"><i class="mx-2 fas fa-eye text-info"></i></a>`;
+
+                    if (_permissions.includes(_deletePermission) && row.RequisitionStatusLkpId == 11048) {
+                        btns += `<a href="javascript:void(0)" onclick="AjaxController.DeleteMainTableRow(${row.Id},'${DeleteAction}');" title="@ERP.ResourcePack.Common.Settings.Delete"><i class="mx-2 fas fa-trash-alt text-danger"></i></a>`;
+                    }
+
+                    const _auditedPermission = '@PermissionNames.Pages_FmMaintRequisitionsHdr_Audit';
+
+                    if (_permissions.includes(_auditedPermission)) {
+
+                        row.permission = _auditedPermission;
+
+                        btns += GetAuditedButton(row);
+                    }
+
+                    return btns;
+                }
+            }
+        ];
+
+        const dtObj = {
+            "processing": true,
+            "serverSide": true,
+            "filter": false,
+            "orderMulti": false,
+            "language": dataTableLang,
+            "ajax": {
+                "url": _loadDataUrl,
+                "type": "POST",
+                "datatype": "json",
+                "data": parms,
+                "complete": function () { }
+            },
+            "columns": columns,
+            "initComplete": function () {
+                $('[data-toggle="tooltip"]').tooltip();
+            }
+
+        };
+
+        _tblSelector.dataTable().fnDestroy();
+        _tblSelector.DataTable(dtObj).on('draw', function () { $('[data-toggle="tooltip"]').tooltip(); });
+
+        setTimeout(function () {
+            $(".sorting_1").removeAttr('colspan');
+        }, 500);
+    };
+
+    $('#searchBox #PmPropertiesId').select2(ReturnSelect2ObjectForLkpsTypes('@ERP.Front.Helpers.Enums.Common.FndLkpsTypes.City.ToString()'));
+    $('#searchBox #RequisitionStatusLkpId').select2(ReturnSelect2ObjectForLkpsTypes('@ERP.Front.Helpers.Enums.Common.FndLkpsTypes.FmMaintRequisitionsHdrStatues.ToString()'));
+    $('#UnitTypeLkpId').select2(ReturnSelect2ObjectForLkpsTypes('@ERP.Front.Helpers.Enums.Common.FndLkpsTypes.PmPropertiesUnitsUnitType.ToString()'));
+    $('#ComplaintTypeLkpId').select2(ReturnSelect2ObjectForLkpsTypes('@ERP.Front.Helpers.Enums.Common.FndLkpsTypes.FmMaintRequisitionsHdrComplaintType.ToString()'));
+    $('#PmPropertiesId').select2(ReturnSelect2ObjectDefault(`${baseUrl}/PmProperties/GetPmPropertiesNumberSelect2`));
+    $('#UnitId').select2({
+        ajax: {
+            url: `${baseUrl}/FmMaintRequisitionsHdr/GetPmPropertiesUnitsByPmPropIdSelect2`,
+            dataType: 'json',
+            headers: {
+                'Authorization': `Bearer ${$_token}`
+            },
+            data: function (params) {
+                params.page = params.page || 1;
+                return {
+                    propertyId: $('#PmPropertiesId').find(':selected').val(),
+                    pageSize: pageSize,
+                    pageNumber: params.page,
+                    searchTerm: params.term,
+                    lang: lang
+                };
+            },
+            processResults: function (data, params) {
+
+                params.page = params.page || 1;
+
+                return {
+                    results: data.result.results,
+                    pagination: {
+                        more: (params.page * pageSize) < data.result.total
+                    }
+                };
+            }
+        },
+        placeholder: select2Placeholder,
+        minimumInputLength: 0,
+        allowClear: true,
+        language: select2Lang
+    });
+
+    $('#PmPropertiesId').on('change', function (e) { $('#UnitId').val('').trigger('change'); });
+
+
+    function printExc() {
+        $('.page-loader-wrapper').show();
+
+        const parmss = {
+            RequisitionNumber: $('#searchBox #RequisitionNumber').val(),
+            RequisitionDate: $('#searchBox #RequisitionDate').val(),
+            RequisitionStatusLkpId: $('#searchBox #RequisitionStatusLkpId').find(':selected').val(),
+            PmPropertiesId: $('#searchBox #PmPropertiesId').find(':selected').val(),
+            length: 1000000
+        };
+
+        const columns = [
+            {
+                "data": "result.data.id",
+                'render': function (data, type, row, meta) {
+                    return meta.row + meta.settings._iDisplayStart + 1;
+                }
+            },
+            {
+                "data": "RequisitionNumber",
+                "name": "RequisitionNumber",
+                "autoWidth": true
+            },
+            {
+                "data": "RequisitionDate",
+                "name": "RequisitionDate",
+                "autoWidth": true
+            },
+            {
+                "data": "PmPropertiesId",
+                "name": "PmPropertiesId",
+                "autoWidth": true,
+                "render": function (d, t, row) {
+                    return row.PmProperties ? row.PmProperties.PropertyNumber : '';
+                }
+            },
+            {
+                "data": "ComplaintTypeLkpId",
+                "name": "ComplaintTypeLkpId",
+                "autoWidth": true,
+                "render": function (d, t, row) {
+                    return lang === 'ar-EG' ? row.FndComplaintTypeLkp.NameAr : row.FndComplaintTypeLkp.NameEn;
+                }
+            },
+            {
+                "data": "RequisitionStatusLkpId",
+                "name": "RequisitionStatusLkpId",
+                "autoWidth": true,
+                "render": function (d, t, row) {
+                    return lang === 'ar-EG' ? row.FndRequisitionStatusLkp.NameAr : row.FndRequisitionStatusLkp.NameEn;
+                }
+            }
+        ];
+
+        const dtObj = {
+            "language": dataTableLang,
+            "dom": 'Bfrtip',
+            "buttons": [
+                {
+                    extend: 'excel',
+                    messageTop: `${$('#RequisitionNumber').siblings().text()}: ${(parmss.RequisitionNumber) ? parmss.RequisitionNumber : '--'}, ${$('#RequisitionDate').siblings().text()}: ${(parmss.RequisitionDate) ? parmss.RequisitionDate : '--'}, ${$('[for="RequisitionStatusLkpId"]').text()}: ${(parmss.RequisitionStatusLkpId) ? parmss.RequisitionStatusLkpId : '--'}, ${$('[for="PmPropertiesId"]').text()}: ${(parmss.PmPropertiesId) ? parmss.PmPropertiesId : '--'}`
+                },
+
+            ],
+            "ajax": {
+                "url": _loadDataUrl,
+                "type": "POST",
+                "datatype": "json",
+                "data": parmss,
+                "complete": function (d) {
+                    _tblLoader.hide();
+                }
+            },
+            "columns": columns,
+
+            "initComplete": function () {
+                $('#tblFmMaintRequisitionsHdrPrint_wrapper button.dt-button').click();
+            }
+        };
+
+        $('#tblFmMaintRequisitionsHdrPrint').dataTable().fnDestroy();
+        $('#tblFmMaintRequisitionsHdrPrint').DataTable(dtObj).on('buttons-processing', function (e, indicator) { if (!indicator) { $('.page-loader-wrapper').hide() } });
+
+
+    }
+
+</script>

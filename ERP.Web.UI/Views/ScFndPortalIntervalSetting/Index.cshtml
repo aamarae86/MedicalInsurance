@@ -1,0 +1,13 @@
+﻿@{
+    ViewBag.Title = ERP.ResourcePack.AidModule.ScFndPortalIntervalSetting.Title;
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@Html.Action(nameof(ERP.Web.UI.Controllers.AidModule.ScFndPortalIntervalSettingController.ScFndPortalIntervalSettingSearch))
+@Html.Action(nameof(ERP.Web.UI.Controllers.AidModule.ScFndPortalIntervalSettingController.ScFndPortalIntervalSettingData))
+
+@section scripts{
+    @Html.Partial("~/ViewsScripts/_AidModule/ScFndPortalIntervalSetting/ScFndPortalIntervalSettingScripts.cshtml")
+}
+
+

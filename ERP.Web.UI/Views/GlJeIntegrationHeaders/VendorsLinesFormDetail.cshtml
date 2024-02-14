@@ -1,0 +1,59 @@
+﻿@using ERP.Web.UI.Models.ViewModels.AccountsExtend
+@model GlJeIntegrationHeadersVM
+
+<div class="card" style="display:@(ViewBag.trigger == ERP.Front.Helpers.Enums.Common.FormTriggers.Show.ToString() ? "none":"block" ) ">
+    <div class="body">
+        <div class="row clearfix">
+            <div class="col-sm-3">
+                @Html.LabelFor(z => z.ApVendorId, new { @class = "form-label label-required" })
+                <div class="form-group form-float">
+                    <div class="form-group">
+                        @Html.DropDownListFor(z => z.ApVendorId, Enumerable.Empty<SelectListItem>(), new { @class = "form-control" })
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-3">
+                <div class="form-group form-float">
+                    <div class="form-line">
+                        @Html.TextBoxFor(z => z.VendorNumber, new { @class = "form-control", @disabled = "disabled" })
+                        @Html.LabelFor(z => z.VendorNumber, new { @class = "form-label" })
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-3">
+                <div class="form-group form-float">
+                    <div class="form-line">
+                        @Html.TextBoxFor(z => z.DebitAmount, new { @class = "form-control currency" })
+                        @Html.LabelFor(z => z.DebitAmount, new { @class = "form-label" })
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-3">
+                <div class="form-group form-float">
+                    <div class="form-line">
+                        @Html.TextBoxFor(z => z.CreditAmount, new { @class = "form-control currency" })
+                        @Html.LabelFor(z => z.CreditAmount, new { @class = "form-label" })
+                    </div>
+                </div>
+            </div>
+      
+        </div>
+        <div class="row clearfix">
+            <div class="col-sm-9">
+                <div class="form-group form-float">
+                    <div class="form-line">
+                        @Html.TextAreaFor(z => z.GlJeIntegrationNotes, new { @class = "form-control" })
+                        @Html.LabelFor(z => z.GlJeIntegrationNotes, new { @class = "form-label" })
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-3">
+                <div class="form-group">
+                    <button id="btnAddVendorLineRow" onclick="return AddVendorLine()" class="btn btn-success">@ERP.ResourcePack.Common.Settings.BtnAddNew</button>
+                    <button style="display:none;" id="btnUpdateVendorLineRow" onclick="return UpdateVendorLineRow()" class="btn btn-info">@ERP.ResourcePack.Common.Settings.BtnUpdate</button>
+                    <button style="display:none;" id="btnCancelVendorLineRow" onclick="ClearDetailForm(); $('#btnCancelVendorLineRow').hide();$('#btnUpdateVendorLineRow').hide();$('#btnAddVendorLineRow').show();" class="btn btn-danger">@ERP.ResourcePack.Common.Settings.BtnCancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

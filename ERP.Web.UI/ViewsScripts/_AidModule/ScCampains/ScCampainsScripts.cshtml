@@ -1,0 +1,641 @@
+﻿@using ERP.ResourcePack.AidModule
+@using ERP.Web.UI.Controllers.AidModule
+@using ERP.Authorization;
+@{
+    string permissionsStr = TempData["Permissions"].ToString();
+    string encUpdateTrigger = ERP.Front.Helpers.Enums.Common.EncUpdate;
+    string encInsertTrigger = ERP.Front.Helpers.Enums.Common.EncInsert;
+    string encShowTrigger = ERP.Front.Helpers.Enums.Common.EncShow;
+}
+
+@if (permissionsStr.Contains(PermissionNames.Pages_ScCampains_Post))
+{
+    <script>
+
+        const PostScCampainsDetail = function (id) {
+
+            bootbox.confirm({
+                message: _booBoxMessagePosting,
+                buttons: bootBoxDefaultBtns,
+                callback: function (result) {
+
+                    if (result) {
+
+                        const data = {
+                            id: id,
+                            lang: lang
+                        };
+
+                        $.ajax({
+                            url: `${baseUrl}/ScCampains/PostScCampainsDetail`,
+                            type: 'POST',
+                            data: JSON.stringify(data),
+                            headers:
+                            {
+                                'Content-Type': 'application/json',
+                                'Authorization': `Bearer ${$_token}`
+                            },
+                        }).done(function (response) {
+
+                            if (response.result.finalStatues == 'F') {
+                                toastr.warning(response.result.reason);
+                            }
+                            else {
+                                toastr.success(response.result.reason);
+                                LoadScCampainsDetailData();
+                            }
+                        }).fail(function (response) {
+                            toastr.error(response);
+
+                        });
+
+                    }
+
+                }
+            });
+
+        };
+
+        const PostScCampains = function (id) {
+
+            if (validateCloseCampain().valid === false) {
+                toastr.warning('@ScCampains.CannotCloseCampain');
+                return;
+            }
+
+            bootbox.confirm({
+                message: _booBoxMessageClosing,
+                buttons: bootBoxDefaultBtns,
+                callback: function (result) {
+
+                    if (result) {
+
+                        const data = {
+                            id: id,
+                            lang: lang
+                        };
+
+                        $.ajax({
+                            url: `${baseUrl}/ScCampains/PostScCampains`,
+                            type: 'POST',
+                            data: JSON.stringify(data),
+                            headers:
+                            {
+                                'Content-Type': 'application/json',
+                                'Authorization': `Bearer ${$_token}`
+                            },
+                        }).done(function (response) {
+
+                            if (response.result.finalStatues == 'F') {
+                                toastr.warning(response.result.reason);
+                            }
+                            else {
+
+                                toastr.success(response.result.reason);
+                                setTimeout(function () {
+                                    window.location.href = $PrefixHostName + '/ScCampains';
+                                }, 200);
+                            }
+
+                        }).fail(function (response) {
+                            toastr.error(response);
+                        });
+                    }
+
+                }
+            });
+
+        };
+
+        const validateCloseCampain = function () {
+
+            const statusLkpIds = _ScCampainsDetail.map(z => z.statusLkpId);
+
+            const newStatusLkps = statusLkpIds.filter(z => z == _newDetailStatus);
+
+            return { valid: newStatusLkps.length === 0 ? true : false, statusLkpIds: statusLkpIds };
+        };
+
+    </script>
+}
+else
+{
+    <script>
+        const PostScCampainsDetail = function (id) { };
+        const PostScCampains = function (id) { };
+    </script>
+}
+
+<script>
+    const _mainController = "ScCampains"
+
+    $(function () {
+
+        LoadDataGrid();
+
+        $('#ScCampains').addClass('active');
+
+    });
+
+    const _loadDataUrl = `${$PrefixHostName}/${_mainController}/@nameof(ScCampainsController.LoadDataGrid)`;
+    const _tblSelector = $('#tblScCampains');
+    const _tblLoader = $('#tblLoader');
+
+    const _permissions = '@permissionsStr';
+    const _updatePermission = '@PermissionNames.Pages_ScCampains_Update';
+    const _deletePermission = '@PermissionNames.Pages_ScCampains_Delete';
+    const _postPermission = '@PermissionNames.Pages_ScCampains_Post';
+    const _postStatus = @Convert.ToInt64(ERP.Front.Helpers.Enums.Common.ScCampains.Posted);
+    const _postDetailStatus = @Convert.ToInt64(ERP.Front.Helpers.Enums.Common.ScCampainsDetail.Posted);
+    const _deliveredDetailStatus = @Convert.ToInt64(ERP.Front.Helpers.Enums.Common.ScCampainsDetail.Delivered);
+    const _newDetailStatus = @Convert.ToInt64(ERP.Front.Helpers.Enums.Common.ScCampainsDetail.New);
+
+    var OnBegin = function (response) {
+        fireBtnLoader();
+    };
+
+    var OnSuccess = function (response) {
+
+        $('#btnSubmition').prop('disabled', false);
+
+        if (response.success) {
+
+            if (response.customRestResult.trigger === '@ERP.Front.Helpers.Enums.Common.FormTriggers.Insert') {
+
+                toastr.success(response.customRestResult.message);
+
+                setTimeout(function () {
+                    window.location.href = $PrefixHostName + '/ScCampains';
+                }, 200);
+
+            }
+            else if (response.customRestResult.trigger === '@ERP.Front.Helpers.Enums.Common.FormTriggers.Update') {
+
+                toastr.success(response.customRestResult.message);
+
+                setTimeout(function () {
+                    window.location.href = $PrefixHostName + '/ScCampains';
+                }, 200);
+
+            }
+            else {
+                toastr.error(response.customRestResult.message);
+            }
+
+        } else {
+            toastr.error(response.error.message);
+        }
+
+    };
+
+    var OnComplete = function (response) {
+        downBtnLoader();
+    };
+
+    var OnFailure = function (response) {
+        toastr.error(response);
+        downBtnLoader();
+    };
+
+    const LoadDataGrid = function () {
+
+        $('#tblLoader').show();
+
+        const params = {
+            CampainName: $('#searchBox #CampainName').val(),
+            StatusLkpId: $('#searchBox #StatusLkpId').find(':selected').val(),
+        };
+
+        const columns = [
+            {
+                "data": "result.data.id",
+                'render': function (data, type, row, meta) {
+                    return meta.row + meta.settings._iDisplayStart + 1;
+                }
+            },
+            {
+                "data": "CampainName",
+                "name": "CampainName",
+                "autoWidth": true
+            },
+             {
+                "data": "CampainNumber",
+                "name": "CampainNumber",
+                "autoWidth": true
+            },
+            {
+                "data": "ScCampainDate",
+                "name": "ScCampainDate",
+                "autoWidth": true
+            },
+            {
+                "data": null,
+                "autoWidth": true,
+                "render": function (d, t, row) {
+                    if (row.FndLookupValues == null)   return '';
+
+                    return lang === 'ar-EG' ? row.FndLookupValues.NameAr : row.FndLookupValues.NameEn;
+                }
+            },
+            {
+                "data": null,
+                "sortable": false,
+                "render": function (data, type, row) {
+
+                    let formAction = `${$PrefixHostName}/${_mainController}/@nameof(ScCampainsController.ScCampainsForm)`;
+                    let DeleteAction = `${$PrefixHostName}/${_mainController}/@nameof(ScCampainsController.Delete)`;
+
+                    let formTitle = '@ERP.ResourcePack.AidModule.ScCampains.Title';
+                    let btns = '';
+
+                    if (_permissions.includes(_updatePermission) && row.StatusLkpId != _postStatus) {
+                        btns += `<a href="${$PrefixHostName}/ScCampains/FormView?id=${row.EncId}&t=@encUpdateTrigger" title="@ERP.ResourcePack.Common.Settings.Edit"><i class="mx-2 fas fa-edit text-info"></i></a>`;
+                    }
+
+                    btns += `<a href="${$PrefixHostName}/ScCampains/FormView?id=${row.EncId}&t=@encShowTrigger" title="@ERP.ResourcePack.Common.Settings.Show"><i class="mx-2 fas fa-eye text-info"></i></a>`;
+
+                    if (_permissions.includes(_deletePermission) && row.StatusLkpId != _postStatus)
+                    {
+                        btns += `<a href="javascript:void(0)" onclick="AjaxController.DeleteMainTableRow(${row.Id},'${DeleteAction}');" title="@ERP.ResourcePack.Common.Settings.Delete"><i class="mx-2 fas fa-trash-alt text-danger"></i></a>`;
+                    }
+
+                    btns += `<a href="javascript:void(0);" onclick="return print('${$PrefixHostName}/ScCampains/PrintScCampainsScreen','${row.EncId}','${lang}')" title="@ERP.ResourcePack.Common.Settings.Print"><i class="mx-2 fas fa-print text-success"></i></a>`;
+
+                    const _auditedPermission = '@PermissionNames.Pages_ScCampains_Audit';
+
+                    if (_permissions.includes(_auditedPermission)) {
+
+                        row.permission = _auditedPermission;
+
+                        btns += GetAuditedButton(row);
+                    }
+
+                    return btns;
+                }
+            }
+        ];
+
+        const dtObj = {
+            "processing": true,
+            "serverSide": true,
+            "filter": false,
+            "orderMulti": false,
+            "language": dataTableLang,
+            "ajax": {
+                "url": _loadDataUrl,
+                "type": "POST",
+                "datatype": "json",
+                "data": params,
+                "complete": function () {
+                      _tblLoader.hide();
+                }
+            },
+            "columns": columns,
+            "initComplete": function () {
+                $('[data-toggle="tooltip"]').tooltip();
+            }
+
+        };
+
+        _tblSelector.dataTable().fnDestroy();
+        _tblSelector.DataTable(dtObj).on('draw', function () { $('[data-toggle="tooltip"]').tooltip(); });
+
+        setTimeout(function () {
+            $(".sorting_1").removeAttr('colspan');
+        }, 500);
+    };
+
+    $('#btnSubmition').on('click', function () {
+
+        if ($('#mainForm').valid()) {
+
+            $(this).prop('disabled', true);
+
+            $('#submitLoader').show();
+
+            $('#mainForm').submit();
+
+        } else {
+            $(this).prop('disabled', false);
+
+            $('#submitLoader').hide();
+        }
+
+    });
+
+    $('#CampainAidId').select2(ReturnSelect2ObjectDefault(`${baseUrl}/ScCampainsAid/GetScCampainsAidSelect2`))
+    $('#searchBox #StatusLkpId').select2(ReturnSelect2ObjectForLkpsTypes('@ERP.Front.Helpers.Enums.Common.FndLkpsTypes.ScCampainsStatues.ToString()'))
+
+    $('#FndUsersId').select2({
+        ajax: {
+            url: `${baseUrl}/PortalUserData/GetUnifiedPortalUsersFromPortalsersDataWithRelativesSelect2`,
+            dataType: 'json',
+            headers: {
+                'Authorization': `Bearer ${$_token}`
+            },
+            data: function (params) {
+                params.page = params.page || 1;
+                return {
+                    pageSize: pageSize,
+                    pageNumber: params.page,
+                    searchTerm: params.term,
+                    lang: lang
+                };
+            },
+            processResults: function (data, params) {
+
+                params.page = params.page || 1;
+                return {
+                    results: data.result.results,
+                    pagination: {
+                        more: (params.page * pageSize) < data.result.total
+                    }
+                };
+            }
+        },
+        placeholder: select2Placeholder,
+        minimumInputLength: 0,
+        allowClear: true,
+        language: select2Lang,
+        templateSelection: function (data, container) {
+
+          $(data.element).attr('data-relatives-count', data.altText);
+
+          return data.text;
+        }
+    });
+
+</script>
+
+<script>
+
+    const _tblScCampainsDetailSelector = $('#tblScCampainsDetail');
+    const _tblScCampainsDetailSelectorBody = $('#tblScCampainsDetail tbody');
+    const _listScCampainsDetail = $('#ListScCampainsDetail');
+
+    let _ScCampainsDetail = [], updatedRow, tblCounterIndex = 0 ;
+    let __userRelativesCount__;
+
+    const fillDetail = function () {
+
+        if (validator() === false) return;
+
+        const fndUserName = $('#FndUsersId').find(':selected').text();
+        const fndUserIdNumber = $('#FndUsersId').find(':selected').text().split('-')[0];
+
+        const current = {
+                index: ++tblCounterIndex,
+                campainAid: $('#CampainAidId').find(':selected').text(),
+                campainAidId: $('#CampainAidId').find(':selected').val(),
+                fndUsers: fndUserName,
+                fndUserEncId: fndUserName,
+                fndUsersIdNumber: fndUserIdNumber,
+                portalFndUsersId: $('#FndUsersId').find(':selected').val(),
+                statusLkp: '@ERP.ResourcePack.AidModule.ScCampains.NewStatus',
+                userRelativeCount:$('#FndUsersId').find(':selected').attr('data-relatives-count'),
+                rowStatus: NewStatus,
+                id: ''
+            };
+
+        return current;
+    };
+
+    const AddScCampainsDetail = function () {
+
+        const current = fillDetail();
+
+        if (current === undefined) return;
+
+        _ScCampainsDetail.push(current);
+
+        _listScCampainsDetail.val(JSON.stringify(_ScCampainsDetail));
+
+        bindScCampainsDetailTable();
+
+        clearFormAdding();
+    };
+
+    const hrefUserOnClickEvent = function (UserId) {
+        window.open(`${$PrefixHostName}/PortalUserData/FormView?id=${UserId}&t=@encShowTrigger`, '_blank');
+    };
+
+    const bindScCampainsDetailTable = function () {
+
+        const detailArr = _ScCampainsDetail.filter(z => z.rowStatus !== DeletedStatus);
+
+        const columns = [
+            { 'data': 'index' },
+            {
+                'data': 'fndUsers',
+                "name": "Id",
+                "autoWidth": true,
+                'render': function (d, t, row) {
+
+                    const userEncId = row.fndUserEncId;
+
+                    if (userEncId && row.id) {
+                        return `<a style="color:#3443434;text-decoration:underline" href="javascript:void(0);" onclick="hrefUserOnClickEvent('${userEncId}')">${row.fndUsers}</a>`;
+                    }
+                    else {
+                        return row.fndUsers;
+                    }
+                }
+            },
+            //  { 'data': 'fndUsersIdNumber' },
+            { 'data': 'userRelativeCount' },
+            { 'data': 'campainAid' },
+            { 'data': 'statusLkp' },
+            {
+                'data': null,
+                'searchable': false,
+                'ordering': false,
+                'sorting': false,
+                'render': function (d, t, row) {
+
+                    let rows = '';
+
+                    if (primaryEntityKeyId === 0 || trigger !== '@ERP.Front.Helpers.Enums.Common.FormTriggers.Show.ToString()') {
+
+                        if (row.statusLkpId != _postDetailStatus && row.statusLkpId != _deliveredDetailStatus) {
+                            rows += `<td><a href="javascript:void(0)" onclick="return DeleteScCampainsDetail(${row.index})"><i class="mx-2 fas fa-trash-alt text-danger"></i></a>`;
+                            rows += `<a href="javascript:void(0)" onclick="return GetScCampainsDetailRow(${row.index})"><i class="mx-2 fas fa-edit text-success"></i></a></td>`;
+                        }
+
+                        if (primaryEntityKeyId !== 0 && row.rowStatus !== NewStatus && row.statusLkpId != _deliveredDetailStatus && row.statusLkpId != _postDetailStatus && _permissions.includes(_postPermission) && trigger === '@ERP.Front.Helpers.Enums.Common.FormTriggers.Update.ToString()') {
+                            rows += `<a title="@ScCampains.PostCampain" href="javascript:void(0)"  onclick="return PostScCampainsDetail(${row.id})"><i class="mx-2 fas fa-plus-circle text-success"></i></a></td>`;
+                        }
+                    }
+                    else {
+                        rows += '<td></td>';
+                    }
+
+                    return rows;
+                }
+            }
+        ];
+
+        const dtObj = {
+            data: detailArr,
+            retrieve: true,
+            language: dataTableLang,
+            columns: columns,
+            drawCallback: function (c, v, b) {
+
+                setTimeout(function () {
+
+                    let rows = '';
+
+                    rows += '<tr>';
+                    rows += `<th>@ScCampains.FndUsersCounts : </th><td><h3>${detailArr.length}</h3></td>`;
+
+                    if (primaryEntityKeyId !== 0) {
+                        rows += `<th>@ScCampains.PostedCount : </th><td><h3>${detailArr.length === 0 ? 0 : detailArr[0].postedCount}</h3></td>`;
+                        rows += `<th>@ScCampains.RecievedCount : </th><td><h3>${detailArr.length === 0 ? 0 : detailArr[0].recievedCount}</h3></td>`;
+                    }
+
+                    rows += '</tr>';
+
+                    _tblScCampainsDetailSelector.append(rows);
+
+                }, 50);
+
+            }
+        };
+
+        setTimeout(function () {
+
+            _tblScCampainsDetailSelector.dataTable().fnDestroy();
+            _tblScCampainsDetailSelector.DataTable(dtObj).on('draw', function () { $('[data-toggle="tooltip"]').tooltip(); });
+
+        }, 100);
+
+    };
+
+    const DeleteScCampainsDetail = function (index)  {
+
+        const current = _ScCampainsDetail.find(z => z.index === index);
+
+        const indexOfCurrent = _ScCampainsDetail.indexOf(current);
+
+        if (current.id === undefined || current.id == null || current.id == 0) {
+
+           _ScCampainsDetail.splice(indexOfCurrent, 1);
+
+        } else {
+
+            current.rowStatus = DeletedStatus;
+
+           _ScCampainsDetail.splice(indexOfCurrent, 1,current);
+        }
+
+        bindScCampainsDetailTable();
+
+        _listScCampainsDetail.val(_ScCampainsDetail.length === 0 ? '' : JSON.stringify(_ScCampainsDetail));
+
+    };
+
+    const LoadScCampainsDetailData = function () {
+
+        $.ajax({
+            url: `${baseUrl}/ScCampains/GetAllDetails`,
+            method: 'GET',
+            headers: {
+                        'Authorization': `Bearer ${$_token}`
+            },
+            data: {
+                id: primaryEntityKeyId
+            }
+        }).done(function (data) {
+
+            _ScCampainsDetail = [...data.result];
+
+            tblCounterIndex = 0;
+
+            $.each(_ScCampainsDetail, function (i, item) {
+                item.index = ++tblCounterIndex;
+            });
+
+            bindScCampainsDetailTable();
+
+            _listScCampainsDetail.val(JSON.stringify(_ScCampainsDetail));
+
+        });
+
+    };
+
+    const GetScCampainsDetailRow = function (tblIndex) {
+
+        clearFormAdding();
+
+        $('#btnAddDetailRow').hide();
+        $('#btnUpdateDetailRow').show();
+        $('#btnCancelDetailRow').show();
+
+        const current = _ScCampainsDetail.find(z => z.index === tblIndex);
+
+        $(`#FndUsersId`).append($("<option selected='selected'></option>").val(current.portalFndUsersId).text(`${current.fndUsersIdNumber}-${current.fndUsers}`)).trigger('change');
+        $(`#CampainAidId`).append($("<option selected='selected'></option>").val(current.campainAidId).text(current.campainAid)).trigger('change');
+
+        updatedRow = current;
+    };
+
+    const UpdateScCampainsDetailRow = function () {
+
+        let current = _ScCampainsDetail.find(z => z.index === updatedRow.index);
+
+        let indexOfCurrent = _ScCampainsDetail.indexOf(_ScCampainsDetail.find(z => z.index === updatedRow.index));
+
+        const newRow = fillDetail();
+
+        if (newRow === undefined) return;
+
+        newRow.index = current.index;
+        newRow.id = updatedRow.id;
+        newRow.statusLkpId = updatedRow.statusLkpId;
+        newRow.postedCount = updatedRow.postedCount;
+        newRow.recievedCount = updatedRow.recievedCount;
+        newRow.userRelativeCount = updatedRow.userRelativeCount;
+        newRow.rowStatus =  (updatedRow.id === undefined || updatedRow.id == null || updatedRow.id == 0) ? NewStatus : UpdatedStatus;
+
+        _ScCampainsDetail.splice(indexOfCurrent, 1,newRow);
+
+        $('#btnAddDetailRow').show();
+        $('#btnUpdateDetailRow').hide();
+        $('#btnCancelDetailRow').hide();
+
+        clearFormAdding();
+
+        _listScCampainsDetail.val(JSON.stringify(_ScCampainsDetail));
+
+        setTimeout(function () {
+            bindScCampainsDetailTable();
+        }, 100);
+    };
+
+    const clearFormAdding = function () {
+        $('#first .card:first input,textarea').val('');
+        $('#first .card:first select').val('').trigger('change');
+    };
+
+    const validator = function () {
+
+        if ($('#first #FndUsersId').find(':selected').val() === undefined || $('#first #FndUsersId').find(':selected').val() === '') {
+            toastr.warning('@ScCampains.FndUsersId' + ' : ' + '@ERP.ResourcePack.Common.Settings.Required')
+            return false;
+        }
+
+        if ($('#first #CampainAidId').find(':selected').val() === undefined || $('#first #CampainAidId').find(':selected').val() === '') {
+            toastr.warning('@ScCampains.CampainAidId' + ' : ' + '@ERP.ResourcePack.Common.Settings.Required')
+            return false;
+        }
+    };
+
+
+     const print = function (url,id,lang) {
+
+        const data = { id: id, lang : lang };
+
+        openModal(data, url);
+    };
+
+</script>

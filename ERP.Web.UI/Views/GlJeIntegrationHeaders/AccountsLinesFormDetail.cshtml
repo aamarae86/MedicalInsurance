@@ -1,0 +1,43 @@
+﻿@using ERP.Web.UI.Models.ViewModels.Accounts
+@using ERP.Web.UI.Models.ViewModels.AccountsExtend
+@model GlJeIntegrationHeadersVM
+
+<div class="card" style="display:@( ViewBag.trigger == ERP.Front.Helpers.Enums.Common.FormTriggers.Show.ToString() ? "none":"block" ) ">
+    <div class="body">
+        <div class="row clearfix">
+            @Html.Action(nameof(ERP.Web.UI.Controllers.Accounts.GlAccDetailsController.DrawGlAccController), "GlAccDetails",
+               new { glAccHeadersVMs = ViewData["ListGlAccHeadersVM"] == null ? new List<GlAccHeadersVM>() : ViewData["ListGlAccHeadersVM"] as List<GlAccHeadersVM> })
+            <div class="col-sm-3">
+                <div class="form-group form-float">
+                    <div class="form-line">
+                        @Html.TextBoxFor(z => z.DebitAmount, new { @class = "form-control currency" })
+                        @Html.LabelFor(z => z.DebitAmount, new { @class = "form-label" })
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-3">
+                <div class="form-group form-float">
+                    <div class="form-line">
+                        @Html.TextBoxFor(z => z.CreditAmount, new { @class = "form-control currency" })
+                        @Html.LabelFor(z => z.CreditAmount, new { @class = "form-label" })
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-3">
+                <div class="form-group form-float">
+                    <div class="form-line">
+                        @Html.TextBoxFor(z => z.GlJeIntegrationNotes, new { @class = "form-control" })
+                        @Html.LabelFor(z => z.GlJeIntegrationNotes, new { @class = "form-label" })
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-3">
+                <div class="form-group">
+                    <button id="btnAddAccountLineRow" onclick="return AddAccountLine()" class="btn btn-success">@ERP.ResourcePack.Common.Settings.BtnAddNew</button>
+                    <button style="display:none;" id="btnUpdateAccountLineRow" onclick="return UpdateAccountLineRow()" class="btn btn-info">@ERP.ResourcePack.Common.Settings.BtnUpdate</button>
+                    <button style="display:none;" id="btnCancelAccountLineRow" onclick="ClearDetailForm('accounts-lines'); $('#btnCancelAccountLineRow').hide();$('#btnUpdateAccountLineRow').hide();$('#btnAddAccountLineRow').show();" class="btn btn-danger">@ERP.ResourcePack.Common.Settings.BtnCancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
